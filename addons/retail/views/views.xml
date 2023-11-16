@@ -1,0 +1,294 @@
+<odoo>
+  <data>
+
+    <!-- form -->
+      <!-- Продукты -->
+        <!-- Характеристики -->
+        <record id="view_retail_count_price_form" model="ir.ui.view">
+            <field name="name">Расчет цены</field>
+            <field name="model">retail.count_price</field>
+            <field name="arch" type="xml">
+                <form>
+                  <sheet>
+                    <button string="Применить" class="oe_highlight" type="object" name="apply_product" args="[]" />
+                      <group string = 'Форма расчета'>
+                        <field name="unique_product"/>
+                        <field name="provider"/>
+                        <field name="number"/>
+                      </group>
+                  </sheet>
+                </form>
+            </field>
+        </record>
+
+    <!-- tree -->
+      <!-- Себестоимость -->
+      <record id="view_cost_price_tree" model="ir.ui.view">
+          <field name="name">Себестоимость</field>
+          <field name="model">retail.cost_price</field>
+          <field name="arch" type="xml">
+              <tree>
+                  <field name="products"/>
+                  <field name="seller"/>
+                  <field name="price"/>
+                  <field name="timestamp"/>
+              </tree>
+          </field>
+      </record>
+
+      <!-- Категории -->
+      <record id="view_categories_tree" model="ir.ui.view">
+          <field name="name">Категории</field>
+          <field name="model">retail.categories</field>
+          <field name="arch" type="xml">
+              <tree>
+                  <field name="name_categories"/>
+                  <field name="name_platform"/>
+              </tree>
+          </field>
+      </record>
+
+      <!-- Стоимость на платформе -->
+      <record id="view_cost_on_platform_tree" model="ir.ui.view">
+          <field name="name">Стоимость</field>
+          <field name="model">retail.cost_on_platform</field>
+          <field name="arch" type="xml">
+              <tree>
+                  <field name="products"/>
+                  <field name="seller"/>
+                  <field name="platofrm"/>
+                  <field name="price"/>
+                  <field name="timestamp"/>
+              </tree>
+          </field>
+      </record>
+
+      <!-- Продукты -->
+        <!-- Характеристики -->
+        <record id="view_сharacter_tree" model="ir.ui.view">
+            <field name="name">Характеристика продуктов</field>
+            <field name="model">retail.character</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="length"/>
+                    <field name="width"/>
+                    <field name="height"/>
+                    <field name="weight"/>
+                    <field name="volume"/>
+                </tree>
+            </field>
+        </record>
+
+      <!-- ID продукта -->
+      <record id="view_unique_product_tree" model="ir.ui.view">
+          <field name="name">ID продуктов</field>
+          <field name="model">retail.unique_product</field>
+          <field name="arch" type="xml">
+              <tree>
+                  <field name="products"/>
+                  <field name="character"/>
+                  <field name="seller"/>
+                  <field name="platform"/>
+                  <field name="product_id"/>
+              </tree>
+          </field>
+      </record>
+
+      <!-- Себестоимость -->
+      <record id="view_cost_price_tree" model="ir.ui.view">
+          <field name="name">Себестоимость</field>
+          <field name="model">retail.cost_price</field>
+          <field name="arch" type="xml">
+              <tree>
+                  <field name="products"/>
+                  <field name="seller"/>
+                  <field name="price"/>
+                  <field name="timestamp"/>
+              </tree>
+          </field>
+      </record>
+
+    <!-- Продавец -->
+    <record id="view_seller_tree" model="ir.ui.view">
+        <field name="name">Продавец</field>
+        <field name="model">retail.seller</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="ogrn"/>
+                <field name="fee"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Расчет цены -->
+    <record id="view_count_price_tree" model="ir.ui.view">
+        <field name="name">Расчет цены</field>
+        <field name="model">retail.count_price</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="unique_product"/>
+                <field name="provider"/>
+                <field name="number"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- История цены -->
+    <record id="view_price_history_tree" model="ir.ui.view">
+        <field name="name">История цены</field>
+        <field name="model">retail.price_history</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="price"/>
+                <field name="unique_product"/>
+                <field name="provider"/>
+                <field name="timestamp"/>
+                <field name="number"/>
+                <field name="costs"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- actions opening views on models -->
+      <!-- Себестоимость -->
+      <record model="ir.actions.act_window" id="action_cost_price">
+        <field name="name">Себестоимость</field>
+        <field name="res_model">retail.cost_price</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- Стоимость на платформе -->
+      <record model="ir.actions.act_window" id="action_cost_on_platform">
+        <field name="name">Стоимость на платформе</field>
+        <field name="res_model">retail.cost_on_platform</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- Продавец -->
+      <record model="ir.actions.act_window" id="action_seller">
+        <field name="name">Продавец</field>
+        <field name="res_model">retail.seller</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- ID продукта -->
+      <record model="ir.actions.act_window" id="action_unique_product">
+        <field name="name">ID продукта</field>
+        <field name="res_model">retail.unique_product</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- Платформы -->
+      <record model="ir.actions.act_window" id="action_name_market">
+        <field name="name">Платформы</field>
+        <field name="res_model">retail.name_market</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- Категории -->
+      <record model="ir.actions.act_window" id="action_categories">
+        <field name="name">Категории</field>
+        <field name="res_model">retail.categories</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- Продукты -->
+        <!-- Товары -->
+        <record model="ir.actions.act_window" id="action_products">
+          <field name="name">Товары</field>
+          <field name="res_model">retail.products</field>
+          <field name="view_mode">tree,form</field>
+        </record>
+        <!-- Характеристики -->
+        <record model="ir.actions.act_window" id="action_character">
+          <field name="name">Характеристика товаров</field>
+          <field name="res_model">retail.character</field>
+          <field name="view_mode">tree,form</field>
+        </record>
+
+      <!-- Импорт -->
+      <record model="ir.actions.act_window" id="action_import_file">
+        <field name="name">Импорт</field>
+        <field name="res_model">retail.import_file</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- Склады -->
+      <record model="ir.actions.act_window" id="action_stocks">
+        <field name="name">Склады</field>
+        <field name="res_model">retail.stocks</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- Цены -->
+        <!-- Расчет цены -->
+        <record model="ir.actions.act_window" id="action_count_price">
+          <field name="name">Расчет цены</field>
+          <field name="res_model">retail.count_price</field>
+          <field name="view_mode">tree,form</field>
+        </record>
+        <!-- История цен -->
+        <record model="ir.actions.act_window" id="action_price_history">
+          <field name="name">История цен</field>
+          <field name="res_model">retail.price_history</field>
+          <field name="view_mode">tree,form</field>
+        </record>
+
+
+    <!-- Top menu item -->
+      <menuitem name="Retail" id="retail.menu_root"/>
+
+    <!-- menu categories -->
+      <!-- Себестоимость -->
+      <menuitem name="Себестоимость" id="menu_cost_price" parent="retail.menu_root"
+              action="action_cost_price"/>
+
+      <!-- Стоимость на платформе -->
+      <menuitem name="Стоимость на платформе" id="menu_cost_on_platform" parent="retail.menu_root"
+              action="action_cost_on_platform"/>
+
+      <!-- Продавец -->
+      <menuitem name="Продавец" id="menu_seller" parent="retail.menu_root"
+              action="action_seller"/>
+
+      <!-- ID продукта -->
+      <menuitem name="ID продукта" id="menu_unique_product" parent="retail.menu_root"
+              action="action_unique_product"/>
+
+      <!-- Платформы -->
+      <menuitem name="Платформы" id="menu_name_market" parent="retail.menu_root"
+              action="action_name_market"/>
+
+      <!-- Категории -->
+      <menuitem name="Категории" id="menu_categories" parent="retail.menu_root"
+              action="action_categories"/>
+
+      <!-- Продукты -->
+      <menuitem name="Продукты" id="menu_product" parent="retail.menu_root"/>
+        <!-- Товары -->
+        <menuitem name="Товары" id="sub_menu_product" parent="menu_product"
+                  action="action_products"/>
+        <!-- Характеристики -->
+        <menuitem name="Характеристики" id="sub_menu_product_character" parent="menu_product"
+                  action="action_character"/>
+
+      <!-- Импорт -->
+      <menuitem name="Импорт" id="menu_import_file" parent="retail.menu_root"
+              action="action_import_file"/>
+
+      <!-- Склады -->
+      <menuitem name="Склады" id="menu_stocks" parent="retail.menu_root"
+              action="action_stocks"/>
+
+      <!-- Цены -->
+      <menuitem name="Цены" id="menu_price" parent="retail.menu_root"/>
+        <!-- Расчет цены -->
+        <menuitem name="Расчет цены" id="menu_count_price" parent="menu_price"
+                action="action_count_price"/>
+        <!-- История цен -->
+        <menuitem name="История цен" id="menu_price_history" parent="menu_price"
+                action="action_price_history"/>
+
+  </data>
+</odoo>

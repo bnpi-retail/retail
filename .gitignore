@@ -1,0 +1,7 @@
+data/
+test.xml
+config/addons/
+filestore/
+sessions
+odoo-server.log
+__pycache__/

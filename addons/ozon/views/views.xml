@@ -1,0 +1,110 @@
+<odoo>
+  <data>
+
+    <!-- tree -->
+      <!-- Условия размещения товара на Ozon -->
+      <record id="view_cost_price_tree" model="ir.ui.view">
+          <field name="name">Условия размещения товара на Ozon</field>
+          <field name="model">ozon.conditions_placing_ozon</field>
+          <field name="arch" type="xml">
+              <tree>
+                  <field name="products"/>
+                  <field name="seller"/>
+                  <field name="type_of_stock"/>
+                  <field name="delivery_location"/>
+              </tree>
+          </field>
+      </record>
+
+      <!-- Комиссии -->
+      <record id="view_cost_price_tree" model="ir.ui.view">
+          <field name="name">Комиссии</field>
+          <field name="model">ozon.ozon_fee</field>
+          <field name="arch" type="xml">
+              <tree>
+                  <field name="name"/>
+                  <field name="category"/>
+                  <field name="type"/>
+              </tree>
+          </field>
+      </record>
+
+      <!-- Стоимость логистики -->
+      <record id="view_cost_price_tree" model="ir.ui.view">
+          <field name="name">Стоимость логистики</field>
+          <field name="model">ozon.logistics_ozon</field>
+          <field name="arch" type="xml">
+              <tree>
+                  <field name="type_of_stock"/>
+                  <field name="volume"/>
+                  <field name="price"/>
+              </tree>
+          </field>
+      </record>
+
+    <!-- Инедкс локализации -->
+    <record id="view_seller_tree" model="ir.ui.view">
+        <field name="name">Инедкс локализации</field>
+        <field name="model">retail.localization_index</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="lower_threshold"/>
+                <field name="upper_threshold"/>
+                <field name="coefficient"/>
+                <field name="percent"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <!-- actions opening views on models -->
+      <!-- Условия размещения товара на Ozon -->
+      <record model="ir.actions.act_window" id="action_conditions_placing_ozon">
+        <field name="name">Условия размещения товара на Ozon</field>
+        <field name="res_model">ozon.conditions_placing_ozon</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- Комиссии -->
+      <record model="ir.actions.act_window" id="action_fee_ozon">
+        <field name="name">Комиссии</field>
+        <field name="res_model">ozon.ozon_fee</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- Стоимость логистики -->
+      <record model="ir.actions.act_window" id="action_logistics_price">
+        <field name="name">Стоимость логистики</field>
+        <field name="res_model">ozon.logistics_ozon</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- Инедкс локализации -->
+      <record model="ir.actions.act_window" id="action_localization_index">
+        <field name="name">Инедкс локализации</field>
+        <field name="res_model">retail.localization_index</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+    <!-- Top menu item -->
+      <menuitem name="ozon" id="ozon.menu_root"/>
+
+    <!-- menu categories -->
+      <!-- Условия размещения товара на Ozon -->
+      <menuitem name="Условия размещения товара на Ozon" id="menu_conditions_placing_ozon" parent="ozon.menu_root"
+              action="action_conditions_placing_ozon"/>
+
+      <!-- Комиссии -->
+      <menuitem name="Комиссии" id="menu_fee_ozon" parent="ozon.menu_root"
+              action="action_fee_ozon"/>
+
+      <!-- Стоимость логистики -->
+      <menuitem name="Стоимость логистики" id="menu_logistics_price" parent="ozon.menu_root"
+              action="action_logistics_price"/>
+
+      <!-- Инедкс локализации -->
+      <menuitem name="Инедкс локализации" id="menu_localization_index" parent="ozon.menu_root"
+              action="action_localization_index"/>
+
+  </data>
+</odoo>
