@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import uuid
 
 from odoo import models, fields, api
 
@@ -9,7 +10,10 @@ class Product(models.Model):
 
     name = fields.Char(string='Наименование товара')
     description = fields.Char(string='Описание товара')
-    
+    product_id = fields.Char(
+        string='ID продукта', unique=True, readonly=True
+    )
+
     length = fields.Float(string='Длина')
     width = fields.Float(string='Ширина')
     height = fields.Float(string='Высота')
@@ -20,3 +24,8 @@ class Product(models.Model):
     def _compute_volume(self):
         for record in self:
             record.volume = record.length * record.width * record.height
+
+    @api.model
+    def create(self, values):
+        values['volume'] = values['length'] * values['width'] * values['height']
+        return super(Product, self).create(values)

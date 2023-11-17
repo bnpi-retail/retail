@@ -9,4 +9,3 @@ class Categories(models.Model):
 
     name_categories = fields.Char(string='Название категории')
     name_on_platform = fields.Char(string='Наименование на площадке')
-    # name_platform = fields.Char(string='Название платформы')

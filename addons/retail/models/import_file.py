@@ -38,13 +38,14 @@ class ImportFile(models.Model):
 
         products = self.env['retail.products']
         seller_model = self.env['retail.seller']
-        file_import = self.env['retail.import_file']
+        cost_price_model = self.env['retail.cost_price']
+        products_ozon_model = self.env['ozon.products']
 
         for offer in root.findall('.//offer'):
             id = offer.find('id').text
             artikul = offer.find('artikul').text
             name = offer.find('name').text
-            price_base = offer.find('priceOzoneBase').text
+            price_base = offer.find('priceOzoneBase').text.replace(',', '.')
             price_old = offer.find('priceOzoneOld').text
             cost_price = offer.find('CostPrice').text
             picture = offer.find('picture').text
@@ -57,14 +58,39 @@ class ImportFile(models.Model):
             ozon_category_id = offer.find('ozon_category_id').text
             ozon_title = offer.find('ozon_title').text
             ozon_fulltitle = offer.find('ozon_fulltitle').text
+            
+            product = products.search([('product_id', '=', id)])
+            if not product:
+                product = products.create({
+                    'name': name,
+                    'product_id': id,
+                    'description': description,
+                    'length': float(depth),
+                    'width': float(width),
+                    'height': float(height),
+                    'weight': float(weight),
+                })
+            seller = seller_model.search([('ogrn', '=', 2433445653456)])
 
-            products.create({
-                'name': name,
-                'description': description,
-                'length': depth,
-                'width': width,
-                'height': height,
-                'weight': weight,
+            cost_price_model.create({
+                'products': product.id,
+                'seller': seller.id,
+                'price': float(price_base),
+            })
+
+            localization_index = self.env['ozon.localization_index'] \
+                .search([], limit=1)
+
+            products_ozon_model.create({
+                'categories': ozon_title,
+                'full_categories': ozon_fulltitle,
+                'id_on_platform': ozon_category_id,
+                'index_localization': localization_index.id,
+                'products': product.id,
+                'seller': seller.id,
+                'trading_scheme': 'FBS',
+                'delivery_location': 'ППЦ',
+
             })
 
         return super(ImportFile, self).create(values)

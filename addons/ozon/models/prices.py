@@ -7,15 +7,13 @@ class CountPrice(models.Model):
     _name = 'ozon.count_price'
     _description = 'Расчет цены'
     
-    unique_product = fields.Many2one(
-        'ozon.unique_product', string="Продукт из 'ID продукта'"
-    )
+    product = fields.Many2one('ozon.conditions_placing_ozon', string="Лот Ozon")
     provider = fields.Char(string='Поставщик')
     number = fields.Float(string='Объем товаров')
 
     def apply_product(self) -> bool:
         count_price_id = self.id
-        count_price_obj = self.env['ozon.count_price'] \
+        count_price_obj = self.env['ozon.products'] \
             .search([('id', '=', count_price_id)])
 
         price = 0
@@ -23,7 +21,7 @@ class CountPrice(models.Model):
         price_history = self.env['ozon.price_history']
         price_history.create({
             'price': price,
-            'unique_product': count_price_obj.unique_product,
+            'product': count_price_obj.product,
             'provider': count_price_obj.provider,
             'number': count_price_obj.number,
         })
@@ -46,9 +44,7 @@ class PriceHistory(models.Model):
     _description = 'История цен'
     
     price = fields.Float(string='Цена', readonly=True)
-    unique_product = fields.Many2one(
-        'ozon.unique_product', string="Продукт из 'ID продукта'"
-    )
+    product = fields.Many2one('ozon.products', string="Лот")
     provider = fields.Char(string='Поставщик')
     timestamp = fields.Date(
         string='Дата', default=fields.Date.today, readonly=True

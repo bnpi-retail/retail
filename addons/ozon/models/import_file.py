@@ -8,6 +8,8 @@ import os
 from odoo import http
 from werkzeug.wrappers import Response
 from io import BytesIO
+from io import StringIO
+import csv
 
 
 class ImportFile(models.Model):
@@ -19,6 +21,7 @@ class ImportFile(models.Model):
             ('index_local', 'Индекс локализации'),
             ('logistics_cost', 'Стоимость логистики'),
             ('fees', 'Комиссии'),
+            ('excel', 'Excel'),
         ], 
         string='Данные для загрузки'
     )
@@ -51,10 +54,12 @@ class ImportFile(models.Model):
             root = ET.fromstring(content)
         except ET.ParseError:
             pass
+        
+        content_old = content
+        content = content.decode('utf-8')
+        lines = content.split('\n')
 
         if 'csv' in mime_type:
-            content = content.decode('utf-8')
-            lines = content.split('\n')
 
             if values['data_for_download'] == 'index_local':
                 localization_index = self.env['ozon.localization_index']
@@ -69,6 +74,7 @@ class ImportFile(models.Model):
                             'lower_threshold': range_start,
                             'upper_threshold': range_end,
                             'coefficient': value,
+                            'percent': (value-1)*100 ,
                         })
                         
             elif values['data_for_download'] == 'logistics_cost':
@@ -104,8 +110,23 @@ class ImportFile(models.Model):
                         ozon_fee.create({
                             'name': name,
                             'category': categorie.id,
+                            'trading_scheme': 'FBO',
+                            'delivery_location': 'ППЦ',
                             'type': type,
                             'value': value,
                         })
+
+        if values['data_for_download'] == 'excel':
+
+            import xlrd
+            content_decoded = content_old.decode('latin-1')
+            workbook = xlrd.open_workbook(file_contents=content_decoded)
+
+            sheet = workbook.sheet_by_index(0)
+
+            for row_idx in range(sheet.nrows):
+                for col_idx in range(sheet.ncols):
+                    cell_value = sheet.cell_value(row_idx, col_idx)
+                    print(cell_value)
 
         return super(ImportFile, self).create(values)

@@ -8,9 +8,31 @@ class OzonFee(models.Model):
     _description = 'Комисии товара'
 
     name = fields.Char(string='Наименование комиссии')
-    category = fields.Many2one('retail.categories', string='Название категории')
+    value = fields.Float(string='Значние комиссии')
+    category = fields.Many2one(
+        'retail.categories', string='Название категории'
+    )
     type = fields.Selection([
         ('percent', 'Процент'),
         ('fix', 'Фиксированный'),
     ], string='Тип категории')
-    value = fields.Float(string='Значние комиссии')
+    trading_scheme = fields.Selection(
+        [
+            ('FBS', 'FBS'),
+            ('FBO', 'FBO'),
+        ], 
+        string='Схема торговли'
+    )
+    delivery_location = fields.Selection(
+        [
+            ('ППЦ', 'ППЦ/PC'),
+            ('ПВЗ', 'ПВЗ/PP'),
+            ('СЦ', 'СЦ/CS'),
+        ],
+        string='Пункт приема товара', 
+        help=(
+            'ППЦ - Пункт приема заказов (Pickup Center), '
+            'ПВЗ - Пункт выдачи заказов (Pickup Point), '
+            'СЦ - Сервисный центр (Service Center)'
+        )
+    )

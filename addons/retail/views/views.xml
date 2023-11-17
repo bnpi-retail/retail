@@ -51,21 +51,8 @@
           </field>
       </record>
 
-      <!-- Категории -->
-      <record id="view_categories_tree" model="ir.ui.view">
-          <field name="name">Категории</field>
-          <field name="model">retail.categories</field>
-          <field name="arch" type="xml">
-              <tree>
-                  <field name="name_categories"/>
-                  <field name="name_on_platform"/>
-                  <!-- <field name="name_platform"/> -->
-              </tree>
-          </field>
-      </record>
-
       <!-- Стоимость на платформе -->
-      <record id="view_cost_on_platform_tree" model="ir.ui.view">
+      <!-- <record id="view_cost_on_platform_tree" model="ir.ui.view">
           <field name="name">Стоимость</field>
           <field name="model">retail.cost_on_platform</field>
           <field name="arch" type="xml">
@@ -77,7 +64,7 @@
                   <field name="timestamp"/>
               </tree>
           </field>
-      </record>
+      </record> -->
 
       <!-- Продукты -->
         <!-- Товары -->
@@ -88,7 +75,7 @@
                 <tree>
                     <field name="name"/>
                     <field name="description"/>
-
+                    <field name="product_id"/>
                     <field name="length"/>
                     <field name="width"/>
                     <field name="height"/>
@@ -99,7 +86,7 @@
         </record>
 
       <!-- ID продукта -->
-      <record id="view_unique_product_tree" model="ir.ui.view">
+      <!-- <record id="view_unique_product_tree" model="ir.ui.view">
           <field name="name">ID продуктов</field>
           <field name="model">retail.unique_product</field>
           <field name="arch" type="xml">
@@ -108,7 +95,7 @@
                   <field name="seller"/>
               </tree>
           </field>
-      </record>
+      </record> -->
 
       <!-- Себестоимость -->
       <record id="view_cost_price_tree" model="ir.ui.view">
@@ -146,11 +133,11 @@
       </record>
 
       <!-- Стоимость на платформе -->
-      <record model="ir.actions.act_window" id="action_cost_on_platform">
+      <!-- <record model="ir.actions.act_window" id="action_cost_on_platform">
         <field name="name">Стоимость на платформе</field>
         <field name="res_model">retail.cost_on_platform</field>
         <field name="view_mode">tree,form</field>
-      </record>
+      </record> -->
 
       <!-- Продавец -->
       <record model="ir.actions.act_window" id="action_seller">
@@ -160,18 +147,11 @@
       </record>
 
       <!-- ID продукта -->
-      <record model="ir.actions.act_window" id="action_unique_product">
+      <!-- <record model="ir.actions.act_window" id="action_unique_product">
         <field name="name">ID продукта</field>
         <field name="res_model">retail.unique_product</field>
         <field name="view_mode">tree,form</field>
-      </record>
-
-      <!-- Категории -->
-      <record model="ir.actions.act_window" id="action_categories">
-        <field name="name">Категории</field>
-        <field name="res_model">retail.categories</field>
-        <field name="view_mode">tree,form</field>
-      </record>
+      </record> -->
 
       <!-- Продукты -->
         <!-- Товары -->
@@ -198,20 +178,16 @@
               action="action_cost_price"/>
 
       <!-- Стоимость на платформе -->
-      <menuitem name="Стоимость на платформе" id="menu_cost_on_platform" parent="retail.menu_root"
-              action="action_cost_on_platform"/>
+      <!-- <menuitem name="Стоимость на платформе" id="menu_cost_on_platform" parent="retail.menu_root"
+              action="action_cost_on_platform"/> -->
 
       <!-- Продавец -->
       <menuitem name="Продавец" id="menu_seller" parent="retail.menu_root"
               action="action_seller"/>
 
       <!-- ID продукта -->
-      <menuitem name="ID продукта" id="menu_unique_product" parent="retail.menu_root"
-              action="action_unique_product"/>
-
-      <!-- Категории -->
-      <menuitem name="Категории" id="menu_categories" parent="retail.menu_root"
-              action="action_categories"/>
+      <!-- <menuitem name="ID продукта" id="menu_unique_product" parent="retail.menu_root"
+              action="action_unique_product"/> -->
 
       <!-- Товары -->
       <menuitem name="Товары" id="menu_product" parent="retail.menu_root" action="action_products"/>

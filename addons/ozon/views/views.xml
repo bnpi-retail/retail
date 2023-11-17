@@ -19,7 +19,7 @@
     <!-- tree -->
       <!-- Условия размещения товара на Ozon -->
       <record id="view_cost_price_tree" model="ir.ui.view">
-          <field name="name">Условия размещения товара на Ozon</field>
+          <field name="name">Лоты</field>
           <field name="model">ozon.conditions_placing_ozon</field>
           <field name="arch" type="xml">
               <tree>
@@ -78,7 +78,7 @@
         <field name="model">ozon.count_price</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="unique_product"/>
+                <field name="product"/>
                 <field name="provider"/>
                 <field name="number"/>
             </tree>
@@ -92,7 +92,7 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="price"/>
-                <field name="unique_product"/>
+                <!-- <field name="product"/> -->
                 <field name="provider"/>
                 <field name="timestamp"/>
                 <field name="number"/>
@@ -101,13 +101,27 @@
         </field>
     </record>
 
+      <!-- Категории -->
+      <!-- <record id="view_categories_tree" model="ir.ui.view">
+          <field name="name">Категории</field>
+          <field name="model">ozon.categories</field>
+          <field name="arch" type="xml">
+              <tree>
+                  <field name="name_categories"/>
+                  <field name="name_on_platform"/> -->
+                  <!-- <field name="name_platform"/> -->
+              <!-- </tree>
+          </field>
+      </record> -->
+
+
     <!-- actions opening views on models -->
       <!-- Условия размещения товара на Ozon -->
-      <record model="ir.actions.act_window" id="action_conditions_placing_ozon">
-        <field name="name">Условия размещения товара на Ozon</field>
+      <!-- <record model="ir.actions.act_window" id="action_conditions_placing_ozon">
+        <field name="name">Лоты</field>
         <field name="res_model">ozon.conditions_placing_ozon</field>
         <field name="view_mode">tree,form</field>
-      </record>
+      </record> -->
 
       <!-- Комиссии -->
       <record model="ir.actions.act_window" id="action_fee_ozon">
@@ -130,9 +144,9 @@
         <field name="view_mode">tree,form</field>
       </record>
 
-      <!-- Товары -->
+      <!-- Лоты -->
       <record model="ir.actions.act_window" id="action_products">
-        <field name="name">Товары</field>
+        <field name="name">Лоты</field>
         <field name="res_model">ozon.products</field>
         <field name="view_mode">tree,form</field>
       </record>
@@ -158,17 +172,24 @@
         <field name="view_mode">tree,form</field>
       </record>
 
+      <!-- Категории -->
+      <!-- <record model="ir.actions.act_window" id="action_categories">
+        <field name="name">Категории</field>
+        <field name="res_model">ozon.categories</field>
+        <field name="view_mode">tree,form</field>
+      </record> -->
+
     <!-- Top menu item -->
       <menuitem name="ozon" id="ozon.menu_root"/>
 
     <!-- menu categories -->
-      <!-- Товары -->
-      <menuitem name="Товары" id="menu_products" parent="ozon.menu_root"
+      <!-- Лоты -->
+      <menuitem name="Лоты" id="menu_products" parent="ozon.menu_root"
               action="action_products"/>
 
       <!-- Условия размещения товара на Ozon -->
-      <menuitem name="Условия размещения товара на Ozon" id="menu_conditions_placing_ozon" parent="ozon.menu_root"
-              action="action_conditions_placing_ozon"/>
+      <!-- <menuitem name="Лоты" id="menu_conditions_placing_ozon" parent="ozon.menu_root"
+              action="action_conditions_placing_ozon"/> -->
 
       <!-- Комиссии -->
       <menuitem name="Комиссии" id="menu_fee_ozon" parent="ozon.menu_root"
@@ -191,9 +212,13 @@
         <menuitem name="История цен" id="menu_price_history" parent="menu_price"
                 action="action_price_history"/>
 
-      <!-- Ипорт -->
-      <menuitem name="Ипорт" id="menu_import_file" parent="ozon.menu_root"
+      <!-- Импорт -->
+      <menuitem name="Импорт" id="menu_import_file" parent="ozon.menu_root"
               action="action_import_file"/>
+
+      <!-- Категории -->
+      <!-- <menuitem name="Категории" id="menu_categories" parent="ozon.menu_root"
+              action="action_categories"/> -->
 
   </data>
 </odoo>

@@ -5,9 +5,16 @@ from odoo import models, fields, api
 
 class ConditionsPlacingOzon(models.Model):
     _name = 'ozon.conditions_placing_ozon'
-    _description = 'Условия размещения товара на Ozon'
+    _description = 'Лот'
 
-    products = fields.Many2one('retail.products', string='Товар')
+    name = fields.Char(string='Название')
+    id_on_platform = fields.Char(string='ID на площадке')
+    categorie = fields.Many2one('ozon.categories', string='Категория')
+    index_localization = fields.Many2one(
+        'ozon.localization_index', string='Индекс локализации'
+    )
+
+    products = fields.Many2one('retail.products', string='Лот')
     seller = fields.Many2one('retail.seller', string='Продавец')
     trading_scheme = fields.Selection(
         [
