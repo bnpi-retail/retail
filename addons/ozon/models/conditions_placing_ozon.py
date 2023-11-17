@@ -9,10 +9,24 @@ class ConditionsPlacingOzon(models.Model):
 
     products = fields.Many2one('retail.products', string='Товар')
     seller = fields.Many2one('retail.seller', string='Продавец')
-    type_of_stock = fields.Many2one('retail.stocks', string='Тип')
+    trading_scheme = fields.Selection(
+        [
+            ('FBS', 'FBS'),
+            ('FBO', 'FBO'),
+        ], 
+        string='Схема торговли'
+    )
+    delivery_location = fields.Selection(
+        [
+            ('ППЦ', 'ППЦ/PC'),
+            ('ПВЗ', 'ПВЗ/PP'),
+            ('СЦ', 'СЦ/CS'),
+        ],
+        string='Пункт приема товара', 
+        help=(
+            'ППЦ - Пункт приема заказов (Pickup Center), '
+            'ПВЗ - Пункт выдачи заказов (Pickup Point), '
+            'СЦ - Сервисный центр (Service Center)'
+        )
+    )
 
-    delivery_location = fields.Selection([
-        ('ППЦ', 'ППЦ'),
-        ('ПВЗ', 'ПВЗ'),
-        ('СЦ', 'СЦ'),
-    ], string='Пункт Сдачи')

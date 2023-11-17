@@ -8,5 +8,5 @@ class Seller(models.Model):
     _description = 'Cost on platform'
 
     name = fields.Char(string='Имя продовца')
-    ogrn = fields.Float(string='ОГРН', unique=True)
+    ogrn = fields.Integer(string='ОГРН', unique=True)
     fee = fields.Float(string='Налогообложение, %')

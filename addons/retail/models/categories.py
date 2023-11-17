@@ -8,6 +8,5 @@ class Categories(models.Model):
     _description = 'Categories of Market'
 
     name_categories = fields.Char(string='Название категории')
-    name_platform = fields.Many2one(
-        'retail.name_market', string='Название платформы'
-    )
+    name_on_platform = fields.Char(string='Наименование на площадке')
+    # name_platform = fields.Char(string='Название платформы')

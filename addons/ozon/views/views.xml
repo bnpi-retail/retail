@@ -1,6 +1,21 @@
 <odoo>
   <data>
 
+    <!-- Импорт -->
+    <record id="view_import_file_form" model="ir.ui.view">
+        <field name="name">Импорт</field>
+        <field name="model">ozon.import_file</field>
+        <field name="arch" type="xml">
+            <form>
+              <a class="oe_menu_leaf" href="/download/index_local" title="Скачать файл">
+                  <i class="fa fa-download"/>
+              </a>
+              <field name="data_for_download"/>
+              <field name="file"/>
+            </form>
+        </field>
+    </record>
+
     <!-- tree -->
       <!-- Условия размещения товара на Ozon -->
       <record id="view_cost_price_tree" model="ir.ui.view">
@@ -10,7 +25,7 @@
               <tree>
                   <field name="products"/>
                   <field name="seller"/>
-                  <field name="type_of_stock"/>
+                  <field name="trading_scheme"/>
                   <field name="delivery_location"/>
               </tree>
           </field>
@@ -35,7 +50,7 @@
           <field name="model">ozon.logistics_ozon</field>
           <field name="arch" type="xml">
               <tree>
-                  <field name="type_of_stock"/>
+                  <field name="trading_scheme"/>
                   <field name="volume"/>
                   <field name="price"/>
               </tree>
@@ -45,7 +60,7 @@
     <!-- Инедкс локализации -->
     <record id="view_seller_tree" model="ir.ui.view">
         <field name="name">Инедкс локализации</field>
-        <field name="model">retail.localization_index</field>
+        <field name="model">ozon.localization_index</field>
         <field name="arch" type="xml">
             <tree>
                 <field name="lower_threshold"/>
@@ -56,6 +71,35 @@
         </field>
     </record>
 
+
+    <!-- Расчет цены -->
+    <record id="view_count_price_tree" model="ir.ui.view">
+        <field name="name">Расчет цены</field>
+        <field name="model">ozon.count_price</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="unique_product"/>
+                <field name="provider"/>
+                <field name="number"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- История цены -->
+    <record id="view_price_history_tree" model="ir.ui.view">
+        <field name="name">История цены</field>
+        <field name="model">ozon.price_history</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="price"/>
+                <field name="unique_product"/>
+                <field name="provider"/>
+                <field name="timestamp"/>
+                <field name="number"/>
+                <field name="costs"/>
+            </tree>
+        </field>
+    </record>
 
     <!-- actions opening views on models -->
       <!-- Условия размещения товара на Ozon -->
@@ -82,7 +126,35 @@
       <!-- Инедкс локализации -->
       <record model="ir.actions.act_window" id="action_localization_index">
         <field name="name">Инедкс локализации</field>
-        <field name="res_model">retail.localization_index</field>
+        <field name="res_model">ozon.localization_index</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- Товары -->
+      <record model="ir.actions.act_window" id="action_products">
+        <field name="name">Товары</field>
+        <field name="res_model">ozon.products</field>
+        <field name="view_mode">tree,form</field>
+      </record>
+
+      <!-- Цены -->
+        <!-- Расчет цены -->
+        <record model="ir.actions.act_window" id="action_count_price">
+          <field name="name">Расчет цены</field>
+          <field name="res_model">ozon.count_price</field>
+          <field name="view_mode">tree,form</field>
+        </record>
+        <!-- История цен -->
+        <record model="ir.actions.act_window" id="action_price_history">
+          <field name="name">История цен</field>
+          <field name="res_model">ozon.price_history</field>
+          <field name="view_mode">tree,form</field>
+        </record>
+
+      <!-- Импорт -->
+      <record model="ir.actions.act_window" id="action_import_file">
+        <field name="name">Импорт</field>
+        <field name="res_model">ozon.import_file</field>
         <field name="view_mode">tree,form</field>
       </record>
 
@@ -90,6 +162,10 @@
       <menuitem name="ozon" id="ozon.menu_root"/>
 
     <!-- menu categories -->
+      <!-- Товары -->
+      <menuitem name="Товары" id="menu_products" parent="ozon.menu_root"
+              action="action_products"/>
+
       <!-- Условия размещения товара на Ozon -->
       <menuitem name="Условия размещения товара на Ozon" id="menu_conditions_placing_ozon" parent="ozon.menu_root"
               action="action_conditions_placing_ozon"/>
@@ -105,6 +181,19 @@
       <!-- Инедкс локализации -->
       <menuitem name="Инедкс локализации" id="menu_localization_index" parent="ozon.menu_root"
               action="action_localization_index"/>
+
+      <!-- Цены -->
+      <menuitem name="Цены" id="menu_price" parent="ozon.menu_root"/>
+        <!-- Расчет цены -->
+        <menuitem name="Расчет цены" id="menu_count_price" parent="menu_price"
+                action="action_count_price"/>
+        <!-- История цен -->
+        <menuitem name="История цен" id="menu_price_history" parent="menu_price"
+                action="action_price_history"/>
+
+      <!-- Ипорт -->
+      <menuitem name="Ипорт" id="menu_import_file" parent="ozon.menu_root"
+              action="action_import_file"/>
 
   </data>
 </odoo>

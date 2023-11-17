@@ -8,11 +8,12 @@ class ImportFile(models.Model):
     _name = 'retail.import_file'
     _description = 'Импорт'
 
-    type = fields.Selection([
-        ('local_coeff', 'Индекс локализации, коэффициент'),
-        ('local_percent', 'Индекс локализации, проценты'),
-        ('cost_price', 'Себестоимость'),
-    ], string='Тип')
+    data_for_download = fields.Selection(
+        [
+            ('cost_price', 'Себестоимость из 1C'),
+        ], 
+        string='Данные для загрузки'
+    )
 
     file = fields.Binary(
         string='File',
@@ -20,52 +21,51 @@ class ImportFile(models.Model):
         help='Выбрать файл'
     )
 
+    def download_sample(self):
+        pass
+
     @api.model
     def create(self, values):
-        if 'file' in values and values['file']:
-            content = base64.b64decode(values['file'])
+        if not 'file' in values or not values['file']:
+            raise exceptions.ValidationError('Отсутствует XML файл.')
 
-            try:
-                root = ET.fromstring(content)
-            except ET.ParseError:
-                raise exceptions.ValidationError(
-                    'Файл не является XML!'
-                )
-            
-            answer = ''
+        content = base64.b64decode(values['file'])
 
-            seller_model = self.env['retail.seller']
-            file_import = self.env['retail.import_file']
+        try:
+            root = ET.fromstring(content)
+        except ET.ParseError:
+            raise exceptions.ValidationError('Файл не является XML!')
 
-            for cost_price in root.findall('cost_price'):
-                info_prodct = cost_price.find('product').text
+        products = self.env['retail.products']
+        seller_model = self.env['retail.seller']
+        file_import = self.env['retail.import_file']
 
-                seller = cost_price.find('seller')
-                seller_name = seller.find('name').text
-                seller_ogrn = seller.find('ogrn').text
-                seller_fee = seller.find('fee').text
+        for offer in root.findall('.//offer'):
+            id = offer.find('id').text
+            artikul = offer.find('artikul').text
+            name = offer.find('name').text
+            price_base = offer.find('priceOzoneBase').text
+            price_old = offer.find('priceOzoneOld').text
+            cost_price = offer.find('CostPrice').text
+            picture = offer.find('picture').text
+            height = offer.find('height').text
+            width = offer.find('width').text
+            depth = offer.find('depth').text
+            weight = offer.find('weight').text
+            description = offer.find('description').text
+            vid_tovara = offer.find('VidTovara').text
+            ozon_category_id = offer.find('ozon_category_id').text
+            ozon_title = offer.find('ozon_title').text
+            ozon_fulltitle = offer.find('ozon_fulltitle').text
 
-                price = cost_price.find('price').text
+            products.create({
+                'name': name,
+                'description': description,
+                'length': depth,
+                'width': width,
+                'height': height,
+                'weight': weight,
+            })
 
-                obj_seller = seller_model.search([('name', '=', seller_name)])
-                if seller:
-                    file_import.create({
-                    'seller': obj_seller.id,
-                    'price': price
-                })
-                else:
-                    seller_model.create({
-                        'name': seller_name,
-                        'ogrn': seller_ogrn,
-                        'fee': seller_fee
-                    })
-                    file_import.create({
-                    'seller': obj_seller.id,
-                    'price': price
-                })
+        return super(ImportFile, self).create(values)
 
-                # answer += f"name_product: {name_product}, name_seller: {seller_name}, price: {price}\n"
-                
-            raise exceptions.ValidationError(answer)
-    
-        raise exceptions.ValidationError('Отсутствует XML файл.')
