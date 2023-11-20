@@ -1,0 +1,48 @@
+<odoo>
+  <data>
+
+    <!-- Form -->
+    <!-- <record id="view_import_file_form" model="ir.ui.view">
+        <field name="name">Импорт</field>
+        <field name="model">retail.import_file</field>
+        <field name="arch" type="xml">
+            <form>
+                <group style="margin-top: 20px; margin-bottom: 20px;">
+                    <field name="data_for_download"/>
+                    <field name="file"/>
+                </group>
+            </form>
+        </field>
+    </record> -->
+
+    <!-- Tree -->
+    <record id="view_price_history_tree" model="ir.ui.view">
+        <field name="name">История цены</field>
+        <field name="model">ozon.price_history</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="price"/>
+                <!-- <field name="product"/> -->
+                <field name="provider"/>
+                <field name="timestamp"/>
+                <field name="costs"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_price_history">
+        <field name="name">История цен</field>
+        <field name="res_model">ozon.price_history</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem name="История цен"
+        id="menu_price_history"
+        parent="menu_price"
+        action="action_price_history"
+        sequence="40"/>
+
+  </data>
+</odoo>

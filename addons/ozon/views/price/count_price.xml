@@ -1,0 +1,49 @@
+<odoo>
+  <data>
+
+    <!-- Form -->
+    <record id="view_ozon_count_price_form" model="ir.ui.view">
+        <field name="name">Расчет цены</field>
+        <field name="model">ozon.count_price</field>
+        <field name="arch" type="xml">
+            <form>
+            <sheet>
+                <button string="Применить" class="oe_highlight" type="object" name="apply_product" args="[]" />
+                <group string = 'Форма расчета'>
+                    <field name="product"/>
+                    <field name="provider"/>
+                </group>
+            </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree -->
+    <record id="view_count_price_tree" model="ir.ui.view">
+        <field name="name">Расчет цены</field>
+        <field name="model">ozon.count_price</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="provider"/>
+                <field name="product"/>
+                <!-- <field name="number"/> -->
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_count_price">
+        <field name="name">Расчет цены</field>
+        <field name="res_model">ozon.count_price</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem name="Расчет цены" 
+        id="menu_count_price"
+        parent="menu_price"
+        action="action_count_price"
+        sequence="40"/>
+
+  </data>
+</odoo>

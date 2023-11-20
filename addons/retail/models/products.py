@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import uuid
 
-from odoo import models, fields, api
+from odoo import models, fields, api, exceptions
 
 
 class Product(models.Model):
@@ -9,9 +9,9 @@ class Product(models.Model):
     _description = 'Продукты'
 
     name = fields.Char(string='Наименование товара')
-    description = fields.Char(string='Описание товара')
-    product_id = fields.Integer(
-        string='ID продукта', unique=True, readonly=True
+    description = fields.Text(string='Описание товара')
+    product_id = fields.Char(
+        string='Артикул', unique=True, readonly=True
     )
 
     length = fields.Float(string='Длина')
@@ -25,7 +25,13 @@ class Product(models.Model):
         for record in self:
             record.volume = record.length * record.width * record.height
 
+
     @api.model
     def create(self, values):
+        if 'product_id' in values:
+            product_id = values['product_id']
+            if not product_id.isdigit():
+                raise exceptions.ValidationError('ОГРН должен быть 13-значным числом')
+            
         values['volume'] = values['length'] * values['width'] * values['height']
         return super(Product, self).create(values)

@@ -1,36 +1,41 @@
 import base64
-import xml.etree.ElementTree as ET
 import magic
-import mimetypes
-from odoo import models, fields, api, exceptions
+import xml.etree.ElementTree as ET
 
-import os
-from odoo import http
-from werkzeug.wrappers import Response
-from io import BytesIO
-from io import StringIO
-import csv
+from odoo import models, fields, api, exceptions
 
 
 class ImportFile(models.Model):
     _name = 'ozon.import_file'
     _description = 'Импорт'
 
-    data_for_download = fields.Selection(
-        [
-            ('index_local', 'Индекс локализации'),
-            ('logistics_cost', 'Стоимость логистики'),
-            ('fees', 'Комиссии'),
-            ('excel_fbo', 'Excel FBO'),
-            ('excel_fbs', 'Excel FBS'),
-        ], 
-        string='Данные для загрузки'
-    )
+    timestamp = fields.Date(string='Дата импорта', 
+                            default=fields.Date.today,
+                            readonly=True)
+    
+    data_for_download = fields.Selection([('index_local', 'Индекс локализации'),
+                                          ('logistics_cost', 'Стоимость логистики'),
+                                          ('fees', 'Комиссии'),
+                                          ('excel_fbo', 'Excel FBO'),
+                                          ('excel_fbs', 'Excel FBS')], 
+                                          string='Данные для загрузки')
+    
+    file = fields.Binary(attachment=True, 
+                         string='Файл длязагрузки сових данных', 
+                         help='Выбрать файл') 
 
-    file = fields.Binary(
-        attachment=True,
-        help='Выбрать файл'
-    )
+
+    def name_get(self):
+        """
+        Rename name records 
+        """
+        result = []
+        for record in self:
+            id = record.id
+            name = f"Загруженный файл № {id}"
+            result.append((id, name))
+        return result
+    
 
     def get_file_mime_type(self, file_content):
         mime = magic.Magic()

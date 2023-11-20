@@ -13,18 +13,30 @@ class LocalizationIndex(models.Model):
     coefficient = fields.Float(string='Коэффициент')
     percent = fields.Float(string='Процент')
 
-    # @api.constrains('lower_threshold')
-    # def _check_lower_threshold(self):
-    #     for record in self:
-    #         if record.lower_threshold < 0:
-    #             raise ValidationError("Нижний порог не может быть меньше 0.")
+    @api.constrains('lower_threshold')
+    def _check_lower_threshold(self):
+        for record in self:
+            if record.lower_threshold < 0:
+                raise ValidationError("Нижний порог не может быть меньше 0.")
 
-    # @api.constrains('upper_threshold')
-    # def _upper_threshold(self):
-    #     for record in self:
-    #         if record.upper_threshold > 100:
-    #             raise ValidationError("Верхний порог не может быть больше 100.")
-            
+    @api.constrains('upper_threshold')
+    def _upper_threshold(self):
+        for record in self:
+            if record.upper_threshold > 100:
+                raise ValidationError("Верхний порог не может быть больше 100.")
+
+    def name_get(self):
+        """
+        Rename name records 
+        """
+        result = []
+        for record in self:
+            result.append((record.id, f'{record.lower_threshold} '
+                           f'- {record.upper_threshold}, '
+                           f'Коэфф. = {record.coefficient}, '
+                           f'Процент = {record.percent}'))
+        return result
+    
     # @api.constrains('coefficient')
     # def _coefficient(self):
     #     for record in self:

@@ -1,0 +1,53 @@
+<odoo>
+  <data>
+
+    <!-- Form -->
+    <record id="view_action_products_form" model="ir.ui.view">
+        <field name="name">Лоты</field>
+        <field name="model">ozon.products</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="id_on_platform"/>
+                    <field name="full_categories"/>
+                    <field name="categories"/>
+                    <field name="products"/>
+                    <field name="seller"/>
+                    <field name="index_localization"/>
+                    <field name="trading_scheme"/>
+                    <field name="delivery_location"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree -->
+    <record id="view_action_products_tree" model="ir.ui.view">
+        <field name="name">Лоты</field>
+        <field name="model">ozon.products</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="products"/>
+                <field name="seller"/>
+                <field name="trading_scheme"/>
+                <field name="delivery_location"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_products">
+        <field name="name">Лоты</field>
+        <field name="res_model">ozon.products</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem name="Лоты"
+        id="menu_products"
+        parent="ozon.menu_root"
+        action="action_products"
+        sequence="20"/>
+
+  </data>
+</odoo>

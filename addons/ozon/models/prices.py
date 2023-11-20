@@ -11,8 +11,22 @@ class CountPrice(models.Model):
     _name = 'ozon.count_price'
     _description = 'Акт расчета цен'
     
-    product = fields.Many2many('ozon.products', string="Лот Ozon")
-    provider = fields.Char(string='Поставщик')
+    product = fields.Many2many('ozon.products', string="Товар")
+    provider = fields.Many2one('retail.seller', string='Продавец')
+
+
+    def name_get(self):
+        """
+        Rename name records 
+        """
+        result = []
+        for record in self:
+            seller = record.provider.name
+            if not seller:
+                seller = 'Отсутствует'
+            result.append((record.id, f'Продавец: {seller}, Позиций: {len(record.product)}'))
+        return result
+    
 
     def create_fix_cost(self, name: str, price: float) -> int:
         """
@@ -127,8 +141,6 @@ class CountPrice(models.Model):
                     'price': self.count_price(product),
                     'total_expensive': info['cost_price'] + logistics_ozon.price + 0,
                 })
-
-                
 
                 price_history.create({
                     'price': info['price'],

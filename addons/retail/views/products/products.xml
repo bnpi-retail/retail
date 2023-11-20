@@ -1,0 +1,59 @@
+<odoo>
+  <data>
+  
+    <!-- Form -->
+    <record id="view_products_form" model="ir.ui.view">
+        <field name="name">Товары</field>
+        <field name="model">retail.products</field>
+        <field name="arch" type="xml">
+            <form>
+                <group style="margin-top: 20px; margin-bottom: 20px;">
+                    <field name="product_id"/>
+                    <field name="name"/>
+                    <field name="description"/>
+                </group>
+                <group>
+                    <group string="Характеристики">
+                        <field name="length"/>
+                        <field name="width"/>
+                        <field name="height"/>
+                    </group>
+                    <group string="Вес и объем">
+                        <field name="weight"/>
+                        <field name="volume"/>
+                    </group>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree -->
+    <record id="view_character_tree" model="ir.ui.view">
+        <field name="name">Товары</field>
+        <field name="model">retail.products</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="product_id"/>
+                <field name="name"/>
+                <field name="weight"/>
+                <field name="volume"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_products">
+        <field name="name">Товары</field>
+        <field name="res_model">retail.products</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem name="Товары" 
+        id="menu_product"
+        parent="retail.menu_root"
+        action="action_products" 
+        sequence="10"/>
+
+  </data>
+</odoo>
