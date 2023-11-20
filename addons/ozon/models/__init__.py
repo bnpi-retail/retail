@@ -7,3 +7,5 @@ from . import localization_index
 from . import products
 from . import prices
 from . import import_file
+from . import categories
+from . import competitors

@@ -10,7 +10,7 @@ class OzonFee(models.Model):
     name = fields.Char(string='Наименование комиссии')
     value = fields.Float(string='Значние комиссии')
     category = fields.Many2one(
-        'retail.categories', string='Название категории'
+        'ozon.categories', string='Название категории'
     )
     type = fields.Selection([
         ('percent', 'Процент'),
@@ -20,6 +20,7 @@ class OzonFee(models.Model):
         [
             ('FBS', 'FBS'),
             ('FBO', 'FBO'),
+            ('rFBS', 'rFBS'),
         ], 
         string='Схема торговли'
     )

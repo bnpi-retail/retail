@@ -8,7 +8,7 @@ class Product(models.Model):
     _description = 'Лоты'
 
     categories = fields.Char(string='Название категории')
-    id_on_platform = fields.Integer(string='ID на площадке')
+    id_on_platform = fields.Char(string='ID на площадке')
     full_categories = fields.Char(string='Наименоваие раздела')
     
     products = fields.Many2one('retail.products', string='Товар')

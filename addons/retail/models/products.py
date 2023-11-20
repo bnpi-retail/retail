@@ -10,7 +10,7 @@ class Product(models.Model):
 
     name = fields.Char(string='Наименование товара')
     description = fields.Char(string='Описание товара')
-    product_id = fields.Char(
+    product_id = fields.Integer(
         string='ID продукта', unique=True, readonly=True
     )
 

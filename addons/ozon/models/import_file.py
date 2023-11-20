@@ -21,7 +21,8 @@ class ImportFile(models.Model):
             ('index_local', 'Индекс локализации'),
             ('logistics_cost', 'Стоимость логистики'),
             ('fees', 'Комиссии'),
-            ('excel', 'Excel'),
+            ('excel_fbo', 'Excel FBO'),
+            ('excel_fbs', 'Excel FBS'),
         ], 
         string='Данные для загрузки'
     )
@@ -52,6 +53,81 @@ class ImportFile(models.Model):
 
         try:
             root = ET.fromstring(content)
+
+            logistics_ozon = self.env['ozon.logistics_ozon']
+
+            if values['data_for_download'] == 'excel_fbo':
+                logistics_ozon = self.env['ozon.logistics_ozon']
+
+                for entry in root.findall('entry'):
+                    volume = entry.find('volume').text
+                    rate = entry.find('rate').text
+
+                    logistics_ozon.create({
+                        'trading_scheme': 'FBO',
+                        'volume': volume,
+                        'price': rate,
+                    })
+            
+            elif values['data_for_download'] == 'excel_fbs':
+                logistics_ozon = self.env['ozon.logistics_ozon']
+
+                for entry in root.findall('entry'):
+                    volume = entry.find('volume').text
+                    rate = entry.find('rate').text
+
+                    logistics_ozon.create({
+                        'trading_scheme': 'FBS',
+                        'volume': volume,
+                        'price': rate,
+                    })
+
+            elif values['data_for_download'] == 'fees':
+                ozon_fee = self.env['ozon.ozon_fee']
+                categories = self.env['ozon.categories']
+
+                for category in root.findall('Category'):
+                    name = category.find('Name').text
+                    fbo_commission = category.find('FBO_Commission').text.replace('%', '')
+                    fbs_commission = category.find('FBS_Commission').text.replace('%', '')
+                    rfbs_commission = category.find('RFBS_Commission').text.replace('%', '')
+                    fbo_last_mile_percentage = category.find('FBO_Last_Mile_Percentage').text if category.find('FBO_Last_Mile_Percentage') is not None else ""
+                    fbo_last_mile_min = category.find('FBO_Last_Mile_Min').text if category.find('FBO_Last_Mile_Min') is not None else ""
+
+                    categorie = categories.search([('name_categories', '=', name)])
+                    if not categorie:
+                        categorie = categories.create({
+                            'name_categories': name
+                        })
+
+                    ozon_fee.create({
+                        # 'name': categorie.id,
+                        'value': fbo_commission,
+                        'category': categorie.id,
+                        'type': 'percent',
+                        'trading_scheme': 'FBO',
+                        'delivery_location': 'ППЦ',
+                    })
+
+                    ozon_fee.create({
+                        # 'name': categorie.id,
+                        'value': fbs_commission,
+                        'category': categorie.id,
+                        'type': 'percent',
+                        'trading_scheme': 'FBS',
+                        'delivery_location': 'ППЦ',
+                    })
+
+                    ozon_fee.create({
+                        # 'name': categorie.id,
+                        'value': rfbs_commission,
+                        'category': categorie.id,
+                        'type': 'percent',
+                        'trading_scheme': 'rFBS',
+                        'delivery_location': 'ППЦ',
+                    })
+
+            return super(ImportFile, self).create(values)    
         except ET.ParseError:
             pass
         
@@ -76,7 +152,7 @@ class ImportFile(models.Model):
                             'coefficient': value,
                             'percent': (value-1)*100 ,
                         })
-                        
+
             elif values['data_for_download'] == 'logistics_cost':
                 logistics_ozon = self.env['ozon.logistics_ozon']
 
@@ -90,30 +166,6 @@ class ImportFile(models.Model):
                             'trading_scheme': trading_scheme,
                             'volume': volume,
                             'price': price,
-                        })
-
-            elif values['data_for_download'] == 'fees':
-                ozon_fee = self.env['ozon.ozon_fee']
-                categories = self.env['retail.categories']
-
-                for line in lines:
-                    if line:
-                        name, type, value, name_categories, name_on_platform, name_platform = line.split(',')
-                        categorie = categories.create({
-                            'name_categories': name_categories,
-                            'name_on_platform': name_on_platform,
-                            # 'name_platform': name_platform,
-                        })
-
-                        value = float(value)
-
-                        ozon_fee.create({
-                            'name': name,
-                            'category': categorie.id,
-                            'trading_scheme': 'FBO',
-                            'delivery_location': 'ППЦ',
-                            'type': type,
-                            'value': value,
                         })
 
         if values['data_for_download'] == 'excel':

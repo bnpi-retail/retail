@@ -59,11 +59,11 @@ class ImportFile(models.Model):
             ozon_title = offer.find('ozon_title').text
             ozon_fulltitle = offer.find('ozon_fulltitle').text
             
-            product = products.search([('product_id', '=', id)])
+            product = products.search([('product_id', '=', ozon_category_id)])
             if not product:
                 product = products.create({
                     'name': name,
-                    'product_id': id,
+                    'product_id': ozon_category_id,
                     'description': description,
                     'length': float(depth),
                     'width': float(width),
@@ -84,7 +84,7 @@ class ImportFile(models.Model):
             products_ozon_model.create({
                 'categories': ozon_title,
                 'full_categories': ozon_fulltitle,
-                'id_on_platform': ozon_category_id,
+                'id_on_platform':  id,
                 'index_localization': localization_index.id,
                 'products': product.id,
                 'seller': seller.id,
