@@ -9,7 +9,7 @@ class CostPrice(models.Model):
 
     products = fields.Many2one('retail.products', string='Наменование товар')
     seller = fields.Many2one('retail.seller', string='Продавец')
-    price = fields.Float(string='Закупочная стоимость')
+    price = fields.Float(string='Закупочная стоимость, р.')
     timestamp = fields.Date(string='Дата', 
                             default=fields.Date.today, readonly=True)
     

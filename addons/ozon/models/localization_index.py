@@ -11,7 +11,7 @@ class LocalizationIndex(models.Model):
     lower_threshold = fields.Float(string='Нижний порог')
     upper_threshold = fields.Float(string='Верхний порог')
     coefficient = fields.Float(string='Коэффициент')
-    percent = fields.Float(string='Процент')
+    percent = fields.Float(string='Процент, %')
 
     @api.constrains('lower_threshold')
     def _check_lower_threshold(self):
