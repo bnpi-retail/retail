@@ -28,7 +28,7 @@ class CountPrice(models.Model):
         return result
     
 
-    def create_fix_cost(self, name: str, price: float) -> int:
+    def create_cost_fix(self, name: str, price: float, discription: str) -> int:
         """
         Create record in 'ozon.fix_expenses' model
         """
@@ -36,9 +36,10 @@ class CountPrice(models.Model):
         return cost_price.create({
             'name': name, 
             'price': price,
+            'discription': discription,
         }).id
     
-    def create_cost_for_history(self, name: str, price: float) -> int:
+    def create_cost(self, name: str, price: float, discription: str) -> int:
         """
         Create record in 'ozon.cost' model
         """
@@ -46,6 +47,7 @@ class CountPrice(models.Model):
         return cost_price.create({
             'name': name, 
             'price': price,
+            'discription': discription,
         }).id
 
     def select_cost_price(self, product) -> int:
@@ -116,26 +118,25 @@ class CountPrice(models.Model):
                     'delivery_location': product.delivery_location,
                 }
 
-                total_expensive = info['cost_price'] + logistics_ozon.price + 0
-                ozon_fee_price = ozon_fee.value * (total_expensive + total_expensive + info['cost_price'])
 
                 info.update({
                     # Fix expensives
-                    'cost_price': self.create_fix_cost('Себестоимость', info['cost_price']),
-                    'cost_logistic': self.create_fix_cost(
-                            f'Логистика {logistics_ozon.price} * {localization_index.percent}',
-                            logistics_ozon.price * localization_index.percent
+                    'cost_price': self.create_cost_fix('Себестоимость', info['cost_price'], "Поиск себестоимости товара на последнюю дату" ),
+                    'cost_logistic': self.create_cost_fix(
+                            f'Логистика',
+                            logistics_ozon.price * localization_index.percent,
+                            'Себестоимость = Стоимость логистики * Индекс локализации'
                         ),
-                    'cost_treatment': self.create_fix_cost('Стоимость обработки', 30),
+                    'cost_treatment': self.create_cost_fix('Стоимость обработки', 30, 'Фиксированное знаение'),
 
                     # Another expensives
-                    'total_expensive_record': self.create_cost_for_history('Итого затраты', total_expensive),
-                    'ideal_margin': self.create_cost_for_history('Идеальная маржа', total_expensive),
-                    'ideal_price': self.create_cost_for_history('Идеальная цена', total_expensive + total_expensive),
-                    'our_price': self.create_cost_for_history('Наша цена', total_expensive + total_expensive + info['cost_price']),
-                    'fee_ozon': self.create_cost_for_history(f'Комиссия Ozon ({ozon_fee.type})', ozon_fee_price),
-                    'all_expensive': self.create_cost_for_history('Все затраты', total_expensive + ozon_fee_price),
-                    'profit': self.create_cost_for_history('Прибыль', 156),
+                    # 'total_expensive_record': self.create_cost('Итого затраты', total_expensive),
+                    # 'ideal_margin': self.create_cost('Идеальная маржа', product.fix, 'Процент от себестоимости 20%'),
+                    # 'ideal_price': self.create_cost('Идеальная цена', total_expensive + total_expensive),
+                    # 'our_price': self.create_cost('Наша цена', total_expensive + total_expensive + info['cost_price']),
+                    # 'fee_ozon': self.create_cost(f'Комиссия Ozon', ozon_fee_price, 'Комиссия от актуальной цены'),
+                    # 'all_expensive': self.create_cost('Все затраты', total_expensive + ozon_fee_price),
+                    'profit': self.create_cost('Прибыль', 156, 'Прибыль = Комиссия Ozon + Идеальная маража + Фиксированные затраты'),
 
                     # Calculated data
                     'price': self.count_price(product),
@@ -145,17 +146,17 @@ class CountPrice(models.Model):
                 price_history.create({
                     'price': info['price'],
                     'product': product.products.id,
-                    'provider': count_price_obj.provider,
+                    'provider': count_price_obj.provider.id,
                     'last_price': last_price,
                     'price': 156,
                     'costs': [
-                        info['total_expensive_record'],
-                        info['ideal_margin'],
-                        info['ideal_price'],
-                        info['our_price'],
-                        info['fee_ozon'],
-                        info['all_expensive'],
-                        info['profit'],
+                        # info['total_expensive_record'],
+                        # info['ideal_margin'],
+                        # info['ideal_price'],
+                        # info['our_price'],
+                        # info['fee_ozon'],
+                        # info['all_expensive'],
+                        # info['profit'],
                     ],
                     'fix_expensives': [
                         info['cost_price'],
@@ -171,39 +172,105 @@ class FixExpenses(models.Model):
     _description = 'Фиксированные затраты'
 
     name = fields.Char(string='Наименование')
-    price = fields.Float(string='Значение', default=0)
-    price_history_id = fields.Many2one(
-        'ozon.price_history', string='ID истории цены'
-    )
+    price = fields.Float(string='Значение')
+    discription = fields.Text(string='Описание')
+    price_history_id = fields.Many2one('ozon.price_history', string='Лот')
 
 class Costs(models.Model):
     _name = 'ozon.cost'
-    _description = 'Затраты/Приходы'
+    _description = 'Процент от продаж'
 
     name = fields.Char(string='Наименование')
-    price = fields.Float(string='Значение', default=0)
-    price_history_id = fields.Many2one(
-        'ozon.price_history', string='ID истории цены'
-    )
+    price = fields.Float(string='Значение')
+    discription = fields.Text(string='Описание')
+    price_history_id = fields.Many2one('ozon.price_history', string='Лот')
 
 class PriceHistory(models.Model):
     _name = 'ozon.price_history'
     _description = 'История цен'
     
-    product = fields.Many2one('ozon.products', string="Лот")
-    provider = fields.Char(string='Поставщик')
-    price = fields  .Float(string='Цена')
+    product = fields.Many2one('ozon.products', string="Товар")
+    provider = fields.Many2one('retail.seller', string='Продавец')
+    price = fields.Float(string='Цена конкурентов')
     last_price = fields.Float(string='Последняя цена', readonly=True)
-    timestamp = fields.Date(
-        string='Дата', default=fields.Date.today, readonly=True
-    )
     
-    costs = fields.One2many(
-        'ozon.cost', 'price_history_id', string='Затраты/Приходы', 
-        copy=True
-    )
+    timestamp = fields.Date(string='Дата', 
+                            default=fields.Date.today, readonly=True)
 
-    fix_expensives = fields.One2many(
-        'ozon.fix_expenses', 'price_history_id', string='Затраты/Приходы', 
-        copy=True
-    )
+    fix_expensives = fields.One2many('ozon.fix_expenses', 'price_history_id',
+                                     string=' Фиксированные затраты', 
+                                     copy=True, readonly=True)
+    
+    total_cost_fix = fields.Float(string='Итого',
+                            compute='_compute_total_cost_fix', store=True)
+
+    costs = fields.One2many('ozon.cost', 'price_history_id', 
+                            string='Процент от продаж',
+                            copy=True, readonly=True)
+    
+    total_cost = fields.Float(string='Итого',
+                            compute='_compute_total_cost', store=True)
+
+    our_price = fields.Float(string='Расчетная цена',
+                            compute='_compute_our_price', store=True)
+
+    ideal_price = fields.Float(string='Идеальная цена',
+                            compute='_compute_our_price', store=True)
+    
+    profit = fields.Float(string='Прибыль от расчетной цены')
+
+    @api.depends('costs.price')
+    def _compute_total_cost(self):
+        for record in self:
+            total = sum(record.costs.mapped('price'))
+            record.total_cost = total
+
+
+    @api.depends('fix_expensives.price')
+    def _compute_total_cost_fix(self):
+        for record in self:
+            total = sum(record.fix_expensives.mapped('price'))
+            record.total_cost_fix = total
+
+
+    @api.depends('fix_expensives.price', 'costs.price')
+    def _compute_our_price(self):
+        for record in self:
+            record.our_price = record.total_cost + record.total_cost_fix
+
+
+    @api.depends('fix_expensives.price')
+    def _compute_our_price(self):
+        for record in self:
+            record.ideal_price = 2 * record.total_cost_fix
+
+
+    @api.model
+    def create(self, values):
+        record = super(PriceHistory, self).create(values)
+
+        record._compute_total_cost_fix()
+
+        model_cost_price = self.env['ozon.cost']
+        obj_cost_price = model_cost_price.create({
+            'name': 'Идеальная маржа', 
+            'price': 0.2 * record.total_cost_fix,
+            'discription': '20% процентов от фикс. затрат.',
+            'price_history_id': record.id,
+        })
+        record.write({'costs': [(4, obj_cost_price.id)]})
+
+        return record
+    
+
+    def name_get(self):
+        """
+        Rename name records 
+        """
+        result = []
+        for record in self:
+            id = record.id
+            result.append((id,
+                           f'{record.timestamp},  '
+                           f'{record.product.products.name}'))
+        return result

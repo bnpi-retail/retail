@@ -10,15 +10,13 @@ class Product(models.Model):
 
     name = fields.Char(string='Наименование товара')
     description = fields.Text(string='Описание товара')
-    product_id = fields.Char(
-        string='Артикул', unique=True, readonly=True
-    )
+    product_id = fields.Char(string='Артикул', unique=True, readonly=True)
 
-    length = fields.Float(string='Длина')
-    width = fields.Float(string='Ширина')
-    height = fields.Float(string='Высота')
-    weight = fields.Float(string='Вес')
-    volume = fields.Float(string='Объем', compute='_compute_volume', store=True)
+    length = fields.Float(string='Длина, дм')
+    width = fields.Float(string='Ширина, дм')
+    height = fields.Float(string='Высота, дм')
+    weight = fields.Float(string='Вес, кг')
+    volume = fields.Float(string='Объем, л', compute='_compute_volume', store=True)
 
     @api.depends('length', 'width', 'height')
     def _compute_volume(self):

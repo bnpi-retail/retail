@@ -10,7 +10,7 @@ class LogisticsOzon(models.Model):
     trading_scheme = fields.Selection([('FBS', 'FBS'),
                                        ('FBO', 'FBO')], 
                                         string='Схема торговли')
-    volume = fields.Float(string='Объем')
+    volume = fields.Float(string='Объем, л')
     price = fields.Float(string='Стоимость')
 
 
