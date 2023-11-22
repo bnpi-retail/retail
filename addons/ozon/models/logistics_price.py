@@ -11,7 +11,7 @@ class LogisticsOzon(models.Model):
                                        ('FBO', 'FBO')], 
                                         string='Схема торговли')
     volume = fields.Float(string='Объем, л')
-    price = fields.Float(string='Стоимость')
+    price = fields.Float(string='Стоимость, р.')
 
 
     def name_get(self):

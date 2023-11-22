@@ -26,11 +26,5 @@ class Product(models.Model):
 
     @api.model
     def create(self, values):
-        if 'product_id' in values:
-            product_id = values['product_id']
-            if product_id:
-                if not product_id.isdigit():
-                    raise exceptions.ValidationError('Артикул должен быть числом')
-            
         values['volume'] = values['length'] * values['width'] * values['height']
         return super(Product, self).create(values)

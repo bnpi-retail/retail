@@ -85,18 +85,13 @@ class CountPrice(models.Model):
                     .search([('product', '=', product.products.id),], limit=1,).price
                 localization_index = self.env['ozon.localization_index'] \
                     .search([], limit=1)
-                ozon_fee = self.env['ozon.ozon_fee'] \
-                    .search([], limit=1)
                 logistics_ozon = self.env['ozon.logistics_ozon'] \
                     .search([], limit=1)
                 
                 product_info = product.products
                 
                 info = {
-                    # Info in all linked models
-
-                    # Info in linked model 'retail.cost_price'
-                    'cost_price': self.select_cost_price(product),
+                    'cost_price_product': self.select_cost_price(product),
 
                     # Info in linked model 'product'
                     'name': product_info.name,
@@ -118,51 +113,27 @@ class CountPrice(models.Model):
                     'delivery_location': product.delivery_location,
                 }
 
-
-                info.update({
-                    # Fix expensives
-                    'cost_price': self.create_cost_fix('Себестоимость', info['cost_price'], "Поиск себестоимости товара на последнюю дату" ),
-                    'cost_logistic': self.create_cost_fix(
-                            f'Логистика',
-                            logistics_ozon.price * localization_index.percent,
-                            'Себестоимость = Стоимость логистики * Индекс локализации'
-                        ),
-                    'cost_treatment': self.create_cost_fix('Стоимость обработки', 30, 'Фиксированное знаение'),
-
-                    # Another expensives
-                    # 'total_expensive_record': self.create_cost('Итого затраты', total_expensive),
-                    # 'ideal_margin': self.create_cost('Идеальная маржа', product.fix, 'Процент от себестоимости 20%'),
-                    # 'ideal_price': self.create_cost('Идеальная цена', total_expensive + total_expensive),
-                    # 'our_price': self.create_cost('Наша цена', total_expensive + total_expensive + info['cost_price']),
-                    # 'fee_ozon': self.create_cost(f'Комиссия Ozon', ozon_fee_price, 'Комиссия от актуальной цены'),
-                    # 'all_expensive': self.create_cost('Все затраты', total_expensive + ozon_fee_price),
-                    'profit': self.create_cost('Прибыль', 156, 'Прибыль = Комиссия Ozon + Идеальная маража + Фиксированные затраты'),
-
-                    # Calculated data
-                    'price': self.count_price(product),
-                    'total_expensive': info['cost_price'] + logistics_ozon.price + 0,
-                })
+                # info.update({
+                #     # Fix expensives
+                #     'cost_price': self.create_cost_fix('Себестоимость', info['cost_price_product'], "Поиск себестоимости товара на последнюю дату" ),
+                #     'cost_logistic': self.create_cost_fix(
+                #             f'Логистика',
+                #             logistics_ozon.price * localization_index.percent,
+                #             'Себестоимость = Стоимость логистики * Индекс локализации'
+                #         ),
+                #     'cost_treatment': self.create_cost_fix('Стоимость обработки', 30, 'Фиксированное знаение'),
+                # })
 
                 price_history.create({
-                    'price': info['price'],
                     'product': product.products.id,
                     'provider': count_price_obj.provider.id,
                     'last_price': last_price,
-                    'price': 156,
-                    'costs': [
-                        # info['total_expensive_record'],
-                        # info['ideal_margin'],
-                        # info['ideal_price'],
-                        # info['our_price'],
-                        # info['fee_ozon'],
-                        # info['all_expensive'],
-                        # info['profit'],
-                    ],
-                    'fix_expensives': [
-                        info['cost_price'],
-                        info['cost_logistic'],
-                        info['cost_treatment'],
-                    ],
+                    'price': 0,
+                    # 'fix_expensives': [
+                    #     info['cost_price'],
+                    #     info['cost_logistic'],
+                    #     info['cost_treatment'],
+                    # ],
                 })
         return True
 
@@ -248,17 +219,76 @@ class PriceHistory(models.Model):
     @api.model
     def create(self, values):
         record = super(PriceHistory, self).create(values)
-
+        
         record._compute_total_cost_fix()
 
-        model_cost_price = self.env['ozon.cost']
-        obj_cost_price = model_cost_price.create({
-            'name': 'Идеальная маржа', 
-            'price': 0.2 * record.total_cost_fix,
-            'discription': '20% процентов от фикс. затрат.',
-            'price_history_id': record.id,
-        })
-        record.write({'costs': [(4, obj_cost_price.id)]})
+        ### Нахождения себестоимости товара
+        obj_cost_price = self.env['retail.cost_price'] \
+            .search([('id', '=', record.product.products.id)],
+                    order='timestamp desc',
+                    limit=1)
+        
+        ### Создание объекта стоимости
+        obj_fix__model_cost_price = self.env['ozon.fix_expenses'] \
+            .create({'name': 'Себестоимость товара', 
+                    'price': obj_cost_price.price,
+                    'discription': "Поиск себестоимости товара в 'Retail'",
+                    'price_history_id': record.id})
+
+        ### Рассчет Стоимости логистики и создание объекта логистических затрат
+        volume = record.product.products.volume
+        obj_logistics_ozon = self.env['ozon.logistics_ozon'] \
+            .search([('volume', '>=', volume),
+                    ('trading_scheme', '=', record.product.trading_scheme)
+                    ], order='volume', limit=1)
+        
+        localization_index = self.env['ozon.localization_index'] \
+            .search([], limit=1)
+
+        logistics_price = obj_logistics_ozon.price * localization_index.coefficient
+        str_logistics_price = (f'Объем товара: {volume} '
+                               f'Ближайшее значение логистических затратах: {obj_logistics_ozon.price} '
+                               f'Расчет = {obj_logistics_ozon.price} * {localization_index.coefficient} = {logistics_price}')
+
+        obj_fix__model_logistics_price = self.env['ozon.fix_expenses'] \
+            .create({'name': 'Стоимость логистики', 
+                    'price': logistics_price,
+                    'discription': str_logistics_price,
+                    'price_history_id': record.id})
+
+        ### Рассчет Стоимости обработки
+
+
+        ### Рассчет Комисиия Ozon
+        obj_fee = self.env['ozon.ozon_fee'] \
+            .search([
+                # ('type', '=', record.product.trading_scheme)
+                ], limit=1)
+
+
+        fee_price = obj_fee.value / 100 * obj_cost_price.price
+        str_fee = f'{obj_fee.value} / 100 * {obj_cost_price.price}'
+        type_comission = 'Процент' if obj_fee.type == 'percent' else 'Фиксированный'
+
+        # if obj_fee.type == 'fix':
+        #     fee_price = obj_fee.value
+        #     str_fee = f'{obj_fee.value} * {record}'
+        # elif obj_fee.type == 'percent':
+        #     fee_price = obj_fee.value * obj_cost_price.price
+        #     str_fee = f'{obj_fee.value} * {record}'
+
+        obj_cost = self.env['ozon.cost'] \
+            .create({'name': 'Комисиия Ozon', 
+                    'price': fee_price,
+                    'discription': (f'Тип: {type_comission}, '
+                                    f'Комиссия: {obj_fee.value} '
+                                    f'Значение комиссии: {str_fee} = {fee_price}'),
+                    'price_history_id': record.id})
+        
+        record.write({'fix_expensives': [(4, obj_fix__model_cost_price.id),
+                                         (4, obj_fix__model_logistics_price.id),
+                                         ]})
+        record.write({'costs': [(4, obj_cost.id)]})
 
         return record
     

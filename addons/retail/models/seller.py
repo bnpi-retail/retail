@@ -24,9 +24,9 @@ class Seller(models.Model):
     
     @api.model
     def create(self, values):
-        if 'ogrn' in values:
-            ogrn = values['ogrn']
-            if not ogrn.isdigit():
-                raise exceptions.ValidationError('ОГРН должен быть 13-значным числом')
+        # if 'ogrn' in values:
+        #     ogrn = values['ogrn']
+        #     if not ogrn.isdigit():
+                # raise exceptions.ValidationError('ОГРН должен быть 13-значным числом')
         
         return super(Seller, self).create(values)
