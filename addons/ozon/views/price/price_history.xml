@@ -25,6 +25,11 @@
                     <field name="total_cost_fix"/>
                 </group>
 
+                <group string='Цены'>
+                    <field name="ideal_price"/>
+                    <field name="our_price"/>
+                </group>
+
                 <group string="Процент от продаж">
                     <field name="costs" widget="many2many_pills">
                         <tree>
@@ -36,11 +41,12 @@
                     <field name="total_cost"/>
                 </group>
 
-                <group string='Информация о ценах'>
-                    <field name="ideal_price"/>
-                    <field name="last_price"/>
-                    <field name="our_price"/>
+                <group string='Прибыль'>
                     <field name="profit"/>
+                </group>
+
+                <group string='Информация о ценах'>
+                    <field name="last_price"/>
                     <field name="price"/>
                 </group>
 

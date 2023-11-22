@@ -22,12 +22,14 @@
         # 'security/ir.model.access.csv',
         'views/menu.xml',
         
-        'views/lots/lots.xml',
-
         'views/price/menu.xml',
         'views/price/count_price.xml',
         'views/price/price_history.xml',
-        
+
+        'views/lots/lots.xml',
+
+        'views/categories/categories.xml',
+
         'views/commissions/menu.xml',
         'views/commissions/local_index.xml',
         'views/commissions/fee_ozon.xml',

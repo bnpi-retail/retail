@@ -145,7 +145,7 @@ class FixExpenses(models.Model):
     name = fields.Char(string='Наименование')
     price = fields.Float(string='Значение')
     discription = fields.Text(string='Описание')
-    price_history_id = fields.Many2one('ozon.price_history', string='Лот')
+    price_history_id = fields.Many2one('ozon.price_history', string='Товар')
 
 class Costs(models.Model):
     _name = 'ozon.cost'
@@ -154,7 +154,7 @@ class Costs(models.Model):
     name = fields.Char(string='Наименование')
     price = fields.Float(string='Значение')
     discription = fields.Text(string='Описание')
-    price_history_id = fields.Many2one('ozon.price_history', string='Лот')
+    price_history_id = fields.Many2one('ozon.price_history', string='Товар')
 
 class PriceHistory(models.Model):
     _name = 'ozon.price_history'
@@ -214,6 +214,7 @@ class PriceHistory(models.Model):
     def _compute_our_price(self):
         for record in self:
             record.ideal_price = 2 * record.total_cost_fix
+            record.our_price = 2 * record.total_cost_fix
 
 
     @api.model
@@ -247,7 +248,7 @@ class PriceHistory(models.Model):
 
         logistics_price = obj_logistics_ozon.price * localization_index.coefficient
         str_logistics_price = (f'Объем товара: {volume} '
-                               f'Ближайшее значение логистических затратах: {obj_logistics_ozon.price} '
+                               f'Ближайшее значение в логистических затратах: {obj_logistics_ozon.price} '
                                f'Расчет = {obj_logistics_ozon.price} * {localization_index.coefficient} = {logistics_price}')
 
         obj_fix__model_logistics_price = self.env['ozon.fix_expenses'] \
@@ -257,13 +258,20 @@ class PriceHistory(models.Model):
                     'price_history_id': record.id})
 
         ### Рассчет Стоимости обработки
+        delivery_location = record.product.delivery_location
+        obj_local_index = self.env['ozon.ozon_fee'] \
+            .search([('delivery_location', '=', delivery_location)], limit=1)
+        str_local_index = f"Ищем фиксированные затраты по 'Пункт приема товара' в комиссиях Ozon"
 
-
+        obj_fix__model_local_index = self.env['ozon.fix_expenses'] \
+            .create({'name': 'Фиксированные затраты', 
+                    'price': obj_local_index.value,
+                    'discription': str_local_index,
+                    'price_history_id': record.id})
+        
         ### Рассчет Комисиия Ozon
         obj_fee = self.env['ozon.ozon_fee'] \
-            .search([
-                # ('type', '=', record.product.trading_scheme)
-                ], limit=1)
+            .search([('category.name_categories', '=', record.product.categories.name_categories)], limit=1)
 
 
         fee_price = obj_fee.value / 100 * obj_cost_price.price
@@ -287,7 +295,7 @@ class PriceHistory(models.Model):
         
         record.write({'fix_expensives': [(4, obj_fix__model_cost_price.id),
                                          (4, obj_fix__model_logistics_price.id),
-                                         ]})
+                                         (4, obj_fix__model_local_index.id)]})
         record.write({'costs': [(4, obj_cost.id)]})
 
         return record

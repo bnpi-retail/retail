@@ -21,9 +21,10 @@ class OzonFee(models.Model):
                                        string='Схема торговли')
     
     delivery_location = fields \
-        .Selection([('ППЦ', 'ППЦ/PC'),
-                    ('ПВЗ', 'ПВЗ/PP'),
-                    ('СЦ', 'СЦ/CS')],
+        .Selection([('PC', 'ППЗ/PC'),
+                    ('PP', 'ПВЗ/PP'),
+                    ('SC', 'СЦ/SC'),
+                    ('TSC', 'ТСЦ/TSC')],
                     string='Пункт приема товара', 
                     help=('ППЦ - Пункт приема заказов (Pickup Center), '
                         'ПВЗ - Пункт выдачи заказов (Pickup Point), '

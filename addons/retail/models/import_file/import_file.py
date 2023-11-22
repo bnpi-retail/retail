@@ -107,7 +107,9 @@ class ImportFile(models.Model):
             picture = offer.find('picture').text
             vid_tovara = offer.find('VidTovara').text
 
-            product = model_products.search([('product_id', '=', ozon_category_id)])
+            product = model_products \
+                .search([('product_id', '=', ozon_category_id)])
+            
             if not product:
                 product = model_products.create({
                     'name': name,
@@ -124,17 +126,33 @@ class ImportFile(models.Model):
                 'seller': seller.id,
                 'price': float(price_base),
             })
+
+            obj_categories = None
+            if ozon_fulltitle:
+                split_title = ozon_fulltitle.split('/')
+                for title in split_title:
+                    obj_categories = self.env['ozon.categories'] \
+                        .search([('name_fee', 'ilike', title)], limit=1)
+                    if not obj_categories:
+                        continue
+                    elif obj_categories:
+                        obj_categories.write({'name_categories': ozon_title})
+                        break
             
-            self.env['ozon.products'].create({
-                'categories': ozon_title,
+            values = {
                 'full_categories': ozon_fulltitle,
-                'id_on_platform':  id,
+                'id_on_platform': id,
                 'index_localization': local_index,
                 'products': product.id,
                 'seller': seller.id,
                 'trading_scheme': 'FBS',
-                'delivery_location': 'ППЦ',
-            })
+                'delivery_location': 'PC',
+            }
+
+            if obj_categories:
+                values['categories'] = obj_categories.id
+
+            self.env['ozon.products'].create(values)
     
 
     @api.model

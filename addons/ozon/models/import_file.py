@@ -17,7 +17,8 @@ class ImportFile(models.Model):
                                           ('logistics_cost', 'Стоимость логистики'),
                                           ('fees', 'Комиссии'),
                                           ('excel_fbo', 'Excel FBO'),
-                                          ('excel_fbs', 'Excel FBS')], 
+                                          ('excel_fbs', 'Excel FBS'),
+                                          ('fee_fix', 'Excel Fix')], 
                                           string='Данные для загрузки')
     
     file = fields.Binary(attachment=True, 
@@ -87,6 +88,30 @@ class ImportFile(models.Model):
                         'price': rate,
                     })
 
+            elif values['data_for_download'] == 'fee_fix':
+                ozon_fee = self.env['ozon.ozon_fee']
+
+                for entry in root.findall('entry'):
+                    ppt = entry.find('PPT').text
+                    volume = entry.find('volume').text
+
+                    if ppt == 'ППЗ':
+                        ppt_in_selections = 'PC'
+                    elif ppt == 'ПВЗ':
+                        ppt_in_selections = 'PP'
+                    elif ppt == 'СЦ':
+                        ppt_in_selections = 'SC'
+                    elif ppt == 'ТСЦ':
+                        ppt_in_selections = 'TSC'
+                     
+                    ozon_fee.create({
+                        # 'name': categorie.id,
+                        'value': volume,
+                        # 'category': categorie.id,
+                        'type': 'fix',
+                        'delivery_location': ppt_in_selections,
+                    })
+
             elif values['data_for_download'] == 'fees':
                 ozon_fee = self.env['ozon.ozon_fee']
                 categories = self.env['ozon.categories']
@@ -102,7 +127,7 @@ class ImportFile(models.Model):
                     categorie = categories.search([('name_categories', '=', name)])
                     if not categorie:
                         categorie = categories.create({
-                            'name_categories': name
+                            'name_fee': name
                         })
 
                     ozon_fee.create({
@@ -111,7 +136,6 @@ class ImportFile(models.Model):
                         'category': categorie.id,
                         'type': 'percent',
                         'trading_scheme': 'FBO',
-                        'delivery_location': 'ППЦ',
                     })
 
                     ozon_fee.create({
@@ -120,7 +144,6 @@ class ImportFile(models.Model):
                         'category': categorie.id,
                         'type': 'percent',
                         'trading_scheme': 'FBS',
-                        'delivery_location': 'ППЦ',
                     })
 
                     ozon_fee.create({
@@ -129,7 +152,6 @@ class ImportFile(models.Model):
                         'category': categorie.id,
                         'type': 'percent',
                         'trading_scheme': 'rFBS',
-                        'delivery_location': 'ППЦ',
                     })
 
             return super(ImportFile, self).create(values)    
