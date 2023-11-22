@@ -8,7 +8,7 @@ class Categories(models.Model):
     _description = 'Категории Ozon'
 
     name_categories = fields.Char(string='Название категории')
-    name_fee = fields.Char(string='Наименование комиссии')
+    # name_fee = fields.Char(string='Наименование комиссии')
 
     def name_get(self):
         """
@@ -16,7 +16,7 @@ class Categories(models.Model):
         """
         result = []
         for record in self:
-            result.append((record.id, record.name_fee))
+            result.append((record.id, record.name_categories))
         return result
     
 

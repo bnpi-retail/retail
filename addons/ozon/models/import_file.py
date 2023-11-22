@@ -22,8 +22,8 @@ class ImportFile(models.Model):
                                           string='Данные для загрузки')
     
     file = fields.Binary(attachment=True, 
-                         string='Файл длязагрузки сових данных', 
-                         help='Выбрать файл') 
+                        string='Файл для загрузки сових данных', 
+                        help='Выбрать файл') 
 
 
     def name_get(self):
@@ -125,34 +125,39 @@ class ImportFile(models.Model):
                     fbo_last_mile_min = category.find('FBO_Last_Mile_Min').text if category.find('FBO_Last_Mile_Min') is not None else ""
 
                     categorie = categories.search([('name_categories', '=', name)])
-                    if not categorie:
-                        categorie = categories.create({
-                            'name_fee': name
-                        })
 
-                    ozon_fee.create({
-                        # 'name': categorie.id,
+                    value = {
+                        'name': name,
                         'value': fbo_commission,
                         'category': categorie.id,
                         'type': 'percent',
                         'trading_scheme': 'FBO',
-                    })
+                    }
+                    if categorie:
+                        value['category'] = categorie.id
+                    ozon_fee.create(value)
 
-                    ozon_fee.create({
-                        # 'name': categorie.id,
+                    value = {
+                        'name': name,
                         'value': fbs_commission,
                         'category': categorie.id,
                         'type': 'percent',
                         'trading_scheme': 'FBS',
-                    })
+                    }
+                    if categorie:
+                        value['category'] = categorie.id
+                    ozon_fee.create(value)
 
-                    ozon_fee.create({
-                        # 'name': categorie.id,
+                    value = {
+                        'name': name,
                         'value': rfbs_commission,
                         'category': categorie.id,
                         'type': 'percent',
                         'trading_scheme': 'rFBS',
-                    })
+                    }
+                    if categorie:
+                        value['category'] = categorie.id
+                    ozon_fee.create(value)
 
             return super(ImportFile, self).create(values)    
         except ET.ParseError:

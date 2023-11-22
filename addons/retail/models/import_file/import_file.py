@@ -127,17 +127,13 @@ class ImportFile(models.Model):
                 'price': float(price_base),
             })
 
-            obj_categories = None
-            if ozon_fulltitle:
-                split_title = ozon_fulltitle.split('/')
-                for title in split_title:
-                    obj_categories = self.env['ozon.categories'] \
-                        .search([('name_fee', 'ilike', title)], limit=1)
-                    if not obj_categories:
-                        continue
-                    elif obj_categories:
-                        obj_categories.write({'name_categories': ozon_title})
-                        break
+            if vid_tovara:
+                model_categories = self.env['ozon.categories']
+                obj_vid_tovara = model_categories \
+                    .search([('name_categories', '=', vid_tovara)], limit=1)
+                if not obj_vid_tovara:
+                    obj_vid_tovara = model_categories \
+                        .create({'name_categories': vid_tovara})
             
             values = {
                 'full_categories': ozon_fulltitle,
@@ -149,8 +145,8 @@ class ImportFile(models.Model):
                 'delivery_location': 'PC',
             }
 
-            if obj_categories:
-                values['categories'] = obj_categories.id
+            if obj_vid_tovara:
+                values['categories'] = obj_vid_tovara.id
 
             self.env['ozon.products'].create(values)
     

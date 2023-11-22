@@ -10,7 +10,7 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="name_categories"/>
-                <field name="name_fee"/>
+                <!-- <field name="name_fee"/> -->
             </tree>
         </field>
     </record>

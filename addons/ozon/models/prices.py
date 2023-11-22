@@ -186,9 +186,11 @@ class PriceHistory(models.Model):
                             compute='_compute_our_price', store=True)
 
     ideal_price = fields.Float(string='Идеальная цена',
-                            compute='_compute_our_price', store=True)
-    
-    profit = fields.Float(string='Прибыль от расчетной цены')
+                            compute='_compute_ideal_price', store=True)
+
+    profit = fields.Float(string='Прибыль от расчетной цены',
+                            compute='_compute_profit', store=True)
+
 
     @api.depends('costs.price')
     def _compute_total_cost(self):
@@ -204,17 +206,23 @@ class PriceHistory(models.Model):
             record.total_cost_fix = total
 
 
-    @api.depends('fix_expensives.price', 'costs.price')
-    def _compute_our_price(self):
-        for record in self:
-            record.our_price = record.total_cost + record.total_cost_fix
-
-
-    @api.depends('fix_expensives.price')
-    def _compute_our_price(self):
+    @api.depends('total_cost_fix')
+    def _compute_ideal_price(self):
         for record in self:
             record.ideal_price = 2 * record.total_cost_fix
-            record.our_price = 2 * record.total_cost_fix
+
+
+    @api.depends('ideal_price')
+    def _compute_our_price(self):
+        for record in self:
+            record.our_price = record.ideal_price
+
+
+    @api.depends('our_price', 'total_cost_fix', 'total_cost')
+    def _compute_profit(self):
+        for record in self:
+            total = record.our_price - record.total_cost_fix - record.total_cost
+            record.profit = total
 
 
     @api.model
@@ -268,35 +276,39 @@ class PriceHistory(models.Model):
                     'price': obj_local_index.value,
                     'discription': str_local_index,
                     'price_history_id': record.id})
-        
+
+        ### Создание записей о цене фиксированных затрат
+        record.write({'fix_expensives': [(4, obj_fix__model_cost_price.id),
+                                         (4, obj_fix__model_logistics_price.id),
+                                         (4, obj_fix__model_local_index.id)]})
+
         ### Рассчет Комисиия Ozon
         obj_fee = self.env['ozon.ozon_fee'] \
             .search([('category.name_categories', '=', record.product.categories.name_categories)], limit=1)
 
+        if obj_fee:
+            fee_price = obj_fee.value / 100 * obj_cost_price.price
+            str_fee = f'{obj_fee.value} / 100 * {obj_cost_price.price}'
+            type_comission = 'Процент' if obj_fee.type == 'percent' else 'Фиксированный'
 
-        fee_price = obj_fee.value / 100 * obj_cost_price.price
-        str_fee = f'{obj_fee.value} / 100 * {obj_cost_price.price}'
-        type_comission = 'Процент' if obj_fee.type == 'percent' else 'Фиксированный'
+            # if obj_fee.type == 'fix':
+            #     fee_price = obj_fee.value
+            #     str_fee = f'{obj_fee.value} * {record}'
+            # elif obj_fee.type == 'percent':
+            #     fee_price = obj_fee.value * obj_cost_price.price
+            #     str_fee = f'{obj_fee.value} * {record}'
 
-        # if obj_fee.type == 'fix':
-        #     fee_price = obj_fee.value
-        #     str_fee = f'{obj_fee.value} * {record}'
-        # elif obj_fee.type == 'percent':
-        #     fee_price = obj_fee.value * obj_cost_price.price
-        #     str_fee = f'{obj_fee.value} * {record}'
+            obj_cost = self.env['ozon.cost'] \
+                .create({'name': 'Комисиия Ozon', 
+                        'price': fee_price,
+                        'discription': (f'Тип: {type_comission}, '
+                                        f'Комиссия: {obj_fee.value} '
+                                        f'Значение комиссии: {str_fee} = {fee_price}'),
+                        'price_history_id': record.id})
+            
+            ### Создание записей о цене комиссии Ozon
+            record.write({'costs': [(4, obj_cost.id)]})
 
-        obj_cost = self.env['ozon.cost'] \
-            .create({'name': 'Комисиия Ozon', 
-                    'price': fee_price,
-                    'discription': (f'Тип: {type_comission}, '
-                                    f'Комиссия: {obj_fee.value} '
-                                    f'Значение комиссии: {str_fee} = {fee_price}'),
-                    'price_history_id': record.id})
-        
-        record.write({'fix_expensives': [(4, obj_fix__model_cost_price.id),
-                                         (4, obj_fix__model_logistics_price.id),
-                                         (4, obj_fix__model_local_index.id)]})
-        record.write({'costs': [(4, obj_cost.id)]})
 
         return record
     
