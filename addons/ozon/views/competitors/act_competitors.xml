@@ -1,0 +1,35 @@
+<odoo>
+  <data>
+
+    <!-- Form -->
+
+    <!-- Tree -->
+    <record id="view_act_competitors_tree" model="ir.ui.view">
+        <field name="name">Акт обоснования цены</field>
+        <field name="model">ozon.act_competitors</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="timestamp"/>
+                <field name="product"/>
+                <field name="competitors"/>
+                <field name="price"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_act_competitors">
+        <field name="name">Акт обоснования цены</field>
+        <field name="res_model">ozon.act_competitors</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem name="Акт обоснования цены"
+        id="menu_act_competitors"
+        parent="ozon.menu_competitors"
+        action="action_act_competitors"
+        sequence="50"/>
+
+  </data>
+</odoo>

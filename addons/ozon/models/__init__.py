@@ -8,4 +8,7 @@ from . import products
 from . import prices
 from . import import_file
 from . import categories
-from . import competitors
+
+from .competitors import competitors
+from .competitors import act_competitors
+from .competitors import our_pice_history

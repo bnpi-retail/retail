@@ -36,6 +36,11 @@
         'views/commissions/logistics_price.xml',
 
         'views/import/import.xml',
+
+        'views/competitors/menu.xml',
+        'views/competitors/competitors.xml',
+        'views/competitors/act_competitors.xml',
+        'views/competitors/our_price_history.xml',
     ],
     'demo': [
         'demo/demo.xml',
