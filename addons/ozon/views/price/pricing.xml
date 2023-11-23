@@ -7,8 +7,8 @@
         <field name="model">ozon.pricing</field>
         <field name="arch" type="xml">
             <form>
+                <button string="Применить" class="oe_highlight" type="object" name="apply" args="[]" />
                 <group>
-                    <button string="Применить" class="oe_highlight" type="object" name="apply" args="[]" />
                     <field name="product"/>
                     <field name="price"/>
                 </group>
