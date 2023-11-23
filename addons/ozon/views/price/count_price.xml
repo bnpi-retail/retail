@@ -20,7 +20,7 @@
 
     <!-- Tree -->
     <record id="view_count_price_tree" model="ir.ui.view">
-        <field name="name">Расчет цены</field>
+        <field name="name">Массовое назначение цен</field>
         <field name="model">ozon.count_price</field>
         <field name="arch" type="xml">
             <tree>
@@ -33,13 +33,13 @@
 
     <!-- Action -->
     <record model="ir.actions.act_window" id="action_count_price">
-        <field name="name">Расчет цены</field>
+        <field name="name">Массовое назначение цен</field>
         <field name="res_model">ozon.count_price</field>
         <field name="view_mode">tree,form</field>
     </record>
 
     <!-- Menu -->
-    <menuitem name="Расчет цены" 
+    <menuitem name="Массовое назначение цен" 
         id="menu_count_price"
         parent="menu_price"
         action="action_count_price"

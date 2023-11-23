@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from email.policy import default
 from odoo import models, fields, api
 
 
@@ -83,10 +84,6 @@ class CountPrice(models.Model):
                 
                 last_price = self.env['ozon.price_history'] \
                     .search([('product', '=', product.products.id),], limit=1,).price
-                localization_index = self.env['ozon.localization_index'] \
-                    .search([], limit=1)
-                logistics_ozon = self.env['ozon.logistics_ozon'] \
-                    .search([], limit=1)
                 
                 product_info = product.products
                 
@@ -113,27 +110,13 @@ class CountPrice(models.Model):
                     'delivery_location': product.delivery_location,
                 }
 
-                # info.update({
-                #     # Fix expensives
-                #     'cost_price': self.create_cost_fix('Себестоимость', info['cost_price_product'], "Поиск себестоимости товара на последнюю дату" ),
-                #     'cost_logistic': self.create_cost_fix(
-                #             f'Логистика',
-                #             logistics_ozon.price * localization_index.percent,
-                #             'Себестоимость = Стоимость логистики * Индекс локализации'
-                #         ),
-                #     'cost_treatment': self.create_cost_fix('Стоимость обработки', 30, 'Фиксированное знаение'),
-                # })
 
                 price_history.create({
                     'product': product.products.id,
                     'provider': count_price_obj.provider.id,
                     'last_price': last_price,
                     'price': 0,
-                    # 'fix_expensives': [
-                    #     info['cost_price'],
-                    #     info['cost_logistic'],
-                    #     info['cost_treatment'],
-                    # ],
+
                 })
         return True
 
@@ -191,6 +174,7 @@ class PriceHistory(models.Model):
     profit = fields.Float(string='Прибыль от расчетной цены',
                             compute='_compute_profit', store=True)
 
+    custom_our_price = fields.Float(string='Своя расчетная цена', default=0)
 
     @api.depends('costs.price')
     def _compute_total_cost(self):
@@ -215,7 +199,10 @@ class PriceHistory(models.Model):
     @api.depends('ideal_price')
     def _compute_our_price(self):
         for record in self:
-            record.our_price = record.ideal_price
+            if record.custom_our_price != 0:
+                record.our_price = record.custom_our_price
+            else:
+                record.our_price = record.ideal_price
 
 
     @api.depends('our_price', 'total_cost_fix', 'total_cost')

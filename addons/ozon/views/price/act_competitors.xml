@@ -39,7 +39,7 @@
 
     <!-- Tree -->
     <record id="view_act_competitors_tree" model="ir.ui.view">
-        <field name="name">Акт обоснования цены</field>
+        <field name="name">Ручное назначение цены</field>
         <field name="model">ozon.act_competitors</field>
         <field name="arch" type="xml">
             <tree>
@@ -53,15 +53,15 @@
 
     <!-- Action -->
     <record model="ir.actions.act_window" id="action_act_competitors">
-        <field name="name">Акт обоснования цены</field>
+        <field name="name">Ручное назначение цены</field>
         <field name="res_model">ozon.act_competitors</field>
         <field name="view_mode">tree,form</field>
     </record>
 
     <!-- Menu -->
-    <menuitem name="Акт обоснования цены"
+    <menuitem name="Ручное назначение цены"
         id="menu_act_competitors"
-        parent="ozon.menu_competitors"
+        parent="menu_price"
         action="action_act_competitors"
         sequence="50"/>
 
