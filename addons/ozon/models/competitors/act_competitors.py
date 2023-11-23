@@ -9,6 +9,7 @@ class NameCompetitors(models.Model):
 
     name = fields.Char(string='Название конкурента')
     price = fields.Float(string='Цена конкурента')
+    act_competitors_id = fields.Many2one('ozon.act_competitors', string='Акт') 
 
 
 class ActCompetitors(models.Model):
@@ -21,8 +22,10 @@ class ActCompetitors(models.Model):
     
     product = fields.Many2one('ozon.products', string='Лот')
 
-    competitors = fields.Many2many('ozon.name_competitors', string="Конкуренты")
-    
+    competitors = fields.One2many('ozon.name_competitors', 'act_competitors_id', 
+                                    string='Конкуренты',
+                                    copy=True)
+
     price = fields.Float(string='Наша цена на основе цен конкурентов')
 
 
