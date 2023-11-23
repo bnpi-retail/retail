@@ -5,7 +5,7 @@
 
     <!-- Tree -->
     <record id="view_competitors_tree" model="ir.ui.view">
-        <field name="name">История цен конкуренты</field>
+        <field name="name">История цен конкурентов</field>
         <field name="model">ozon.competitors</field>
         <field name="arch" type="xml">
             <tree>
@@ -19,13 +19,13 @@
 
     <!-- Action -->
     <record model="ir.actions.act_window" id="action_competitors">
-        <field name="name">История цен конкуренты</field>
+        <field name="name">История цен конкурентов</field>
         <field name="res_model">ozon.competitors</field>
         <field name="view_mode">tree,form</field>
     </record>
 
     <!-- Menu -->
-    <menuitem name="История цен конкуренты"
+    <menuitem name="История цен конкурентов"
         id="submenu_competitors"
         parent="ozon.menu_competitors"
         action="action_competitors"
