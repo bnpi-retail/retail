@@ -1,6 +1,20 @@
 <odoo>
   <data>
 
+    <!-- Additional Form -->
+    <record id="view_name_competitors_form" model="ir.ui.view">
+        <field name="name">Конкуренты</field>
+        <field name="model">ozon.name_competitors</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="name"/>
+                    <field name="price"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
     <!-- Form -->
     <record id="view_act_competitors_form" model="ir.ui.view">
         <field name="name">Акт обоснования цены</field>
