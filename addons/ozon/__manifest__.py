@@ -38,6 +38,8 @@
         'views/commissions/fee_ozon.xml',
         'views/commissions/logistics_price.xml',
 
+        'views/movement_of_funds/movement_of_funds.xml',
+
         'views/import/import.xml',
 
         'views/competitors/menu.xml',
