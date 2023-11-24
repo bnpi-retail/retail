@@ -11,11 +11,10 @@ class PriceHistoryCompetitors(models.Model):
                             default=fields.Date.today,
                             readonly=True)
     
-    name = fields.Char(string='Наименование конкурента')
+    product_competitors = fields.Many2one('ozon.products_competitors',
+                                          string='Товар конкурента')
     
-    product = fields.Many2one('ozon.products', string='Лот')
-    
-    price = fields.Float(string='Наша цена')
+    price = fields.Float(string='Цена')
 
 
     def name_get(self):
@@ -26,5 +25,5 @@ class PriceHistoryCompetitors(models.Model):
         for record in self:
             result.append((record.id,
                            f'{record.timestamp},  '
-                           f'{record.product.products.name}'))
+                           f'{record.product_competitors.product.products.name}'))
         return result

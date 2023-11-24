@@ -25,7 +25,7 @@
         'views/price/menu.xml',
         'views/price/count_price.xml',
         'views/price/price_history.xml',
-        'views/price/our_price_history.xml',
+        # 'views/price/our_price_history.xml',
         'views/price/our_fix_price.xml',
         'views/price/pricing.xml',
 

@@ -10,8 +10,7 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="timestamp"/>
-                <field name="name"/>
-                <field name="product"/>
+                <field name="product_competitors"/>
                 <field name="price"/>
             </tree>
         </field>

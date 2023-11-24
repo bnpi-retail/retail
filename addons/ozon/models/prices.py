@@ -115,7 +115,7 @@ class CountPrice(models.Model):
                     'product': product.products.id,
                     'provider': count_price_obj.provider.id,
                     'last_price': last_price,
-                    'price': 0,
+                    # 'price': 0,
 
                 })
         return True
@@ -144,11 +144,14 @@ class PriceHistory(models.Model):
     _description = 'История цен'
     
     product = fields.Many2one('ozon.products', string="Товар")
-    provider = fields.Many2one('retail.seller', string='Продавец')
+    # provider = fields.Many2one('retail.seller', string='Продавец')
 
     provider = fields.Many2one('retail.seller', string='Продавец')
-    price = fields.Float(string='Цена конкурентов')
-    
+    price = fields.Float(string='Цена бутофорская')
+    competitors = fields.One2many('ozon.name_competitors', 'pricing_history_id', 
+                                    string='Цены конкурентов',
+                                    copy=True)
+
     last_price = fields.Float(string='Последняя цена', readonly=True)
     
     timestamp = fields.Date(string='Дата', 

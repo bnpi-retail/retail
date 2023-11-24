@@ -47,7 +47,7 @@
 
                 <group string='Информация о ценах'>
                     <field name="last_price"/>
-                    <field name="price"/>
+                    <field name="competitors"/>
                 </group>
 
             </form>
@@ -63,7 +63,7 @@
                 <field name="timestamp"/>
                 <field name="product"/>
                 <field name="provider"/>
-                <field name="price"/>
+                <!-- <field name="price"/> -->
                 <field name="last_price"/>
             </tree>
         </field>

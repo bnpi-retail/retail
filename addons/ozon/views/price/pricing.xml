@@ -15,7 +15,7 @@
                     <field name="price"/>
                 </group>
 
-                <group string="Фиксированные затраты">
+                <group string="Анализ конкурентов">
                     <field name="competitors" widget="many2many_pills">
                         <tree>
                             <field name="name"/>
