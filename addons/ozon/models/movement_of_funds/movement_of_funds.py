@@ -16,7 +16,7 @@ class MovementOfFunds(models.Model):
         ('negative', 'Расход'),
     ], string='Тип учета')
 
-    number = fields.Float(string='Количествоб ед.')
+    number = fields.Float(string='Количество, ед.')
     amount_of_money = fields.Float(string='Сумма, р.')
     categorie = fields.Selection([
         ('sell', 'Продажа'),
