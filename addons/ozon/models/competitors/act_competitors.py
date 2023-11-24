@@ -29,27 +29,27 @@ class ActCompetitors(models.Model):
     price = fields.Float(string='Наша цена на основе цен конкурентов')
 
 
-    @api.model
-    def create(self, values):
+    # @api.model
+    # def create(self, values):
 
-        model_competitors = self.env['ozon.competitors']
-        model_our_price_history = self.env['ozon.our_price_history']
+    #     model_competitors = self.env['ozon.competitors']
+    #     model_our_price_history = self.env['ozon.our_price_history']
 
-        record = super(ActCompetitors, self).create(values)
+    #     record = super(ActCompetitors, self).create(values)
 
-        for competitor in record.competitors:
-            model_competitors.create({
-                'product': record.product.id,
-                'name': competitor.name,
-                'price': competitor.price,
-            })
+    #     for competitor in record.competitors:
+    #         model_competitors.create({
+    #             'product': record.product.id,
+    #             'name': competitor.name,
+    #             'price': competitor.price,
+    #         })
 
-        model_our_price_history.create({
-            'product': record.product.id,
-            'price': record.price,
-        })
+    #     model_our_price_history.create({
+    #         'product': record.product.id,
+    #         'price': record.price,
+    #     })
 
-        return record
+    #     return record
 
 
     def name_get(self):

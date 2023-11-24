@@ -25,7 +25,8 @@
         'views/price/menu.xml',
         'views/price/count_price.xml',
         'views/price/price_history.xml',
-        # 'views/price/act_competitors.xml',
+        'views/price/our_price_history.xml',
+        'views/price/our_fix_price.xml',
         'views/price/pricing.xml',
 
         'views/lots/lots.xml',
@@ -39,9 +40,9 @@
 
         'views/import/import.xml',
 
-        # 'views/competitors/menu.xml',
+        'views/competitors/menu.xml',
         'views/competitors/products_competitors.xml',
-        # 'views/competitors/our_price_history.xml',
+        'views/competitors/price_competitors.xml',
     ],
     'demo': [
         'demo/demo.xml',

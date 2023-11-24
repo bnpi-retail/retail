@@ -11,7 +11,8 @@ class ProductCompetitors(models.Model):
     
     name = fields.Char(string='Наименование продукта')
 
-    url = fields.Char(string='URL товара', widget="url", help='Укажите ссылку на товар в поле')
+    url = fields.Char(string='URL товара', widget="url", 
+                      help='Укажите ссылку на товар в поле')
 
     product = fields.Many2one('ozon.products', string='Лот')
 

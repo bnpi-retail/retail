@@ -25,7 +25,7 @@
     <!-- Menu -->
     <menuitem name="Товары конкурентов"
         id="menu_products_competitors"
-        parent="ozon.menu_root"
+        parent="ozon.menu_competitors"
         action="action_products_competitors"
         sequence="50"/>
 

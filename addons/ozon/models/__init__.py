@@ -11,6 +11,7 @@ from . import categories
 
 # from .competitors import competitors
 # from .competitors import act_competitors
-# from .competitors import our_pice_history
 from .competitors import products_competitors
+from .competitors import price_history_competitors
 from .price import pricing
+from .price import our_price_history

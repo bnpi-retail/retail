@@ -4,17 +4,14 @@ from email.policy import default
 from odoo import models, fields, api
 
 
-class CountPrice(models.Model):
-    """
-    Model for select products and count price
-    """
+class OurFixExpenses(models.Model):
+    _name = 'ozon.our_fix_expenses'
+    _description = 'Фиксированные затраты наших цен'
 
-    _name = 'ozon.count_price'
-    _description = 'Акт расчета цен'
-    
-    product = fields.Many2many('ozon.products', string="Товар")
-    provider = fields.Many2one('retail.seller', string='Продавец')
-
+    name = fields.Char(string='Наименование')
+    price = fields.Float(string='Значение')
+    discription = fields.Text(string='Описание')
+    price_history_id = fields.Many2one('ozon.our_price_history', string='Товар')
 
     def name_get(self):
         """
@@ -22,146 +19,56 @@ class CountPrice(models.Model):
         """
         result = []
         for record in self:
-            seller = record.provider.name
-            if not seller:
-                seller = 'Отсутствует'
-            result.append((record.id, f'Продавец: {seller}, Позиций: {len(record.product)}'))
+            result.append((record.id, f'{record.name}, {record.price} р.'))
         return result
     
 
-    def create_cost_fix(self, name: str, price: float, discription: str) -> int:
-        """
-        Create record in 'ozon.fix_expenses' model
-        """
-        cost_price = self.env['ozon.fix_expenses']
-        return cost_price.create({
-            'name': name, 
-            'price': price,
-            'discription': discription,
-        }).id
-    
-    def create_cost(self, name: str, price: float, discription: str) -> int:
-        """
-        Create record in 'ozon.cost' model
-        """
-        cost_price = self.env['ozon.cost']
-        return cost_price.create({
-            'name': name, 
-            'price': price,
-            'discription': discription,
-        }).id
-
-    def select_cost_price(self, product) -> int:
-        """
-        Select cost price of product
-        """
-        cost_price = self.env['retail.cost_price'].search(
-            [
-                ('id', '=', product.products.id),
-                ('seller.id', '=', product.seller.id)
-            ]
-            , limit=1,
-            order='timestamp desc'
-        ).price
-        return cost_price
-
-
-    def count_price(self, product) -> int:
-        """
-        Count price of product
-        """
-        return 0
-    
-
-    def apply_product(self) -> bool:
-        """
-        Function for count price
-        """
-        price_history = self.env['ozon.price_history']
-
-        for count_price_obj in self:
-            for product in count_price_obj.product:
-                
-                last_price = self.env['ozon.price_history'] \
-                    .search([('product', '=', product.products.id),], limit=1,).price
-                
-                product_info = product.products
-                
-                info = {
-                    'cost_price_product': self.select_cost_price(product),
-
-                    # Info in linked model 'product'
-                    'name': product_info.name,
-                    'description': product_info.description,
-                    'product_id': product_info.product_id,
-                    'length': product_info.length,
-                    'width': product_info.width,
-                    'height': product_info.height,
-                    'weight': product_info.weight,
-                    'volume': product_info.volume,
-
-                    # Info in self model
-                    'categories': product.categories,
-                    'id_on_platform': product.id_on_platform,
-                    'full_categories': product.full_categories,
-                    'products': product.products,
-                    'index_localization': product.index_localization,
-                    'trading_scheme': product.trading_scheme,
-                    'delivery_location': product.delivery_location,
-                }
-
-
-                price_history.create({
-                    'product': product.products.id,
-                    'provider': count_price_obj.provider.id,
-                    'last_price': last_price,
-                    'price': 0,
-
-                })
-        return True
-
-
-class FixExpenses(models.Model):
-    _name = 'ozon.fix_expenses'
-    _description = 'Фиксированные затраты'
+class OurCosts(models.Model):
+    _name = 'ozon.our_cost'
+    _description = 'Процент от продаж наших цен'
 
     name = fields.Char(string='Наименование')
     price = fields.Float(string='Значение')
     discription = fields.Text(string='Описание')
-    price_history_id = fields.Many2one('ozon.price_history', string='Товар')
+    price_history_id = fields.Many2one('ozon.our_price_history', string='Товар')
 
-class Costs(models.Model):
-    _name = 'ozon.cost'
-    _description = 'Процент от продаж'
+    def name_get(self):
+        """
+        Rename name records 
+        """
+        result = []
+        for record in self:
+            result.append((record.id, f'{record.name}, {record.price} р.'))
+        return result
+        
 
-    name = fields.Char(string='Наименование')
-    price = fields.Float(string='Значение')
-    discription = fields.Text(string='Описание')
-    price_history_id = fields.Many2one('ozon.price_history', string='Товар')
-
-class PriceHistory(models.Model):
-    _name = 'ozon.price_history'
-    _description = 'История цен'
+class OurPriceHistory(models.Model):
+    _name = 'ozon.our_price_history'
+    _description = 'История наших цен'
     
     product = fields.Many2one('ozon.products', string="Товар")
     provider = fields.Many2one('retail.seller', string='Продавец')
 
     provider = fields.Many2one('retail.seller', string='Продавец')
+
     price = fields.Float(string='Цена конкурентов')
+    competitors = fields.One2many('ozon.name_competitors', 'pricing_history_id', 
+                                    string='Цены конкурентов',
+                                    copy=True)
     
     last_price = fields.Float(string='Последняя цена', readonly=True)
     
     timestamp = fields.Date(string='Дата', 
                             default=fields.Date.today, readonly=True)
 
-    fix_expensives = fields.One2many('ozon.fix_expenses', 'price_history_id',
+    fix_expensives = fields.One2many('ozon.our_fix_expenses', 'price_history_id',
                                      string=' Фиксированные затраты', 
                                      copy=True, readonly=True)
     
     total_cost_fix = fields.Float(string='Итого',
                             compute='_compute_total_cost_fix', store=True)
 
-    costs = fields.One2many('ozon.cost', 'price_history_id', 
+    costs = fields.One2many('ozon.our_cost', 'price_history_id', 
                             string='Процент от продаж',
                             copy=True, readonly=True)
     
@@ -217,7 +124,7 @@ class PriceHistory(models.Model):
 
     @api.model
     def create(self, values):
-        record = super(PriceHistory, self).create(values)
+        record = super(OurPriceHistory, self).create(values)
         
         record._compute_total_cost_fix()
 
@@ -228,7 +135,7 @@ class PriceHistory(models.Model):
                     limit=1)
         
         ### Создание объекта стоимости
-        obj_fix__model_cost_price = self.env['ozon.fix_expenses'] \
+        obj_fix__model_cost_price = self.env['ozon.our_fix_expenses'] \
             .create({'name': 'Себестоимость товара', 
                     'price': obj_cost_price.price,
                     'discription': "Поиск себестоимости товара в 'Retail'",
@@ -249,7 +156,7 @@ class PriceHistory(models.Model):
                                f'Ближайшее значение в логистических затратах: {obj_logistics_ozon.price} '
                                f'Расчет = {obj_logistics_ozon.price} * {localization_index.coefficient} = {logistics_price}')
 
-        obj_fix__model_logistics_price = self.env['ozon.fix_expenses'] \
+        obj_fix__model_logistics_price = self.env['ozon.our_fix_expenses'] \
             .create({'name': 'Стоимость логистики', 
                     'price': logistics_price,
                     'discription': str_logistics_price,
@@ -261,7 +168,7 @@ class PriceHistory(models.Model):
             .search([('delivery_location', '=', delivery_location)], limit=1)
         str_local_index = f"Ищем фиксированные затраты по 'Пункт приема товара' в комиссиях Ozon"
 
-        obj_fix__model_local_index = self.env['ozon.fix_expenses'] \
+        obj_fix__model_local_index = self.env['ozon.our_fix_expenses'] \
             .create({'name': 'Фиксированные затраты', 
                     'price': obj_local_index.value,
                     'discription': str_local_index,
@@ -288,7 +195,7 @@ class PriceHistory(models.Model):
             #     fee_price = obj_fee.value * obj_cost_price.price
             #     str_fee = f'{obj_fee.value} * {record}'
 
-            obj_cost = self.env['ozon.cost'] \
+            obj_cost = self.env['ozon.our_cost'] \
                 .create({'name': 'Комисиия Ozon', 
                         'price': fee_price,
                         'discription': (f'Тип: {type_comission}, '

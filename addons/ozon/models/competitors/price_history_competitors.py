@@ -3,13 +3,15 @@
 from odoo import models, fields, api
 
 
-class HistoryOurPrice(models.Model):
-    _name = 'ozon.our_price_history'
-    _description = 'История наших цен'
+class PriceHistoryCompetitors(models.Model):
+    _name = 'ozon.price_history_competitors'
+    _description = 'История цен конкурентов'
 
     timestamp = fields.Date(string='Дата', 
                             default=fields.Date.today,
                             readonly=True)
+    
+    name = fields.Char(string='Наименование конкурента')
     
     product = fields.Many2one('ozon.products', string='Лот')
     
