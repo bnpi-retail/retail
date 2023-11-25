@@ -1,0 +1,58 @@
+<odoo>
+  <data>
+
+    <!-- Form -->
+    <record id="view_pricing_form" model="ir.ui.view">
+        <field name="name">Ручное назначение цен</field>
+        <field name="model">ozon.pricing</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <button string="Применить" class="oe_highlight" type="object" name="apply" args="[]" />
+                </group>
+                <group>
+                    <field name="product"/>
+                    <field name="price"/>
+                </group>
+
+                <group string="Анализ конкурентов">
+                    <field name="competitors" widget="many2many_pills">
+                        <tree>
+                            <field name="name"/>
+                            <field name="price"/>
+                        </tree>
+                    </field>
+                </group>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree -->
+    <record id="view_pricing_tree" model="ir.ui.view">
+        <field name="name">Ручное назначение цен</field>
+        <field name="model">ozon.pricing</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="product"/>
+                <field name="price"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_pricing">
+        <field name="name">Ручное назначение цен</field>
+        <field name="res_model">ozon.pricing</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem name="Ручное назначение цен"
+        id="menu_pricing"
+        parent="menu_price"
+        action="action_pricing"
+        sequence="20"/>
+
+  </data>
+</odoo>

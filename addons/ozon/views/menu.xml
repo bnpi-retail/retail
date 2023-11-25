@@ -1,0 +1,5 @@
+<odoo>
+  <data>
+    <menuitem name="Ozon" id="ozon.menu_root"/>
+  </data>
+</odoo>

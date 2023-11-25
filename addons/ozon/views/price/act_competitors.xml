@@ -1,0 +1,69 @@
+<odoo>
+  <data>
+
+    <!-- Additional Form -->
+    <record id="view_name_competitors_form" model="ir.ui.view">
+        <field name="name">Конкуренты</field>
+        <field name="model">ozon.name_competitors</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="name"/>
+                    <field name="price"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <!-- Form -->
+    <record id="view_act_competitors_form" model="ir.ui.view">
+        <field name="name">Акт обоснования цены</field>
+        <field name="model">ozon.act_competitors</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="timestamp"/>
+                    <field name="product"/>
+                    <field name="competitors" widget="many2many_pills">
+                        <tree>
+                            <field name="name"/>
+                            <field name="price"/>
+                        </tree>
+                    </field>
+                    <field name="price"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- Tree -->
+    <record id="view_act_competitors_tree" model="ir.ui.view">
+        <field name="name">Ручное назначение цены</field>
+        <field name="model">ozon.act_competitors</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="timestamp"/>
+                <field name="product"/>
+                <field name="competitors"/>
+                <field name="price"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_act_competitors">
+        <field name="name">Ручное назначение цены</field>
+        <field name="res_model">ozon.act_competitors</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem name="Ручное назначение цены"
+        id="menu_act_competitors"
+        parent="menu_price"
+        action="action_act_competitors"
+        sequence="50"/>
+
+  </data>
+</odoo>

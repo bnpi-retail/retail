@@ -1,0 +1,32 @@
+<odoo>
+  <data>
+
+    <!-- Form -->
+    <record id="view_name_competitors_form" model="ir.ui.view">
+        <field name="name">Конкуренты</field>
+        <field name="model">ozon.name_competitors</field>
+        <field name="arch" type="xml">
+            <form>
+
+                <group>
+                    <field name="name"/>
+                    <field name="price"/>
+                </group>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree -->
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_name_competitors">
+        <field name="name">Конкуренты</field>
+        <field name="res_model">ozon.name_competitors</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+
+  </data>
+</odoo>
