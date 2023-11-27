@@ -1,5 +1,19 @@
 version: '3'
 services:
+
+  nginx:
+    restart: always
+    build: ./nginx
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - web
+    networks:
+      - network
+    volumes:
+      - ./nginx/certificate:/etc/letsencrypt/live/retail.bnpi.dev
+
   db:
     image: postgres:16
     environment:
@@ -9,6 +23,7 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     restart: always
+
   web:
     image: odoo:16
     container_name: odoo-web
@@ -23,5 +38,8 @@ services:
     tty: true
     command: -- --dev=reload
     restart: always
+    networks:
+      - network
 
-
+networks:
+  network:

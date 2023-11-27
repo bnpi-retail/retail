@@ -18,7 +18,12 @@
     'depends': ['base'],
 
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/import_file/ir.model.access.csv',
+        'security/products/ir.model.access.csv',
+        'security/seller/ir.model.access.csv',
+        'security/cost_price/ir.model.access.csv',
+        'security/categories/ir.model.access.csv',
+
         # 'views/views.xml',
         'views/menu.xml',
         'views/cost_price/cost_price.xml',

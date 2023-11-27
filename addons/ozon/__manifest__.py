@@ -19,13 +19,33 @@
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
+        ### security
+        'security/price/count_price/ir.model.access.csv',
+        'security/price/price_history/ir.model.access.csv',
+        'security/price/our_fix_price/ir.model.access.csv',
+        'security/price/pricing/ir.model.access.csv',
+
+        'security/lots/lots/ir.model.access.csv',
+
+        'security/categories/categories/ir.model.access.csv',
+
+        'security/commissions/local_index/ir.model.access.csv',
+        'security/commissions/fee_ozon/ir.model.access.csv',
+        'security/commissions/logistics_price/ir.model.access.csv',
+
+        # 'security/movement_of_funds/movement_of_funds/ir.model.access.csv',
+
+        'security/import/import/ir.model.access.csv',
+
+        'security/competitors/products_competitors/ir.model.access.csv',
+        'security/competitors/price_competitors/ir.model.access.csv',
+
+        ### views
         'views/menu.xml',
         
         'views/price/menu.xml',
         'views/price/count_price.xml',
         'views/price/price_history.xml',
-        # 'views/price/our_price_history.xml',
         'views/price/our_fix_price.xml',
         'views/price/pricing.xml',
 
