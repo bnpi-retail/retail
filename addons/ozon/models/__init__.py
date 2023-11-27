@@ -16,3 +16,4 @@ from .competitors import price_history_competitors
 from .price import pricing
 # from .price import our_price_history
 from .movement_of_funds import movement_of_funds
+from .actions import test

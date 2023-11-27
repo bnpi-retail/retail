@@ -22,7 +22,7 @@
         ### security
         'security/price/count_price/ir.model.access.csv',
         'security/price/price_history/ir.model.access.csv',
-        'security/price/our_fix_price/ir.model.access.csv',
+        # 'security/price/our_fix_price/ir.model.access.csv',
         'security/price/pricing/ir.model.access.csv',
 
         'security/lots/lots/ir.model.access.csv',
@@ -33,7 +33,7 @@
         'security/commissions/fee_ozon/ir.model.access.csv',
         'security/commissions/logistics_price/ir.model.access.csv',
 
-        # 'security/movement_of_funds/movement_of_funds/ir.model.access.csv',
+        'security/movement_of_funds/movement_of_funds/ir.model.access.csv',
 
         'security/import/import/ir.model.access.csv',
 
@@ -65,6 +65,9 @@
         'views/competitors/menu.xml',
         'views/competitors/products_competitors.xml',
         'views/competitors/price_competitors.xml',
+
+
+        # 'views/actions/test_button.xml',
     ],
     'demo': [
         'demo/demo.xml',
