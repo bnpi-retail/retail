@@ -1,9 +1,0 @@
-<record id="action_test_button" model="ir.actions.server">
-    <field name="name">Test Button</field>
-    <field name="type">ir.actions.server</field>
-    <field name="state">code</field>
-    <!-- model name -->
-    <field name="model_id" ref="ozon.test"/> 
-    <!-- The name of the method to be called -->
-    <field name="code">action = model.test_button()</field>
-</record>

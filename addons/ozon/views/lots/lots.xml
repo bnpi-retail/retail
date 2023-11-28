@@ -16,6 +16,7 @@
                     <field name="index_localization"/>
                     <field name="trading_scheme"/>
                     <field name="delivery_location"/>
+                    <field name="insurance"/>
                 </group>
             </form>
         </field>

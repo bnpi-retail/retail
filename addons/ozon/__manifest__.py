@@ -65,9 +65,11 @@
         'views/competitors/menu.xml',
         'views/competitors/products_competitors.xml',
         'views/competitors/price_competitors.xml',
-
-
-        # 'views/actions/test_button.xml',
+        
+        'views/count_insurance_percent/menu.xml',
+        'views/count_insurance_percent/count_insurance_percent.xml',
+        
+        'views/actions/assign_an_insurance_coefficient.xml',
     ],
     'demo': [
         'demo/demo.xml',

@@ -14,6 +14,7 @@ class Product(models.Model):
     seller = fields.Many2one('retail.seller', string='Продавец')
     index_localization = fields.Many2one('ozon.localization_index', 
                                          string='Индекс локализации')
+    insurance = fields.Float(string='Страховой коэффициент, %')
     
     trading_scheme = fields.Selection([('FBS', 'FBS'),
                                        ('FBO', 'FBO')],

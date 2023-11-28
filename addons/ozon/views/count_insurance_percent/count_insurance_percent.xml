@@ -1,0 +1,56 @@
+<odoo>
+  <data>
+
+    <!-- Form -->
+    <record id="view_count_insurance_percent_form" model="ir.ui.view">
+        <field name="name">Вычисление процента по страховке</field>
+        <field name="model">ozon.count_insurance_percent</field>
+        <field name="arch" type="xml">
+            <form>
+                <button string="Рассчитать и применить" class="oe_highlight" type="object" name="count_n_apply" args="[]" />
+                <group string="Дата расчета" style="margin-top: 20px; margin-bottom: 20px;">
+                    <field name="timestamp"/>
+                </group>
+                <group string="Интервал расчета">
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                </group>
+                <group string="Значение коэффициента для лота">
+                    <field name="product"/>
+                    <field name="value"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree -->
+    <record id="view_count_insurance_percent_tree" model="ir.ui.view">
+        <field name="name">Вычисление процента по страховке</field>
+        <field name="model">ozon.count_insurance_percent</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="timestamp"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="product"/>
+                <field name="value"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_count_insurance_percent">
+        <field name="name">Вычисление процента по страховке</field>
+        <field name="res_model">ozon.count_insurance_percent</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem name="Вычисление процента по страховке"
+        id="menu_count_insurance_percent"
+        parent="ozon.percent"
+        action="action_count_insurance_percent"
+        sequence="20"/>
+
+  </data>
+</odoo>

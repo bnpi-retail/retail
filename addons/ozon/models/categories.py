@@ -8,7 +8,7 @@ class Categories(models.Model):
     _description = 'Категории Ozon'
 
     name_categories = fields.Char(string='Название категории')
-    insurance = fields.Float(string='Процент страхования')
+    insurance = fields.Float(string='Страховой коэффициент, %')
 
     def name_get(self):
         """

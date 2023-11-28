@@ -1,0 +1,17 @@
+<odoo>
+  <data>
+        <record id="action_test" model="ir.actions.server">
+            <field name="name">Назначить страховой коэффициент</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_ozon_categories"/>
+            <field name="binding_model_id" ref="model_ozon_categories"/>
+            <field name="state">code</field>
+            <field name="code">
+                for record in records:
+                    objs = env['ozon.products'].search([('categories.id', '=', record.id)])
+                    for obj in objs:
+                        obj.write({'insurance': record.insurance})
+            </field>
+        </record>
+  </data>
+</odoo>

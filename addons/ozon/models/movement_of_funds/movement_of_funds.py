@@ -14,7 +14,6 @@ class MovementOfFunds(models.Model):
     status = fields.Selection([
         ('positive', 'Приход'),
         ('negative', 'Расход'),
-        ('insurance', 'Страховка'),
     ], string='Тип учета')
 
     number = fields.Float(string='Количество, ед.')
@@ -22,6 +21,7 @@ class MovementOfFunds(models.Model):
     categorie = fields.Selection([
         ('sell', 'Продажа'),
         ('treatment', 'Обработка'),
+        ('insurance', 'Страховка'),
     ], string='Категория')
 
 
