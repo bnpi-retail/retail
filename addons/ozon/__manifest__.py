@@ -22,8 +22,10 @@
         ### security
         'security/price/count_price/ir.model.access.csv',
         'security/price/price_history/ir.model.access.csv',
-        # 'security/price/our_fix_price/ir.model.access.csv',
+        'security/price/fix_expenses/ir.model.access.csv',
+        'security/price/cost/ir.model.access.csv',
         'security/price/pricing/ir.model.access.csv',
+        'security/price/name_competitors/ir.model.access.csv',
 
         'security/lots/lots/ir.model.access.csv',
 
