@@ -22,7 +22,7 @@ class CountInsurancePercent(models.Model):
         """
         result = []
         for record in self:
-            result.append((record.id, f'{record.timestamp}, {record.product.products.name}, {record.start_date}-{record.start_date}, {record.value}'))
+            result.append((record.id, f'{record.timestamp}, {record.product.products.name}, {record.start_date}/{record.start_date}'))
         return result
 
 
