@@ -40,6 +40,7 @@
         'security/competitors/products_competitors/ir.model.access.csv',
         'security/competitors/price_competitors/ir.model.access.csv',
 
+        'security/count_insurance_percent/count_insurance_percent/ir.model.access.csv',
         ### views
         'views/menu.xml',
         
