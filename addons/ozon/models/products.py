@@ -15,7 +15,8 @@ class Product(models.Model):
     index_localization = fields.Many2one('ozon.localization_index', 
                                          string='Индекс локализации')
     insurance = fields.Float(string='Страховой коэффициент, %')
-    
+    search_queries = fields.One2many('ozon.search_queries',
+                                     'product_id', string='Поисковые запросы')
     trading_scheme = fields.Selection([('FBS', 'FBS'),
                                        ('FBO', 'FBO')],
                                        string='Схема торговли')
@@ -29,7 +30,6 @@ class Product(models.Model):
                     help=('ППЦ - Пункт приема заказов (Pickup Center), '
                         'ПВЗ - Пункт выдачи заказов (Pickup Point), '
                         'СЦ - Сервисный центр (Service Center)'))
-
 
     def name_get(self):
         """
