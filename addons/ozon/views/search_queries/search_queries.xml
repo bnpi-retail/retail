@@ -35,7 +35,7 @@
     <!-- Menu -->
     <menuitem name="Поисковые запросы"
         id="menu_search_queries"
-        parent="ozon.menu_root"
+        parent="ozon.menu_issue"
         action="action_search_queries"
         sequence="38"/>
   </data>

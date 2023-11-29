@@ -82,8 +82,8 @@
         
         'views/actions/assign_an_insurance_coefficient.xml',
 
+        'views/issue_report/menu.xml',
         'views/search_queries/search_queries.xml',
-
         'views/issue_report/issue_report.xml',
     ],
     'demo': [

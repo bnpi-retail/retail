@@ -97,7 +97,7 @@
         <!-- Menu -->
         <menuitem name="Отчет о выдаче"
             id="menu_issue_report"
-            parent="ozon.menu_root"
+            parent="ozon.menu_issue"
             action="action_issue_report"
             sequence="38"/>
   </data>
