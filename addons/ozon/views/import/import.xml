@@ -1,52 +1,60 @@
 <odoo>
-  <data>
+    <data>
 
-    <!-- Form -->
-    <record id="view_import_file_form" model="ir.ui.view">
-        <field name="name">Импорт</field>
-        <field name="model">ozon.import_file</field>
-        <field name="arch" type="xml">
-            <form>
-                <group string="Наполнить стандартными данными">
-                    <field name="data_for_download"/>
-                </group>
-                <group string="Загрузить данные">
-                    <field name="file"/>
-                </group>
-                <group string="Скачать примеры данных для загрузки">
-                    <a class="oe_menu_leaf" href="/download/index_local" title="Скачать файл">
-                        <i class="fa fa-download"/>
-                    </a>
-                </group>
-            </form>
-        </field>
-    </record>
+        <!-- Form -->
+        <record id="view_import_file_form" model="ir.ui.view">
+            <field name="name">Импорт</field>
+            <field name="model">ozon.import_file</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group string="Наполнить стандартными данными">
+                        <field name="data_for_download" />
+                    </group>
+                    <group string="Загрузить данные">
+                        <field name="file" />
+                    </group>
+                    <group string="Скачать примеры данных для загрузки">
+                        <a class="oe_menu_leaf" href="/download/index_local" title="Скачать файл">
+                            <i class="fa fa-download" />
+                        </a>
+                    </group>
+                    <group string="Выгрузить все товары из Ozon API">
+                        <a class="oe_menu_leaf" href="/download/ozon_products_from_ozon_api"
+                            title="Скачать .csv файл">
+                            <i class="fa fa-download" />
+                        </a>
+                    </group>
+                </form>
 
-    <!-- Tree -->
-    <record id="view_import_file_tree" model="ir.ui.view">
-        <field name="name">Импорт</field>
-        <field name="model">ozon.import_file</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="timestamp" width="300"/>
-                <field name="data_for_download" width="300"/>
-            </tree>
-        </field>
-    </record>
+            </field>
 
-    <!-- Action -->
-    <record model="ir.actions.act_window" id="action_import_file">
-        <field name="name">Импорт</field>
-        <field name="res_model">ozon.import_file</field>
-        <field name="view_mode">tree,form</field>
-    </record>
+        </record>
 
-    <!-- Menu -->
-    <menuitem name="Импорт"
-        id="menu_import_file"
-        parent="ozon.menu_root"
-        action="action_import_file"
-        sequence="40"/>
+        <!-- Tree -->
+        <record id="view_import_file_tree" model="ir.ui.view">
+            <field name="name">Импорт</field>
+            <field name="model">ozon.import_file</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="timestamp" width="300" />
+                    <field name="data_for_download" width="300" />
+                </tree>
+            </field>
+        </record>
 
-  </data>
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_import_file">
+            <field name="name">Импорт</field>
+            <field name="res_model">ozon.import_file</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Импорт"
+            id="menu_import_file"
+            parent="ozon.menu_root"
+            action="action_import_file"
+            sequence="40" />
+
+    </data>
 </odoo>

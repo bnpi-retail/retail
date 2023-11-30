@@ -23,5 +23,3 @@ services:
     tty: true
     command: -- --dev=reload
     restart: always
-
-
