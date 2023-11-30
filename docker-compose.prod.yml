@@ -13,7 +13,7 @@ services:
       - network
     volumes:
       - ./nginx/certificate:/etc/letsencrypt/live/retail.bnpi.dev
-    
+
   db:
     image: postgres:16
     environment:
@@ -31,6 +31,8 @@ services:
     container_name: odoo-web
     depends_on:
       - db
+    env_file:
+      - .env
     ports:
       - "8069:8069"
     volumes:
@@ -45,4 +47,5 @@ services:
 
 networks:
   network:
+
 
