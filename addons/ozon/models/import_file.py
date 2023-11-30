@@ -258,6 +258,25 @@ class ImportFile(models.Model):
                                     "fee": 20,
                                 }
                             )
+                        if localization_index := self.is_ozon_localization_index_exists(
+                            row["lower_threshold"],
+                            row["upper_threshold"],
+                            row["coefficient"],
+                            row["percent"],
+                        ):
+                            pass
+                        else:
+                            localization_index = self.env[
+                                "ozon.localization_index"
+                            ].create(
+                                {
+                                    "lower_threshold": float(row["lower_threshold"]),
+                                    "upper_threshold": float(row["upper_threshold"]),
+                                    "coefficient": float(row["coefficient"]),
+                                    "percent": float(row["percent"]),
+                                }
+                            )
+
                         retail_product = self.env["retail.products"].create(
                             {
                                 "name": row["name"],
@@ -270,16 +289,7 @@ class ImportFile(models.Model):
                             }
                         )
 
-                        localization_index = self.env["ozon.localization_index"].create(
-                            {
-                                "lower_threshold": float(row["lower_threshold"]),
-                                "upper_threshold": float(row["upper_threshold"]),
-                                "coefficient": float(row["coefficient"]),
-                                "percent": float(row["percent"]),
-                            }
-                        )
-                        ozon_product = self.env["ozon.products"]
-                        prod = ozon_product.create(
+                        prod = self.env["ozon.products"].create(
                             {
                                 "categories": ozon_category.id,
                                 "id_on_platform": row["id_on_platform"],
@@ -333,6 +343,20 @@ class ImportFile(models.Model):
     def is_retail_seller_exists(self, seller_name):
         result = self.env["retail.seller"].search(
             [("name", "=", seller_name)],
+            limit=1,
+        )
+        return result if result else False
+
+    def is_ozon_localization_index_exists(
+        self, l_threshold, u_threshold, coef, percent
+    ):
+        result = self.env["ozon.localization_index"].search(
+            [
+                ("lower_threshold", "=", l_threshold),
+                ("upper_threshold", "=", u_threshold),
+                ("coefficient", "=", coef),
+                ("percent", "=", percent),
+            ],
             limit=1,
         )
         return result if result else False
