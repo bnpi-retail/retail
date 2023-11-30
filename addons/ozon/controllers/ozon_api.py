@@ -1,14 +1,19 @@
 import csv
 import json
 
-from pprint import pprint as pp
+import os
 
 import requests
 
+OZON_CLIENT_ID = os.getenv("OZON_CLIENT_ID")
+OZON_API_KEY = os.getenv("OZON_API_KEY")
+
+if not OZON_CLIENT_ID or not OZON_API_KEY:
+    raise ValueError("Env variables $OZON_CLIENT_ID and $OZON_API_KEY weren't found")
 
 headers = {
-    "Client-Id": "16713",
-    "Api-Key": "0126961f-65b8-4d6a-ad4a-49a86869c100",
+    "Client-Id": OZON_CLIENT_ID,
+    "Api-Key": OZON_API_KEY,
 }
 fieldnames = [
     "categories",
@@ -28,6 +33,7 @@ fieldnames = [
     "percent",
     "trading_scheme",
     "delivery_location",
+    "price",
 ]
 
 
@@ -86,7 +92,7 @@ def calculate_product_weight_in_kg(product: dict) -> float:
 
 
 # methods
-def get_products(limit=1000, last_id="") -> dict:
+def get_product(limit=1000, last_id="") -> dict:
     result = requests.post(
         "https://api-seller.ozon.ru/v2/product/list",
         headers=headers,
@@ -95,7 +101,7 @@ def get_products(limit=1000, last_id="") -> dict:
     return result["items"], result["last_id"]
 
 
-def get_product_ids(products: list) -> list:
+def get_product_id(products: list) -> list:
     return [item["product_id"] for item in products]
 
 
@@ -113,7 +119,28 @@ def get_product_attributes(product_ids: list, limit=1000) -> list:
     return response.json()["result"]
 
 
-def get_products_trading_schemes(product_ids: list, limit=1000) -> dict:
+def get_product_price(product_ids: list, limit=1000) -> list:
+    result = requests.post(
+        "https://api-seller.ozon.ru/v4/product/info/prices",
+        headers=headers,
+        data=json.dumps(
+            {
+                "filter": {
+                    "product_id": [str(prod_id) for prod_id in product_ids],
+                },
+                "limit": limit,
+            }
+        ),
+    ).json()["result"]["items"]
+
+    product_price = {}
+    for item in result:
+        product_price[item["product_id"]] = item["price"]["price"]
+
+    return product_price
+
+
+def get_product_trading_schemes(product_ids: list, limit=1000) -> dict:
     result = requests.post(
         "https://api-seller.ozon.ru/v3/product/info/stocks",
         headers=headers,
@@ -150,17 +177,17 @@ attributes_ids = {
 }
 
 
-# if __name__ == "__main__":
 def import_products_from_ozon_api_to_file(file_path: str):
     write_headers_to_csv(file_path, fieldnames)
     limit = 1000
     last_id = ""
     products = ["" for _ in range(limit)]
     while len(products) == limit:
-        products, last_id = get_products(limit=limit, last_id=last_id)
-        prod_ids = get_product_ids(products)
+        products, last_id = get_product(limit=limit, last_id=last_id)
+        prod_ids = get_product_id(products)
         products_attrs = get_product_attributes(prod_ids, limit=limit)
-        products_trading_schemes = get_products_trading_schemes(prod_ids, limit=limit)
+        products_trading_schemes = get_product_trading_schemes(prod_ids, limit=limit)
+        products_prices = get_product_price(prod_ids, limit=limit)
 
         products_rows = []
         for prod in products_attrs:
@@ -179,6 +206,7 @@ def import_products_from_ozon_api_to_file(file_path: str):
             dimensions = calculate_product_dimensions(prod)
             weight = calculate_product_weight_in_kg(prod)
             trading_scheme = products_trading_schemes[id_on_platform]
+            price = products_prices[id_on_platform]
 
             row = {
                 "categories": category_name,
@@ -192,12 +220,13 @@ def import_products_from_ozon_api_to_file(file_path: str):
                 "height": dimensions["height"],
                 "weight": weight,
                 "seller_name": "Продавец",
-                "lower_threshold": 95,
-                "upper_threshold": 100,
-                "coefficient": 0.5,
-                "percent": (0.5 - 1) * 100,
+                "lower_threshold": 0,
+                "upper_threshold": 0,
+                "coefficient": 0,
+                "percent": 0,
                 "trading_scheme": trading_scheme,
-                "delivery_location": "SC",  # TODO
+                "delivery_location": "-",
+                "price": price,
             }
             products_rows.append(row)
 

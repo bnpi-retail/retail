@@ -26,7 +26,13 @@ class Product(models.Model):
     )
 
     delivery_location = fields.Selection(
-        [("PC", "ППЗ/PC"), ("PP", "ПВЗ/PP"), ("SC", "СЦ/SC"), ("TSC", "ТСЦ/TSC")],
+        [
+            ("PC", "ППЗ/PC"),
+            ("PP", "ПВЗ/PP"),
+            ("SC", "СЦ/SC"),
+            ("TSC", "ТСЦ/TSC"),
+            ("-", "-"),
+        ],
         string="Пункт приема товара",
         help=(
             "ППЦ - Пункт приема заказов (Pickup Center), "

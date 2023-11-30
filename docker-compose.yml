@@ -16,6 +16,8 @@ services:
       - db
     ports:
       - "8070:8069"
+    env_file:
+      - .env
     volumes:
       - ./data/odoo-data:/var/lib/odoo
       - ./config:/etc/odoo:rw
