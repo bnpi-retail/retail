@@ -237,8 +237,8 @@ class ImportFile(models.Model):
                     for row in reader:
                         if self.is_ozon_product_exists(row["id_on_platform"]):
                             continue
-                        if self.is_retail_product_exists(row["product_id"]):
-                            continue
+                        # if self.is_retail_product_exists(row["product_id"]):
+                        #     continue
 
                         if ozon_category := self.is_ozon_category_exists(
                             row["categories"]
@@ -289,7 +289,7 @@ class ImportFile(models.Model):
                             }
                         )
 
-                        prod = self.env["ozon.products"].create(
+                        ozon_product = self.env["ozon.products"].create(
                             {
                                 "categories": ozon_category.id,
                                 "id_on_platform": row["id_on_platform"],
@@ -299,6 +299,14 @@ class ImportFile(models.Model):
                                 "index_localization": localization_index.id,
                                 "trading_scheme": row["trading_scheme"],
                                 "delivery_location": row["delivery_location"],
+                            }
+                        )
+
+                        ozon_price_history = self.env["ozon.price_history"].create(
+                            {
+                                "product": ozon_product.id,
+                                "provider": seller.id,
+                                "price": float(row["price"]),
                             }
                         )
 
