@@ -15,7 +15,6 @@
     # always loaded
     "data": [
         ### security
-        "security/ir.model.access.csv",
         "security/price/count_price/ir.model.access.csv",
         "security/price/price_history/ir.model.access.csv",
         "security/price/fix_expenses/ir.model.access.csv",

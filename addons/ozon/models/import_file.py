@@ -301,14 +301,14 @@ class ImportFile(models.Model):
                                 "delivery_location": row["delivery_location"],
                             }
                         )
-
-                        ozon_price_history = self.env["ozon.price_history"].create(
-                            {
-                                "product": ozon_product.id,
-                                "provider": seller.id,
-                                "price": float(row["price"]),
-                            }
-                        )
+                        # TODO: access rights?
+                        # ozon_price_history = self.env["ozon.price_history"].create(
+                        #     {
+                        #         "product": ozon_product.id,
+                        #         "provider": seller.id,
+                        #         "price": float(row["price"]),
+                        #     }
+                        # )
 
                         print(f"product {row['id_on_platform']} created")
 
