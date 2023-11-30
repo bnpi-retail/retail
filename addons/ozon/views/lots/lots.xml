@@ -16,6 +16,8 @@
                     <field name="index_localization"/>
                     <field name="trading_scheme"/>
                     <field name="delivery_location"/>
+                    <field name="insurance"/>
+                    <field name="search_queries" widget="many2many_tags"/>
                 </group>
             </form>
         </field>
@@ -48,6 +50,5 @@
         parent="ozon.menu_root"
         action="action_products"
         sequence="20"/>
-
   </data>
 </odoo>

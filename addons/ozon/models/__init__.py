@@ -14,5 +14,8 @@ from . import categories
 from .competitors import products_competitors
 from .competitors import price_history_competitors
 from .price import pricing
-from .price import our_price_history
+# from .price import our_price_history
 from .movement_of_funds import movement_of_funds
+from .count_insurance_percent import count_insurance_percent
+from .search_queries import search_queries
+from .issue_report import issue_report

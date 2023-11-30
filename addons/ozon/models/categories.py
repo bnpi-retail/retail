@@ -8,7 +8,7 @@ class Categories(models.Model):
     _description = 'Категории Ozon'
 
     name_categories = fields.Char(string='Название категории')
-    # name_fee = fields.Char(string='Наименование комиссии')
+    insurance = fields.Float(string='Страховой коэффициент, %')
 
     def name_get(self):
         """
@@ -18,6 +18,12 @@ class Categories(models.Model):
         for record in self:
             result.append((record.id, record.name_categories))
         return result
+    
+
+    @api.model
+    def update_category_information(self):
+        pass
+
     
 
     # @api.model

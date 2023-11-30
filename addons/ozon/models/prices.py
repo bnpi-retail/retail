@@ -302,6 +302,25 @@ class PriceHistory(models.Model):
             ### Создание записей о цене комиссии Ozon
             record.write({'costs': [(4, obj_cost.id)]})
 
+        ### Рассчет страховой коэффициент
+        insurance = record.product.insurance
+        if insurance != 0.00:
+            pass
+        else:
+            insurance = record.product.categories.insurance
+
+        insurance_price = insurance / 100 * obj_cost_price.price
+        str_insurance = f'{insurance} / 100 * {obj_cost_price.price}'
+
+        obj_cost = self.env['ozon.cost'] \
+            .create({'name': 'Страховой коэффициент, р.', 
+                    'price': insurance_price,
+                    'discription': (f'Комиссия: {insurance}, % '
+                                    f'Значение комиссии: {str_insurance} = {insurance_price}'),
+                    'price_history_id': record.id})
+        
+        ### Создание записей о расчете страховой коэффициент
+        record.write({'costs': [(4, obj_cost.id)]})
 
         return record
     

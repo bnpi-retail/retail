@@ -21,6 +21,7 @@ class MovementOfFunds(models.Model):
     categorie = fields.Selection([
         ('sell', 'Продажа'),
         ('treatment', 'Обработка'),
+        ('insurance', 'Страховка'),
     ], string='Категория')
 
 

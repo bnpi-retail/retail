@@ -15,14 +15,12 @@ class Product(models.Model):
     index_localization = fields.Many2one(
         "ozon.localization_index", string="Индекс локализации"
     )
-
+    insurance = fields.Float(string="Страховой коэффициент, %")
+    search_queries = fields.One2many(
+        "ozon.search_queries", "product_id", string="Поисковые запросы"
+    )
     trading_scheme = fields.Selection(
-        [
-            ("FBS", "FBS"),
-            ("FBO", "FBO"),
-            ("-", "-"),
-        ],
-        string="Схема торговли",
+        [("FBS", "FBS"), ("FBO", "FBO"), ("-", "-")], string="Схема торговли"
     )
 
     delivery_location = fields.Selection(

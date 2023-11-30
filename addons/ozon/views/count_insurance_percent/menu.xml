@@ -1,0 +1,8 @@
+<odoo>
+  <data>
+    <menuitem name="Проценты" 
+      id="ozon.percent"
+      parent="ozon.menu_root"
+      sequence="36"/>
+  </data>
+</odoo>

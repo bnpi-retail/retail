@@ -16,4 +16,4 @@ ozon.access_movement_of_funds_movement_of_funds,access_movement_of_funds_movemen
 ozon.access_name_competitors,access_name_competitors,model_ozon_name_competitors,base.group_user,1,1,1,1
 ozon.access_fix_expenses,access_fix_expenses,model_ozon_fix_expenses,base.group_user,1,1,1,1
 ozon.access_fix_expenses,access_fix_expenses,model_ozon_fix_expenses,base.group_user,1,1,1,1
-ozon.access_cost,access_cost,model_ozon_cost,base.group_user,1,1,1,1
+access_ozon_cost,Access Ozon Cost,model_ozon_cost,base.group_user,1,1,1,1

@@ -1,6 +1,19 @@
 version: '3'
 services:
 
+  nginx:
+    restart: always
+    build: ./nginx
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - web
+    networks:
+      - network
+    volumes:
+      - ./nginx/certificate:/etc/letsencrypt/live/retail.bnpi.dev
+    
   db:
     image: postgres:16
     environment:
@@ -19,9 +32,7 @@ services:
     depends_on:
       - db
     ports:
-      - "8070:8069"
-    env_file:
-      - .env
+      - "8069:8069"
     volumes:
       - ./data/odoo-data:/var/lib/odoo
       - ./config:/etc/odoo:rw
@@ -34,5 +45,4 @@ services:
 
 networks:
   network:
-
 
