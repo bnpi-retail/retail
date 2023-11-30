@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+retail.access_import_file,access_import_file,model_retail_import_file,base.group_user,1,1,1,1
+retail.access_categories,access_categories,model_retail_categories,base.group_user,1,1,1,1
+retail.access_cost_price,access_cost_price,model_retail_cost_price,base.group_user,1,1,1,1
+retail.access_seller,access_seller,model_retail_seller,base.group_user,1,1,1,1
+retail.access_products,access_products,model_retail_products,base.group_user,1,1,1,1

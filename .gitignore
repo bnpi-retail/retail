@@ -5,4 +5,5 @@ filestore/
 sessions
 odoo-server.log
 __pycache__/
+.env
 certeficate/

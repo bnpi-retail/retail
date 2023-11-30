@@ -1,2 +1,19 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+ozon.access_conditions_placing_ozon,access_conditions_placing_ozon,model_ozon_conditions_placing_ozon,base.group_user,1,1,1,1
+ozon.access_categories,access_categories,model_ozon_categories,base.group_user,1,1,1,1
+ozon.access_import_file,access_import_file,model_ozon_import_file,base.group_user,1,1,1,1
+ozon.access_localization_index,access_localization_index,model_ozon_localization_index,base.group_user,1,1,1,1
+ozon.access_logistics_price,access_logistics_price,model_ozon_logistics_ozon,base.group_user,1,1,1,1
+ozon.access_ozon_fee,access_ozon_fee,model_ozon_ozon_fee,base.group_user,1,1,1,1
+ozon.access_prices,access_prices,model_ozon_count_price,base.group_user,1,1,1,1
+ozon.access_products,access_products,model_ozon_products,base.group_user,1,1,1,1
+ozon.access_price_history,access_price_history,model_ozon_price_history,base.group_user,1,1,1,1
+ozon.access_competitors_products_competitors,access_competitors_products_competitors,model_ozon_products_competitors,base.group_user,1,1,1,1
+ozon.access_competitors_price_history_competitors,access_competitors_price_history_competitors,model_ozon_price_history_competitors,base.group_user,1,1,1,1
+ozon.access_price_pricing,access_price_pricing,model_ozon_pricing,base.group_user,1,1,1,1
+ozon.access_price_our_price_history,access_price_our_price_history,model_ozon_our_price_history,base.group_user,1,1,1,1
+ozon.access_movement_of_funds_movement_of_funds,access_movement_of_funds_movement_of_funds,model_ozon_movement_of_funds,base.group_user,1,1,1,1
+ozon.access_name_competitors,access_name_competitors,model_ozon_name_competitors,base.group_user,1,1,1,1
+ozon.access_fix_expenses,access_fix_expenses,model_ozon_fix_expenses,base.group_user,1,1,1,1
+ozon.access_fix_expenses,access_fix_expenses,model_ozon_fix_expenses,base.group_user,1,1,1,1
 access_ozon_cost,Access Ozon Cost,model_ozon_cost,base.group_user,1,1,1,1
