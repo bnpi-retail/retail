@@ -234,5 +234,5 @@ def import_products_from_ozon_api_to_file(file_path: str):
             for prod in products_rows:
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writerow(prod)
-        break  # TODO: delete break after testing
+        # break  # TODO: delete break after testing
     return
