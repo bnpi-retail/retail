@@ -1,12 +1,10 @@
 import base64
 import csv
+import os
 import magic
 import xml.etree.ElementTree as ET
 
 from odoo import models, fields, api, exceptions
-
-from .categories import Categories
-from .localization_index import LocalizationIndex
 
 
 class ImportFile(models.Model):
@@ -229,10 +227,11 @@ class ImportFile(models.Model):
                         )
             # TODO
             elif values["data_for_download"] == "ozon_products":
-                with open(f"/var/lib/odoo/ozon_products_import.csv", "w") as f:
+                f_path = "/mnt/extra-addons/ozon/__pycache__/products_from_ozon_api.csv"
+                with open(f_path, "w") as f:
                     f.write(content)
 
-                with open("/var/lib/odoo/ozon_products_import.csv") as csvfile:
+                with open(f_path) as csvfile:
                     reader = csv.DictReader(csvfile)
                     for row in reader:
                         if self.is_ozon_product_exists(
@@ -313,6 +312,8 @@ class ImportFile(models.Model):
                         )
 
                         print(f"product {row['id_on_platform']} created")
+
+                os.remove(f_path)
 
         if values["data_for_download"] == "excel":
             import xlrd

@@ -36,7 +36,7 @@ class OzonFileSend(http.Controller):
 
     @http.route("/download/ozon_products_from_ozon_api", type="http", auth="public")
     def send_ozon_products_from_ozon_api_to_user(self):
-        csv_file_path = "/mnt/extra-addons/ozon/tmp/products_from_ozon_api.csv"
+        csv_file_path = "/mnt/extra-addons/ozon/__pycache__/products_from_ozon_api.csv"
         import_products_from_ozon_api_to_file(csv_file_path)
 
         with open(csv_file_path, "r", encoding="utf-8") as file:
