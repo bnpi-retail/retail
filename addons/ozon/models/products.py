@@ -20,7 +20,7 @@ class Product(models.Model):
         "ozon.search_queries", "product_id", string="Поисковые запросы"
     )
     trading_scheme = fields.Selection(
-        [("FBS", "FBS"), ("FBO", "FBO"), ("-", "-")], string="Схема торговли"
+        [("FBS", "FBS"), ("FBO", "FBO"), ("", "")], string="Схема торговли"
     )
 
     delivery_location = fields.Selection(
@@ -29,7 +29,7 @@ class Product(models.Model):
             ("PP", "ПВЗ/PP"),
             ("SC", "СЦ/SC"),
             ("TSC", "ТСЦ/TSC"),
-            ("-", "-"),
+            ("", ""),
         ],
         string="Пункт приема товара",
         help=(

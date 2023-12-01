@@ -162,7 +162,7 @@ def get_product_trading_schemes(product_ids: list, limit=1000) -> dict:
             if stock["present"] != 0 and stock["type"] in ["fbs", "fbo"]
         ]
         products_trading_schemes[item["product_id"]] = (
-            trading_schemes if trading_schemes else ["-"]
+            trading_schemes if trading_schemes else [""]
         )
 
     return products_trading_schemes
@@ -225,7 +225,7 @@ def import_products_from_ozon_api_to_file(file_path: str):
                     "coefficient": 0,
                     "percent": 0,
                     "trading_scheme": trad_scheme,
-                    "delivery_location": "-",
+                    "delivery_location": "",
                     "price": price,
                 }
                 products_rows.append(row)
