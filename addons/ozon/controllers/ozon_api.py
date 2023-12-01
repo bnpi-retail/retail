@@ -162,7 +162,7 @@ def get_product_trading_schemes(product_ids: list, limit=1000) -> dict:
             if stock["present"] != 0 and stock["type"] in ["fbs", "fbo"]
         ]
         products_trading_schemes[item["product_id"]] = (
-            trading_schemes[0] if trading_schemes else "-"
+            trading_schemes if trading_schemes else ["-"]
         )
 
     return products_trading_schemes
@@ -205,30 +205,30 @@ def import_products_from_ozon_api_to_file(file_path: str):
             name = prod["name"]
             dimensions = calculate_product_dimensions(prod)
             weight = calculate_product_weight_in_kg(prod)
-            trading_scheme = products_trading_schemes[id_on_platform]
             price = products_prices[id_on_platform]
-
-            row = {
-                "categories": category_name,
-                "id_on_platform": id_on_platform,
-                "full_categories": parent_category,
-                "name": name,
-                "description": description,
-                "product_id": product_id,
-                "length": dimensions["length"],
-                "width": dimensions["width"],
-                "height": dimensions["height"],
-                "weight": weight,
-                "seller_name": "Продавец",
-                "lower_threshold": 0,
-                "upper_threshold": 0,
-                "coefficient": 0,
-                "percent": 0,
-                "trading_scheme": trading_scheme,
-                "delivery_location": "-",
-                "price": price,
-            }
-            products_rows.append(row)
+            trading_schemes = products_trading_schemes[id_on_platform]
+            for trad_scheme in trading_schemes:
+                row = {
+                    "categories": category_name,
+                    "id_on_platform": id_on_platform,
+                    "full_categories": parent_category,
+                    "name": name,
+                    "description": description,
+                    "product_id": product_id,
+                    "length": dimensions["length"],
+                    "width": dimensions["width"],
+                    "height": dimensions["height"],
+                    "weight": weight,
+                    "seller_name": "Продавец",
+                    "lower_threshold": 0,
+                    "upper_threshold": 0,
+                    "coefficient": 0,
+                    "percent": 0,
+                    "trading_scheme": trad_scheme,
+                    "delivery_location": "-",
+                    "price": price,
+                }
+                products_rows.append(row)
 
         with open(file_path, "a", newline="") as csvfile:
             for prod in products_rows:

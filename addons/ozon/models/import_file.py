@@ -235,7 +235,10 @@ class ImportFile(models.Model):
                 with open("/var/lib/odoo/ozon_products_import.csv") as csvfile:
                     reader = csv.DictReader(csvfile)
                     for row in reader:
-                        if self.is_ozon_product_exists(row["id_on_platform"]):
+                        if self.is_ozon_product_exists(
+                            id_on_platform=row["id_on_platform"],
+                            trading_scheme=row["trading_scheme"],
+                        ):
                             continue
                         # if self.is_retail_product_exists(row["product_id"]):
                         #     continue
@@ -301,14 +304,13 @@ class ImportFile(models.Model):
                                 "delivery_location": row["delivery_location"],
                             }
                         )
-                        # TODO: access rights?
-                        # ozon_price_history = self.env["ozon.price_history"].create(
-                        #     {
-                        #         "product": ozon_product.id,
-                        #         "provider": seller.id,
-                        #         "price": float(row["price"]),
-                        #     }
-                        # )
+                        ozon_price_history = self.env["ozon.price_history"].create(
+                            {
+                                "product": ozon_product.id,
+                                "provider": seller.id,
+                                "last_price": float(row["price"]),
+                            }
+                        )
 
                         print(f"product {row['id_on_platform']} created")
 
@@ -327,9 +329,12 @@ class ImportFile(models.Model):
 
         return super(ImportFile, self).create(values)
 
-    def is_ozon_product_exists(self, id_on_platform: str):
+    def is_ozon_product_exists(self, id_on_platform: str, trading_scheme: str):
         result = self.env["ozon.products"].search(
-            [("id_on_platform", "=", id_on_platform)],
+            [
+                ("id_on_platform", "=", id_on_platform),
+                ("trading_scheme", "=", trading_scheme),
+            ],
             limit=1,
         )
         return result if result else False
