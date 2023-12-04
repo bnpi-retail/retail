@@ -1,0 +1,53 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <!-- <record id="view_import_file_form" model="ir.ui.view">
+            <field name="name">Импорт</field>
+            <field name="model">ozon.import_file</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group string="Наполнить стандартными данными">
+                        <field name="data_for_download"/>
+                    </group>
+                    <group string="Загрузить данные">
+                        <field name="file"/>
+                    </group>
+                    <group string="Скачать примеры данных для загрузки">
+                        <a class="oe_menu_leaf" href="/download/index_local" title="Скачать файл">
+                            <i class="fa fa-download"/>
+                        </a>
+                    </group>
+                </form>
+            </field>
+        </record> -->
+
+        <!-- Tree -->
+        <record id="view_logistics_ozon_tree" model="ir.ui.view">
+            <field name="name">Стоимость логистики</field>
+            <field name="model">ozon.logistics_ozon</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="trading_scheme"/>
+                    <field name="volume"/>
+                    <field name="price"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_logistics_price">
+            <field name="name">Стоимость логистики</field>
+            <field name="res_model">ozon.logistics_ozon</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Стоимость логистики"
+            id="menu_logistics_price"
+            parent="ozon.menu_comissinons"
+            action="action_logistics_price"
+            sequence="40"/>
+
+    </data>
+</odoo>

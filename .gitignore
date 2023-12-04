@@ -1,0 +1,10 @@
+data/
+test.xml
+config/addons/
+filestore/
+sessions
+odoo-server.log
+__pycache__/
+.env
+certeficate/
+venv/

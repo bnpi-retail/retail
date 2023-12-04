@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_retail_cost_price_user,Access Retail Cost Price for Users,model_retail_cost_price,base.group_user,1,1,1,1
+access_retail_cost_price_public,Access Retail Cost Price for Public,model_retail_cost_price,base.group_public,1,1,1,1
