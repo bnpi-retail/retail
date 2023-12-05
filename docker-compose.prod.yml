@@ -11,7 +11,8 @@ services:
     depends_on:
       - web
     networks:
-      - network
+      - odoo-network
+      - temporal-network
     volumes:
       - ./nginx/certificate/retail.bnpi.dev:/etc/letsencrypt/live/retail.bnpi.dev
       - ./nginx/certificate/retail-temporal.bnpi.dev:/etc/letsencrypt/live/retail-temporal.bnpi.dev
