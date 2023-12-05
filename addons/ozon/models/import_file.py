@@ -23,6 +23,7 @@ class ImportFile(models.Model):
             ("excel_fbs", "Excel FBS"),
             ("fee_fix", "Excel Fix"),
             ("ozon_products", "Товары Ozon"),
+            ("ozon_commissions", "Комиссии Ozon"),
         ],
         string="Данные для загрузки",
     )
@@ -225,7 +226,7 @@ class ImportFile(models.Model):
                                 "price": price,
                             }
                         )
-            # TODO
+
             elif values["data_for_download"] == "ozon_products":
                 f_path = "/mnt/extra-addons/ozon/__pycache__/products_from_ozon_api.csv"
                 with open(f_path, "w") as f:
@@ -315,6 +316,47 @@ class ImportFile(models.Model):
 
                 os.remove(f_path)
 
+            elif values["data_for_download"] == "ozon_commissions":
+                f_path = (
+                    "/mnt/extra-addons/ozon/__pycache__/commissions_from_ozon_api.csv"
+                )
+                with open(f_path, "w") as f:
+                    f.write(content)
+
+                with open(f_path) as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    for i, row in enumerate(reader):
+                        result = self.is_ozon_fee_exists(
+                            category_name=row["category_name"],
+                            commission_name=row["commission_name"],
+                            value=row["value"],
+                        )
+                        if result:
+                            continue
+
+                        if ozon_category := self.is_ozon_category_exists(
+                            row["category_name"]
+                        ):
+                            pass
+                        else:
+                            ozon_category = self.env["ozon.categories"].create(
+                                {"name_categories": row["category_name"]}
+                            )
+
+                        self.env["ozon.ozon_fee"].create(
+                            {
+                                "name": row["commission_name"],
+                                "value": row["value"],
+                                "category": ozon_category.id,
+                                "type": row["commission_type"],
+                                "trading_scheme": row["trading_scheme"],
+                                "delivery_location": row["delivery_location"],
+                            }
+                        )
+                        print(f"{i}th commission was created")
+
+                os.remove(f_path)
+
         if values["data_for_download"] == "excel":
             import xlrd
 
@@ -370,6 +412,17 @@ class ImportFile(models.Model):
                 ("upper_threshold", "=", u_threshold),
                 ("coefficient", "=", coef),
                 ("percent", "=", percent),
+            ],
+            limit=1,
+        )
+        return result if result else False
+
+    def is_ozon_fee_exists(self, commission_name, value, category_name):
+        result = self.env["ozon.ozon_fee"].search(
+            [
+                ("name", "=", commission_name),
+                ("category", "=", category_name),
+                ("value", "=", value),
             ],
             limit=1,
         )
