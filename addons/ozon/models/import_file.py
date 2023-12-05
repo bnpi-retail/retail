@@ -241,75 +241,81 @@ class ImportFile(models.Model):
                 with open(f_path) as csvfile:
                     reader = csv.DictReader(csvfile)
                     for row in reader:
-                        if self.is_ozon_product_exists(
+                        if ozon_product := self.is_ozon_product_exists(
                             id_on_platform=row["id_on_platform"],
                             trading_scheme=row["trading_scheme"],
                         ):
-                            continue
-                        # if self.is_retail_product_exists(row["product_id"]):
-                        #     continue
+                            pass
 
-                        if ozon_category := self.is_ozon_category_exists(
-                            row["categories"]
-                        ):
-                            pass
                         else:
-                            ozon_category = self.env["ozon.categories"].create(
-                                {"name_categories": row["categories"]}
-                            )
-                        if seller := self.is_retail_seller_exists(row["seller_name"]):
-                            pass
-                        else:
-                            seller = self.env["retail.seller"].create(
+                            if ozon_category := self.is_ozon_category_exists(
+                                row["categories"]
+                            ):
+                                pass
+                            else:
+                                ozon_category = self.env["ozon.categories"].create(
+                                    {"name_categories": row["categories"]}
+                                )
+                            if seller := self.is_retail_seller_exists(
+                                row["seller_name"]
+                            ):
+                                pass
+                            else:
+                                seller = self.env["retail.seller"].create(
+                                    {
+                                        "name": "Продавец",
+                                        "ogrn": 1111111111111,
+                                        "fee": 20,
+                                    }
+                                )
+                            if localization_index := self.is_ozon_localization_index_exists(
+                                row["lower_threshold"],
+                                row["upper_threshold"],
+                                row["coefficient"],
+                                row["percent"],
+                            ):
+                                pass
+                            else:
+                                localization_index = self.env[
+                                    "ozon.localization_index"
+                                ].create(
+                                    {
+                                        "lower_threshold": float(
+                                            row["lower_threshold"]
+                                        ),
+                                        "upper_threshold": float(
+                                            row["upper_threshold"]
+                                        ),
+                                        "coefficient": float(row["coefficient"]),
+                                        "percent": float(row["percent"]),
+                                    }
+                                )
+
+                            retail_product = self.env["retail.products"].create(
                                 {
-                                    "name": "Продавец",
-                                    "ogrn": 1111111111111,
-                                    "fee": 20,
+                                    "name": row["name"],
+                                    "description": row["description"],
+                                    "product_id": row["product_id"],
+                                    "length": float(row["length"]),
+                                    "width": float(row["width"]),
+                                    "height": float(row["height"]),
+                                    "weight": float(row["weight"]),
                                 }
                             )
-                        if localization_index := self.is_ozon_localization_index_exists(
-                            row["lower_threshold"],
-                            row["upper_threshold"],
-                            row["coefficient"],
-                            row["percent"],
-                        ):
-                            pass
-                        else:
-                            localization_index = self.env[
-                                "ozon.localization_index"
-                            ].create(
+
+                            ozon_product = self.env["ozon.products"].create(
                                 {
-                                    "lower_threshold": float(row["lower_threshold"]),
-                                    "upper_threshold": float(row["upper_threshold"]),
-                                    "coefficient": float(row["coefficient"]),
-                                    "percent": float(row["percent"]),
+                                    "categories": ozon_category.id,
+                                    "id_on_platform": row["id_on_platform"],
+                                    "full_categories": row["full_categories"],
+                                    "products": retail_product.id,
+                                    "seller": seller.id,
+                                    "index_localization": localization_index.id,
+                                    "trading_scheme": row["trading_scheme"],
+                                    "delivery_location": row["delivery_location"],
                                 }
                             )
 
-                        retail_product = self.env["retail.products"].create(
-                            {
-                                "name": row["name"],
-                                "description": row["description"],
-                                "product_id": row["product_id"],
-                                "length": float(row["length"]),
-                                "width": float(row["width"]),
-                                "height": float(row["height"]),
-                                "weight": float(row["weight"]),
-                            }
-                        )
-
-                        ozon_product = self.env["ozon.products"].create(
-                            {
-                                "categories": ozon_category.id,
-                                "id_on_platform": row["id_on_platform"],
-                                "full_categories": row["full_categories"],
-                                "products": retail_product.id,
-                                "seller": seller.id,
-                                "index_localization": localization_index.id,
-                                "trading_scheme": row["trading_scheme"],
-                                "delivery_location": row["delivery_location"],
-                            }
-                        )
                         if row["trading_scheme"] == "FBO":
                             coms_by_trad_scheme = FBO_FIX_PRODUCT_COMMISSIONS
                         elif row["trading_scheme"] == "FBS":
@@ -319,7 +325,7 @@ class ImportFile(models.Model):
 
                         ozon_price_history_data = {
                             "product": ozon_product.id,
-                            "provider": seller.id,
+                            "provider": ozon_product.seller.id,
                             "last_price": float(row["price"]),
                         }
 
