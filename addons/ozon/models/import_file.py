@@ -329,9 +329,10 @@ class ImportFile(models.Model):
                         result = self.is_ozon_fee_exists(
                             category_name=row["category_name"],
                             commission_name=row["commission_name"],
-                            value=row["value"],
                         )
                         if result:
+                            print(row["category_name"], row["commission_name"])
+                            print(result.category.name_categories, result.name)
                             continue
 
                         if ozon_category := self.is_ozon_category_exists(
@@ -417,12 +418,11 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
-    def is_ozon_fee_exists(self, commission_name, value, category_name):
+    def is_ozon_fee_exists(self, category_name, commission_name):
         result = self.env["ozon.ozon_fee"].search(
             [
+                ("category.name_categories", "=", category_name),
                 ("name", "=", commission_name),
-                ("category", "=", category_name),
-                ("value", "=", value),
             ],
             limit=1,
         )

@@ -121,6 +121,16 @@ def get_product_id(products: list) -> list:
     return [item["product_id"] for item in products]
 
 
+def get_product_info(product_id: int):
+    result = requests.post(
+        "https://api-seller.ozon.ru/v2/product/info",
+        headers=headers,
+        data=json.dumps({"product_id": product_id}),
+    ).json()["result"]
+
+    return result
+
+
 def get_product_attributes(product_ids: list, limit=1000) -> list:
     response = requests.post(
         "https://api-seller.ozon.ru/v3/products/info/attributes",
@@ -281,23 +291,7 @@ def get_product_commissions(product_ids: list, limit=1):
     return product_comissions
 
 
-def get_trading_scheme_from_string(string: str):
-    if "fbo" in string:
-        return "FBO"
-    elif "fbs" in string:
-        return "FBS"
-    else:
-        return ""
-
-
-def get_commission_type_from_string(string: str):
-    if "percent" in string:
-        return "percent"
-    else:
-        return "fix"
-
-
-def import_comissions_from_ozon_api_to_file(file_path: str):
+def import_comissions_by_categories_from_ozon_api_to_file(file_path: str):
     fieldnames = [
         "commission_name",
         "category_name",
@@ -316,7 +310,6 @@ def import_comissions_from_ozon_api_to_file(file_path: str):
         products, last_id = get_product(limit=limit, last_id=last_id)
         prod_ids = get_product_id(products)
         products_attrs = get_product_attributes(prod_ids, limit=limit)
-        prod_commissions = get_product_commissions(prod_ids, limit=limit)
         commissions_rows = []
         for prod in products_attrs:
             product_id = prod["id"]
@@ -325,41 +318,38 @@ def import_comissions_from_ozon_api_to_file(file_path: str):
                 if a["attribute_id"] == 9461:
                     category_name = a["values"][0]["value"]
 
-            commissions = prod_commissions[product_id]
-
             if structure.get(category_name):
-                pass
+                continue
             else:
-                structure[category_name] = {}
+                structure[category_name] = True
 
-            for commision_name, value in commissions.items():
-                if structure[category_name].get(commision_name):
-                    pass
-                else:
-                    structure[category_name][commision_name] = {"values": {}}
+            prod_info = get_product_info(product_id)
 
-                val = structure[category_name][commision_name]["values"].get(value)
-                if val is not None:
-                    pass
-                else:
-                    structure[category_name][commision_name]["values"][value] = value
-                    row = {
-                        "category_name": category_name,
-                        "commission_name": COMMISSIONS[commision_name],
-                        "trading_scheme": get_trading_scheme_from_string(
-                            commision_name
-                        ),
-                        "value": value,
-                        "commission_type": get_commission_type_from_string(
-                            commision_name
-                        ),
-                        "delivery_location": "",
-                    }
-                    commissions_rows.append(row)
+            for com in prod_info["commissions"]:
+                if com["sale_schema"] == "fbo":
+                    com_name = "Процент комиссии за продажу (FBO)"
+                    trad_scheme = "FBO"
+                elif com["sale_schema"] == "fbs":
+                    com_name = "Процент комиссии за продажу (FBS)"
+                    trad_scheme = "FBS"
+                elif com["sale_schema"] == "rfbs":
+                    com_name = "Процент комиссии за продажу (rFBS)"
+                    trad_scheme = "rFBS"
+                percent = com["percent"]
+
+                row = {
+                    "category_name": category_name,
+                    "commission_name": com_name,
+                    "trading_scheme": trad_scheme,
+                    "value": percent,
+                    "commission_type": "percent",
+                    "delivery_location": "",
+                }
+                commissions_rows.append(row)
 
         with open(file_path, "a", newline="") as csvfile:
             for row in commissions_rows:
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writerow(row)
 
-    return structure
+    return
