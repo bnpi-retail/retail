@@ -23,7 +23,7 @@ class ImportFile(models.Model):
             ("excel_fbs", "Excel FBS"),
             ("fee_fix", "Excel Fix"),
             ("ozon_products", "Товары Ozon"),
-            ("ozon_commissions", "Комиссии Ozon"),
+            ("ozon_commissions", "Комиссии Ozon по категориям"),
         ],
         string="Данные для загрузки",
     )
@@ -331,8 +331,6 @@ class ImportFile(models.Model):
                             commission_name=row["commission_name"],
                         )
                         if result:
-                            print(row["category_name"], row["commission_name"])
-                            print(result.category.name_categories, result.name)
                             continue
 
                         if ozon_category := self.is_ozon_category_exists(

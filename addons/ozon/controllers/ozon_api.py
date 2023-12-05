@@ -274,7 +274,6 @@ def import_products_from_ozon_api_to_file(file_path: str):
             for prod in products_rows:
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writerow(prod)
-        break
 
     return
 
@@ -346,6 +345,31 @@ def import_comissions_by_categories_from_ozon_api_to_file(file_path: str):
                     "delivery_location": "",
                 }
                 commissions_rows.append(row)
+
+        with open(file_path, "a", newline="") as csvfile:
+            for row in commissions_rows:
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writerow(row)
+
+    return
+
+
+def import_products_commission_from_ozon_api_to_file(file_path: str):
+    fieldnames = ["id_on_platform", *list(COMMISSIONS.keys())]
+    write_headers_to_csv(file_path, fieldnames)
+    limit = 1000
+    last_id = ""
+    products = ["" for _ in range(limit)]
+
+    while len(products) == limit:
+        products, last_id = get_product(limit=limit, last_id=last_id)
+        prod_ids = get_product_id(products)
+        prod_commissions = get_product_commissions(prod_ids, limit=limit)
+        commissions_rows = []
+        for prod_id in prod_ids:
+            commissions = prod_commissions[prod_id]
+            row = {"id_on_platform": prod_id, **commissions}
+            commissions_rows.append(row)
 
         with open(file_path, "a", newline="") as csvfile:
             for row in commissions_rows:
