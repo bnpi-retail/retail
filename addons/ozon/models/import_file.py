@@ -6,6 +6,12 @@ import xml.etree.ElementTree as ET
 
 from odoo import models, fields, api, exceptions
 
+from ..controllers.ozon_api import (
+    ALL_COMMISSIONS,
+    FBO_FIX_PRODUCT_COMMISSIONS,
+    FBS_FIX_PRODUCT_COMMISSIONS,
+)
+
 
 class ImportFile(models.Model):
     _name = "ozon.import_file"
@@ -304,12 +310,38 @@ class ImportFile(models.Model):
                                 "delivery_location": row["delivery_location"],
                             }
                         )
+                        if row["trading_scheme"] == "FBO":
+                            coms_by_trad_scheme = FBO_FIX_PRODUCT_COMMISSIONS
+                        elif row["trading_scheme"] == "FBS":
+                            coms_by_trad_scheme = FBS_FIX_PRODUCT_COMMISSIONS
+                        elif row["trading_scheme"] == "":
+                            coms_by_trad_scheme = None
+
+                        ozon_price_history_data = {
+                            "product": ozon_product.id,
+                            "provider": seller.id,
+                            "last_price": float(row["price"]),
+                        }
+
+                        if coms_by_trad_scheme:
+                            prod_commissions = {k: row[k] for k in coms_by_trad_scheme}
+                            fix_expenses = []
+                            for com, value in prod_commissions.items():
+                                fix_expenses_record = self.env[
+                                    "ozon.fix_expenses"
+                                ].create(
+                                    {
+                                        "name": coms_by_trad_scheme[com],
+                                        "price": value,
+                                        "discription": "",
+                                    }
+                                )
+                                fix_expenses.append(fix_expenses_record.id)
+
+                            ozon_price_history_data["fix_expensives"] = fix_expenses
+
                         ozon_price_history = self.env["ozon.price_history"].create(
-                            {
-                                "product": ozon_product.id,
-                                "provider": seller.id,
-                                "last_price": float(row["price"]),
-                            }
+                            ozon_price_history_data
                         )
 
                         print(f"product {row['id_on_platform']} created")
