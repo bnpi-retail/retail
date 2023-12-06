@@ -238,6 +238,7 @@ def import_products_from_ozon_api_to_file(file_path: str):
         "trading_scheme",
         "delivery_location",
         "price",
+        *list(ALL_COMMISSIONS.keys()),
     ]
     write_headers_to_csv(file_path, fieldnames)
     limit = 1000
@@ -248,7 +249,10 @@ def import_products_from_ozon_api_to_file(file_path: str):
         prod_ids = get_product_id(products)
         products_attrs = get_product_attributes(prod_ids, limit=limit)
         products_trading_schemes = get_product_trading_schemes(prod_ids, limit=limit)
-        products_prices = get_product_price(prod_ids, limit=limit)
+
+        price_objects_list = get_price_objects(prod_ids, limit=limit)
+        products_prices = get_product_price(price_objects_list)
+        products_commissions = get_product_commissions(price_objects_list)
 
         products_rows = []
         for prod in products_attrs:
@@ -268,6 +272,7 @@ def import_products_from_ozon_api_to_file(file_path: str):
             weight = calculate_product_weight_in_kg(prod)
             price = products_prices[id_on_platform]
             trading_schemes = products_trading_schemes[id_on_platform]
+            commissions = products_commissions[id_on_platform]
             for trad_scheme in trading_schemes:
                 row = {
                     "categories": category_name,
@@ -288,6 +293,7 @@ def import_products_from_ozon_api_to_file(file_path: str):
                     "trading_scheme": trad_scheme,
                     "delivery_location": "",
                     "price": price,
+                    **commissions,
                 }
                 products_rows.append(row)
 
