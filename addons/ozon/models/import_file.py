@@ -7,9 +7,10 @@ import xml.etree.ElementTree as ET
 from odoo import models, fields, api, exceptions
 
 from ..controllers.ozon_api import (
-    ALL_COMMISSIONS,
-    FBO_FIX_PRODUCT_COMMISSIONS,
-    FBS_FIX_PRODUCT_COMMISSIONS,
+    FBO_FIX_COMMISSIONS,
+    FBO_PERCENT_COMMISSIONS,
+    FBS_FIX_COMMISSIONS,
+    FBS_PERCENT_COMMISSIONS,
 )
 
 
@@ -317,11 +318,14 @@ class ImportFile(models.Model):
                             )
 
                         if row["trading_scheme"] == "FBO":
-                            coms_by_trad_scheme = FBO_FIX_PRODUCT_COMMISSIONS
+                            fix_coms_by_trad_scheme = FBO_FIX_COMMISSIONS
+                            percent_coms_by_trad_scheme = FBO_PERCENT_COMMISSIONS
                         elif row["trading_scheme"] == "FBS":
-                            coms_by_trad_scheme = FBS_FIX_PRODUCT_COMMISSIONS
+                            fix_coms_by_trad_scheme = FBS_FIX_COMMISSIONS
+                            percent_coms_by_trad_scheme = FBS_PERCENT_COMMISSIONS
                         elif row["trading_scheme"] == "":
-                            coms_by_trad_scheme = None
+                            fix_coms_by_trad_scheme = None
+                            percent_coms_by_trad_scheme = None
 
                         ozon_price_history_data = {
                             "product": ozon_product.id,
@@ -329,15 +333,17 @@ class ImportFile(models.Model):
                             "last_price": float(row["price"]),
                         }
 
-                        if coms_by_trad_scheme:
-                            prod_commissions = {k: row[k] for k in coms_by_trad_scheme}
+                        if fix_coms_by_trad_scheme:
+                            fix_product_commissions = {
+                                k: row[k] for k in fix_coms_by_trad_scheme
+                            }
                             fix_expenses = []
-                            for com, value in prod_commissions.items():
+                            for com, value in fix_product_commissions.items():
                                 fix_expenses_record = self.env[
                                     "ozon.fix_expenses"
                                 ].create(
                                     {
-                                        "name": coms_by_trad_scheme[com],
+                                        "name": fix_coms_by_trad_scheme[com],
                                         "price": value,
                                         "discription": "",
                                     }
@@ -345,6 +351,23 @@ class ImportFile(models.Model):
                                 fix_expenses.append(fix_expenses_record.id)
 
                             ozon_price_history_data["fix_expensives"] = fix_expenses
+
+                        if percent_coms_by_trad_scheme:
+                            percent_product_commissions = {
+                                k: row[k] for k in percent_coms_by_trad_scheme
+                            }
+                            costs = []
+                            for com, value in percent_product_commissions.items():
+                                costs_record = self.env["ozon.cost"].create(
+                                    {
+                                        "name": percent_coms_by_trad_scheme[com],
+                                        "price": value,
+                                        "discription": "",
+                                    }
+                                )
+                                costs.append(costs_record.id)
+
+                            ozon_price_history_data["costs"] = costs
 
                         ozon_price_history = self.env["ozon.price_history"].create(
                             ozon_price_history_data
