@@ -316,6 +316,7 @@ class ImportFile(models.Model):
                                     "delivery_location": row["delivery_location"],
                                 }
                             )
+                            print(f"product {row['id_on_platform']} created")
 
                         if row["trading_scheme"] == "FBO":
                             fix_coms_by_trad_scheme = FBO_FIX_COMMISSIONS
@@ -358,11 +359,18 @@ class ImportFile(models.Model):
                             }
                             costs = []
                             for com, value in percent_product_commissions.items():
+                                abs_com = round(
+                                    ozon_price_history_data["last_price"]
+                                    * float(value)
+                                    / 100,
+                                    2,
+                                )
+
                                 costs_record = self.env["ozon.cost"].create(
                                     {
                                         "name": percent_coms_by_trad_scheme[com],
-                                        "price": value,
-                                        "discription": "",
+                                        "price": abs_com,
+                                        "discription": f"{value}%",
                                     }
                                 )
                                 costs.append(costs_record.id)
@@ -373,7 +381,9 @@ class ImportFile(models.Model):
                             ozon_price_history_data
                         )
 
-                        print(f"product {row['id_on_platform']} created")
+                        print(
+                            f"price history for product {row['id_on_platform']} added"
+                        )
 
                 os.remove(f_path)
 
