@@ -46,7 +46,7 @@ ALL_COMMISSIONS = {
     "sales_percent_fbs": "Процент комиссии за продажу (FBS)",
     "sales_percent": "Наибольший процент комиссии за продажу среди FBO и FBS",
 }
-FBO_FIX_PRODUCT_COMMISSIONS = {
+FBO_FIX_COMMISSIONS = {
     "acquiring": "Максимальная комиссия за эквайринг",
     "fbo_fulfillment_amount": "Комиссия за сборку заказа (FBO)",
     "fbo_direct_flow_trans_min_amount": "Магистраль от (FBO)",
@@ -56,7 +56,10 @@ FBO_FIX_PRODUCT_COMMISSIONS = {
     "fbo_return_flow_trans_min_amount": "Комиссия за обратную логистику от (FBO)",
     "fbo_return_flow_trans_max_amount": "Комиссия за обратную логистику до (FBO)",
 }
-FBS_FIX_PRODUCT_COMMISSIONS = {
+FBO_PERCENT_COMMISSIONS = {
+    "sales_percent_fbo": "Процент комиссии за продажу (FBO)",
+}
+FBS_FIX_COMMISSIONS = {
     "acquiring": "Максимальная комиссия за эквайринг",
     "fbs_first_mile_min_amount": "Минимальная комиссия за обработку отправления (FBS) — 0 рублей",
     "fbs_first_mile_max_amount": "Максимальная комиссия за обработку отправления (FBS) — 25 рублей",
@@ -66,6 +69,9 @@ FBS_FIX_PRODUCT_COMMISSIONS = {
     "fbs_return_flow_amount": "Комиссия за возврат и отмену, обработка отправления (FBS)",
     "fbs_return_flow_trans_min_amount": "Комиссия за возврат и отмену, магистраль от (FBS)",
     "fbs_return_flow_trans_max_amount": "Комиссия за возврат и отмену, магистраль до (FBS)",
+}
+FBS_PERCENT_COMMISSIONS = {
+    "sales_percent_fbs": "Процент комиссии за продажу (FBS)",
 }
 
 
@@ -238,6 +244,7 @@ def import_products_from_ozon_api_to_file(file_path: str):
         "trading_scheme",
         "delivery_location",
         "price",
+        *list(ALL_COMMISSIONS.keys()),
     ]
     write_headers_to_csv(file_path, fieldnames)
     limit = 1000
@@ -248,7 +255,10 @@ def import_products_from_ozon_api_to_file(file_path: str):
         prod_ids = get_product_id(products)
         products_attrs = get_product_attributes(prod_ids, limit=limit)
         products_trading_schemes = get_product_trading_schemes(prod_ids, limit=limit)
-        products_prices = get_product_price(prod_ids, limit=limit)
+
+        price_objects_list = get_price_objects(prod_ids, limit=limit)
+        products_prices = get_product_price(price_objects_list)
+        products_commissions = get_product_commissions(price_objects_list)
 
         products_rows = []
         for prod in products_attrs:
@@ -268,6 +278,7 @@ def import_products_from_ozon_api_to_file(file_path: str):
             weight = calculate_product_weight_in_kg(prod)
             price = products_prices[id_on_platform]
             trading_schemes = products_trading_schemes[id_on_platform]
+            commissions = products_commissions[id_on_platform]
             for trad_scheme in trading_schemes:
                 row = {
                     "categories": category_name,
@@ -288,6 +299,7 @@ def import_products_from_ozon_api_to_file(file_path: str):
                     "trading_scheme": trad_scheme,
                     "delivery_location": "",
                     "price": price,
+                    **commissions,
                 }
                 products_rows.append(row)
 
