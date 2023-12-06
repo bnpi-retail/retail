@@ -2,16 +2,16 @@ version: '3'
 services:
 
   ### Nginx
-  nginx:
-    restart: always
-    build: ./nginx/test
-    ports:
-      - 80:80
-    depends_on:
-      - web
-    networks:
-      - odoo-network
-      - temporal-network
+  # nginx:
+  #   restart: always
+  #   build: ./nginx/test
+  #   ports:
+  #     - 80:80
+  #   depends_on:
+  #     - web
+  #   networks:
+  #     - odoo-network
+  #     - temporal-network
 
   ### Odoo
   db:
