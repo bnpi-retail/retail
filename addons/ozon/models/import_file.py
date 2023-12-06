@@ -358,11 +358,18 @@ class ImportFile(models.Model):
                             }
                             costs = []
                             for com, value in percent_product_commissions.items():
+                                abs_com = round(
+                                    ozon_price_history_data["last_price"]
+                                    * float(value)
+                                    / 100,
+                                    2,
+                                )
+
                                 costs_record = self.env["ozon.cost"].create(
                                     {
                                         "name": percent_coms_by_trad_scheme[com],
-                                        "price": value,
-                                        "discription": "",
+                                        "price": abs_com,
+                                        "discription": f"{value}%",
                                     }
                                 )
                                 costs.append(costs_record.id)
