@@ -316,6 +316,7 @@ class ImportFile(models.Model):
                                     "delivery_location": row["delivery_location"],
                                 }
                             )
+                            print(f"product {row['id_on_platform']} created")
 
                         if row["trading_scheme"] == "FBO":
                             fix_coms_by_trad_scheme = FBO_FIX_COMMISSIONS
@@ -380,7 +381,9 @@ class ImportFile(models.Model):
                             ozon_price_history_data
                         )
 
-                        print(f"product {row['id_on_platform']} created")
+                        print(
+                            f"price history for product {row['id_on_platform']} added"
+                        )
 
                 os.remove(f_path)
 
