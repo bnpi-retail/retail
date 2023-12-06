@@ -25,7 +25,7 @@ attributes_ids = {
 }
 
 
-COMMISSIONS = {
+ALL_COMMISSIONS = {
     "acquiring": "Максимальная комиссия за эквайринг",
     "fbo_fulfillment_amount": "Комиссия за сборку заказа (FBO)",
     "fbo_direct_flow_trans_min_amount": "Магистраль от (FBO)",
@@ -45,6 +45,33 @@ COMMISSIONS = {
     "sales_percent_fbo": "Процент комиссии за продажу (FBO)",
     "sales_percent_fbs": "Процент комиссии за продажу (FBS)",
     "sales_percent": "Наибольший процент комиссии за продажу среди FBO и FBS",
+}
+FBO_FIX_COMMISSIONS = {
+    "acquiring": "Максимальная комиссия за эквайринг",
+    "fbo_fulfillment_amount": "Комиссия за сборку заказа (FBO)",
+    "fbo_direct_flow_trans_min_amount": "Магистраль от (FBO)",
+    "fbo_direct_flow_trans_max_amount": "Магистраль до (FBO)",
+    "fbo_deliv_to_customer_amount": "Последняя миля (FBO)",
+    "fbo_return_flow_amount": "Комиссия за возврат и отмену (FBO)",
+    "fbo_return_flow_trans_min_amount": "Комиссия за обратную логистику от (FBO)",
+    "fbo_return_flow_trans_max_amount": "Комиссия за обратную логистику до (FBO)",
+}
+FBO_PERCENT_COMMISSIONS = {
+    "sales_percent_fbo": "Процент комиссии за продажу (FBO)",
+}
+FBS_FIX_COMMISSIONS = {
+    "acquiring": "Максимальная комиссия за эквайринг",
+    "fbs_first_mile_min_amount": "Минимальная комиссия за обработку отправления (FBS) — 0 рублей",
+    "fbs_first_mile_max_amount": "Максимальная комиссия за обработку отправления (FBS) — 25 рублей",
+    "fbs_direct_flow_trans_min_amount": "Магистраль от (FBS)",
+    "fbs_direct_flow_trans_max_amount": "Магистраль до (FBS)",
+    "fbs_deliv_to_customer_amount": "Последняя миля (FBS)",
+    "fbs_return_flow_amount": "Комиссия за возврат и отмену, обработка отправления (FBS)",
+    "fbs_return_flow_trans_min_amount": "Комиссия за возврат и отмену, магистраль от (FBS)",
+    "fbs_return_flow_trans_max_amount": "Комиссия за возврат и отмену, магистраль до (FBS)",
+}
+FBS_PERCENT_COMMISSIONS = {
+    "sales_percent_fbs": "Процент комиссии за продажу (FBS)",
 }
 
 
@@ -119,6 +146,16 @@ def get_product(limit=1000, last_id="") -> dict:
 
 def get_product_id(products: list) -> list:
     return [item["product_id"] for item in products]
+
+
+def get_product_info(product_id: int):
+    result = requests.post(
+        "https://api-seller.ozon.ru/v2/product/info",
+        headers=headers,
+        data=json.dumps({"product_id": product_id}),
+    ).json()["result"]
+
+    return result
 
 
 def get_product_attributes(product_ids: list, limit=1000) -> list:
@@ -207,6 +244,7 @@ def import_products_from_ozon_api_to_file(file_path: str):
         "trading_scheme",
         "delivery_location",
         "price",
+        *list(ALL_COMMISSIONS.keys()),
     ]
     write_headers_to_csv(file_path, fieldnames)
     limit = 1000
@@ -217,7 +255,10 @@ def import_products_from_ozon_api_to_file(file_path: str):
         prod_ids = get_product_id(products)
         products_attrs = get_product_attributes(prod_ids, limit=limit)
         products_trading_schemes = get_product_trading_schemes(prod_ids, limit=limit)
-        products_prices = get_product_price(prod_ids, limit=limit)
+
+        price_objects_list = get_price_objects(prod_ids, limit=limit)
+        products_prices = get_product_price(price_objects_list)
+        products_commissions = get_product_commissions(price_objects_list)
 
         products_rows = []
         for prod in products_attrs:
@@ -237,6 +278,7 @@ def import_products_from_ozon_api_to_file(file_path: str):
             weight = calculate_product_weight_in_kg(prod)
             price = products_prices[id_on_platform]
             trading_schemes = products_trading_schemes[id_on_platform]
+            commissions = products_commissions[id_on_platform]
             for trad_scheme in trading_schemes:
                 row = {
                     "categories": category_name,
@@ -257,6 +299,7 @@ def import_products_from_ozon_api_to_file(file_path: str):
                     "trading_scheme": trad_scheme,
                     "delivery_location": "",
                     "price": price,
+                    **commissions,
                 }
                 products_rows.append(row)
 
@@ -264,7 +307,6 @@ def import_products_from_ozon_api_to_file(file_path: str):
             for prod in products_rows:
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writerow(prod)
-        break
 
     return
 
@@ -281,23 +323,7 @@ def get_product_commissions(product_ids: list, limit=1):
     return product_comissions
 
 
-def get_trading_scheme_from_string(string: str):
-    if "fbo" in string:
-        return "FBO"
-    elif "fbs" in string:
-        return "FBS"
-    else:
-        return ""
-
-
-def get_commission_type_from_string(string: str):
-    if "percent" in string:
-        return "percent"
-    else:
-        return "fix"
-
-
-def import_comissions_from_ozon_api_to_file(file_path: str):
+def import_comissions_by_categories_from_ozon_api_to_file(file_path: str):
     fieldnames = [
         "commission_name",
         "category_name",
@@ -316,7 +342,6 @@ def import_comissions_from_ozon_api_to_file(file_path: str):
         products, last_id = get_product(limit=limit, last_id=last_id)
         prod_ids = get_product_id(products)
         products_attrs = get_product_attributes(prod_ids, limit=limit)
-        prod_commissions = get_product_commissions(prod_ids, limit=limit)
         commissions_rows = []
         for prod in products_attrs:
             product_id = prod["id"]
@@ -325,41 +350,63 @@ def import_comissions_from_ozon_api_to_file(file_path: str):
                 if a["attribute_id"] == 9461:
                     category_name = a["values"][0]["value"]
 
-            commissions = prod_commissions[product_id]
-
             if structure.get(category_name):
-                pass
+                continue
             else:
-                structure[category_name] = {}
+                structure[category_name] = True
 
-            for commision_name, value in commissions.items():
-                if structure[category_name].get(commision_name):
-                    pass
-                else:
-                    structure[category_name][commision_name] = {"values": {}}
+            prod_info = get_product_info(product_id)
 
-                val = structure[category_name][commision_name]["values"].get(value)
-                if val is not None:
-                    pass
-                else:
-                    structure[category_name][commision_name]["values"][value] = value
-                    row = {
-                        "category_name": category_name,
-                        "commission_name": COMMISSIONS[commision_name],
-                        "trading_scheme": get_trading_scheme_from_string(
-                            commision_name
-                        ),
-                        "value": value,
-                        "commission_type": get_commission_type_from_string(
-                            commision_name
-                        ),
-                        "delivery_location": "",
-                    }
-                    commissions_rows.append(row)
+            for com in prod_info["commissions"]:
+                if com["sale_schema"] == "fbo":
+                    com_name = "Процент комиссии за продажу (FBO)"
+                    trad_scheme = "FBO"
+                elif com["sale_schema"] == "fbs":
+                    com_name = "Процент комиссии за продажу (FBS)"
+                    trad_scheme = "FBS"
+                elif com["sale_schema"] == "rfbs":
+                    com_name = "Процент комиссии за продажу (rFBS)"
+                    trad_scheme = "rFBS"
+                percent = com["percent"]
+
+                row = {
+                    "category_name": category_name,
+                    "commission_name": com_name,
+                    "trading_scheme": trad_scheme,
+                    "value": percent,
+                    "commission_type": "percent",
+                    "delivery_location": "",
+                }
+                commissions_rows.append(row)
 
         with open(file_path, "a", newline="") as csvfile:
             for row in commissions_rows:
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writerow(row)
 
-    return structure
+    return
+
+
+def import_products_commission_from_ozon_api_to_file(file_path: str):
+    fieldnames = ["id_on_platform", *list(ALL_COMMISSIONS.keys())]
+    write_headers_to_csv(file_path, fieldnames)
+    limit = 1000
+    last_id = ""
+    products = ["" for _ in range(limit)]
+
+    while len(products) == limit:
+        products, last_id = get_product(limit=limit, last_id=last_id)
+        prod_ids = get_product_id(products)
+        prod_commissions = get_product_commissions(prod_ids, limit=limit)
+        commissions_rows = []
+        for prod_id in prod_ids:
+            commissions = prod_commissions[prod_id]
+            row = {"id_on_platform": prod_id, **commissions}
+            commissions_rows.append(row)
+
+        with open(file_path, "a", newline="") as csvfile:
+            for row in commissions_rows:
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writerow(row)
+
+    return
