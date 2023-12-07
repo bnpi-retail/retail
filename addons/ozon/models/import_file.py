@@ -328,10 +328,19 @@ class ImportFile(models.Model):
                             fix_coms_by_trad_scheme = None
                             percent_coms_by_trad_scheme = None
 
+                        prev_price_history_record = self.is_ozon_price_history_exists(
+                            row["id_on_platform"]
+                        )
+                        if prev_price_history_record:
+                            previous_price = prev_price_history_record.price
+                        else:
+                            previous_price = 0
+
                         ozon_price_history_data = {
                             "product": ozon_product.id,
                             "provider": ozon_product.seller.id,
-                            "last_price": float(row["price"]),
+                            "price": float(row["price"]),
+                            "previous_price": previous_price,
                         }
 
                         if fix_coms_by_trad_scheme:
@@ -360,7 +369,7 @@ class ImportFile(models.Model):
                             costs = []
                             for com, value in percent_product_commissions.items():
                                 abs_com = round(
-                                    ozon_price_history_data["last_price"]
+                                    ozon_price_history_data["price"]
                                     * float(value)
                                     / 100,
                                     2,
@@ -493,6 +502,17 @@ class ImportFile(models.Model):
                 ("category.name_categories", "=", category_name),
                 ("name", "=", commission_name),
             ],
+            limit=1,
+        )
+        return result if result else False
+
+    def is_ozon_price_history_exists(self, product_id_on_platform):
+        """Ищет последнюю запись истории цен по данному ozon.product.id_on_platform"""
+        result = self.env["ozon.price_history"].search(
+            [
+                ("product.id_on_platform", "=", product_id_on_platform),
+            ],
+            order="create_date desc",
             limit=1,
         )
         return result if result else False
