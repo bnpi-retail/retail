@@ -1,9 +1,11 @@
 import base64
 import csv
 import os
+from uu import Error
 import magic
 import xml.etree.ElementTree as ET
 
+from io import StringIO
 from odoo import models, fields, api, exceptions
 
 from ..controllers.ozon_api import (
@@ -30,6 +32,7 @@ class ImportFile(models.Model):
             ("excel_fbs", "Excel FBS"),
             ("fee_fix", "Excel Fix"),
             ("ozon_products", "Товары Ozon"),
+            ("ozon_products_api", "Товары Ozon API"),
             ("ozon_commissions", "Комиссии Ozon по категориям"),
         ],
         string="Данные для загрузки",
@@ -63,6 +66,189 @@ class ImportFile(models.Model):
         if not "data_for_download" in values or not values["data_for_download"]:
             raise exceptions.ValidationError("Необходимо выбрать 'данные для загрузки'")
 
+
+        ### API OZON TEMPORAL
+        if values["data_for_download"] == "ozon_products_api":
+            uploaded_file = values['file']
+            
+            csv_data = uploaded_file.read().decode('utf-8')
+            decoded_data = base64.b64decode(csv_data).decode('utf-8')
+
+            csv_reader = csv.reader(StringIO(decoded_data))
+
+            header = "categories,id_on_platform,full_categories,name,description,product_id,length,width,height,weight,seller_name,lower_threshold,upper_threshold,coefficient,percent,trading_scheme,delivery_location,price,acquiring,fbo_fulfillment_amount,fbo_direct_flow_trans_min_amount,fbo_direct_flow_trans_max_amount,fbo_deliv_to_customer_amount,fbo_return_flow_amount,fbo_return_flow_trans_min_amount,fbo_return_flow_trans_max_amount,fbs_first_mile_min_amount,fbs_first_mile_max_amount,fbs_direct_flow_trans_min_amount,fbs_direct_flow_trans_max_amount,fbs_deliv_to_customer_amount,fbs_return_flow_amount,fbs_return_flow_trans_min_amount,fbs_return_flow_trans_max_amount,sales_percent_fbo,sales_percent_fbs,sales_percent"
+            headers = header.split(',')
+
+            for row in csv_reader:
+                row = dict(zip(headers, row))
+
+                try:
+                    if ozon_product := self.is_ozon_product_exists(
+                        id_on_platform=row["id_on_platform"],
+                        trading_scheme=row["trading_scheme"],
+                    ):
+                        pass
+                except KeyError as e:
+                    print(f'OZON Error ozon_product {e}')
+                    continue
+
+
+                else:
+                    if ozon_category := self.is_ozon_category_exists(
+                        row["categories"]
+                    ):
+                        pass
+                    else:
+                        ozon_category = self.env["ozon.categories"].create(
+                            {"name_categories": row["categories"]}
+                        )
+                    if seller := self.is_retail_seller_exists(
+                        row["seller_name"]
+                    ):
+                        pass
+                    else:
+                        seller = self.env["retail.seller"].create(
+                            {
+                                "name": "Продавец",
+                                "ogrn": 1111111111111,
+                                "fee": 20,
+                            }
+                        )
+                    try:
+                        if localization_index := self.is_ozon_localization_index_exists(
+                            row["lower_threshold"],
+                            row["upper_threshold"],
+                            row["coefficient"],
+                            row["percent"],
+                        ):
+                            pass
+                    except ValueError as e:
+                        print(f'OZON Error localization_index {e}')
+                        continue
+
+                    else:
+                        try:
+                            localization_index = self.env[
+                                "ozon.localization_index"
+                            ].create(
+                                {
+                                    "lower_threshold": float(
+                                        row["lower_threshold"]
+                                    ),
+                                    "upper_threshold": float(
+                                        row["upper_threshold"]
+                                    ),
+                                    "coefficient": float(row["coefficient"]),
+                                    "percent": float(row["percent"]),
+                                }
+                            )
+                        except ValueError as e:
+                            print(f'OZON Error localization_index {e}')
+                            continue
+                    try:
+                        retail_product = self.env["retail.products"].create(
+                            {
+                                "name": row["name"],
+                                "description": row["description"],
+                                "product_id": row["product_id"],
+                                "length": float(row["length"]),
+                                "width": float(row["width"]),
+                                "height": float(row["height"]),
+                                "weight": float(row["weight"]),
+                            }
+                        )
+                    except ValueError as e:
+                        print(f'OZON Error localization_index {e}')
+                        continue
+                    try:
+                        ozon_product = self.env["ozon.products"].create(
+                            {
+                                "categories": ozon_category.id,
+                                "id_on_platform": row["id_on_platform"],
+                                "full_categories": row["full_categories"],
+                                "products": retail_product.id,
+                                "seller": seller.id,
+                                "index_localization": localization_index.id,
+                                "trading_scheme": row["trading_scheme"],
+                                "delivery_location": row["delivery_location"],
+                            }
+                        )
+                        print(f"product {row['id_on_platform']} created")
+                    except ValueError as e:
+                        print(f'OZON Error localization_index {e}')
+                        continue
+                
+                if row["trading_scheme"] == "FBO":
+                    fix_coms_by_trad_scheme = FBO_FIX_COMMISSIONS
+                    percent_coms_by_trad_scheme = FBO_PERCENT_COMMISSIONS
+                elif row["trading_scheme"] == "FBS":
+                    fix_coms_by_trad_scheme = FBS_FIX_COMMISSIONS
+                    percent_coms_by_trad_scheme = FBS_PERCENT_COMMISSIONS
+                elif row["trading_scheme"] == "":
+                    fix_coms_by_trad_scheme = None
+                    percent_coms_by_trad_scheme = None
+
+                ozon_price_history_data = {
+                    "product": ozon_product.id,
+                    "provider": ozon_product.seller.id,
+                    "last_price": float(row["price"]),
+                }
+
+                if fix_coms_by_trad_scheme:
+                    fix_product_commissions = {
+                        k: row[k] for k in fix_coms_by_trad_scheme
+                    }
+                    fix_expenses = []
+                    for com, value in fix_product_commissions.items():
+                        fix_expenses_record = self.env[
+                            "ozon.fix_expenses"
+                        ].create(
+                            {
+                                "name": fix_coms_by_trad_scheme[com],
+                                "price": value,
+                                "discription": "",
+                            }
+                        )
+                        fix_expenses.append(fix_expenses_record.id)
+
+                    ozon_price_history_data["fix_expensives"] = fix_expenses
+
+                if percent_coms_by_trad_scheme:
+                    percent_product_commissions = {
+                        k: row[k] for k in percent_coms_by_trad_scheme
+                    }
+                    costs = []
+                    for com, value in percent_product_commissions.items():
+                        abs_com = round(
+                            ozon_price_history_data["last_price"]
+                            * float(value)
+                            / 100,
+                            2,
+                        )
+
+                        costs_record = self.env["ozon.cost"].create(
+                            {
+                                "name": percent_coms_by_trad_scheme[com],
+                                "price": abs_com,
+                                "discription": f"{value}%",
+                            }
+                        )
+                        costs.append(costs_record.id)
+
+                    ozon_price_history_data["costs"] = costs
+
+                ozon_price_history = self.env["ozon.price_history"].create(
+                    ozon_price_history_data
+                )
+
+                print(
+                    f"price history for product {row['id_on_platform']} added"
+                )
+            return 
+            # return super(ImportFile, self).create(values)
+
+
+        ### ANOTHER
         content = base64.b64decode(values["file"])
         mime_type = self.get_file_mime_type(content)
         mime_type = mime_type.lower()
@@ -235,7 +421,7 @@ class ImportFile(models.Model):
                         )
 
             elif values["data_for_download"] == "ozon_products":
-                f_path = "/mnt/extra-addons/ozon/__pycache__/products_from_ozon_api.csv"
+                f_path = "/mnt/extra-addons/ozon/products_from_ozon_api.csv"
                 with open(f_path, "w") as f:
                     f.write(content)
 
@@ -386,7 +572,7 @@ class ImportFile(models.Model):
                         )
 
                 os.remove(f_path)
-
+            
             elif values["data_for_download"] == "ozon_commissions":
                 f_path = (
                     "/mnt/extra-addons/ozon/__pycache__/commissions_from_ozon_api.csv"
