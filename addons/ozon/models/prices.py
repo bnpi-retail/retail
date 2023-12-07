@@ -166,7 +166,7 @@ class PriceHistory(models.Model):
         copy=True,
     )
 
-    last_price = fields.Float(string="Предыдущая цена", readonly=True)
+    previous_price = fields.Float(string="Предыдущая цена", readonly=True)
 
     timestamp = fields.Date(string="Дата", default=fields.Date.today, readonly=True)
 

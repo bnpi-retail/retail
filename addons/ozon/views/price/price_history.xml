@@ -27,7 +27,7 @@
 
                     <group string='Цены'>
                         <field name="price" />
-                        <field name="last_price" />
+                        <field name="previous_price" />
                         <field name="ideal_price" />
                     </group>
 
@@ -64,7 +64,7 @@
                     <field name="product" />
                     <field name="provider" />
                     <!-- <field name="price"/> -->
-                    <field name="last_price" />
+                    <field name="price" />
                 </tree>
             </field>
         </record>
