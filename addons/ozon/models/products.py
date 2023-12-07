@@ -38,6 +38,7 @@ class Product(models.Model):
             "СЦ - Сервисный центр (Service Center)"
         ),
     )
+    transaction_id = fields.Many2one("ozon.transaction", string="Транзакция")
 
     def name_get(self):
         """
