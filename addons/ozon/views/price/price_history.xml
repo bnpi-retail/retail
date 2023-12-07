@@ -1,87 +1,87 @@
 <odoo>
-  <data>
+    <data>
 
-    <!-- Form -->
-    <record id="view_price_history_form" model="ir.ui.view">
-        <field name="name">История цены</field>
-        <field name="model">ozon.price_history</field>
-        <field name="arch" type="xml">
-            <form>
+        <!-- Form -->
+        <record id="view_price_history_form" model="ir.ui.view">
+            <field name="name">История цены</field>
+            <field name="model">ozon.price_history</field>
+            <field name="arch" type="xml">
+                <form>
 
-                <group>
-                    <field name="timestamp"/>
-                    <field name="product"/>
-                    <field name="provider"/>
-                </group>
-                
-                <group string="Фиксированные затраты">
-                    <field name="fix_expensives" widget="many2many_pills">
-                        <tree>
-                            <field name="name"/>
-                            <field name="discription"/>
-                            <field name="price"/>
-                        </tree>
-                    </field>
-                    <field name="total_cost_fix"/>
-                </group>
+                    <group>
+                        <field name="timestamp" />
+                        <field name="product" />
+                        <field name="provider" />
+                    </group>
 
-                <group string='Цены'>
-                    <field name="ideal_price"/>
-                    <field name="our_price"/>
-                </group>
+                    <group string="Фиксированные затраты">
+                        <field name="fix_expensives" widget="many2many_pills">
+                            <tree>
+                                <field name="name" />
+                                <field name="discription" />
+                                <field name="price" />
+                            </tree>
+                        </field>
+                        <field name="total_cost_fix" />
+                    </group>
 
-                <group string="Процент от продаж">
-                    <field name="costs" widget="many2many_pills">
-                        <tree>
-                            <field name="name"/>
-                            <field name="discription"/>
-                            <field name="price"/>
-                        </tree>
-                    </field>
-                    <field name="total_cost"/>
-                </group>
+                    <group string='Цены'>
+                        <field name="ideal_price" />
+                        <field name="our_price" />
+                    </group>
 
-                <group string='Прибыль'>
-                    <field name="profit"/>
-                </group>
+                    <group string="Процент от продаж">
+                        <field name="costs" widget="many2many_pills">
+                            <tree>
+                                <field name="name" />
+                                <field name="discription" />
+                                <field name="price" />
+                            </tree>
+                        </field>
+                        <field name="total_cost" />
+                    </group>
 
-                <group string='Информация о ценах'>
-                    <field name="last_price"/>
-                    <field name="competitors"/>
-                </group>
+                    <group string='Прибыль'>
+                        <field name="profit" />
+                    </group>
 
-            </form>
-        </field>
-    </record>
+                    <group string='Информация о ценах'>
+                        <field name="last_price" />
+                        <field name="competitors" />
+                    </group>
 
-    <!-- Tree -->
-    <record id="view_price_history_tree" model="ir.ui.view">
-        <field name="name">История цены</field>
-        <field name="model">ozon.price_history</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="timestamp"/>
-                <field name="product"/>
-                <field name="provider"/>
-                <!-- <field name="price"/> -->
-                <field name="last_price"/>
-            </tree>
-        </field>
-    </record>
+                </form>
+            </field>
+        </record>
 
-    <!-- Action -->
-    <record model="ir.actions.act_window" id="action_price_history">
-        <field name="name">История цен</field>
-        <field name="res_model">ozon.price_history</field>
-        <field name="view_mode">tree,form</field>
-    </record>
+        <!-- Tree -->
+        <record id="view_price_history_tree" model="ir.ui.view">
+            <field name="name">История цены</field>
+            <field name="model">ozon.price_history</field>
+            <field name="arch" type="xml">
+                <tree default_order="create_date desc">
+                    <field name="timestamp" />
+                    <field name="product" />
+                    <field name="provider" />
+                    <!-- <field name="price"/> -->
+                    <field name="last_price" />
+                </tree>
+            </field>
+        </record>
 
-    <!-- Menu -->
-    <menuitem name="История цен"
-        id="menu_price_history"
-        parent="menu_price"
-        action="action_price_history"
-        sequence="40"/>
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_price_history">
+            <field name="name">История цен</field>
+            <field name="res_model">ozon.price_history</field>
+            <field name="view_mode">tree,form</field>
+        </record>
 
-  </data>
+        <!-- Menu -->
+        <menuitem name="История цен"
+            id="menu_price_history"
+            parent="menu_price"
+            action="action_price_history"
+            sequence="40" />
+
+    </data>
 </odoo>
