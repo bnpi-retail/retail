@@ -270,7 +270,7 @@ def import_products_from_ozon_api_to_file(file_path: str):
                     description = a["values"][0]["value"]
 
             id_on_platform = prod["id"]
-            product_id = int(prod["offer_id"])
+            product_id = prod["offer_id"]
             name = prod["name"]
             dimensions = calculate_product_dimensions(prod)
             weight = calculate_product_weight_in_kg(prod)
