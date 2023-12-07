@@ -255,10 +255,8 @@ def import_products_from_ozon_api_to_file(file_path: str):
         prod_ids = get_product_id(products)
         products_attrs = get_product_attributes(prod_ids, limit=limit)
         products_trading_schemes = get_product_trading_schemes(prod_ids, limit=limit)
-
-        price_objects_list = get_price_objects(prod_ids, limit=limit)
-        products_prices = get_product_price(price_objects_list)
-        products_commissions = get_product_commissions(price_objects_list)
+        products_prices = get_product_price(prod_ids, limit=limit)
+        products_commissions = get_product_commissions(prod_ids, limit=limit)
 
         products_rows = []
         for prod in products_attrs:
