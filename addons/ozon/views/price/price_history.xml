@@ -26,8 +26,9 @@
                     </group>
 
                     <group string='Цены'>
+                        <field name="price" />
+                        <field name="last_price" />
                         <field name="ideal_price" />
-                        <field name="our_price" />
                     </group>
 
                     <group string="Процент от продаж">
@@ -46,7 +47,6 @@
                     </group>
 
                     <group string='Информация о ценах'>
-                        <field name="last_price" />
                         <field name="competitors" />
                     </group>
 
