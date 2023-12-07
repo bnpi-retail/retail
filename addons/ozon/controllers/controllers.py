@@ -34,7 +34,7 @@ class OzonFileSend(http.Controller):
         response.headers.add("Content-Disposition", f"attachment; filename={file_name}")
         return response
 
-    @http.route("/download/ozon_products_from_ozon_api", auth='public', csrf=False)
+    @http.route("/download/ozon_products_from_ozon_api", type="http", auth="public")
     def send_ozon_products_from_ozon_api_to_user(self):
         csv_file_path = "/mnt/extra-addons/ozon/__pycache__/products_from_ozon_api.csv"
         import_products_from_ozon_api_to_file(csv_file_path)
@@ -58,4 +58,3 @@ class OzonFileSend(http.Controller):
         response.headers.add("Content-Disposition", f"attachment; filename={file_name}")
         os.remove(csv_file_path)
         return response
-
