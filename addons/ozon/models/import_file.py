@@ -191,7 +191,7 @@ class ImportFile(models.Model):
                 ozon_price_history_data = {
                     "product": ozon_product.id,
                     "provider": ozon_product.seller.id,
-                    "last_price": float(row["price"]),
+                    "price": float(row["price"]),
                 }
 
                 if fix_coms_by_trad_scheme:
@@ -220,7 +220,7 @@ class ImportFile(models.Model):
                     costs = []
                     for com, value in percent_product_commissions.items():
                         abs_com = round(
-                            ozon_price_history_data["last_price"]
+                            ozon_price_history_data["price"]
                             * float(value)
                             / 100,
                             2,
