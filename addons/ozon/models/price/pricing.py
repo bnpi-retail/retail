@@ -8,7 +8,7 @@ class NameCompetitors(models.Model):
     _description = 'Наименования конкурентов'
 
     name = fields.Many2one('ozon.products_competitors',
-                                string='Товар конкурента')
+                            string='Товар конкурента')
     price = fields.Float(string='Цена конкурента')
     pricing_id = fields.Many2one('ozon.pricing', string='')
     pricing_history_id = fields.Many2one('ozon.price_history', string='')
@@ -64,7 +64,7 @@ class Pricing(models.Model):
         for count_price_obj in self:
             for product in count_price_obj.product:
                 
-                last_price = self.env['ozon.price_history'] \
+                price = self.env['ozon.price_history'] \
                     .search([('product', '=', product.products.id),], limit=1,).price
                 
                 product_info = product.products
@@ -104,7 +104,7 @@ class Pricing(models.Model):
             price_history.create({
                 'provider': count_price_obj.competitors.name.product.seller.id,
                 'product': product.products.id,
-                'last_price': last_price,
+                'price': price,
                 'competitors': all_competitor,
                 'custom_our_price': count_price_obj.price,
             })

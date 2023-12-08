@@ -39,6 +39,14 @@ class Product(models.Model):
         ),
     )
 
+    price_history_ids = fields.One2many('ozon.price_history_competitors', 
+                                        'product_id', 
+                                        string='История цен конкурентов')
+
+    price_our_history_ids = fields.One2many('ozon.price_history', 
+                                        'product_id', 
+                                        string='История цен')
+
     def name_get(self):
         """
         Rename name records
@@ -48,6 +56,11 @@ class Product(models.Model):
             result.append((record.id, record.products.name))
         return result
 
+    @api.depends('price_our_history_ids.price')
+    def _compute_price_history_values(self):
+        for product in self:
+            product.price_history_values = [(record.timestamp, record.price) for record in product.price_our_history_ids]
+            
     @api.model
     def create(self, values):
         existing_record = self.search([('id_on_platform', '=', values.get('id_on_platform'))])
