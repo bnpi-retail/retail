@@ -19,14 +19,14 @@
                     <field name="insurance"/>
                     <field name="search_queries" widget="many2many_tags"/>
                     <field name="price_our_history_ids" widget="one2many_list">
-                        <tree>
+                        <tree limit="10">
                             <field name="timestamp"/>
                             <field name="provider"/>
                             <field name="price"/>
                         </tree>
                     </field>
                     <field name="price_history_ids" widget="one2many_list">
-                        <tree>
+                        <tree limit="10">
                             <field name="timestamp"/>
                             <field name="product_competitors"/>
                             <field name="price"/>
