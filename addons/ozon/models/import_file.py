@@ -92,7 +92,6 @@ class ImportFile(models.Model):
                         pass
                 except KeyError as e:
                     print(f'OZON Error ozon_product {e},\n {row}')
-                    raise ValueError(f'OZON Error ozon_product {e},\n {row}')
                     continue
 
 
@@ -127,7 +126,6 @@ class ImportFile(models.Model):
                             pass
                     except ValueError as e:
                         print(f'OZON Error localization_index {e}')
-                        raise ValueError(f'OZON Error localization_index {e},\n {row}')
                         continue
 
                     else:
