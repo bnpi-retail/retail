@@ -32,10 +32,10 @@
         "security/competitors/price_competitors/ir.model.access.csv",
         "security/count_insurance_percent/count_insurance_percent/ir.model.access.csv",
         "security/search_queries/search_queries/ir.model.access.csv",
-        "security/issue_report/issue_report/ir.model.access.csv",
-        "security/issue_report/issue_report_products/ir.model.access.csv",
-        "security/issue_report/issue_report_products_additional_info/ir.model.access.csv",
-        "security/issue_report/name_additional_info/ir.model.access.csv",
+        # "security/issue_report/issue_report/ir.model.access.csv",
+        # "security/issue_report/issue_report_products/ir.model.access.csv",
+        # "security/issue_report/issue_report_products_additional_info/ir.model.access.csv",
+        # "security/issue_report/name_additional_info/ir.model.access.csv",
         "security/transaction/ir.model.access.csv",
         ### views
         "views/menu.xml",
@@ -60,7 +60,7 @@
         "views/actions/assign_an_insurance_coefficient.xml",
         "views/issue_report/menu.xml",
         "views/search_queries/search_queries.xml",
-        "views/issue_report/issue_report.xml",
+        # "views/issue_report/issue_report.xml",
         "views/transactions/transactions.xml",
     ],
     "demo": [
