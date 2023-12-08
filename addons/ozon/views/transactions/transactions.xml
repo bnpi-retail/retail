@@ -1,0 +1,64 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_transaction_form" model="ir.ui.view">
+            <field name="name">Транзакции</field>
+            <field name="model">ozon.transaction</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group string="Информация о транзакции">
+                        <field name="transaction_date" />
+                        <field name="order_date" />
+                        <field name="name" />
+                        <field name="amount" />
+                        <field name="products">
+                            <tree>
+                                <field name="products">
+                                    <tree>
+                                        <field name="name"></field>
+                                    </tree>
+                                </field>
+                            </tree>
+                        </field>
+                        <field name="services">
+                            <tree>
+                                <field name="name" />
+                                <field name="price" />
+                            </tree>
+                        </field>
+                        <field name="posting_number" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_transaction_tree" model="ir.ui.view">
+            <field name="name">Транзакции</field>
+            <field name="model">ozon.transaction</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="transaction_date" />
+                    <field name="name" />
+                    <field name="amount" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_transaction">
+            <field name="name">Транзакции</field>
+            <field name="res_model">ozon.transaction</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Транзакции"
+            id="menu_transaction"
+            parent="ozon.menu_root"
+            action="action_transaction"
+            sequence="35" />
+
+    </data>
+</odoo>

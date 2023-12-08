@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ozon_transaction,Access Ozon Transaction,model_ozon_transaction,base.group_user,1,1,1,1
+access_ozon_ozon_services,Access Ozon Ozon_Services,model_ozon_ozon_services,base.group_user,1,1,1,1
