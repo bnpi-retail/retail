@@ -1,3 +1,4 @@
+import ast
 import base64
 import csv
 import os
@@ -31,6 +32,7 @@ class ImportFile(models.Model):
             ("fee_fix", "Excel Fix"),
             ("ozon_products", "Товары Ozon"),
             ("ozon_commissions", "Комиссии Ozon по категориям"),
+            ("ozon_transactions", "Транзакции Ozon"),
         ],
         string="Данные для загрузки",
     )
@@ -436,6 +438,9 @@ class ImportFile(models.Model):
 
                 os.remove(f_path)
 
+            elif values["data_for_download"] == "ozon_transactions":
+                self.import_transactions(content)
+
         if values["data_for_download"] == "excel":
             import xlrd
 
@@ -456,6 +461,15 @@ class ImportFile(models.Model):
             [
                 ("id_on_platform", "=", id_on_platform),
                 ("trading_scheme", "=", trading_scheme),
+            ],
+            limit=1,
+        )
+        return result if result else False
+
+    def get_ozon_product_by_id_on_platform(self, id_on_platform: str):
+        result = self.env["ozon.products"].search(
+            [
+                ("id_on_platform", "=", id_on_platform),
             ],
             limit=1,
         )
@@ -516,3 +530,63 @@ class ImportFile(models.Model):
             limit=1,
         )
         return result if result else False
+
+    def is_ozon_transaction_exists(self, transaction_id):
+        result = self.env["ozon.transaction"].search(
+            [("transaction_id", "=", transaction_id)],
+            limit=1,
+        )
+        return result if result else False
+
+    def is_ozon_service_exists(self, service_name):
+        result = self.env["ozon.ozon_services"].search(
+            [("name", "=", service_name)],
+            limit=1,
+        )
+        return result if result else False
+
+    def import_transactions(self, content):
+        f_path = "/mnt/extra-addons/ozon/__pycache__/transactions.csv"
+        with open(f_path, "w") as f:
+            f.write(content)
+
+        with open(f_path) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if self.is_ozon_transaction_exists(
+                    transaction_id=row["transaction_id"]
+                ):
+                    continue
+                ozon_products = []
+                prod_ids_list = ast.literal_eval(row["product_ids_on_platform"])
+                for prod_id in prod_ids_list:
+                    ozon_product = self.get_ozon_product_by_id_on_platform(
+                        id_on_platform=prod_id
+                    )
+                    if ozon_product:
+                        ozon_products.append(ozon_product.id)
+
+                if len(prod_ids_list) != len(ozon_products):
+                    continue
+
+                ozon_services = []
+                service_list = ast.literal_eval(row["services"])
+                for name, price in service_list:
+                    service = self.env["ozon.ozon_services"].create(
+                        {"name": name, "price": price}
+                    )
+                    ozon_services.append(service.id)
+                print("ozon_products ids", ozon_products, row["amount"])
+                data = {
+                    "transaction_id": str(row["transaction_id"]),
+                    "transaction_date": row["transaction_date"],
+                    "order_date": row["order_date"],
+                    "name": row["name"],
+                    "amount": row["amount"],
+                    "products": ozon_products,
+                    "services": ozon_services,
+                    "posting_number": row["posting_number"],
+                }
+                ozon_transaction = self.env["ozon.transaction"].create(data)
+
+        os.remove(f_path)

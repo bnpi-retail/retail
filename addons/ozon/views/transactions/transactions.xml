@@ -8,12 +8,11 @@
             <field name="arch" type="xml">
                 <form>
                     <group string="Информация о транзакции">
-                        <field name="date" />
+                        <field name="transaction_date" />
+                        <field name="order_date" />
                         <field name="name" />
-                        <field name="status" />
-                        <field name="category" />
                         <field name="amount" />
-                        <field name="product">
+                        <field name="products">
                             <tree>
                                 <field name="products">
                                     <tree>
@@ -22,7 +21,13 @@
                                 </field>
                             </tree>
                         </field>
-                        <field name="services" />
+                        <field name="services">
+                            <tree>
+                                <field name="name" />
+                                <field name="price" />
+                            </tree>
+                        </field>
+                        <field name="posting_number" />
                     </group>
                 </form>
             </field>
@@ -34,10 +39,8 @@
             <field name="model">ozon.transaction</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="date" />
+                    <field name="transaction_date" />
                     <field name="name" />
-                    <field name="status" />
-                    <field name="category" />
                     <field name="amount" />
                 </tree>
             </field>
