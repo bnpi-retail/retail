@@ -66,8 +66,10 @@ class ImportFile(models.Model):
         if not "data_for_download" in values or not values["data_for_download"]:
             raise exceptions.ValidationError("Необходимо выбрать 'данные для загрузки'")
 
-
-        ### API OZON TEMPORAL
+        #############################
+        ##### API OZON TEMPORAL #####
+        #############################
+        
         if values["data_for_download"] == "ozon_products_api":
             uploaded_file = values['file']
             
@@ -89,7 +91,8 @@ class ImportFile(models.Model):
                     ):
                         pass
                 except KeyError as e:
-                    print(f'OZON Error ozon_product {e}')
+                    print(f'OZON Error ozon_product {e},\n {row}')
+                    raise ValueError(f'OZON Error ozon_product {e},\n {row}')
                     continue
 
 
@@ -124,6 +127,7 @@ class ImportFile(models.Model):
                             pass
                     except ValueError as e:
                         print(f'OZON Error localization_index {e}')
+                        raise ValueError(f'OZON Error localization_index {e},\n {row}')
                         continue
 
                     else:
@@ -187,12 +191,15 @@ class ImportFile(models.Model):
                 elif row["trading_scheme"] == "":
                     fix_coms_by_trad_scheme = None
                     percent_coms_by_trad_scheme = None
-
-                ozon_price_history_data = {
-                    "product": ozon_product.id,
-                    "provider": ozon_product.seller.id,
-                    "price": float(row["price"]),
-                }
+            
+                try:
+                    ozon_price_history_data = {
+                        "product": ozon_product.id,
+                        "provider": ozon_product.seller.id,
+                        "price": float(row["price"]),
+                    }
+                except ValueError as e:
+                    print(f'OZON Error ozon_price_history_data {e}')
 
                 if fix_coms_by_trad_scheme:
                     fix_product_commissions = {
@@ -247,8 +254,9 @@ class ImportFile(models.Model):
             return 
             # return super(ImportFile, self).create(values)
 
-
-        ### ANOTHER
+        ###################
+        ##### ANOTHER #####
+        ###################
         content = base64.b64decode(values["file"])
         mime_type = self.get_file_mime_type(content)
         mime_type = mime_type.lower()

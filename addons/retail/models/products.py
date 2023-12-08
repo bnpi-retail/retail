@@ -26,5 +26,9 @@ class Product(models.Model):
 
     @api.model
     def create(self, values):
+        existing_record = self.search([('product_id', '=', values.get('product_id'))], limit=1)
+        if existing_record:
+            return existing_record
+
         values['volume'] = values['length'] * values['width'] * values['height']
         return super(Product, self).create(values)
