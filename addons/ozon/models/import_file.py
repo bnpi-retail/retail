@@ -74,8 +74,9 @@ class ImportFile(models.Model):
         
         if values["data_for_download"] == "ozon_products_api":
             uploaded_file = values['file']
-            
             csv_data = uploaded_file.read().decode('utf-8')
+            values['file'] = csv_data
+
             decoded_data = base64.b64decode(csv_data).decode('utf-8')
 
             csv_reader = csv.reader(StringIO(decoded_data))
@@ -251,8 +252,7 @@ class ImportFile(models.Model):
                 print(
                     f"price history for product {row['id_on_platform']} added"
                 )
-            return 
-            # return super(ImportFile, self).create(values)
+            return super(ImportFile, self).create(values)
 
         ###################
         ##### ANOTHER #####

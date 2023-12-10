@@ -14,3 +14,4 @@ class OzonFileImport(http.Controller):
         model_ozon_import_file.create(values)
 
         return 'File uploaded and processed successfully.'
+
