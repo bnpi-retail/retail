@@ -2,7 +2,6 @@ import csv
 import json
 
 import os
-from pprint import pprint as pp
 import requests
 
 OZON_CLIENT_ID = os.getenv("OZON_CLIENT_ID")
@@ -72,6 +71,41 @@ FBS_FIX_COMMISSIONS = {
 }
 FBS_PERCENT_COMMISSIONS = {
     "sales_percent_fbs": "Процент комиссии за продажу (FBS)",
+}
+OPERATION_TYPES = {
+    "MarketplaceNotDeliveredCostItem": "возврат невостребованного товара от покупателя на склад",
+    "MarketplaceReturnAfterDeliveryCostItem": "возврат от покупателя на склад после доставки",
+    "MarketplaceDeliveryCostItem": "доставка товара до покупателя",
+    "MarketplaceSaleReviewsItem": "приобретение отзывов на платформе",
+    "ItemAdvertisementForSupplierLogistic": "доставка товаров на склад Ozon : кросс-докинг",
+    "MarketplaceServiceStorageItem": "размещения товаров",
+    "MarketplaceMarketingActionCostItem": "продвижение товаров",
+    "MarketplaceServiceItemInstallment": "продвижениe и продажа в рассрочку",
+    "MarketplaceServiceItemMarkingItems": "обязательная маркировка товаров",
+    "MarketplaceServiceItemFlexiblePaymentSchedule": "гибкий график выплат",
+    "MarketplaceServiceItemReturnFromStock": "комплектация товаров для вывоза продавцом",
+    "ItemAdvertisementForSupplierLogisticSeller": "транспортно-экспедиционные услуги",
+    "MarketplaceServiceItemDelivToCustomer": "последняя миля",
+    "MarketplaceServiceItemDirectFlowTrans": "магистраль",
+    "MarketplaceServiceItemDropoffFF": "обработка отправления",
+    "MarketplaceServiceItemDropoffPVZ": "обработка отправления",
+    "MarketplaceServiceItemDropoffSC": "обработка отправления",
+    "MarketplaceServiceItemFulfillment": "сборка заказа",
+    "MarketplaceServiceItemPickup": "выезд транспортного средства по адресу продавца для забора отправлений : Pick-up",
+    "MarketplaceServiceItemReturnAfterDelivToCustomer": "обработка возврата",
+    "MarketplaceServiceItemReturnFlowTrans": "обратная магистраль",
+    "MarketplaceServiceItemReturnNotDelivToCustomer": "обработка отмен",
+    "MarketplaceServiceItemReturnPartGoodsCustomer": "обработка невыкупа",
+    "MarketplaceRedistributionOfAcquiringOperation": "оплата эквайринга",
+    "MarketplaceReturnStorageServiceAtThePickupPointFbsItem": "краткосрочное размещение возврата FBS",
+    "MarketplaceReturnStorageServiceInTheWarehouseFbsItem": "долгосрочное размещение возврата FBS",
+    "MarketplaceServiceItemDeliveryKGT": "доставка крупногабаритного товара (КГТ)",
+    "MarketplaceServiceItemDirectFlowLogistic": "логистика",
+    "MarketplaceServiceItemReturnFlowLogistic": "обратная логистика",
+    "MarketplaceServicePremiumCashbackIndividualPoints": "услуга продвижения «Бонусы продавца»",
+    "MarketplaceServicePremiumPromotion": "услуга продвижение Premium, фиксированная комиссия",
+    "OperationMarketplaceWithHoldingForUndeliverableGoods": "удержание за недовложение товара",
+    "MarketplaceServiceItemDropoffPPZ": "услуга drop-off в пункте приёма заказов",
 }
 
 
@@ -404,6 +438,111 @@ def import_products_commission_from_ozon_api_to_file(file_path: str):
 
         with open(file_path, "a", newline="") as csvfile:
             for row in commissions_rows:
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writerow(row)
+
+    return
+
+
+def get_product_info_list_by_sku(sku_list: list):
+    result = requests.post(
+        "https://api-seller.ozon.ru/v2/product/info/list",
+        headers=headers,
+        data=json.dumps({"sku": sku_list}),
+    ).json()
+    return result["result"]["items"]
+
+
+def get_transactions(date_from: str, date_to: str, page=1, page_size=1000):
+    """
+    date_from/date_to format: 2023-11-01T00:00:00.000Z
+    """
+    result = requests.post(
+        "https://api-seller.ozon.ru/v3/finance/transaction/list",
+        headers=headers,
+        data=json.dumps(
+            {
+                "filter": {
+                    "date": {
+                        "from": date_from,
+                        "to": date_to,
+                    },
+                    "transaction_type": "all",
+                },
+                "page": page,
+                "page_size": page_size,
+            }
+        ),
+    ).json()
+
+    message = result.get("message")
+    if message:
+        raise Exception(message)
+
+    result = result["result"]
+    page_count = result["page_count"]
+    operations = result["operations"]
+    next_page = page + 1
+    if next_page <= page_count:
+        return operations, next_page
+    else:
+        return operations, None
+
+
+def import_transactions_from_ozon_api_to_file(file_path: str):
+    fieldnames = [
+        "transaction_id",
+        "transaction_date",
+        "order_date",
+        "name",
+        "amount",
+        "product_ids_on_platform",
+        "services",
+        "posting_number",
+    ]
+    write_headers_to_csv(file_path, fieldnames)
+    next_page = 1
+    page_size = 1000
+    operations = ["" for _ in range(page_size)]
+    while len(operations) == page_size:
+        operations, next_page = get_transactions(page=next_page, page_size=page_size)
+        operations_rows = []
+        for oper in operations:
+            transaction_id = oper["operation_id"]
+            transaction_date = oper["operation_date"]
+            order_date = oper["posting"]["order_date"]
+            name = oper["operation_type_name"]
+            amount = oper["amount"]
+            product_skus = [i["sku"] for i in oper["items"]]
+
+            if product_skus:
+                products_info_list = get_product_info_list_by_sku(product_skus)
+                prod_ids_on_platform = [item["id"] for item in products_info_list]
+            else:
+                prod_ids_on_platform = []
+            services = []
+            for service in oper["services"]:
+                sn = OPERATION_TYPES.get(service["name"])
+                service_name = sn if sn else service["name"]
+                service_price = service["price"]
+                services.append((service_name, service_price))
+
+            posting_number = oper["posting"]["posting_number"]
+            row = {
+                "transaction_id": transaction_id,
+                "transaction_date": transaction_date,
+                "order_date": order_date if order_date else transaction_date,
+                "name": name,
+                "amount": amount,
+                "product_ids_on_platform": prod_ids_on_platform,
+                "services": services,
+                "posting_number": posting_number,
+            }
+            operations_rows.append(row)
+            print(f'Transaction {oper["operation_id"]} was imported')
+
+        with open(file_path, "a", newline="") as csvfile:
+            for row in operations_rows:
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writerow(row)
 
