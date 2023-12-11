@@ -489,7 +489,13 @@ def get_transactions(date_from: str, date_to: str, page=1, page_size=1000):
         return operations, None
 
 
-def import_transactions_from_ozon_api_to_file(file_path: str):
+def convert_datetime_str_to_ozon_date(datetime_str: str):
+    return datetime_str.replace(" ", "T") + "Z"
+
+
+def import_transactions_from_ozon_api_to_file(
+    file_path: str, date_from: str, date_to: str
+):
     fieldnames = [
         "transaction_id",
         "transaction_date",
@@ -505,7 +511,9 @@ def import_transactions_from_ozon_api_to_file(file_path: str):
     page_size = 1000
     operations = ["" for _ in range(page_size)]
     while len(operations) == page_size:
-        operations, next_page = get_transactions(page=next_page, page_size=page_size)
+        operations, next_page = get_transactions(
+            date_from=date_from, date_to=date_to, page=next_page, page_size=page_size
+        )
         operations_rows = []
         for oper in operations:
             transaction_id = oper["operation_id"]
