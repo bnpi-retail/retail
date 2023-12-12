@@ -15,6 +15,9 @@ class PriceHistoryCompetitors(models.Model):
                                           string='Товар конкурента')
     
     price = fields.Float(string='Цена')
+    final_price = fields.Float(string='Цена со скидкой')
+    sales = fields.Integer(string='Продажи')
+    balance = fields.Integer(string='Остатки')
 
 
     def name_get(self):

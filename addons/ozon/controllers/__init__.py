@@ -2,3 +2,4 @@
 
 from . import controllers
 from . import import_controllers
+from . import competitors_controllers

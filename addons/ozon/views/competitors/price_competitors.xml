@@ -12,6 +12,9 @@
                 <field name="timestamp"/>
                 <field name="product_competitors"/>
                 <field name="price"/>
+                <field name="final_price"/>
+                <field name="sales"/>
+                <field name="balance"/>
             </tree>
         </field>
     </record>
