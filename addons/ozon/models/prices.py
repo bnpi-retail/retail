@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from datetime import timedelta
 from email.policy import default
 from odoo import models, fields, api
 
@@ -87,7 +87,7 @@ class CountPrice(models.Model):
 
         for count_price_obj in self:
             for product in count_price_obj.product:
-                last_price = (
+                price = (
                     self.env["ozon.price_history"]
                     .search(
                         [
@@ -125,7 +125,7 @@ class CountPrice(models.Model):
                     {
                         "product": product.products.id,
                         "provider": count_price_obj.provider.id,
-                        "last_price": last_price,
+                        "price": price,
                         # 'price': 0,
                     }
                 )
@@ -159,52 +159,44 @@ class PriceHistory(models.Model):
     product = fields.Many2one("ozon.products", string="Товар")
     provider = fields.Many2one("retail.seller", string="Продавец")
     price = fields.Float(string="Установленная цена", readonly=True)
-    competitors = fields.One2many(
-        "ozon.name_competitors",
-        "pricing_history_id",
-        string="Цены конкурентов",
-        copy=True,
-    )
+    competitors = fields.One2many("ozon.name_competitors", 
+                                  "pricing_history_id", 
+                                  string="Цены конкурентов", 
+                                  copy=True)
 
     previous_price = fields.Float(string="Предыдущая цена", readonly=True)
 
-    timestamp = fields.Date(string="Дата", default=fields.Date.today, readonly=True)
+    timestamp = fields.Date(string='Дата', 
+                            default=fields.Date.today,
+                            readonly=True)
 
-    fix_expensives = fields.One2many(
-        "ozon.fix_expenses",
-        "price_history_id",
-        string=" Фиксированные затраты",
-        copy=True,
-        readonly=True,
-    )
+    fix_expensives = fields.One2many("ozon.fix_expenses",
+                                     "price_history_id",
+                                     string=" Фиксированные затраты",
+                                     copy=True,
+                                     readonly=True)
 
-    total_cost_fix = fields.Float(
-        string="Итого", compute="_compute_total_cost_fix", store=True
-    )
+    total_cost_fix = fields.Float(string="Итого", 
+                                  compute="_compute_total_cost_fix", store=True)
 
-    costs = fields.One2many(
-        "ozon.cost",
-        "price_history_id",
-        string="Процент от продаж",
-        copy=True,
-        readonly=True,
-    )
+    costs = fields.One2many("ozon.cost", "price_history_id", 
+                            string="Процент от продаж", copy=True, readonly=True)
 
-    total_cost = fields.Float(string="Итого", compute="_compute_total_cost", store=True)
+    total_cost = fields.Float(string="Итого", 
+                            compute="_compute_total_cost", store=True)
 
-    our_price = fields.Float(
-        string="Расчетная цена", compute="_compute_our_price", store=True
-    )
+    our_price = fields.Float(string="Расчетная цена",
+                             compute="_compute_our_price", store=True)
 
-    ideal_price = fields.Float(
-        string="Идеальная цена", compute="_compute_ideal_price", store=True
-    )
+    ideal_price = fields.Float(string="Идеальная цена",
+                               compute="_compute_ideal_price", store=True)
 
-    profit = fields.Float(
-        string="Прибыль от расчетной цены", compute="_compute_profit", store=True
-    )
+    profit = fields.Float(string="Прибыль от расчетной цены",
+                          compute="_compute_profit", store=True)
 
     custom_our_price = fields.Float(string="Своя расчетная цена", default=0)
+
+    product_id = fields.Many2one('ozon.products', string='Лот')
 
     @api.depends("costs.price")
     def _compute_total_cost(self):
@@ -240,6 +232,10 @@ class PriceHistory(models.Model):
     @api.model
     def create(self, values):
         record = super(PriceHistory, self).create(values)
+        ### Добавление id нашей записи к записи 'История цен'
+        product = record.product
+        product.write({'price_our_history_ids': [(4, record.id)]})
+
 
         record._compute_total_cost_fix()
 

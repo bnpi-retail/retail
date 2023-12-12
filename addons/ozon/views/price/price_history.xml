@@ -1,6 +1,20 @@
 <odoo>
     <data>
 
+        <!-- Graph -->
+        <!-- <record id="view_price_history_graph" model="ir.ui.view">
+            <field name="name">История цены</field>
+            <field name="model">ozon.price_history</field>
+            <field name="arch" type="xml">
+                <graph string="История цен" type="line">
+                    <field name="timestamp" type="datetime"/>
+                    <field name="product" group="1" search="[('product', '=', product)]"/>
+                    <field name="price" type="measure" aggregate="avg"/>
+                </graph>
+            </field>
+        </record> -->
+
+        
         <!-- Form -->
         <record id="view_price_history_form" model="ir.ui.view">
             <field name="name">История цены</field>
@@ -73,7 +87,7 @@
         <record model="ir.actions.act_window" id="action_price_history">
             <field name="name">История цен</field>
             <field name="res_model">ozon.price_history</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">tree,form,graph</field>
         </record>
 
         <!-- Menu -->

@@ -19,6 +19,7 @@ class PriceHistoryCompetitors(models.Model):
     sales = fields.Integer(string='Продажи')
     balance = fields.Integer(string='Остатки')
 
+    product_id = fields.Many2one('ozon.products', string='Лот')
 
     def name_get(self):
         """
@@ -30,3 +31,12 @@ class PriceHistoryCompetitors(models.Model):
                            f'{record.timestamp},  '
                            f'{record.product_competitors.product.products.name}'))
         return result
+    
+    @api.model
+    def create(self, values):
+        record = super(PriceHistoryCompetitors, self).create(values)
+
+        product_record = record.product_competitors.product
+        product_record.write({'price_history_ids': [(4, record.id)]})
+
+        return record
