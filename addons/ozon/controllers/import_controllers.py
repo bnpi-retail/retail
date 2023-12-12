@@ -30,12 +30,12 @@ class OzonTransactionsImport(http.Controller):
     )
     def import_transactions_from_ozon_api_to_file(self, **kwargs):
         model_ozon_import_file = http.request.env["ozon.import_file"]
-
+        file_storage = kwargs.get("file")
+        f = file_storage.read().decode("utf-8")
         values = {
             "data_for_download": "ozon_transactions",
-            "file": kwargs.get("file"),
+            "file": f,
         }
-
         model_ozon_import_file.create(values)
 
         return "File uploaded and processed successfully."
