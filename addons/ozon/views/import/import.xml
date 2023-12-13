@@ -18,12 +18,6 @@
                             <i class="fa fa-download" />
                         </a>
                     </group>
-                    <group string="Выгрузить все товары из Ozon API">
-                        <a class="oe_menu_leaf" href="/download/ozon_products_from_ozon_api"
-                            title="Скачать .csv файл">
-                            <i class="fa fa-download" />
-                        </a>
-                    </group>
                 </form>
 
             </field>
