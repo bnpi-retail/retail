@@ -84,8 +84,7 @@ class ImportFile(models.Model):
 
                 try:
                     if ozon_product := self.is_ozon_product_exists(
-                        id_on_platform=row["id_on_platform"],
-                        trading_scheme=row["trading_scheme"],
+                        id_on_platform=row["id_on_platform"]
                     ):
                         pass
                 except KeyError as e:
@@ -271,10 +270,10 @@ class ImportFile(models.Model):
                     reader = csv.DictReader(csvfile)
                     for row in reader:
                         if ozon_product := self.is_ozon_product_exists(
-                            id_on_platform=row["id_on_platform"],
-                            trading_scheme=row["trading_scheme"],
+                            id_on_platform=row["id_on_platform"]
                         ):
-                            pass
+                            if ozon_product.visible != row["visible"]:
+                                ozon_product.write({"visible": row["visible"]})
 
                         else:
                             if ozon_category := self.is_ozon_category_exists(
@@ -342,6 +341,7 @@ class ImportFile(models.Model):
                                     "index_localization": localization_index.id,
                                     "trading_scheme": row["trading_scheme"],
                                     "delivery_location": row["delivery_location"],
+                                    "visible": row["visible"],
                                 }
                             )
                             print(f"product {row['id_on_platform']} created")
@@ -469,12 +469,9 @@ class ImportFile(models.Model):
 
         return super(ImportFile, self).create(values)
 
-    def is_ozon_product_exists(self, id_on_platform: str, trading_scheme: str):
+    def is_ozon_product_exists(self, id_on_platform: str):
         result = self.env["ozon.products"].search(
-            [
-                ("id_on_platform", "=", id_on_platform),
-                ("trading_scheme", "=", trading_scheme),
-            ],
+            [("id_on_platform", "=", id_on_platform)],
             limit=1,
         )
         return result if result else False
