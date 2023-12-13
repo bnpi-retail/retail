@@ -1,2 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_ozon_movement_of_funds,Access Ozon Import Movement of Funds,model_ozon_movement_of_funds,base.group_user,1,1,1,1
