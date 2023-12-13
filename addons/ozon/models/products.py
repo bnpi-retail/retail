@@ -20,7 +20,13 @@ class Product(models.Model):
         "ozon.search_queries", "product_id", string="Поисковые запросы"
     )
     trading_scheme = fields.Selection(
-        [("FBS", "FBS"), ("FBO", "FBO"), ("", "")], string="Схема торговли"
+        [
+            ("FBS", "FBS"),
+            ("FBO", "FBO"),
+            ("FBS, FBO", "FBS, FBO"),
+            ("", ""),
+        ],
+        string="Схема торговли",
     )
 
     delivery_location = fields.Selection(
@@ -39,13 +45,13 @@ class Product(models.Model):
         ),
     )
 
-    price_history_ids = fields.One2many('ozon.price_history_competitors', 
-                                        'product_id', 
-                                        string='История цен конкурентов')
+    price_history_ids = fields.One2many(
+        "ozon.price_history_competitors", "product_id", string="История цен конкурентов"
+    )
 
-    price_our_history_ids = fields.One2many('ozon.price_history', 
-                                        'product_id', 
-                                        string='История цен')
+    price_our_history_ids = fields.One2many(
+        "ozon.price_history", "product_id", string="История цен"
+    )
 
     def name_get(self):
         """
@@ -56,16 +62,20 @@ class Product(models.Model):
             result.append((record.id, record.products.name))
         return result
 
-    @api.depends('price_our_history_ids.price')
+    @api.depends("price_our_history_ids.price")
     def _compute_price_history_values(self):
         for product in self:
-            product.price_history_values = [(record.timestamp, record.price) for record in product.price_our_history_ids]
-            
+            product.price_history_values = [
+                (record.timestamp, record.price)
+                for record in product.price_our_history_ids
+            ]
+
     @api.model
     def create(self, values):
-        existing_record = self.search([('id_on_platform', '=', values.get('id_on_platform'))])
+        existing_record = self.search(
+            [("id_on_platform", "=", values.get("id_on_platform"))]
+        )
         if existing_record:
             return existing_record
 
         return super(Product, self).create(values)
-        
