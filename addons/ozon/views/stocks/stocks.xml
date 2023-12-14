@@ -1,0 +1,57 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_stocks_form" model="ir.ui.view">
+            <field name="name">Остатки товара</field>
+            <field name="model">ozon.stock</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group string="Остатки товароа по схемам торговли">
+                        <field name="product">
+                            <tree>
+                                <field name="products">
+                                    <tree>
+                                        <field name="name"></field>
+                                    </tree>
+                                </field>
+                            </tree>
+                        </field>
+                        <field name="stocks_fbs" />
+                        <field name="stocks_fbo" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_transaction_tree" model="ir.ui.view">
+            <field name="name">Остатки товара</field>
+            <field name="model">ozon.stock</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="product">
+                        <field name="id_on_platform" />
+                    </field>
+                    <field name="stocks_fbs" />
+                    <field name="stocks_fbo" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_stocks">
+            <field name="name">Остатки товаров</field>
+            <field name="res_model">ozon.stock</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Остатки товаров"
+            id="menu_stock"
+            parent="ozon.menu_root"
+            action="action_stocks"
+            sequence="37" />
+
+    </data>
+</odoo>
