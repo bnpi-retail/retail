@@ -9,7 +9,6 @@
                 <form>
                     <group>
                         <field name="id_on_platform" />
-                        <field name="visible" />
                         <field name="full_categories" />
                         <field name="categories" />
                         <field name="products" />
@@ -19,6 +18,8 @@
                         <field name="delivery_location" />
                         <field name="insurance" />
                         <field name="search_queries" widget="many2many_tags" />
+                        <field name="stocks_fbs" />
+                        <field name="stocks_fbo" />
                         <field name="price_our_history_ids" widget="one2many_list">
                             <tree limit="10">
                                 <field name="timestamp" />
@@ -47,8 +48,8 @@
                     <field name="products" />
                     <field name="seller" />
                     <field name="trading_scheme" />
-                    <field name="delivery_location" />
-                    <field name="visible" />
+                    <field name="stocks_fbs" />
+                    <field name="stocks_fbo" />
                 </tree>
             </field>
         </record>

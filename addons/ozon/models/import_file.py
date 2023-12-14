@@ -29,6 +29,7 @@ class ImportFile(models.Model):
             ("ozon_products", "Товары Ozon"),
             ("ozon_commissions", "Комиссии Ozon по категориям"),
             ("ozon_transactions", "Транзакции Ozon"),
+            ("ozon_stocks", "Остатки товаров Ozon"),
         ],
         string="Данные для загрузки",
     )
@@ -97,8 +98,7 @@ class ImportFile(models.Model):
                         if ozon_product := self.is_ozon_product_exists(
                             id_on_platform=row["id_on_platform"]
                         ):
-                            if ozon_product.visible != row["visible"]:
-                                ozon_product.write({"visible": row["visible"]})
+                            pass
 
                         else:
                             if ozon_category := self.is_ozon_category_exists(
@@ -166,7 +166,6 @@ class ImportFile(models.Model):
                                     "index_localization": localization_index.id,
                                     "trading_scheme": row["trading_scheme"],
                                     "delivery_location": row["delivery_location"],
-                                    "visible": row["visible"],
                                 }
                             )
                             print(f"product {row['id_on_platform']} created")
@@ -292,6 +291,9 @@ class ImportFile(models.Model):
             elif values["data_for_download"] == "ozon_transactions":
                 self.import_transactions(content)
 
+            elif values["data_for_download"] == "ozon_stocks":
+                self.import_stocks(content)
+
         return super(ImportFile, self).create(values)
 
     def is_ozon_product_exists(self, id_on_platform: str):
@@ -380,6 +382,13 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
+    def is_stock_exists(self, ozon_product_id):
+        result = self.env["ozon.stock"].search(
+            [("product", "=", ozon_product_id)],
+            limit=1,
+        )
+        return result if result else False
+
     def import_transactions(self, content):
         f_path = "/mnt/extra-addons/ozon/__pycache__/transactions.csv"
         with open(f_path, "w") as f:
@@ -423,5 +432,39 @@ class ImportFile(models.Model):
                 }
                 ozon_transaction = self.env["ozon.transaction"].create(data)
                 print(f"Transaction {row['transaction_id']} was created")
+
+        os.remove(f_path)
+
+    def import_stocks(self, content):
+        f_path = "/mnt/extra-addons/ozon/__pycache__/stocks.csv"
+        with open(f_path, "w") as f:
+            f.write(content)
+
+        with open(f_path) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if ozon_product := self.is_ozon_product_exists(
+                    id_on_platform=row["id_on_platform"]
+                ):
+                    if stock := self.is_stock_exists(ozon_product.id):
+                        stock.write(
+                            {
+                                "stocks_fbs": row["stocks_fbs"],
+                                "stocks_fbo": row["stocks_fbo"],
+                            }
+                        )
+                        print(f"Product {row['id_on_platform']} stocks were updated")
+                    else:
+                        stock = self.env["ozon.stock"].create(
+                            {
+                                "product": ozon_product.id,
+                                "stocks_fbs": row["stocks_fbs"],
+                                "stocks_fbo": row["stocks_fbo"],
+                                "_prod_id": row["product_id"],
+                            }
+                        )
+                        print(f"Product {row['id_on_platform']} stocks were created")
+
+                    ozon_product.write({"stock": stock.id})
 
         os.remove(f_path)

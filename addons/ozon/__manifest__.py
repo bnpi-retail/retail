@@ -36,6 +36,7 @@
         # "security/issue_report/issue_report_products_additional_info/ir.model.access.csv",
         # "security/issue_report/name_additional_info/ir.model.access.csv",
         "security/transaction/ir.model.access.csv",
+        "security/stock/ir.model.access.csv",
         ### views
         "views/menu.xml",
         "views/price/menu.xml",
@@ -60,6 +61,7 @@
         "views/search_queries/search_queries.xml",
         # "views/issue_report/issue_report.xml",
         "views/transactions/transactions.xml",
+        "views/stocks/stocks.xml",
     ],
     "demo": [
         "demo/demo.xml",
