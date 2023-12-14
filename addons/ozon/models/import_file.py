@@ -97,8 +97,7 @@ class ImportFile(models.Model):
                         if ozon_product := self.is_ozon_product_exists(
                             id_on_platform=row["id_on_platform"]
                         ):
-                            if ozon_product.visible != row["visible"]:
-                                ozon_product.write({"visible": row["visible"]})
+                            pass
 
                         else:
                             if ozon_category := self.is_ozon_category_exists(
@@ -166,7 +165,6 @@ class ImportFile(models.Model):
                                     "index_localization": localization_index.id,
                                     "trading_scheme": row["trading_scheme"],
                                     "delivery_location": row["delivery_location"],
-                                    "visible": row["visible"],
                                 }
                             )
                             print(f"product {row['id_on_platform']} created")

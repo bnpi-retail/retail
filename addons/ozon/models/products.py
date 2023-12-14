@@ -52,7 +52,6 @@ class Product(models.Model):
     price_our_history_ids = fields.One2many(
         "ozon.price_history", "product_id", string="История цен"
     )
-    visible = fields.Char(string="Активный", readonly=True)
 
     def name_get(self):
         """

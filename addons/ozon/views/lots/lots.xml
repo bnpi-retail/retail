@@ -9,7 +9,6 @@
                 <form>
                     <group>
                         <field name="id_on_platform" />
-                        <field name="visible" />
                         <field name="full_categories" />
                         <field name="categories" />
                         <field name="products" />
@@ -48,7 +47,6 @@
                     <field name="seller" />
                     <field name="trading_scheme" />
                     <field name="delivery_location" />
-                    <field name="visible" />
                 </tree>
             </field>
         </record>
