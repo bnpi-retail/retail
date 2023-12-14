@@ -61,6 +61,7 @@
         "views/search_queries/search_queries.xml",
         # "views/issue_report/issue_report.xml",
         "views/transactions/transactions.xml",
+        "views/stocks/stocks.xml",
     ],
     "demo": [
         "demo/demo.xml",

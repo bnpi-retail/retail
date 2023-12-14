@@ -31,7 +31,9 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="product">
-                        <field name="id_on_platform" />
+                        <tree>
+                            <field name="id_on_platform" />
+                        </tree>
                     </field>
                     <field name="stocks_fbs" />
                     <field name="stocks_fbo" />

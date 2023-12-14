@@ -455,7 +455,7 @@ class ImportFile(models.Model):
                         )
                         print(f"Product {row['id_on_platform']} stocks were updated")
                     else:
-                        self.env["ozon.stock"].create(
+                        stock = self.env["ozon.stock"].create(
                             {
                                 "product": ozon_product.id,
                                 "stocks_fbs": row["stocks_fbs"],
@@ -464,5 +464,7 @@ class ImportFile(models.Model):
                             }
                         )
                         print(f"Product {row['id_on_platform']} stocks were created")
+
+                    ozon_product.write({"stock": stock.id})
 
         os.remove(f_path)

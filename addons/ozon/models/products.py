@@ -53,6 +53,8 @@ class Product(models.Model):
         "ozon.price_history", "product_id", string="История цен"
     )
     stock = fields.Many2one("ozon.stock", string="Остатки товаров")
+    stocks_fbs = fields.Integer(related="stock.stocks_fbs", store=True)
+    stocks_fbo = fields.Integer(related="stock.stocks_fbo", store=True)
 
     def name_get(self):
         """

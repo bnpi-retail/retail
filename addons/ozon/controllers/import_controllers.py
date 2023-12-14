@@ -39,3 +39,23 @@ class OzonProductsImport(http.Controller):
         model_ozon_import_file.create(values)
 
         return "File uploaded and processed successfully."
+
+
+class OzonStocksImport(http.Controller):
+    @http.route(
+        "/import/stocks_from_ozon_api_to_file",
+        auth="user",
+        csrf=False,
+        methods=["POST"],
+    )
+    def import_stocks_from_ozon_api_to_file(self, **kwargs):
+        model_ozon_import_file = http.request.env["ozon.import_file"]
+        file_storage = kwargs.get("file")
+        f = file_storage.read().decode("utf-8")
+        values = {
+            "data_for_download": "ozon_stocks",
+            "file": f,
+        }
+        model_ozon_import_file.create(values)
+
+        return "File uploaded and processed successfully."
