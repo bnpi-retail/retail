@@ -42,37 +42,20 @@
         </record>
 
         <!-- Tree -->
-        <record id="view_transaction_tree" model="ir.ui.view">
+        <record id="view_product_fee_tree" model="ir.ui.view">
             <field name="name">Комиссии товаров Ozon</field>
             <field name="model">ozon.product_fee</field>
             <field name="arch" type="xml">
                 <tree>
-
                     <field name="product">
                         <tree>
-                            <field name="id_on_platform" />
+                            <field name="products">
+                                <tree>
+                                    <field name="name"></field>
+                                </tree>
+                            </field>
                         </tree>
                     </field>
-                    <field name="acquiring" />
-                    <field name="fbo_fulfillment_amount" />
-                    <field name="fbo_direct_flow_trans_min_amount" />
-                    <field name="fbo_direct_flow_trans_max_amount" />
-                    <field name="fbo_deliv_to_customer_amount" />
-                    <field name="fbo_return_flow_amount" />
-                    <field name="fbo_return_flow_trans_min_amount" />
-                    <field name="fbo_return_flow_trans_max_amount" />
-                    <field name="fbs_first_mile_min_amount" />
-                    <field name="fbs_first_mile_max_amount" />
-                    <field name="fbs_direct_flow_trans_min_amount" />
-                    <field name="fbs_direct_flow_trans_max_amount" />
-                    <field name="fbs_deliv_to_customer_amount" />
-                    <field name="fbs_return_flow_amount" />
-                    <field name="fbs_return_flow_trans_min_amount" />
-                    <field name="fbs_return_flow_trans_max_amount" />
-                    <field name="sales_percent_fbo" />
-                    <field name="sales_percent_fbs" />
-                    <field name="sales_percent" />
-
                 </tree>
             </field>
         </record>
