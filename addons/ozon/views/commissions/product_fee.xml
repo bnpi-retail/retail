@@ -1,0 +1,78 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_product_fee_form" model="ir.ui.view">
+            <field name="name">Комиссии товаров Ozon</field>
+            <field name="model">ozon.product_fee</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="product">
+                            <tree>
+                                <field name="products">
+                                    <tree>
+                                        <field name="name"></field>
+                                    </tree>
+                                </field>
+                            </tree>
+                        </field>
+                        <field name="acquiring" />
+                        <field name="fbo_fulfillment_amount" />
+                        <field name="fbo_direct_flow_trans_min_amount" />
+                        <field name="fbo_direct_flow_trans_max_amount" />
+                        <field name="fbo_deliv_to_customer_amount" />
+                        <field name="fbo_return_flow_amount" />
+                        <field name="fbo_return_flow_trans_min_amount" />
+                        <field name="fbo_return_flow_trans_max_amount" />
+                        <field name="fbs_first_mile_min_amount" />
+                        <field name="fbs_first_mile_max_amount" />
+                        <field name="fbs_direct_flow_trans_min_amount" />
+                        <field name="fbs_direct_flow_trans_max_amount" />
+                        <field name="fbs_deliv_to_customer_amount" />
+                        <field name="fbs_return_flow_amount" />
+                        <field name="fbs_return_flow_trans_min_amount" />
+                        <field name="fbs_return_flow_trans_max_amount" />
+                        <field name="sales_percent_fbo" />
+                        <field name="sales_percent_fbs" />
+                        <field name="sales_percent" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_product_fee_tree" model="ir.ui.view">
+            <field name="name">Комиссии товаров Ozon</field>
+            <field name="model">ozon.product_fee</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="product">
+                        <tree>
+                            <field name="products">
+                                <tree>
+                                    <field name="name"></field>
+                                </tree>
+                            </field>
+                        </tree>
+                    </field>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_product_fee">
+            <field name="name">Комиссии товаров Ozon</field>
+            <field name="res_model">ozon.product_fee</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Комиссии товаров Ozon"
+            id="menu_product_fee"
+            parent="ozon.menu_comissinons"
+            action="action_product_fee"
+            sequence="37" />
+
+    </data>
+</odoo>

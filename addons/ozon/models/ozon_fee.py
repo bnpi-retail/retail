@@ -5,7 +5,7 @@ from odoo import models, fields, api
 
 class OzonFee(models.Model):
     _name = "ozon.ozon_fee"
-    _description = "Комисии товара"
+    _description = "Комисии категорий"
 
     name = fields.Char(string="Наименование комиссии")
     value = fields.Float(string="Значние комиссии")

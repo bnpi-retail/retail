@@ -9,6 +9,7 @@ import magic
 from odoo import models, fields, api, exceptions
 
 from ..ozon_api import (
+    ALL_COMMISSIONS,
     FBO_FIX_COMMISSIONS,
     FBO_PERCENT_COMMISSIONS,
     FBS_FIX_COMMISSIONS,
@@ -168,6 +169,14 @@ class ImportFile(models.Model):
                                     "delivery_location": row["delivery_location"],
                                 }
                             )
+                            all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
+                            ozon_product_fee = self.env["ozon.product_fee"].create(
+                                {"product": ozon_product.id, **all_fees}
+                            )
+                            ozon_product.write(
+                                values={"product_fee": ozon_product_fee},
+                                cr=ozon_product,
+                            )
                             print(f"product {row['id_on_platform']} created")
 
                         if row["trading_scheme"] == "FBO":
@@ -195,11 +204,11 @@ class ImportFile(models.Model):
                             "previous_price": previous_price,
                         }
 
+                        fix_expenses = []
                         if fix_coms_by_trad_scheme:
                             fix_product_commissions = {
                                 k: row[k] for k in fix_coms_by_trad_scheme
                             }
-                            fix_expenses = []
                             for com, value in fix_product_commissions.items():
                                 fix_expenses_record = self.env[
                                     "ozon.fix_expenses"
@@ -208,17 +217,21 @@ class ImportFile(models.Model):
                                         "name": fix_coms_by_trad_scheme[com],
                                         "price": value,
                                         "discription": "",
+                                        "product_id": ozon_product.id,
                                     }
                                 )
+
                                 fix_expenses.append(fix_expenses_record.id)
 
-                            ozon_price_history_data["fix_expensives"] = fix_expenses
+                            ozon_product.write(
+                                {"fix_expenses": fix_expenses}, ozon_product
+                            )
 
+                        costs = []
                         if percent_coms_by_trad_scheme:
                             percent_product_commissions = {
                                 k: row[k] for k in percent_coms_by_trad_scheme
                             }
-                            costs = []
                             for com, value in percent_product_commissions.items():
                                 abs_com = round(
                                     ozon_price_history_data["price"]
@@ -232,11 +245,15 @@ class ImportFile(models.Model):
                                         "name": percent_coms_by_trad_scheme[com],
                                         "price": abs_com,
                                         "discription": f"{value}%",
+                                        "product_id": ozon_product.id,
                                     }
                                 )
                                 costs.append(costs_record.id)
 
                             ozon_price_history_data["costs"] = costs
+                            ozon_product.write(
+                                {"percent_expenses": costs}, ozon_product
+                            )
 
                         ozon_price_history = self.env["ozon.price_history"].create(
                             ozon_price_history_data
@@ -468,3 +485,11 @@ class ImportFile(models.Model):
                     ozon_product.write({"stock": stock.id})
 
         os.remove(f_path)
+
+    def is_retail_cost_price_exists(self, ozon_product):
+        result = self.env["retail.cost_price"].search(
+            [("products", "=", ozon_product.products.id)],
+            order="timestamp desc",
+            limit=1,
+        )
+        return result if result else False

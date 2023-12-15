@@ -56,6 +56,40 @@ class Product(models.Model):
     stocks_fbs = fields.Integer(related="stock.stocks_fbs", store=True)
     stocks_fbo = fields.Integer(related="stock.stocks_fbo", store=True)
 
+    fix_expenses = fields.One2many(
+        "ozon.fix_expenses",
+        "product_id",
+        string="Фиксированные затраты",
+        copy=True,
+        readonly=True,
+    )
+    percent_expenses = fields.One2many(
+        "ozon.cost",
+        "product_id",
+        string="Процент от продаж",
+        copy=True,
+        readonly=True,
+    )
+
+    total_fix_expenses = fields.Float(
+        string="Итого", compute="_compute_total_fix_expenses", store=True
+    )
+    total_percent_expenses = fields.Float(
+        string="Итого", compute="_compute_total_percent_expenses", store=True
+    )
+
+    product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
+
+    @api.depends("fix_expenses.price")
+    def _compute_total_fix_expenses(self):
+        for record in self:
+            record.total_fix_expenses = sum(record.fix_expenses.mapped("price"))
+
+    @api.depends("percent_expenses.price")
+    def _compute_total_percent_expenses(self):
+        for record in self:
+            record.total_percent_expenses = sum(record.percent_expenses.mapped("price"))
+
     def name_get(self):
         """
         Rename name records
@@ -82,3 +116,24 @@ class Product(models.Model):
             return existing_record
 
         return super(Product, self).create(values)
+
+    @api.model
+    def write(self, values, cr):
+        if values.get("fix_expenses"):
+            cost_price = self.env["retail.cost_price"].search(
+                [("products", "=", cr["products"].id)],
+                order="timestamp desc",
+                limit=1,
+            )
+
+            fix_expense_record = self.env["ozon.fix_expenses"].create(
+                {
+                    "name": "Себестоимость товара",
+                    "price": cost_price.price,
+                    "discription": "Поиск себестоимости товара в 'Retail'",
+                    "product_id": cr.id,
+                }
+            )
+            values["fix_expenses"] = [fix_expense_record.id] + values["fix_expenses"]
+
+        return super(Product, self).write(values)

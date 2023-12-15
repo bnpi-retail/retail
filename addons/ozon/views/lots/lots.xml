@@ -20,6 +20,25 @@
                         <field name="search_queries" widget="many2many_tags" />
                         <field name="stocks_fbs" />
                         <field name="stocks_fbo" />
+
+                        <field name="fix_expenses" widget="many2many_pills">
+                            <tree>
+                                <field name="name" />
+                                <field name="discription" />
+                                <field name="price" />
+                            </tree>
+                        </field>
+                        <field name="total_fix_expenses" />
+
+                        <field name="percent_expenses" widget="many2many_pills">
+                            <tree>
+                                <field name="name" />
+                                <field name="discription" />
+                                <field name="price" />
+                            </tree>
+                        </field>
+                        <field name="total_percent_expenses" />
+
                         <field name="price_our_history_ids" widget="one2many_list">
                             <tree limit="10">
                                 <field name="timestamp" />
