@@ -9,6 +9,7 @@ import magic
 from odoo import models, fields, api, exceptions
 
 from ..ozon_api import (
+    ALL_COMMISSIONS,
     FBO_FIX_COMMISSIONS,
     FBO_PERCENT_COMMISSIONS,
     FBS_FIX_COMMISSIONS,
@@ -167,6 +168,14 @@ class ImportFile(models.Model):
                                     "trading_scheme": row["trading_scheme"],
                                     "delivery_location": row["delivery_location"],
                                 }
+                            )
+                            all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
+                            ozon_product_fee = self.env["ozon.product_fee"].create(
+                                {"product": ozon_product.id, **all_fees}
+                            )
+                            ozon_product.write(
+                                values={"product_fee": ozon_product_fee},
+                                cr=ozon_product,
                             )
                             print(f"product {row['id_on_platform']} created")
 

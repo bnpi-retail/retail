@@ -78,6 +78,8 @@ class Product(models.Model):
         string="Итого", compute="_compute_total_percent_expenses", store=True
     )
 
+    product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
+
     @api.depends("fix_expenses.price")
     def _compute_total_fix_expenses(self):
         for record in self:
