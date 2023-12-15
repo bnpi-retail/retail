@@ -169,15 +169,20 @@ class ImportFile(models.Model):
                                     "delivery_location": row["delivery_location"],
                                 }
                             )
-                            all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
-                            ozon_product_fee = self.env["ozon.product_fee"].create(
+
+                            print(f"product {row['id_on_platform']} created")
+
+                        all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
+                        if product_fee := self.is_product_fee_exists(ozon_product):
+                            product_fee.write({"product": ozon_product.id, **all_fees})
+                        else:
+                            product_fee = self.env["ozon.product_fee"].create(
                                 {"product": ozon_product.id, **all_fees}
                             )
                             ozon_product.write(
-                                values={"product_fee": ozon_product_fee},
+                                values={"product_fee": product_fee},
                                 cr=ozon_product,
                             )
-                            print(f"product {row['id_on_platform']} created")
 
                         if row["trading_scheme"] == "FBO":
                             fix_coms_by_trad_scheme = FBO_FIX_COMMISSIONS
@@ -490,6 +495,13 @@ class ImportFile(models.Model):
         result = self.env["retail.cost_price"].search(
             [("products", "=", ozon_product.products.id)],
             order="timestamp desc",
+            limit=1,
+        )
+        return result if result else False
+
+    def is_product_fee_exists(self, ozon_product):
+        result = self.env["ozon.product_fee"].search(
+            [("product.id", "=", ozon_product.id)],
             limit=1,
         )
         return result if result else False
