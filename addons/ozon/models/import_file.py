@@ -229,7 +229,8 @@ class ImportFile(models.Model):
                                 fix_expenses.append(fix_expenses_record.id)
 
                             ozon_product.write(
-                                {"fix_expenses": fix_expenses}, ozon_product
+                                {"fix_expenses": fix_expenses},
+                                cr=ozon_product,
                             )
 
                         costs = []
@@ -257,7 +258,8 @@ class ImportFile(models.Model):
 
                             ozon_price_history_data["costs"] = costs
                             ozon_product.write(
-                                {"percent_expenses": costs}, ozon_product
+                                {"percent_expenses": costs},
+                                cr=ozon_product,
                             )
 
                         ozon_price_history = self.env["ozon.price_history"].create(
@@ -487,7 +489,7 @@ class ImportFile(models.Model):
                         )
                         print(f"Product {row['id_on_platform']} stocks were created")
 
-                    ozon_product.write({"stock": stock.id})
+                    ozon_product.write({"stock": stock.id}, ozon_product)
 
         os.remove(f_path)
 
