@@ -57,6 +57,9 @@ class Product(models.Model):
     stock = fields.Many2one("ozon.stock", string="Остатки товаров")
     stocks_fbs = fields.Integer(related="stock.stocks_fbs", store=True)
     stocks_fbo = fields.Integer(related="stock.stocks_fbo", store=True)
+    is_selling = fields.Boolean(
+        string="В продаже", compute="_get_is_selling", store=True, readonly=True
+    )
 
     fix_expenses = fields.One2many(
         "ozon.fix_expenses",
@@ -163,3 +166,11 @@ class Product(models.Model):
             values["fix_expenses"] = [fix_expense_record.id] + values["fix_expenses"]
 
         return super(Product, self).write(values)
+
+    @api.depends("stocks_fbs", "stocks_fbo")
+    def _get_is_selling(self):
+        for record in self:
+            if record.stocks_fbs > 0 or record.stocks_fbo > 0:
+                record.is_selling = True
+            else:
+                record.is_selling = False

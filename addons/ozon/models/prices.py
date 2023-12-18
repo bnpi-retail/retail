@@ -209,7 +209,7 @@ class PriceHistory(models.Model):
     )
 
     profit = fields.Float(
-        string="Прибыль от расчетной цены", compute="_compute_profit", store=True
+        string="Прибыль от установленной цены", compute="_compute_profit", store=True
     )
 
     custom_our_price = fields.Float(string="Своя расчетная цена", default=0)
@@ -229,11 +229,12 @@ class PriceHistory(models.Model):
             else:
                 record.our_price = record.ideal_price
 
-    @api.depends("our_price", "total_cost_fix", "total_cost_percent")
+    @api.depends("price", "total_cost_fix", "total_cost_percent")
     def _compute_profit(self):
         for record in self:
-            total = record.our_price - record.total_cost_fix - record.total_cost_percent
-            record.profit = total
+            record.profit = (
+                record.price - record.total_cost_fix - record.total_cost_percent
+            )
 
     @api.model
     def create(self, values):
