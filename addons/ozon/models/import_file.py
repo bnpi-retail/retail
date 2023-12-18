@@ -225,9 +225,9 @@ class ImportFile(models.Model):
                                         "product_id": ozon_product.id,
                                     }
                                 )
-
                                 fix_expenses.append(fix_expenses_record.id)
 
+                            ozon_price_history_data["fix_expenses"] = fix_expenses
                             ozon_product.write(
                                 {"fix_expenses": fix_expenses},
                                 cr=ozon_product,
