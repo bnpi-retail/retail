@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
                 <form>
                     <group>
+                        <field name="is_selling" />
                         <field name="id_on_platform" />
                         <field name="full_categories" />
                         <field name="categories" />
@@ -77,6 +78,7 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="products" />
+                    <field name="is_selling" />
                     <field name="seller" />
                     <field name="trading_scheme" />
                     <field name="stocks_fbs" />
