@@ -3,6 +3,8 @@ from datetime import timedelta
 from email.policy import default
 from odoo import models, fields, api
 
+from ..ozon_api import MIN_FIX_EXPENSES, MAX_FIX_EXPENSES
+
 
 class CountPrice(models.Model):
     """
@@ -139,6 +141,7 @@ class FixExpenses(models.Model):
     name = fields.Char(string="Наименование")
     price = fields.Float(string="Значение")
     discription = fields.Text(string="Описание")
+    price_history_id = fields.Many2one("ozon.price_history", string="История цен")
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
 
 
@@ -172,14 +175,23 @@ class PriceHistory(models.Model):
     timestamp = fields.Date(string="Дата", default=fields.Date.today, readonly=True)
 
     total_cost_fix = fields.Float(
-        string="Итого фикс.затраты", related="product.total_fix_expenses", store=True
+        string="Итого фикс.затраты",
+        related="product.total_fix_expenses_max",
+        store=True,
     )
     total_cost_percent = fields.Float(
         string="Итого проц.затраты",
         related="product.total_percent_expenses",
         store=True,
     )
-
+    fix_expenses = fields.One2many(
+        "ozon.fix_expenses",
+        "price_history_id",
+        string="Фиксированные затраты максимальные",
+        copy=True,
+        readonly=True,
+        domain=[("name", "in", MAX_FIX_EXPENSES)],
+    )
     costs = fields.One2many(
         "ozon.cost",
         "price_history_id",

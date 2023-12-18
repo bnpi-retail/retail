@@ -40,7 +40,7 @@ services:
       - ./config:/etc/odoo:rw
       - ./addons:/mnt/extra-addons:rw
     tty: true
-    command: -- --dev=reload
+    command: --dev=all
     restart: always
     networks:
       - odoo-network

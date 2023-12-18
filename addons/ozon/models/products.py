@@ -2,6 +2,8 @@
 
 from odoo import models, fields, api
 
+from ..ozon_api import MIN_FIX_EXPENSES, MAX_FIX_EXPENSES
+
 
 class Product(models.Model):
     _name = "ozon.products"
@@ -63,6 +65,28 @@ class Product(models.Model):
         copy=True,
         readonly=True,
     )
+
+    fix_expenses_min = fields.One2many(
+        "ozon.fix_expenses",
+        "product_id",
+        string="Фиксированные затраты минимальные",
+        readonly=True,
+        domain=[("name", "in", MIN_FIX_EXPENSES)],
+    )
+    total_fix_expenses_min = fields.Float(
+        string="Итого", compute="_compute_total_fix_expenses_min", store=True
+    )
+    fix_expenses_max = fields.One2many(
+        "ozon.fix_expenses",
+        "product_id",
+        string="Фиксированные затраты максимальные",
+        readonly=True,
+        domain=[("name", "in", MAX_FIX_EXPENSES)],
+    )
+    total_fix_expenses_max = fields.Float(
+        string="Итого", compute="_compute_total_fix_expenses_max", store=True
+    )
+
     percent_expenses = fields.One2many(
         "ozon.cost",
         "product_id",
@@ -71,19 +95,21 @@ class Product(models.Model):
         readonly=True,
     )
 
-    total_fix_expenses = fields.Float(
-        string="Итого", compute="_compute_total_fix_expenses", store=True
-    )
     total_percent_expenses = fields.Float(
         string="Итого", compute="_compute_total_percent_expenses", store=True
     )
 
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
 
-    @api.depends("fix_expenses.price")
-    def _compute_total_fix_expenses(self):
+    @api.depends("fix_expenses_min.price")
+    def _compute_total_fix_expenses_min(self):
         for record in self:
-            record.total_fix_expenses = sum(record.fix_expenses.mapped("price"))
+            record.total_fix_expenses_min = sum(record.fix_expenses_min.mapped("price"))
+
+    @api.depends("fix_expenses_max.price")
+    def _compute_total_fix_expenses_max(self):
+        for record in self:
+            record.total_fix_expenses_max = sum(record.fix_expenses_max.mapped("price"))
 
     @api.depends("percent_expenses.price")
     def _compute_total_percent_expenses(self):

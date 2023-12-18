@@ -32,7 +32,15 @@
                         <field name="previous_price" />
                         <field name="ideal_price" />
                     </group>
-
+                    <group string="Фиксированные затраты максимальные">
+                        <field name="fix_expenses">
+                            <tree>
+                                <field name="name" />
+                                <field name="price" />
+                            </tree>
+                        </field>
+                        <field name="total_cost_fix" />
+                    </group>
                     <group string="Процент от продаж">
                         <field name="costs" widget="many2many_pills">
                             <tree>
