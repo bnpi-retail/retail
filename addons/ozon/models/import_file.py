@@ -456,6 +456,13 @@ class ImportFile(models.Model):
                 }
                 ozon_transaction = self.env["ozon.transaction"].create(data)
                 print(f"Transaction {row['transaction_id']} was created")
+                # creating ozon.sale records
+                if row["name"] == "Доставка покупателю":
+                    self.create_sale_from_transaction(
+                        products=ozon_products,
+                        date=row["order_date"],
+                        revenue=row["amount"],
+                    )
 
         os.remove(f_path)
 
@@ -507,3 +514,14 @@ class ImportFile(models.Model):
             limit=1,
         )
         return result if result else False
+
+    def create_sale_from_transaction(self, products: list, date: str, revenue: float):
+        # if all products are the same
+        product = products[0]
+        qty = len(products)
+        if products.count(product) == qty:
+            self.env["ozon.sale"].create(
+                {"product": product, "date": date, "qty": qty, "revenue": revenue}
+            )
+
+        # TODO: different products in one transaction
