@@ -2,12 +2,13 @@
     <data>
 
         <!-- Form -->
-        <record id="view_stocks_form" model="ir.ui.view">
-            <field name="name">Остатки товара</field>
-            <field name="model">ozon.stock</field>
+        <record id="view_sale_form" model="ir.ui.view">
+            <field name="name">Продажи товара</field>
+            <field name="model">ozon.sale</field>
             <field name="arch" type="xml">
                 <form>
-                    <group string="Остатки товароа по схемам торговли">
+                    <group string="Продажа товара">
+                        <field name="date" />
                         <field name="product">
                             <tree>
                                 <field name="products">
@@ -17,43 +18,44 @@
                                 </field>
                             </tree>
                         </field>
-                        <field name="stocks_fbs" />
-                        <field name="stocks_fbo" />
+                        <field name="qty" />
+                        <field name="revenue" />
                     </group>
                 </form>
             </field>
         </record>
 
         <!-- Tree -->
-        <record id="view_stocks_tree" model="ir.ui.view">
-            <field name="name">Остатки товара</field>
-            <field name="model">ozon.stock</field>
+        <record id="view_sale_tree" model="ir.ui.view">
+            <field name="name">Продажи товара</field>
+            <field name="model">ozon.sale</field>
             <field name="arch" type="xml">
                 <tree>
+                    <field name="date" />
                     <field name="product">
                         <tree>
                             <field name="id_on_platform" />
                         </tree>
                     </field>
-                    <field name="stocks_fbs" />
-                    <field name="stocks_fbo" />
+                    <field name="qty" />
+                    <field name="revenue" />
                 </tree>
             </field>
         </record>
 
         <!-- Action -->
-        <record model="ir.actions.act_window" id="action_stocks">
-            <field name="name">Остатки товаров</field>
-            <field name="res_model">ozon.stock</field>
+        <record model="ir.actions.act_window" id="action_sale">
+            <field name="name">Продажи товаров</field>
+            <field name="res_model">ozon.sale</field>
             <field name="view_mode">tree,form</field>
         </record>
 
         <!-- Menu -->
-        <menuitem name="Остатки товаров"
-            id="menu_stock"
+        <menuitem name="Продажи товаров"
+            id="menu_sale"
             parent="ozon.menu_root"
-            action="action_stocks"
-            sequence="37" />
+            action="action_sale"
+            sequence="38" />
 
     </data>
 </odoo>

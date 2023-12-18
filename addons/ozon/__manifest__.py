@@ -38,6 +38,7 @@
         "security/transaction/ir.model.access.csv",
         "security/stock/ir.model.access.csv",
         "security/product_fee/ir.model.access.csv",
+        "security/sale/ir.model.access.csv",
         ### views
         "views/menu.xml",
         "views/price/menu.xml",
@@ -64,6 +65,7 @@
         # "views/issue_report/issue_report.xml",
         "views/transactions/transactions.xml",
         "views/stocks/stocks.xml",
+        "views/sale/sale.xml",
     ],
     "demo": [
         "demo/demo.xml",
