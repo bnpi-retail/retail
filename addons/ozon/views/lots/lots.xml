@@ -13,6 +13,7 @@
                         <field name="full_categories" />
                         <field name="categories" />
                         <field name="products" />
+                        <field name="price" />
                         <field name="seller" />
                         <field name="index_localization" />
                         <field name="trading_scheme" />
@@ -66,6 +67,21 @@
                                 <field name="price" />
                             </tree>
                         </field>
+
+                        <separator string='Коэффициенты' />
+                        <field name="sales_per_day_last_30_days" />
+                        <field name="sales_per_day_last_30_days_group" />
+                        <field name="coef_profitability" />
+                        <field name="coef_profitability_group" />
+
+                        <separator string='Продажи' />
+                        <field name="sales">
+                            <tree>
+                                <field name="date" />
+                                <field name="qty" />
+                                <field name="revenue" />
+                            </tree>
+                        </field>
                     </group>
                 </form>
             </field>
@@ -78,8 +94,8 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="products" />
+                    <field name="price" />
                     <field name="is_selling" />
-                    <field name="seller" />
                     <field name="trading_scheme" />
                     <field name="stocks_fbs" />
                     <field name="stocks_fbo" />

@@ -211,6 +211,11 @@ class PriceHistory(models.Model):
         compute="_compute_profit_delta",
         store=True,
     )
+    coef_profitability = fields.Float(
+        string="Коэффициент прибыльности",
+        compute="_compute_coef_profitability",
+        store=True,
+    )
 
     product_id = fields.Many2one("ozon.products", string="Лот")
 
@@ -230,6 +235,11 @@ class PriceHistory(models.Model):
     def _compute_profit_delta(self):
         for record in self:
             record.profit_delta = record.profit - record.profit_ideal
+
+    @api.depends("profit", "profit_ideal")
+    def _compute_coef_profitability(self):
+        for record in self:
+            record.coef_profitability = record.profit / record.profit_ideal
 
     @api.model
     def create(self, values):
