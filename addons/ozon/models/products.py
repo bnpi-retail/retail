@@ -117,6 +117,10 @@ class Product(models.Model):
         readonly=True,
         compute="_compute_sales_per_day_last_30_days",
     )
+    sales_per_day_last_30_days_group = fields.Char(
+        string="Группа коэффициента продаваемости",
+        compute="_compute_sales_per_day_last_30_days_group",
+    )
     coef_profitability = fields.Float(
         string="Коэффициент прибыльности",
         compute="_compute_coef_profitability",
@@ -166,6 +170,34 @@ class Product(models.Model):
             total_qty = sum(sales.mapped("qty"))
             # делить эту сумму на 30
             product.sales_per_day_last_30_days = total_qty / 30
+
+    def _compute_sales_per_day_last_30_days_group(self):
+        coefs = self.search([]).read(fields=["sales_per_day_last_30_days"])
+        coefs = sorted([round(i["sales_per_day_last_30_days"], 2) for i in coefs])
+
+        g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
+        for product in self:
+            coef = round(product.sales_per_day_last_30_days, 2)
+            if coef in g1:
+                product.sales_per_day_last_30_days_group = (
+                    f"Группа 1: от {g1[0]} до {g1[-1]}"
+                )
+            elif coef in g2:
+                product.sales_per_day_last_30_days_group = (
+                    f"Группа 2: от {g2[0]} до {g2[-1]}"
+                )
+            elif coef in g3:
+                product.sales_per_day_last_30_days_group = (
+                    f"Группа 3: от {g3[0]} до {g3[-1]}"
+                )
+            elif coef in g4:
+                product.sales_per_day_last_30_days_group = (
+                    f"Группа 4: от {g4[0]} до {g4[-1]}"
+                )
+            elif coef in g5:
+                product.sales_per_day_last_30_days_group = (
+                    f"Группа 5: от {g5[0]} до {g5[-1]}"
+                )
 
     def _compute_coef_profitability(self):
         for product in self:

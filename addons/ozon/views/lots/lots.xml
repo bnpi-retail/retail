@@ -70,6 +70,7 @@
 
                         <separator string='Коэффициенты' />
                         <field name="sales_per_day_last_30_days" />
+                        <field name="sales_per_day_last_30_days_group" />
                         <field name="coef_profitability" />
                         <field name="coef_profitability_group" />
 
@@ -93,8 +94,8 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="products" />
-                    <field name="is_selling" />
                     <field name="price" />
+                    <field name="is_selling" />
                     <field name="trading_scheme" />
                     <field name="stocks_fbs" />
                     <field name="stocks_fbo" />
