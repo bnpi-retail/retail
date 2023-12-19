@@ -30,7 +30,6 @@
                     <group string='Цены'>
                         <field name="price" />
                         <field name="previous_price" />
-                        <field name="ideal_price" />
                     </group>
                     <group string="Фиксированные затраты максимальные">
                         <field name="fix_expenses">

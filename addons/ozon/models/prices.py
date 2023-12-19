@@ -200,34 +200,11 @@ class PriceHistory(models.Model):
         readonly=True,
     )
 
-    our_price = fields.Float(
-        string="Расчетная цена", compute="_compute_our_price", store=True
-    )
-
-    ideal_price = fields.Float(
-        string="Идеальная цена", compute="_compute_ideal_price", store=True
-    )
-
     profit = fields.Float(
         string="Прибыль от установленной цены", compute="_compute_profit", store=True
     )
 
-    custom_our_price = fields.Float(string="Своя расчетная цена", default=0)
-
     product_id = fields.Many2one("ozon.products", string="Лот")
-
-    @api.depends("total_cost_fix")
-    def _compute_ideal_price(self):
-        for record in self:
-            record.ideal_price = 2 * record.total_cost_fix
-
-    @api.depends("ideal_price")
-    def _compute_our_price(self):
-        for record in self:
-            if record.custom_our_price != 0:
-                record.our_price = record.custom_our_price
-            else:
-                record.our_price = record.ideal_price
 
     @api.depends("price", "total_cost_fix", "total_cost_percent")
     def _compute_profit(self):
