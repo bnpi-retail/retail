@@ -13,6 +13,7 @@
                         <field name="full_categories" />
                         <field name="categories" />
                         <field name="products" />
+                        <field name="price" />
                         <field name="seller" />
                         <field name="index_localization" />
                         <field name="trading_scheme" />
@@ -88,7 +89,7 @@
                 <tree>
                     <field name="products" />
                     <field name="is_selling" />
-                    <field name="seller" />
+                    <field name="price" />
                     <field name="trading_scheme" />
                     <field name="stocks_fbs" />
                     <field name="stocks_fbo" />

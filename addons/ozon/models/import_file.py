@@ -163,6 +163,7 @@ class ImportFile(models.Model):
                                     "id_on_platform": row["id_on_platform"],
                                     "full_categories": row["full_categories"],
                                     "products": retail_product.id,
+                                    "price": row["price"],
                                     "seller": seller.id,
                                     "index_localization": localization_index.id,
                                     "trading_scheme": row["trading_scheme"],

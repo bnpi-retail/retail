@@ -13,6 +13,7 @@ class Product(models.Model):
     id_on_platform = fields.Char(string="ID на площадке", unique=True)
     full_categories = fields.Char(string="Наименоваие раздела")
     products = fields.Many2one("retail.products", string="Товар")
+    price = fields.Float(string="Актуальная цена", readonly=True)
     seller = fields.Many2one("retail.seller", string="Продавец")
     index_localization = fields.Many2one(
         "ozon.localization_index", string="Индекс локализации"
@@ -113,7 +114,6 @@ class Product(models.Model):
     sales_per_day_last_30_days = fields.Float(
         string="Среднее кол-во продаж в день за последние 30 дней",
         readonly=True,
-        # store=True,
         compute="_compute_sales_per_day_last_30_days",
     )
 
