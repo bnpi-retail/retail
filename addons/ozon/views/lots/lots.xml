@@ -71,6 +71,7 @@
                         <separator string='Коэффициенты' />
                         <field name="sales_per_day_last_30_days" />
                         <field name="coef_profitability" />
+                        <field name="coef_profitability_group" />
 
                         <separator string='Продажи' />
                         <field name="sales">
