@@ -120,6 +120,7 @@ class Product(models.Model):
     sales_per_day_last_30_days_group = fields.Char(
         string="Группа коэффициента продаваемости",
         compute="_compute_sales_per_day_last_30_days_group",
+        store=True,
     )
     coef_profitability = fields.Float(
         string="Коэффициент прибыльности",
@@ -128,6 +129,7 @@ class Product(models.Model):
     coef_profitability_group = fields.Char(
         string="Группа коэффициента прибыльности",
         compute="_compute_coef_profitability_group",
+        store=True,
     )
 
     @api.depends("fix_expenses_min.price")
@@ -178,23 +180,23 @@ class Product(models.Model):
         g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
         for product in self:
             coef = round(product.sales_per_day_last_30_days, 2)
-            if coef in g1:
+            if coef <= g1[-1]:
                 product.sales_per_day_last_30_days_group = (
                     f"Группа 1: от {g1[0]} до {g1[-1]}"
                 )
-            elif coef in g2:
+            elif g2[0] <= coef <= g2[-1]:
                 product.sales_per_day_last_30_days_group = (
                     f"Группа 2: от {g2[0]} до {g2[-1]}"
                 )
-            elif coef in g3:
+            elif g3[0] <= coef <= g3[-1]:
                 product.sales_per_day_last_30_days_group = (
                     f"Группа 3: от {g3[0]} до {g3[-1]}"
                 )
-            elif coef in g4:
+            elif g4[0] <= coef <= g4[-1]:
                 product.sales_per_day_last_30_days_group = (
                     f"Группа 4: от {g4[0]} до {g4[-1]}"
                 )
-            elif coef in g5:
+            elif coef >= g5[0]:
                 product.sales_per_day_last_30_days_group = (
                     f"Группа 5: от {g5[0]} до {g5[-1]}"
                 )
@@ -218,15 +220,15 @@ class Product(models.Model):
         g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
         for product in self:
             coef = round(product.coef_profitability, 2)
-            if coef in g1:
+            if coef <= g1[-1]:
                 product.coef_profitability_group = f"Группа 1: от {g1[0]} до {g1[-1]}"
-            elif coef in g2:
+            elif g2[0] <= coef <= g2[-1]:
                 product.coef_profitability_group = f"Группа 2: от {g2[0]} до {g2[-1]}"
-            elif coef in g3:
+            elif g3[0] <= coef <= g3[-1]:
                 product.coef_profitability_group = f"Группа 3: от {g3[0]} до {g3[-1]}"
-            elif coef in g4:
+            elif g4[0] <= coef <= g4[-1]:
                 product.coef_profitability_group = f"Группа 4: от {g4[0]} до {g4[-1]}"
-            elif coef in g5:
+            elif coef >= g5[0]:
                 product.coef_profitability_group = f"Группа 5: от {g5[0]} до {g5[-1]}"
 
     def name_get(self):
