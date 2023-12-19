@@ -30,7 +30,6 @@
                     <group string='Цены'>
                         <field name="price" />
                         <field name="previous_price" />
-                        <field name="ideal_price" />
                     </group>
                     <group string="Фиксированные затраты максимальные">
                         <field name="fix_expenses">
@@ -54,6 +53,8 @@
 
                     <group string='Прибыль'>
                         <field name="profit" />
+                        <field name="profit_ideal" />
+                        <field name="profit_delta" />
                     </group>
 
                     <group string='Информация о ценах'>

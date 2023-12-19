@@ -200,34 +200,19 @@ class PriceHistory(models.Model):
         readonly=True,
     )
 
-    our_price = fields.Float(
-        string="Расчетная цена", compute="_compute_our_price", store=True
-    )
-
-    ideal_price = fields.Float(
-        string="Идеальная цена", compute="_compute_ideal_price", store=True
-    )
-
     profit = fields.Float(
         string="Прибыль от установленной цены", compute="_compute_profit", store=True
     )
-
-    custom_our_price = fields.Float(string="Своя расчетная цена", default=0)
+    profit_ideal = fields.Float(
+        string="Идеальная прибыль", compute="_compute_profit_ideal", store=True
+    )
+    profit_delta = fields.Float(
+        string="Разница между прибылью и идеальной прибылью",
+        compute="_compute_profit_delta",
+        store=True,
+    )
 
     product_id = fields.Many2one("ozon.products", string="Лот")
-
-    @api.depends("total_cost_fix")
-    def _compute_ideal_price(self):
-        for record in self:
-            record.ideal_price = 2 * record.total_cost_fix
-
-    @api.depends("ideal_price")
-    def _compute_our_price(self):
-        for record in self:
-            if record.custom_our_price != 0:
-                record.our_price = record.custom_our_price
-            else:
-                record.our_price = record.ideal_price
 
     @api.depends("price", "total_cost_fix", "total_cost_percent")
     def _compute_profit(self):
@@ -236,8 +221,30 @@ class PriceHistory(models.Model):
                 record.price - record.total_cost_fix - record.total_cost_percent
             )
 
+    @api.depends("price")
+    def _compute_profit_ideal(self):
+        for record in self:
+            record.profit_ideal = record.price * 0.2
+
+    @api.depends("profit", "profit_ideal")
+    def _compute_profit_delta(self):
+        for record in self:
+            record.profit_delta = record.profit - record.profit_ideal
+
     @api.model
     def create(self, values):
+        if values.get("fix_expenses"):
+            ozon_product_id = values["product"]
+            cost_price_record = self.env["ozon.fix_expenses"].search(
+                [
+                    ("product_id", "=", ozon_product_id),
+                    ("name", "=", "Себестоимость товара"),
+                ],
+                order="create_date desc",
+                limit=1,
+            )
+            values["fix_expenses"] = [cost_price_record.id] + values["fix_expenses"]
+
         record = super(PriceHistory, self).create(values)
         product = record.product
         product.write({"price_our_history_ids": [(4, record.id)]}, product)
