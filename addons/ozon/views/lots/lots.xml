@@ -68,7 +68,11 @@
                             </tree>
                         </field>
 
+                        <separator string='Коэффициенты' />
                         <field name="sales_per_day_last_30_days" />
+                        <field name="coef_profitability" />
+
+                        <separator string='Продажи' />
                         <field name="sales">
                             <tree>
                                 <field name="date" />

@@ -116,6 +116,10 @@ class Product(models.Model):
         readonly=True,
         compute="_compute_sales_per_day_last_30_days",
     )
+    coef_profitability = fields.Float(
+        string="Коэффициент прибыльности",
+        compute="_compute_coef_profitability",
+    )
 
     @api.depends("fix_expenses_min.price")
     def _compute_total_fix_expenses_min(self):
@@ -157,6 +161,19 @@ class Product(models.Model):
             total_qty = sum(sales.mapped("qty"))
             # делить эту сумму на 30
             product.sales_per_day_last_30_days = total_qty / 30
+
+    @api.depends("sales")
+    def _compute_coef_profitability(self):
+        for product in self:
+            price_history_record = self.env["ozon.price_history"].search(
+                [
+                    ("product", "=", product.id),
+                    ("price", "=", product.price),
+                ],
+                limit=1,
+                order="create_date desc",
+            )
+            product.coef_profitability = price_history_record.coef_profitability
 
     def name_get(self):
         """
