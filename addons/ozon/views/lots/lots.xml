@@ -66,6 +66,14 @@
                                 <field name="price" />
                             </tree>
                         </field>
+
+                        <field name="sales">
+                            <tree>
+                                <field name="date" />
+                                <field name="qty" />
+                                <field name="revenue" />
+                            </tree>
+                        </field>
                     </group>
                 </form>
             </field>

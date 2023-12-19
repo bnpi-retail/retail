@@ -103,6 +103,13 @@ class Product(models.Model):
     )
 
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
+    sales = fields.One2many(
+        "ozon.sale",
+        "product",
+        string="Продажи",
+        copy=True,
+        readonly=True,
+    )
 
     @api.depends("fix_expenses_min.price")
     def _compute_total_fix_expenses_min(self):
