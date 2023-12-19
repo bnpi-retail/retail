@@ -233,6 +233,18 @@ class PriceHistory(models.Model):
 
     @api.model
     def create(self, values):
+        if values.get("fix_expenses"):
+            ozon_product_id = values["product"]
+            cost_price_record = self.env["ozon.fix_expenses"].search(
+                [
+                    ("product_id", "=", ozon_product_id),
+                    ("name", "=", "Себестоимость товара"),
+                ],
+                order="create_date desc",
+                limit=1,
+            )
+            values["fix_expenses"] = [cost_price_record.id] + values["fix_expenses"]
+
         record = super(PriceHistory, self).create(values)
         product = record.product
         product.write({"price_our_history_ids": [(4, record.id)]}, product)
