@@ -67,6 +67,7 @@
                             </tree>
                         </field>
 
+                        <field name="sales_per_day_last_30_days" />
                         <field name="sales">
                             <tree>
                                 <field name="date" />

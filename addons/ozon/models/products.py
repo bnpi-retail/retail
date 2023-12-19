@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from datetime import datetime, time, timedelta
 from odoo import models, fields, api
 
 from ..ozon_api import MIN_FIX_EXPENSES, MAX_FIX_EXPENSES
@@ -110,6 +110,12 @@ class Product(models.Model):
         copy=True,
         readonly=True,
     )
+    sales_per_day_last_30_days = fields.Float(
+        string="Среднее кол-во продаж в день за последние 30 дней",
+        readonly=True,
+        # store=True,
+        compute="_compute_sales_per_day_last_30_days",
+    )
 
     @api.depends("fix_expenses_min.price")
     def _compute_total_fix_expenses_min(self):
@@ -126,6 +132,32 @@ class Product(models.Model):
         for record in self:
             record.total_percent_expenses = sum(record.percent_expenses.mapped("price"))
 
+    @api.depends("price_our_history_ids.price")
+    def _compute_price_history_values(self):
+        for product in self:
+            product.price_history_values = [
+                (record.timestamp, record.price)
+                for record in product.price_our_history_ids
+            ]
+
+    @api.depends("sales")
+    def _compute_sales_per_day_last_30_days(self):
+        for product in self:
+            date_from = datetime.combine(datetime.now(), time.min) - timedelta(days=30)
+            date_to = datetime.combine(datetime.now(), time.max) - timedelta(days=1)
+            # взять все продажи за посл 30 дней
+            sales = self.env["ozon.sale"].search(
+                [
+                    ("product", "=", product.id),
+                    ("date", ">", date_from),
+                    ("date", "<", date_to),
+                ]
+            )
+            # суммировать qty всех продаж
+            total_qty = sum(sales.mapped("qty"))
+            # делить эту сумму на 30
+            product.sales_per_day_last_30_days = total_qty / 30
+
     def name_get(self):
         """
         Rename name records
@@ -134,14 +166,6 @@ class Product(models.Model):
         for record in self:
             result.append((record.id, record.products.name))
         return result
-
-    @api.depends("price_our_history_ids.price")
-    def _compute_price_history_values(self):
-        for product in self:
-            product.price_history_values = [
-                (record.timestamp, record.price)
-                for record in product.price_our_history_ids
-            ]
 
     @api.model
     def create(self, values):
