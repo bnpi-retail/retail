@@ -53,6 +53,8 @@
 
                     <group string='Прибыль'>
                         <field name="profit" />
+                        <field name="profit_ideal" />
+                        <field name="profit_delta" />
                     </group>
 
                     <group string='Информация о ценах'>

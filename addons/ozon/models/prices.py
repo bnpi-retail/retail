@@ -203,6 +203,14 @@ class PriceHistory(models.Model):
     profit = fields.Float(
         string="Прибыль от установленной цены", compute="_compute_profit", store=True
     )
+    profit_ideal = fields.Float(
+        string="Идеальная прибыль", compute="_compute_profit_ideal", store=True
+    )
+    profit_delta = fields.Float(
+        string="Разница между прибылью и идеальной прибылью",
+        compute="_compute_profit_delta",
+        store=True,
+    )
 
     product_id = fields.Many2one("ozon.products", string="Лот")
 
@@ -212,6 +220,16 @@ class PriceHistory(models.Model):
             record.profit = (
                 record.price - record.total_cost_fix - record.total_cost_percent
             )
+
+    @api.depends("price")
+    def _compute_profit_ideal(self):
+        for record in self:
+            record.profit_ideal = record.price * 0.2
+
+    @api.depends("profit", "profit_ideal")
+    def _compute_profit_delta(self):
+        for record in self:
+            record.profit_delta = record.profit - record.profit_ideal
 
     @api.model
     def create(self, values):
