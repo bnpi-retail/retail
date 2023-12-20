@@ -277,4 +277,13 @@ class Product(models.Model):
         all_records._compute_coef_profitability()
         all_records._compute_coef_profitability_group()
         all_records._compute_sales_per_day_last_30_days()
+        # TODO: какие товары сегментируем на группы по продажам за посл. 30 дней?
+        # все товары? только активные? только те, у которых были продажи за посл. 30 дней?
         all_records._compute_sales_per_day_last_30_days_group()
+
+        # inactive_records = self.search([("is_selling", "=", False)])
+        # for rec in inactive_records:
+        #     rec.sales_per_day_last_30_days_group = ""
+
+        # active_records = self.search([("is_selling", "=", True)])
+        # active_records._compute_sales_per_day_last_30_days_group()
