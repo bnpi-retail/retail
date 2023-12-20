@@ -17,6 +17,36 @@ services:
       - ./nginx/certificate/retail.bnpi.dev:/etc/letsencrypt/live/retail.bnpi.dev
       - ./nginx/certificate/retail-temporal.bnpi.dev:/etc/letsencrypt/live/retail-temporal.bnpi.dev
 
+  ### Django
+  django-db:
+    image: postgres:16
+    container_name: retail-django-db
+    volumes:
+      - ./django/db/postgres:/var/lib/postgresql/data/
+    ports:
+      - 5434:5432
+    environment:
+      - POSTGRES_DB=${DJANGO_POSTGRES_DB}
+      - POSTGRES_PASSWORD=${DJANGO_POSTGRES_PASSWORD}
+      - POSTGRES_USER=${DJANGO_POSTGRES_USER}
+    networks:
+      - django-network
+
+  django:
+    restart: always
+    build: ./django
+    container_name: retail-django-web
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .env
+    ports:
+      - 8000:8000
+    volumes:
+      - ./django/app:/app
+    networks:
+      - django-network
+      - odoo-network
+
   ### Odoo
   db:
     image: postgres:16
