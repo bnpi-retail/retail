@@ -497,7 +497,7 @@ class ImportFile(models.Model):
                         )
                         print(f"Product {row['id_on_platform']} stocks were created")
 
-                    ozon_product.write({"stock": stock.id}, ozon_product)
+                    ozon_product.write({"stock": stock.id}, cr=ozon_product)
 
         os.remove(f_path)
 

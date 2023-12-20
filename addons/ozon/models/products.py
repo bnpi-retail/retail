@@ -114,22 +114,15 @@ class Product(models.Model):
     )
     sales_per_day_last_30_days = fields.Float(
         string="Среднее кол-во продаж в день за последние 30 дней",
-        readonly=True,
-        compute="_compute_sales_per_day_last_30_days",
     )
     sales_per_day_last_30_days_group = fields.Char(
         string="Группа коэффициента продаваемости",
-        compute="_compute_sales_per_day_last_30_days_group",
-        store=True,
     )
     coef_profitability = fields.Float(
         string="Коэффициент прибыльности",
-        compute="_compute_coef_profitability",
     )
     coef_profitability_group = fields.Char(
         string="Группа коэффициента прибыльности",
-        compute="_compute_coef_profitability_group",
-        store=True,
     )
 
     @api.depends("fix_expenses_min.price")
@@ -251,7 +244,7 @@ class Product(models.Model):
         return super(Product, self).create(values)
 
     @api.model
-    def write(self, values, cr):
+    def write(self, values, cr=None):
         if values.get("fix_expenses"):
             cost_price = self.env["retail.cost_price"].search(
                 [("products", "=", cr["products"].id)],
@@ -278,3 +271,10 @@ class Product(models.Model):
                 record.is_selling = True
             else:
                 record.is_selling = False
+
+    def update_coefs_and_groups(self):
+        all_records = self.search([])
+        all_records._compute_coef_profitability()
+        all_records._compute_coef_profitability_group()
+        all_records._compute_sales_per_day_last_30_days()
+        all_records._compute_sales_per_day_last_30_days_group()
