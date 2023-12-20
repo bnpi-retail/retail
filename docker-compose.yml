@@ -40,7 +40,7 @@ services:
       - ./config:/etc/odoo:rw
       - ./addons:/mnt/extra-addons:rw
     tty: true
-    command: --dev=all
+    command: --dev=all -i ozon -u ozon
     restart: always
     networks:
       - odoo-network
