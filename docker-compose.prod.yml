@@ -169,5 +169,6 @@ networks:
     driver: bridge
     name: temporal-network
   odoo-network:
+  django-network:
 
 
