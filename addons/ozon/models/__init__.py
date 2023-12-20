@@ -13,6 +13,7 @@ from . import transaction
 
 from .competitors import products_competitors
 from .competitors import price_history_competitors
+from .competitors import analysis_competitors
 from .price import pricing
 
 

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Главная страница</title>
+</head>
+<body>
+    <h1>Добро пожаловать, {{ user.username }}!</h1>
+
+    {% if user.is_authenticated %}
+        <p>Your API token is: {{ api_token }}</p>
+        <a href="{% url 'logout' %}">Выход</a>
+    {% else %}
+        <a href="{% url 'login' %}">Вход</a> |
+        <a href="{% url 'register' %}">Регистрация</a>
+    {% endif %}
+</body>
+</html>

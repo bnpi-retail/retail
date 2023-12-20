@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from odoo import models, fields, api
 
 
@@ -21,7 +19,21 @@ class NameCompetitors(models.Model):
         for record in self:
             result.append((record.id, f'{record.name}, {record.price} р.'))
         return result
+
+
+class FakePricing(models.Model):
+    _name = 'ozon.fake_pricing'
+    _description = '(Фейковая) Ручное назначение цен'
+        
+    fake_product = fields.Many2one('ozon.products', string='Лот')
     
+    price = fields.Float(string='Цена лота, р.')
+
+    competitors = fields.One2many('ozon.name_competitors', 'pricing_id', 
+                                    string='Конкуренты',
+                                    copy=True)
+
+
 
 class Pricing(models.Model):
     _name = 'ozon.pricing'
@@ -34,7 +46,11 @@ class Pricing(models.Model):
     competitors = fields.One2many('ozon.name_competitors', 'pricing_id', 
                                     string='Конкуренты',
                                     copy=True)
-    
+
+
+    def run_selenium_parser(self) -> int:
+        pass
+
 
     def name_get(self):
         """
@@ -55,7 +71,6 @@ class Pricing(models.Model):
                      ('seller.id', '=', product.seller.id)],
                      limit=1, order='timestamp desc').price
         return cost_price
-
 
 
     def apply(self) -> bool:

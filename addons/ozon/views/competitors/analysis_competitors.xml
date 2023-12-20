@@ -1,0 +1,92 @@
+<odoo>
+  <data>
+
+    <!-- Form -->
+    <record id="view_analysis_competitors_record_form" model="ir.ui.view">
+        <field name="name">Анализ конкурента</field>
+        <field name="model">ozon.analysis_competitors_record</field>
+        <field name="arch" type="xml">
+            <form>
+                <group string="Место объявления">
+                    <field name="number"/>
+                </group>
+                <group string="Нименование">
+                    <field name="name"/>
+                </group>
+                <group string="Цены">
+                    <field name="price_with_card"/>
+                    <field name="price"/>
+                    <field name="price_without_sale"/>
+                </group>
+                <group string="Объявление">
+                    <field name="ad"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree -->
+    <record id="view_analysis_competitors_record_tree" model="ir.ui.view">
+        <field name="name">Анализ конкурента</field>
+        <field name="model">ozon.analysis_competitors_record</field>
+        <field name="arch" type="xml">
+            <tree limit="30">
+                <field name="number"/>
+                <field name="name"/>
+                <field name="price_with_card"/>
+                <field name="price"/>
+                <field name="price_without_sale"/>
+                <field name="ad"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form -->
+    <record id="view_analysis_competitors_form" model="ir.ui.view">
+        <field name="name">Анализ конкурентов</field>
+        <field name="model">ozon.analysis_competitors</field>
+        <field name="arch" type="xml">
+            <form>
+                <group string="Наполнить стандартными данными">
+                    <field name="timestamp"/>
+                </group>
+                <group string="Объявления">
+                    <field name="competitor_record" widget="many2many_tags_cloud">
+                    </field>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree -->
+    <record id="view_analysis_competitors_tree" model="ir.ui.view">
+        <field name="name">Анализ конкурентов</field>
+        <field name="model">ozon.analysis_competitors</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="timestamp"/>
+                <field name="competitor_record" widget="one2many_pills">
+                    <tree>
+                        <field name="number" />
+                        <field name="price" />
+                    </tree>
+                </field>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_analysis_competitors">
+        <field name="name">Анализ конкурентов</field>
+        <field name="res_model">ozon.analysis_competitors</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem name="Анализ конкурентов"
+        id="menu_analysis_competitors"
+        parent="ozon.menu_competitors"
+        action="action_analysis_competitors"
+        sequence="100"/>
+  </data>
+</odoo>

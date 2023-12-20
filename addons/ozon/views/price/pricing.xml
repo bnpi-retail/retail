@@ -1,6 +1,14 @@
 <odoo>
   <data>
 
+    <!-- Fake Form -->
+    <record id="action_ozon_fake_pricing_records" model="ir.actions.act_window">
+        <field name="name">Fake Model Records</field>
+        <field name="res_model">ozon.fake_pricing</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+
     <!-- Form -->
     <record id="view_pricing_form" model="ir.ui.view">
         <field name="name">Ручное назначение цен</field>
@@ -9,6 +17,7 @@
             <form>
                 <group>
                     <button string="Применить" class="oe_highlight" type="object" name="apply" args="[]" />
+                    <button string="Заполнить" class="oe_highlight" type="object" name="run_selenium_parser" args="[]" />
                 </group>
                 <group>
                     <field name="product"/>

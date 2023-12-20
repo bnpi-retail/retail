@@ -1,0 +1,8 @@
+requests==2.31.0
+django==4.2.5
+djangorestframework==3.14.0
+django-cors-headers
+psycopg2-binary==2.9.6
+# beautifulsoup4==4.12.2 
+# selenium==4.9.1
+# undetected-chromedriver==3.5.4

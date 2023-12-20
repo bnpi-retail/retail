@@ -28,7 +28,7 @@ class ImportFile(models.Model):
         [
             ("logistics_cost", "Стоимость логистики"),
             ("ozon_products", "Товары Ozon"),
-            ("ozon_products_api", "Товары Ozon API"),
+            ("ozon_plugin", "Товары Ozon (Плагин)"),
             ("ozon_commissions", "Комиссии Ozon по категориям"),
             ("ozon_transactions", "Транзакции Ozon"),
         ],
@@ -243,6 +243,65 @@ class ImportFile(models.Model):
 
         content = content.decode("utf-8")
         lines = content.split("\n")
+
+        if values["data_for_download"] == "ozon_plugin":
+            model_products = self.env['ozon.products']
+            model_competitors_products = self.env['ozon.products_competitors']
+            model_analysis_competitors = self.env['ozon.analysis_competitors']
+            model_analysis_competitors_record = self.env['ozon.analysis_competitors_record']
+
+            list_values = []
+            for line in lines[1:]:
+                values_list = line.split(",")
+                if len(values_list) != 9:
+                    continue
+
+                number, search, seller, sku, price, price_without_sale, \
+                price_with_card, href, name = values_list
+            
+                record_product = model_products \
+                    .search([('id_on_platform', '=', str(sku))])
+                record_competitors_products = model_competitors_products \
+                    .search([('id_product', '=', str(sku))])
+                
+                ad_reference = None
+                if record_product:
+                    ad_reference = 'ozon.products,' + str(record_product.id)
+                elif record_competitors_products:
+                    ad_reference = 'ozon.products_competitors,' + str(record_competitors_products.id)
+
+                if ad_reference:
+                    try:
+                        record = model_analysis_competitors_record.create({
+                            'number': number,
+                            'name': name,
+                            'price': price,
+                            'price_without_sale': price_without_sale,
+                            'price_with_card': price_with_card,
+                            'ad': ad_reference
+                        })
+                    except Exception as e:
+                        raise ValueError(e)
+                        continue
+                else:
+                    try:
+                        record = model_analysis_competitors_record.create({
+                            'number': number,
+                            'name': name,
+                            'price': price,
+                            'price_without_sale': price_without_sale,
+                            'price_with_card': price_with_card,
+                        })
+                    except Exception as e:
+                        raise ValueError(e)
+                        continue
+
+                list_values.append(record.id)
+
+            model_analysis_competitors.create({
+                'competitor_record': [(6, 0, list_values)],
+            })
+
 
         if "csv" in mime_type:
             if values["data_for_download"] == "logistics_cost":

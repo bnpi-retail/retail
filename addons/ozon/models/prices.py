@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import timedelta
+from datetime import datetime, timedelta
 from email.policy import default
 from odoo import models, fields, api
 
@@ -167,7 +167,7 @@ class PriceHistory(models.Model):
     previous_price = fields.Float(string="Предыдущая цена", readonly=True)
 
     timestamp = fields.Date(string='Дата', 
-                            default=fields.Date.today,
+                            default=lambda self: (fields.Date.today() + timedelta(days=5)).strftime('%Y-%m-%d'),
                             readonly=True)
 
     fix_expensives = fields.One2many("ozon.fix_expenses",

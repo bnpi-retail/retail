@@ -33,6 +33,8 @@ services:
   web:
     image: odoo:16
     container_name: odoo-web
+    build:
+        context: ./addons
     depends_on:
       - db
     ports:
