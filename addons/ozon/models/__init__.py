@@ -9,6 +9,9 @@ from . import prices
 from . import import_file
 from . import categories
 from . import transaction
+from . import stock
+from . import product_fee
+from . import sale
 
 
 from .competitors import products_competitors

@@ -38,6 +38,9 @@
         # "security/issue_report/issue_report_products_additional_info/ir.model.access.csv",
         # "security/issue_report/name_additional_info/ir.model.access.csv",
         "security/transaction/ir.model.access.csv",
+        "security/stock/ir.model.access.csv",
+        "security/product_fee/ir.model.access.csv",
+        "security/sale/ir.model.access.csv",
         ### views
         "views/menu.xml",
         "views/price/menu.xml",
@@ -51,6 +54,7 @@
         "views/commissions/local_index.xml",
         "views/commissions/fee_ozon.xml",
         "views/commissions/logistics_price.xml",
+        "views/commissions/product_fee.xml",
         "views/import/import.xml",
         "views/competitors/menu.xml",
         "views/competitors/products_competitors.xml",
@@ -63,6 +67,8 @@
         "views/search_queries/search_queries.xml",
         # "views/issue_report/issue_report.xml",
         "views/transactions/transactions.xml",
+        "views/stocks/stocks.xml",
+        "views/sale/sale.xml",
     ],
     "demo": [
         "demo/demo.xml",

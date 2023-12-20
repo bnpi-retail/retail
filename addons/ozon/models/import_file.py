@@ -6,10 +6,10 @@ import os
 import magic
 
 
-from io import StringIO
 from odoo import models, fields, api, exceptions
 
-from ..controllers.ozon_api import (
+from ..ozon_api import (
+    ALL_COMMISSIONS,
     FBO_FIX_COMMISSIONS,
     FBO_PERCENT_COMMISSIONS,
     FBS_FIX_COMMISSIONS,
@@ -31,6 +31,7 @@ class ImportFile(models.Model):
             ("ozon_plugin", "Товары Ozon (Плагин)"),
             ("ozon_commissions", "Комиссии Ozon по категориям"),
             ("ozon_transactions", "Транзакции Ozon"),
+            ("ozon_stocks", "Остатки товаров Ozon"),
         ],
         string="Данные для загрузки",
     )
@@ -63,180 +64,6 @@ class ImportFile(models.Model):
         if not "data_for_download" in values or not values["data_for_download"]:
             raise exceptions.ValidationError("Необходимо выбрать 'данные для загрузки'")
 
-        #############################
-        ##### API OZON TEMPORAL #####
-        #############################
-
-        if values["data_for_download"] == "ozon_products_api":
-            uploaded_file = values["file"]
-            csv_data = uploaded_file.read().decode("utf-8")
-            values["file"] = csv_data
-
-            decoded_data = base64.b64decode(csv_data).decode("utf-8")
-
-            csv_reader = csv.reader(StringIO(decoded_data))
-
-            header = "categories,id_on_platform,full_categories,name,description,product_id,length,width,height,weight,seller_name,lower_threshold,upper_threshold,coefficient,percent,trading_scheme,delivery_location,price,acquiring,fbo_fulfillment_amount,fbo_direct_flow_trans_min_amount,fbo_direct_flow_trans_max_amount,fbo_deliv_to_customer_amount,fbo_return_flow_amount,fbo_return_flow_trans_min_amount,fbo_return_flow_trans_max_amount,fbs_first_mile_min_amount,fbs_first_mile_max_amount,fbs_direct_flow_trans_min_amount,fbs_direct_flow_trans_max_amount,fbs_deliv_to_customer_amount,fbs_return_flow_amount,fbs_return_flow_trans_min_amount,fbs_return_flow_trans_max_amount,sales_percent_fbo,sales_percent_fbs,sales_percent"
-            headers = header.split(",")
-
-            for row in csv_reader:
-                row = dict(zip(headers, row))
-
-                try:
-                    if ozon_product := self.is_ozon_product_exists(
-                        id_on_platform=row["id_on_platform"],
-                        trading_scheme=row["trading_scheme"],
-                    ):
-                        pass
-                except KeyError as e:
-                    print(f"OZON Error ozon_product {e},\n {row}")
-                    continue
-
-                else:
-                    if ozon_category := self.is_ozon_category_exists(row["categories"]):
-                        pass
-                    else:
-                        ozon_category = self.env["ozon.categories"].create(
-                            {"name_categories": row["categories"]}
-                        )
-                    if seller := self.is_retail_seller_exists(row["seller_name"]):
-                        pass
-                    else:
-                        seller = self.env["retail.seller"].create(
-                            {
-                                "name": "Продавец",
-                                "ogrn": 1111111111111,
-                                "fee": 20,
-                            }
-                        )
-                    try:
-                        if localization_index := self.is_ozon_localization_index_exists(
-                            row["lower_threshold"],
-                            row["upper_threshold"],
-                            row["coefficient"],
-                            row["percent"],
-                        ):
-                            pass
-                    except ValueError as e:
-                        print(f"OZON Error localization_index {e}")
-                        continue
-
-                    else:
-                        try:
-                            localization_index = self.env[
-                                "ozon.localization_index"
-                            ].create(
-                                {
-                                    "lower_threshold": float(row["lower_threshold"]),
-                                    "upper_threshold": float(row["upper_threshold"]),
-                                    "coefficient": float(row["coefficient"]),
-                                    "percent": float(row["percent"]),
-                                }
-                            )
-                        except ValueError as e:
-                            print(f"OZON Error localization_index {e}")
-                            continue
-                    try:
-                        retail_product = self.env["retail.products"].create(
-                            {
-                                "name": row["name"],
-                                "description": row["description"],
-                                "product_id": row["product_id"],
-                                "length": float(row["length"]),
-                                "width": float(row["width"]),
-                                "height": float(row["height"]),
-                                "weight": float(row["weight"]),
-                            }
-                        )
-                    except ValueError as e:
-                        print(f"OZON Error localization_index {e}")
-                        continue
-                    try:
-                        ozon_product = self.env["ozon.products"].create(
-                            {
-                                "categories": ozon_category.id,
-                                "id_on_platform": row["id_on_platform"],
-                                "full_categories": row["full_categories"],
-                                "products": retail_product.id,
-                                "seller": seller.id,
-                                "index_localization": localization_index.id,
-                                "trading_scheme": row["trading_scheme"],
-                                "delivery_location": row["delivery_location"],
-                            }
-                        )
-                        print(f"product {row['id_on_platform']} created")
-                    except ValueError as e:
-                        print(f"OZON Error localization_index {e}")
-                        continue
-
-                if row["trading_scheme"] == "FBO":
-                    fix_coms_by_trad_scheme = FBO_FIX_COMMISSIONS
-                    percent_coms_by_trad_scheme = FBO_PERCENT_COMMISSIONS
-                elif row["trading_scheme"] == "FBS":
-                    fix_coms_by_trad_scheme = FBS_FIX_COMMISSIONS
-                    percent_coms_by_trad_scheme = FBS_PERCENT_COMMISSIONS
-                elif row["trading_scheme"] == "":
-                    fix_coms_by_trad_scheme = None
-                    percent_coms_by_trad_scheme = None
-
-                try:
-                    ozon_price_history_data = {
-                        "product": ozon_product.id,
-                        "provider": ozon_product.seller.id,
-                        "price": float(row["price"]),
-                    }
-                except ValueError as e:
-                    print(f"OZON Error ozon_price_history_data {e}")
-
-                if fix_coms_by_trad_scheme:
-                    fix_product_commissions = {
-                        k: row[k] for k in fix_coms_by_trad_scheme
-                    }
-                    fix_expenses = []
-                    for com, value in fix_product_commissions.items():
-                        fix_expenses_record = self.env["ozon.fix_expenses"].create(
-                            {
-                                "name": fix_coms_by_trad_scheme[com],
-                                "price": value,
-                                "discription": "",
-                            }
-                        )
-                        fix_expenses.append(fix_expenses_record.id)
-
-                    ozon_price_history_data["fix_expensives"] = fix_expenses
-
-                if percent_coms_by_trad_scheme:
-                    percent_product_commissions = {
-                        k: row[k] for k in percent_coms_by_trad_scheme
-                    }
-                    costs = []
-                    for com, value in percent_product_commissions.items():
-                        abs_com = round(
-                            ozon_price_history_data["price"] * float(value) / 100,
-                            2,
-                        )
-
-                        costs_record = self.env["ozon.cost"].create(
-                            {
-                                "name": percent_coms_by_trad_scheme[com],
-                                "price": abs_com,
-                                "discription": f"{value}%",
-                            }
-                        )
-                        costs.append(costs_record.id)
-
-                    ozon_price_history_data["costs"] = costs
-
-                ozon_price_history = self.env["ozon.price_history"].create(
-                    ozon_price_history_data
-                )
-
-                print(f"price history for product {row['id_on_platform']} added")
-            return super(ImportFile, self).create(values)
-
-        ###################
-        ##### ANOTHER #####
-        ###################
         content = base64.b64decode(values["file"])
         mime_type = self.get_file_mime_type(content)
         mime_type = mime_type.lower()
@@ -281,7 +108,6 @@ class ImportFile(models.Model):
                             'ad': ad_reference
                         })
                     except Exception as e:
-                        raise ValueError(e)
                         continue
                 else:
                     try:
@@ -293,7 +119,6 @@ class ImportFile(models.Model):
                             'price_with_card': price_with_card,
                         })
                     except Exception as e:
-                        raise ValueError(e)
                         continue
 
                 list_values.append(record.id)
@@ -330,10 +155,18 @@ class ImportFile(models.Model):
                     reader = csv.DictReader(csvfile)
                     for row in reader:
                         if ozon_product := self.is_ozon_product_exists(
-                            id_on_platform=row["id_on_platform"],
-                            trading_scheme=row["trading_scheme"],
+                            id_on_platform=row["id_on_platform"]
                         ):
-                            pass
+                            retail_product = self.is_retail_product_exists(
+                                product_id=row["product_id"]
+                            )
+                            retail_product.write(
+                                {
+                                    "name": row["name"],
+                                    "description": row["description"],
+                                    "keywords": row["keywords"],
+                                }
+                            )
 
                         else:
                             if ozon_category := self.is_ozon_category_exists(
@@ -383,6 +216,7 @@ class ImportFile(models.Model):
                                 {
                                     "name": row["name"],
                                     "description": row["description"],
+                                    "keywords": row["keywords"],
                                     "product_id": row["product_id"],
                                     "length": float(row["length"]),
                                     "width": float(row["width"]),
@@ -397,13 +231,27 @@ class ImportFile(models.Model):
                                     "id_on_platform": row["id_on_platform"],
                                     "full_categories": row["full_categories"],
                                     "products": retail_product.id,
+                                    "price": row["price"],
                                     "seller": seller.id,
                                     "index_localization": localization_index.id,
                                     "trading_scheme": row["trading_scheme"],
                                     "delivery_location": row["delivery_location"],
                                 }
                             )
+
                             print(f"product {row['id_on_platform']} created")
+
+                        all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
+                        if product_fee := self.is_product_fee_exists(ozon_product):
+                            product_fee.write({"product": ozon_product.id, **all_fees})
+                        else:
+                            product_fee = self.env["ozon.product_fee"].create(
+                                {"product": ozon_product.id, **all_fees}
+                            )
+                            ozon_product.write(
+                                values={"product_fee": product_fee},
+                                cr=ozon_product,
+                            )
 
                         if row["trading_scheme"] == "FBO":
                             fix_coms_by_trad_scheme = FBO_FIX_COMMISSIONS
@@ -430,11 +278,11 @@ class ImportFile(models.Model):
                             "previous_price": previous_price,
                         }
 
+                        fix_expenses = []
                         if fix_coms_by_trad_scheme:
                             fix_product_commissions = {
                                 k: row[k] for k in fix_coms_by_trad_scheme
                             }
-                            fix_expenses = []
                             for com, value in fix_product_commissions.items():
                                 fix_expenses_record = self.env[
                                     "ozon.fix_expenses"
@@ -443,17 +291,22 @@ class ImportFile(models.Model):
                                         "name": fix_coms_by_trad_scheme[com],
                                         "price": value,
                                         "discription": "",
+                                        "product_id": ozon_product.id,
                                     }
                                 )
                                 fix_expenses.append(fix_expenses_record.id)
 
-                            ozon_price_history_data["fix_expensives"] = fix_expenses
+                            ozon_price_history_data["fix_expenses"] = fix_expenses
+                            ozon_product.write(
+                                {"fix_expenses": fix_expenses},
+                                cr=ozon_product,
+                            )
 
+                        costs = []
                         if percent_coms_by_trad_scheme:
                             percent_product_commissions = {
                                 k: row[k] for k in percent_coms_by_trad_scheme
                             }
-                            costs = []
                             for com, value in percent_product_commissions.items():
                                 abs_com = round(
                                     ozon_price_history_data["price"]
@@ -467,11 +320,16 @@ class ImportFile(models.Model):
                                         "name": percent_coms_by_trad_scheme[com],
                                         "price": abs_com,
                                         "discription": f"{value}%",
+                                        "product_id": ozon_product.id,
                                     }
                                 )
                                 costs.append(costs_record.id)
 
                             ozon_price_history_data["costs"] = costs
+                            ozon_product.write(
+                                {"percent_expenses": costs},
+                                cr=ozon_product,
+                            )
 
                         ozon_price_history = self.env["ozon.price_history"].create(
                             ozon_price_history_data
@@ -526,14 +384,14 @@ class ImportFile(models.Model):
             elif values["data_for_download"] == "ozon_transactions":
                 self.import_transactions(content)
 
+            elif values["data_for_download"] == "ozon_stocks":
+                self.import_stocks(content)
+
         return super(ImportFile, self).create(values)
 
-    def is_ozon_product_exists(self, id_on_platform: str, trading_scheme: str):
+    def is_ozon_product_exists(self, id_on_platform: str):
         result = self.env["ozon.products"].search(
-            [
-                ("id_on_platform", "=", id_on_platform),
-                ("trading_scheme", "=", trading_scheme),
-            ],
+            [("id_on_platform", "=", id_on_platform)],
             limit=1,
         )
         return result if result else False
@@ -617,6 +475,13 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
+    def is_stock_exists(self, ozon_product_id):
+        result = self.env["ozon.stock"].search(
+            [("product", "=", ozon_product_id)],
+            limit=1,
+        )
+        return result if result else False
+
     def import_transactions(self, content):
         f_path = "/mnt/extra-addons/ozon/__pycache__/transactions.csv"
         with open(f_path, "w") as f:
@@ -660,5 +525,72 @@ class ImportFile(models.Model):
                 }
                 ozon_transaction = self.env["ozon.transaction"].create(data)
                 print(f"Transaction {row['transaction_id']} was created")
+                # creating ozon.sale records
+                if row["name"] == "Доставка покупателю":
+                    self.create_sale_from_transaction(
+                        products=ozon_products,
+                        date=row["order_date"],
+                        revenue=row["amount"],
+                    )
 
         os.remove(f_path)
+
+    def import_stocks(self, content):
+        f_path = "/mnt/extra-addons/ozon/__pycache__/stocks.csv"
+        with open(f_path, "w") as f:
+            f.write(content)
+
+        with open(f_path) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if ozon_product := self.is_ozon_product_exists(
+                    id_on_platform=row["id_on_platform"]
+                ):
+                    if stock := self.is_stock_exists(ozon_product.id):
+                        stock.write(
+                            {
+                                "stocks_fbs": row["stocks_fbs"],
+                                "stocks_fbo": row["stocks_fbo"],
+                            }
+                        )
+                        print(f"Product {row['id_on_platform']} stocks were updated")
+                    else:
+                        stock = self.env["ozon.stock"].create(
+                            {
+                                "product": ozon_product.id,
+                                "stocks_fbs": row["stocks_fbs"],
+                                "stocks_fbo": row["stocks_fbo"],
+                                "_prod_id": row["product_id"],
+                            }
+                        )
+                        print(f"Product {row['id_on_platform']} stocks were created")
+
+                    ozon_product.write({"stock": stock.id}, cr=ozon_product)
+
+        os.remove(f_path)
+
+    def is_retail_cost_price_exists(self, ozon_product):
+        result = self.env["retail.cost_price"].search(
+            [("products", "=", ozon_product.products.id)],
+            order="timestamp desc",
+            limit=1,
+        )
+        return result if result else False
+
+    def is_product_fee_exists(self, ozon_product):
+        result = self.env["ozon.product_fee"].search(
+            [("product.id", "=", ozon_product.id)],
+            limit=1,
+        )
+        return result if result else False
+
+    def create_sale_from_transaction(self, products: list, date: str, revenue: float):
+        # if all products are the same
+        product = products[0]
+        qty = len(products)
+        if products.count(product) == qty:
+            self.env["ozon.sale"].create(
+                {"product": product, "date": date, "qty": qty, "revenue": revenue}
+            )
+
+        # TODO: different products in one transaction

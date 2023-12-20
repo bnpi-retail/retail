@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from email.policy import default
 from odoo import models, fields, api
 
+from ..ozon_api import MIN_FIX_EXPENSES, MAX_FIX_EXPENSES
+
 
 class CountPrice(models.Model):
     """
@@ -139,7 +141,8 @@ class FixExpenses(models.Model):
     name = fields.Char(string="Наименование")
     price = fields.Float(string="Значение")
     discription = fields.Text(string="Описание")
-    price_history_id = fields.Many2one("ozon.price_history", string="Товар")
+    price_history_id = fields.Many2one("ozon.price_history", string="История цен")
+    product_id = fields.Many2one("ozon.products", string="Товар Ozon")
 
 
 class Costs(models.Model):
@@ -149,7 +152,8 @@ class Costs(models.Model):
     name = fields.Char(string="Наименование")
     price = fields.Float(string="Значение")
     discription = fields.Text(string="Описание")
-    price_history_id = fields.Many2one("ozon.price_history", string="Товар")
+    price_history_id = fields.Many2one("ozon.price_history", string="История цен")
+    product_id = fields.Many2one("ozon.products", string="Товар Ozon")
 
 
 class PriceHistory(models.Model):
@@ -159,224 +163,99 @@ class PriceHistory(models.Model):
     product = fields.Many2one("ozon.products", string="Товар")
     provider = fields.Many2one("retail.seller", string="Продавец")
     price = fields.Float(string="Установленная цена", readonly=True)
-    competitors = fields.One2many("ozon.name_competitors", 
-                                  "pricing_history_id", 
-                                  string="Цены конкурентов", 
-                                  copy=True)
+    competitors = fields.One2many(
+        "ozon.name_competitors",
+        "pricing_history_id",
+        string="Цены конкурентов",
+        copy=True,
+    )
 
     previous_price = fields.Float(string="Предыдущая цена", readonly=True)
+    timestamp = fields.Date(string="Дата", default=fields.Date.today, readonly=True)
+    total_cost_fix = fields.Float(
+        string="Итого фикс.затраты",
+        related="product.total_fix_expenses_max",
+        store=True,
+    )
+    total_cost_percent = fields.Float(
+        string="Итого проц.затраты",
+        related="product.total_percent_expenses",
+        store=True,
+    )
+    fix_expenses = fields.One2many(
+        "ozon.fix_expenses",
+        "price_history_id",
+        string="Фиксированные затраты максимальные",
+        copy=True,
+        readonly=True,
+        domain=[("name", "in", MAX_FIX_EXPENSES)],
+    )
+    costs = fields.One2many(
+        "ozon.cost",
+        "price_history_id",
+        string="Процент от продаж",
+        copy=True,
+        readonly=True,
+    )
 
-    timestamp = fields.Date(string='Дата', 
-                            default=lambda self: (fields.Date.today() + timedelta(days=5)).strftime('%Y-%m-%d'),
-                            readonly=True)
+    profit = fields.Float(
+        string="Прибыль от установленной цены", compute="_compute_profit", store=True
+    )
+    profit_ideal = fields.Float(
+        string="Идеальная прибыль", compute="_compute_profit_ideal", store=True
+    )
+    profit_delta = fields.Float(
+        string="Разница между прибылью и идеальной прибылью",
+        compute="_compute_profit_delta",
+        store=True,
+    )
+    coef_profitability = fields.Float(
+        string="Коэффициент прибыльности",
+        compute="_compute_coef_profitability",
+        store=True,
+    )
 
-    fix_expensives = fields.One2many("ozon.fix_expenses",
-                                     "price_history_id",
-                                     string=" Фиксированные затраты",
-                                     copy=True,
-                                     readonly=True)
+    product_id = fields.Many2one("ozon.products", string="Лот")
 
-    total_cost_fix = fields.Float(string="Итого", 
-                                  compute="_compute_total_cost_fix", store=True)
-
-    costs = fields.One2many("ozon.cost", "price_history_id", 
-                            string="Процент от продаж", copy=True, readonly=True)
-
-    total_cost = fields.Float(string="Итого", 
-                            compute="_compute_total_cost", store=True)
-
-    our_price = fields.Float(string="Расчетная цена",
-                             compute="_compute_our_price", store=True)
-
-    ideal_price = fields.Float(string="Идеальная цена",
-                               compute="_compute_ideal_price", store=True)
-
-    profit = fields.Float(string="Прибыль от расчетной цены",
-                          compute="_compute_profit", store=True)
-
-    custom_our_price = fields.Float(string="Своя расчетная цена", default=0)
-
-    product_id = fields.Many2one('ozon.products', string='Лот')
-
-    @api.depends("costs.price")
-    def _compute_total_cost(self):
-        for record in self:
-            total = sum(record.costs.mapped("price"))
-            record.total_cost = total
-
-    @api.depends("fix_expensives.price")
-    def _compute_total_cost_fix(self):
-        for record in self:
-            total = sum(record.fix_expensives.mapped("price"))
-            record.total_cost_fix = total
-
-    @api.depends("total_cost_fix")
-    def _compute_ideal_price(self):
-        for record in self:
-            record.ideal_price = 2 * record.total_cost_fix
-
-    @api.depends("ideal_price")
-    def _compute_our_price(self):
-        for record in self:
-            if record.custom_our_price != 0:
-                record.our_price = record.custom_our_price
-            else:
-                record.our_price = record.ideal_price
-
-    @api.depends("our_price", "total_cost_fix", "total_cost")
+    @api.depends("price", "total_cost_fix", "total_cost_percent")
     def _compute_profit(self):
         for record in self:
-            total = record.our_price - record.total_cost_fix - record.total_cost
-            record.profit = total
+            record.profit = (
+                record.price - record.total_cost_fix - record.total_cost_percent
+            )
+
+    @api.depends("price")
+    def _compute_profit_ideal(self):
+        for record in self:
+            record.profit_ideal = record.price * 0.2
+
+    @api.depends("profit", "profit_ideal")
+    def _compute_profit_delta(self):
+        for record in self:
+            record.profit_delta = record.profit - record.profit_ideal
+
+    @api.depends("profit", "profit_ideal")
+    def _compute_coef_profitability(self):
+        for record in self:
+            record.coef_profitability = record.profit / record.profit_ideal
 
     @api.model
     def create(self, values):
-        record = super(PriceHistory, self).create(values)
-        ### Добавление id нашей записи к записи 'История цен'
-        product = record.product
-        product.write({'price_our_history_ids': [(4, record.id)]})
-
-
-        record._compute_total_cost_fix()
-
-        ### Нахождения себестоимости товара
-        obj_cost_price = self.env["retail.cost_price"].search(
-            [("id", "=", record.product.products.id)], order="timestamp desc", limit=1
-        )
-
-        ### Создание объекта стоимости
-        obj_fix__model_cost_price = self.env["ozon.fix_expenses"].create(
-            {
-                "name": "Себестоимость товара",
-                "price": obj_cost_price.price,
-                "discription": "Поиск себестоимости товара в 'Retail'",
-                "price_history_id": record.id,
-            }
-        )
-
-        ### Рассчет Стоимости логистики и создание объекта логистических затрат
-        volume = record.product.products.volume
-        obj_logistics_ozon = self.env["ozon.logistics_ozon"].search(
-            [
-                ("volume", ">=", volume),
-                ("trading_scheme", "=", record.product.trading_scheme),
-            ],
-            order="volume",
-            limit=1,
-        )
-
-        localization_index = self.env["ozon.localization_index"].search([], limit=1)
-
-        logistics_price = obj_logistics_ozon.price * localization_index.coefficient
-        str_logistics_price = (
-            f"Объем товара: {volume} "
-            f"Ближайшее значение в логистических затратах: {obj_logistics_ozon.price} "
-            f"Расчет = {obj_logistics_ozon.price} * {localization_index.coefficient} = {logistics_price}"
-        )
-
-        obj_fix__model_logistics_price = self.env["ozon.fix_expenses"].create(
-            {
-                "name": "Стоимость логистики",
-                "price": logistics_price,
-                "discription": str_logistics_price,
-                "price_history_id": record.id,
-            }
-        )
-
-        ### Рассчет Стоимости обработки
-        delivery_location = record.product.delivery_location
-        obj_local_index = self.env["ozon.ozon_fee"].search(
-            [("delivery_location", "=", delivery_location)], limit=1
-        )
-        str_local_index = (
-            f"Ищем фиксированные затраты по 'Пункт приема товара' в комиссиях Ozon"
-        )
-
-        obj_fix__model_local_index = self.env["ozon.fix_expenses"].create(
-            {
-                "name": "Фиксированные затраты",
-                "price": obj_local_index.value,
-                "discription": str_local_index,
-                "price_history_id": record.id,
-            }
-        )
-
-        ### Создание записей о цене фиксированных затрат
-        record.write(
-            {
-                "fix_expensives": [
-                    (4, obj_fix__model_cost_price.id),
-                    (4, obj_fix__model_logistics_price.id),
-                    (4, obj_fix__model_local_index.id),
-                ]
-            }
-        )
-
-        ### Рассчет Комисиия Ozon
-        obj_fee = self.env["ozon.ozon_fee"].search(
-            [
-                (
-                    "category.name_categories",
-                    "=",
-                    record.product.categories.name_categories,
-                )
-            ],
-            limit=1,
-        )
-
-        if obj_fee:
-            fee_price = obj_fee.value / 100 * obj_cost_price.price
-            str_fee = f"{obj_fee.value} / 100 * {obj_cost_price.price}"
-            type_comission = "Процент" if obj_fee.type == "percent" else "Фиксированный"
-
-            # if obj_fee.type == 'fix':
-            #     fee_price = obj_fee.value
-            #     str_fee = f'{obj_fee.value} * {record}'
-            # elif obj_fee.type == 'percent':
-            #     fee_price = obj_fee.value * obj_cost_price.price
-            #     str_fee = f'{obj_fee.value} * {record}'
-
-            obj_cost = self.env["ozon.cost"].create(
-                {
-                    "name": "Комисиия Ozon",
-                    "price": fee_price,
-                    "discription": (
-                        f"Тип: {type_comission}, "
-                        f"Комиссия: {obj_fee.value} "
-                        f"Значение комиссии: {str_fee} = {fee_price}"
-                    ),
-                    "price_history_id": record.id,
-                }
+        if values.get("fix_expenses"):
+            ozon_product_id = values["product"]
+            cost_price_record = self.env["ozon.fix_expenses"].search(
+                [
+                    ("product_id", "=", ozon_product_id),
+                    ("name", "=", "Себестоимость товара"),
+                ],
+                order="create_date desc",
+                limit=1,
             )
+            values["fix_expenses"] = [cost_price_record.id] + values["fix_expenses"]
 
-            ### Создание записей о цене комиссии Ozon
-            record.write({"costs": [(4, obj_cost.id)]})
-
-        ### Рассчет страховой коэффициент
-        insurance = record.product.insurance
-        if insurance != 0.00:
-            pass
-        else:
-            insurance = record.product.categories.insurance
-
-        insurance_price = insurance / 100 * obj_cost_price.price
-        str_insurance = f"{insurance} / 100 * {obj_cost_price.price}"
-
-        obj_cost = self.env["ozon.cost"].create(
-            {
-                "name": "Страховой коэффициент, р.",
-                "price": insurance_price,
-                "discription": (
-                    f"Комиссия: {insurance}, % "
-                    f"Значение комиссии: {str_insurance} = {insurance_price}"
-                ),
-                "price_history_id": record.id,
-            }
-        )
-
-        ### Создание записей о расчете страховой коэффициент
-        record.write({"costs": [(4, obj_cost.id)]})
-
+        record = super(PriceHistory, self).create(values)
+        product = record.product
+        product.write({"price_our_history_ids": [(4, record.id)]}, product)
         return record
 
     def name_get(self):

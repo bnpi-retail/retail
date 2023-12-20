@@ -1,68 +1,120 @@
 <odoo>
-  <data>
+    <data>
 
-    <!-- Form -->
-    <record id="view_action_products_form" model="ir.ui.view">
-        <field name="name">Лоты</field>
-        <field name="model">ozon.products</field>
-        <field name="arch" type="xml">
-            <form>
-                <group>
-                    <field name="id_on_platform"/>
-                    <field name="full_categories"/>
-                    <field name="categories"/>
-                    <field name="products"/>
-                    <field name="seller"/>
-                    <field name="index_localization"/>
-                    <field name="trading_scheme"/>
-                    <field name="delivery_location"/>
-                    <field name="insurance"/>
-                    <field name="search_queries" widget="many2many_tags"/>
-                    <field name="price_our_history_ids" widget="one2many_list">
-                        <tree limit="10">
-                            <field name="timestamp"/>
-                            <field name="provider"/>
-                            <field name="price"/>
-                        </tree>
-                    </field>
-                    <field name="price_history_ids" widget="one2many_list">
-                        <tree limit="10">
-                            <field name="timestamp"/>
-                            <field name="product_competitors"/>
-                            <field name="price"/>
-                        </tree>
-                    </field>
-                </group>
-            </form>
-        </field>
-    </record>
+        <!-- Form -->
+        <record id="view_action_products_form" model="ir.ui.view">
+            <field name="name">Лоты</field>
+            <field name="model">ozon.products</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="is_selling" />
+                        <field name="id_on_platform" />
+                        <field name="full_categories" />
+                        <field name="categories" />
+                        <field name="products" />
+                        <field name="price" />
+                        <field name="seller" />
+                        <field name="index_localization" />
+                        <field name="trading_scheme" />
+                        <field name="delivery_location" />
+                        <field name="insurance" />
+                        <field name="search_queries" widget="many2many_tags" />
+                        <field name="stocks_fbs" />
+                        <field name="stocks_fbo" />
+                    </group>
+                    <group>
+                        <group>
+                            <field name="fix_expenses_min">
+                                <tree>
+                                    <field name="name" />
+                                    <field name="price" />
+                                </tree>
+                            </field>
+                            <field name="total_fix_expenses_min" />
+                        </group>
+                        <group>
+                            <field name="fix_expenses_max">
+                                <tree>
+                                    <field name="name" />
+                                    <field name="price" />
+                                </tree>
+                            </field>
+                            <field name="total_fix_expenses_max" />
+                        </group>
+                    </group>
+                    <group>
+                        <field name="percent_expenses">
+                            <tree>
+                                <field name="name" />
+                                <field name="discription" />
+                                <field name="price" />
+                            </tree>
+                        </field>
+                        <field name="total_percent_expenses" />
 
-    <!-- Tree -->
-    <record id="view_action_products_tree" model="ir.ui.view">
-        <field name="name">Лоты</field>
-        <field name="model">ozon.products</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="products"/>
-                <field name="seller"/>
-                <field name="trading_scheme"/>
-                <field name="delivery_location"/>
-            </tree>
-        </field>
-    </record>
+                        <field name="price_our_history_ids" widget="one2many_list">
+                            <tree limit="10">
+                                <field name="timestamp" />
+                                <field name="provider" />
+                                <field name="price" />
+                            </tree>
+                        </field>
+                        <field name="price_history_ids" widget="one2many_list">
+                            <tree limit="10">
+                                <field name="timestamp" />
+                                <field name="product_competitors" />
+                                <field name="price" />
+                            </tree>
+                        </field>
 
-    <!-- Action -->
-    <record model="ir.actions.act_window" id="action_products">
-        <field name="name">Лоты</field>
-        <field name="res_model">ozon.products</field>
-        <field name="view_mode">tree,form</field>
-    </record>
+                        <separator string='Коэффициенты' />
+                        <field name="sales_per_day_last_30_days" />
+                        <field name="sales_per_day_last_30_days_group" />
+                        <field name="coef_profitability" />
+                        <field name="coef_profitability_group" />
 
-    <!-- Menu -->
-    <menuitem name="Лоты"
-        id="menu_products"
-        parent="ozon.menu_root"
-        action="action_products"
-        sequence="20"/>
-  </data>
+                        <separator string='Продажи' />
+                        <field name="sales">
+                            <tree>
+                                <field name="date" />
+                                <field name="qty" />
+                                <field name="revenue" />
+                            </tree>
+                        </field>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_action_products_tree" model="ir.ui.view">
+            <field name="name">Лоты</field>
+            <field name="model">ozon.products</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="products" />
+                    <field name="price" />
+                    <field name="is_selling" />
+                    <field name="trading_scheme" />
+                    <field name="stocks_fbs" />
+                    <field name="stocks_fbo" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_products">
+            <field name="name">Лоты</field>
+            <field name="res_model">ozon.products</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Лоты"
+            id="menu_products"
+            parent="ozon.menu_root"
+            action="action_products"
+            sequence="20" />
+    </data>
 </odoo>
