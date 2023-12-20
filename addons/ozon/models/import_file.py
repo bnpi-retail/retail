@@ -99,7 +99,16 @@ class ImportFile(models.Model):
                         if ozon_product := self.is_ozon_product_exists(
                             id_on_platform=row["id_on_platform"]
                         ):
-                            pass
+                            retail_product = self.is_retail_product_exists(
+                                product_id=row["product_id"]
+                            )
+                            retail_product.write(
+                                {
+                                    "name": row["name"],
+                                    "description": row["description"],
+                                    "keywords": row["keywords"],
+                                }
+                            )
 
                         else:
                             if ozon_category := self.is_ozon_category_exists(
@@ -149,6 +158,7 @@ class ImportFile(models.Model):
                                 {
                                     "name": row["name"],
                                     "description": row["description"],
+                                    "keywords": row["keywords"],
                                     "product_id": row["product_id"],
                                     "length": float(row["length"]),
                                     "width": float(row["width"]),
