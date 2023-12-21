@@ -4,13 +4,15 @@ from rest_framework.authtoken.models import Token
 
 APP_NAME = __package__ + '/'
 
-@login_required(login_url='/account/login/')
 def home(request):
-    token, created = Token.objects.get_or_create(user=request.user)
+    if request.user.is_authenticated:
+        token, created = Token.objects.get_or_create(user=request.user)
 
-    context = {
-        'user': request.user,
-        'api_token': token.key,
-    }
+        context = {
+            'user': request.user,
+            'api_token': token.key,
+        }
 
-    return render(request, APP_NAME + 'home.html', context)
+        return render(request, 'main/home.html', context)
+    else:
+        return render(request, 'main/home.html')
