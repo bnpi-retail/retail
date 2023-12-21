@@ -23,9 +23,6 @@ class OzonPlugin(http.Controller):
                 "file": base64.b64encode(file_binary_data),
             })
 
-
-
-
             response_data = {'response': 'success', 'message': 'File received and processed successfully'}
             status_code = 200
         else:
@@ -34,10 +31,8 @@ class OzonPlugin(http.Controller):
 
         response_json = json.dumps(response_data)
         
-        response = Response(
+        return Response(
             response=response_json,
             status=status_code,
             content_type='application/json'
         )
-        
-        return response

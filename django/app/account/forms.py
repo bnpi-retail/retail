@@ -2,7 +2,6 @@ import requests
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import authenticate, login
 
 from .models import CustomUser
 from .services import connect_to_odoo_api_with_auth

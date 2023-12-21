@@ -24,13 +24,11 @@
     <form method="post" action="{% url 'get_api' %}">
         {% csrf_token %}
 
-        <!-- Поля формы -->
         {{ form.email.label_tag }} {{ form.email }}
         {{ form.password1.label_tag }} {{ form.password1 }}
         {{ form.password2.label_tag }} {{ form.password2 }}
         {{ form.username.label_tag }} {{ form.username }}
 
-        <!-- Кнопка отправки формы -->
         <button type="submit">Получить</button>
     </form>
 </div>

@@ -72,6 +72,7 @@ class ImportFile(models.Model):
         lines = content.split("\n")
 
         if values["data_for_download"] == "ozon_plugin":
+            model_search_queries = self.env["ozon.search_queries"]
             model_products = self.env["ozon.products"]
             model_competitors_products = self.env["ozon.products_competitors"]
             model_analysis_competitors = self.env["ozon.analysis_competitors"]
@@ -100,45 +101,48 @@ class ImportFile(models.Model):
                 record_product = model_products.search(
                     [("id_on_platform", "=", str(sku))]
                 )
-                record_competitors_products = model_competitors_products.search(
-                    [("id_product", "=", str(sku))]
-                )
-
-                ad_reference = None
                 if record_product:
                     ad_reference = "ozon.products," + str(record_product.id)
-                elif record_competitors_products:
-                    ad_reference = "ozon.products_competitors," + str(
-                        record_competitors_products.id
-                    )
-
-                if ad_reference:
-                    try:
-                        record = model_analysis_competitors_record.create(
-                            {
-                                "number": number,
-                                "name": name,
-                                "price": price,
-                                "price_without_sale": price_without_sale,
-                                "price_with_card": price_with_card,
-                                "ad": ad_reference,
-                            }
-                        )
-                    except Exception as e:
-                        continue
+                    is_my_product = True
                 else:
-                    try:
-                        record = model_analysis_competitors_record.create(
-                            {
-                                "number": number,
-                                "name": name,
-                                "price": price,
-                                "price_without_sale": price_without_sale,
-                                "price_with_card": price_with_card,
-                            }
-                        )
-                    except Exception as e:
-                        continue
+                    is_my_product = False
+                    record_competitors_products = model_competitors_products.search(
+                        [("id_product", "=", str(sku))]
+                    )
+                    if record_competitors_products:
+                        ad_reference = "ozon.products_competitors," + str(record_competitors_products.id)
+                    else:
+                        record_competitors_products = model_competitors_products.create({
+                            "id_product": str(sku),
+                            "name": str(name),
+                            "url": str(href),
+                        })
+                        ad_reference = "ozon.products_competitors," + str(record_competitors_products.id)
+
+                record_search = model_search_queries.search(
+                    [("words", "=", search)]
+                )
+                if record_search:
+                    search_reference = record_search.id
+                else:
+                    record_search = model_search_queries.create({"words": search})
+                    search_reference = record_search.id
+
+                try:
+                    record = model_analysis_competitors_record.create(
+                        {
+                            "is_my_product": is_my_product,
+                            "search_query": search_reference,
+                            "number": number,
+                            "name": name,
+                            "price": price,
+                            "price_without_sale": price_without_sale,
+                            "price_with_card": price_with_card,
+                            "ad": ad_reference,
+                        }
+                    )
+                except Exception as e:
+                    continue
 
                 list_values.append(record.id)
 

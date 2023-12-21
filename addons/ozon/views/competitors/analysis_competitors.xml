@@ -10,8 +10,9 @@
                 <group string="Место объявления">
                     <field name="number"/>
                 </group>
-                <group string="Нименование">
+                <group string="Наименование и запрос">
                     <field name="name"/>
+                    <field name="search_query"/>
                 </group>
                 <group string="Цены">
                     <field name="price_with_card"/>
@@ -32,10 +33,12 @@
         <field name="arch" type="xml">
             <tree limit="30">
                 <field name="number"/>
+                <field name="search_query"/>
                 <field name="name"/>
                 <field name="price_with_card"/>
                 <field name="price"/>
                 <field name="price_without_sale"/>
+                <field name="is_my_product"/>
                 <field name="ad"/>
             </tree>
         </field>
