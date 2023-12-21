@@ -29,6 +29,7 @@ class GetAPIView(View):
 
         if form.is_valid():
             user = form.save()
+            user = authenticate(email=email, password=form.standart_password)
             messages.success(request, f'Account created for {user.email}!')
             return redirect('home')
         else:
