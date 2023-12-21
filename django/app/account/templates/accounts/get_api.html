@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- ... ваш заголовок ... -->
+</head>
+<body>
+
+<div class="container">
+    <h2>Получить API</h2>
+
+    {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+            <strong>Error!</strong> Please correct the following errors:
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ field }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'get_api' %}">
+        {% csrf_token %}
+
+        <!-- Поля формы -->
+        {{ form.email.label_tag }} {{ form.email }}
+        {{ form.password1.label_tag }} {{ form.password1 }}
+        {{ form.password2.label_tag }} {{ form.password2 }}
+        {{ form.username.label_tag }} {{ form.username }}
+
+        <!-- Кнопка отправки формы -->
+        <button type="submit">Получить</button>
+    </form>
+</div>
+
+</body>
+</html>

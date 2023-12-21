@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from rest_framework.authtoken.models import Token
 
+APP_NAME = __package__ + '/'
 
 @login_required(login_url='/account/login/')
 def home(request):
@@ -12,4 +13,4 @@ def home(request):
         'api_token': token.key,
     }
 
-    return render(request, 'main/home.html', context)
+    return render(request, APP_NAME + 'home.html', context)
