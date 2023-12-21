@@ -88,8 +88,18 @@ class ImportFile(models.Model):
                     price_with_card, href, name
                 ) = values_list
 
-                if search not in dict_values:
-                    dict_values[search] = []
+                record_search = model_search_queries.search(
+                    [("words", "=", search)]
+                )
+
+                if record_search:
+                    search_reference = record_search.id
+                else:
+                    record_search = model_search_queries.create({"words": search})
+                    search_reference = record_search.id
+
+                if search_reference not in dict_values:
+                    dict_values[search_reference] = []
                 
                 record_product = model_products.search(
                     [("id_on_platform", "=", str(sku))]
@@ -112,34 +122,27 @@ class ImportFile(models.Model):
                         })
                         ad_reference = "ozon.products_competitors," + str(record_competitors_products.id)
 
-                record_search = model_search_queries.search(
-                    [("words", "=", search)]
-                )
-                if record_search:
-                    search_reference = record_search.id
-                else:
-                    record_search = model_search_queries.create({"words": search})
-                    search_reference = record_search.id
 
-                try:
-                    record = model_analysis_competitors_record.create({
-                        "is_my_product": is_my_product,
-                        "number": number,
-                        "name": name,
-                        "price": price,
-                        "price_without_sale": price_without_sale,
-                        "price_with_card": price_with_card,
-                        "ad": ad_reference,
-                    })
-                except Exception as e:
-                    continue
+
+                # try:
+                record = model_analysis_competitors_record.create({
+                    "is_my_product": is_my_product,
+                    "number": number,
+                    "name": name,
+                    "price": price,
+                    "price_without_sale": price_without_sale,
+                    "price_with_card": price_with_card,
+                    "ad": ad_reference,
+                })
+                # except Exception as e:
+                    # continue
                 
-                dict_values[search].append(record.id)
+                dict_values[search_reference].append(record.id)
 
-            for search, ids in dict_values.items():
+            for search_id, ids in dict_values.items():
                 model_analysis_competitors.create({
                     "worker": values["worker"],
-                    "search_query": search_reference,
+                    "search_query": search_id,
                     "competitor_record": [(6, 0, ids)]
                 })
 
