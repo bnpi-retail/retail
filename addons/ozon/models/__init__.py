@@ -12,6 +12,7 @@ from . import transaction
 from . import stock
 from . import product_fee
 from . import sale
+from . import tasks
 
 
 from .competitors import products_competitors
