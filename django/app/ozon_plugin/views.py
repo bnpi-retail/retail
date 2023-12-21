@@ -62,8 +62,10 @@ class OzonPlugin(APIView):
         endpoint = "http://odoo-web:8069/take_ozon_data"
         headers = {"Cookie": f"session_id={session_id}"}
         files = {'file': ('output.csv', csv_data)}
-        response = requests.post(endpoint, headers=headers, files=files)
 
+        data = {'email': request.user.email}
+        response = requests.post(endpoint, headers=headers, files=files, data=data)
+        
         return Response({'message': str(response.status_code)})
 
 

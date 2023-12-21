@@ -12,7 +12,6 @@
                 </group>
                 <group string="Наименование и запрос">
                     <field name="name"/>
-                    <field name="search_query"/>
                 </group>
                 <group string="Цены">
                     <field name="price_with_card"/>
@@ -33,7 +32,6 @@
         <field name="arch" type="xml">
             <tree limit="30">
                 <field name="number"/>
-                <field name="search_query"/>
                 <field name="name"/>
                 <field name="price_with_card"/>
                 <field name="price"/>
@@ -50,8 +48,12 @@
         <field name="model">ozon.analysis_competitors</field>
         <field name="arch" type="xml">
             <form>
-                <group string="Наполнить стандартными данными">
+                <group string="Дата">
                     <field name="timestamp"/>
+                </group>
+                <group>
+                    <field name="search_query"/>
+                    <field name="worker"/>
                 </group>
                 <group string="Объявления">
                     <field name="competitor_record" widget="many2many_tags_cloud">

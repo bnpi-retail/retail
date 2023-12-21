@@ -9,16 +9,13 @@ class OzonPlugin(http.Controller):
     @http.route('/take_ozon_data', auth='public', type='http', csrf=False, methods=["POST"])
     def ozon_plugin(self, **kwargs):
         uploaded_file = http.request.httprequest.files.get('file')
+        email = http.request.params.get('email')
 
         if uploaded_file:
-            # current_path = os.path.dirname(os.path.realpath(__file__))
-            # file_path = os.path.join(current_path, uploaded_file.filename)
-            # with open(file_path, 'wb') as file:
-            #     file.write(uploaded_file.read())
-
             file_binary_data = uploaded_file.read()
             model_ozon_import_file = http.request.env["ozon.import_file"]
             model_ozon_import_file.create({
+                "worker": email,
                 "data_for_download": "ozon_plugin",
                 "file": base64.b64encode(file_binary_data),
             })
