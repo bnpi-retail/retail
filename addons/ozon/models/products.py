@@ -3,7 +3,7 @@ from datetime import datetime, time, timedelta
 from odoo import models, fields, api
 
 from ..ozon_api import MIN_FIX_EXPENSES, MAX_FIX_EXPENSES
-from ..helpers import split_list
+from ..helpers import split_list, split_keywords
 
 
 class Product(models.Model):
@@ -287,3 +287,26 @@ class Product(models.Model):
 
         # active_records = self.search([("is_selling", "=", True)])
         # active_records._compute_sales_per_day_last_30_days_group()
+
+    def populate_search_queries(self, keywords_string):
+        # разделить полученную из csv string keywords на слова
+        keywords = split_keywords(keywords_string)
+
+        data = []
+        for word in keywords:
+            # если такое слово уже ассоциировано с продуктом, то его не добавляем
+            if self.env["ozon.search_queries"].search(
+                [
+                    ("words", "=", word),
+                    ("product_id", "=", self.id),
+                ]
+            ):
+                continue
+
+            record = {"words": word, "product_id": self.id}
+            data.append((0, 0, record))
+            print(f"Word {word} added.")
+
+        if data:
+            # добавить слова к продукту
+            self.search_queries = data
