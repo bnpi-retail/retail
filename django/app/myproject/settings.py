@@ -18,9 +18,8 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
-CORS_ALLOWED_ORIGINS = [
-    "https://www.ozon.ru",
-]
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
+
 CORS_ALLOW_CREDENTIALS = False
 
 SECRET_KEY = os.getenv('SECRET_KEY')
