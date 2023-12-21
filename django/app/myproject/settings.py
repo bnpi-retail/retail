@@ -18,8 +18,13 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://retail-extension.bnpi.dev",
+]
+CORS_ALLOWED_ORIGINS = [
+    "https://retail-extension.bnpi.dev",
+    "https://www.ozon.ru",
+]
 CORS_ALLOW_CREDENTIALS = False
 
 SECRET_KEY = os.getenv('SECRET_KEY')
