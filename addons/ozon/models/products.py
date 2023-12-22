@@ -170,35 +170,15 @@ class Product(models.Model):
 
     def _compute_sales_per_day_last_30_days_group(self):
         coefs = self.search([]).read(fields=["sales_per_day_last_30_days"])
-        coefs = sorted([round(i["sales_per_day_last_30_days"], 2) for i in coefs])
-
+        coefs = sorted(coefs, key=itemgetter("sales_per_day_last_30_days"))
         g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
-        filled = {"g1": 0, "g2": 0, "g3": 0, "g4": 0, "g5": 0}
-        for product in self:
-            coef = round(product.sales_per_day_last_30_days, 2)
-            if coef <= g1[-1] and filled["g1"] < len(g1):
-                product.sales_per_day_last_30_days_group = (
-                    f"Группа 1: от {g1[0]} до {g1[-1]}"
-                )
-                filled["g1"] += 1
-            elif g2[0] <= coef <= g2[-1] and filled["g2"] < len(g2):
-                product.sales_per_day_last_30_days_group = (
-                    f"Группа 2: от {g2[0]} до {g2[-1]}"
-                )
-                filled["g2"] += 1
-            elif g3[0] <= coef <= g3[-1] and filled["g3"] < len(g3):
-                product.sales_per_day_last_30_days_group = (
-                    f"Группа 3: от {g3[0]} до {g3[-1]}"
-                )
-                filled["g3"] += 1
-            elif g4[0] <= coef <= g4[-1] and filled["g4"] < len(g4):
-                product.sales_per_day_last_30_days_group = (
-                    f"Группа 4: от {g4[0]} до {g4[-1]}"
-                )
-                filled["g4"] += 1
-            elif coef >= g5[0]:
-                product.sales_per_day_last_30_days_group = (
-                    f"Группа 5: от {g5[0]} до {g5[-1]}"
+        for i, g in enumerate([g1, g2, g3, g4, g5]):
+            g_min = round(g[0]["sales_per_day_last_30_days"], 2)
+            g_max = round(g[-1]["sales_per_day_last_30_days"], 2)
+            for item in g:
+                prod = self.env["ozon.products"].search([("id", "=", item["id"])])
+                prod.sales_per_day_last_30_days_group = (
+                    f"Группа {i+1}: от {g_min} до {g_max}"
                 )
 
     def _compute_coef_profitability(self):
@@ -215,23 +195,14 @@ class Product(models.Model):
 
     def _compute_coef_profitability_group(self):
         coefs = self.search([]).read(fields=["coef_profitability"])
-        coefs = sorted([round(i["coef_profitability"], 2) for i in coefs])
+        coefs = sorted(coefs, key=itemgetter("coef_profitability"))
         g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
-        for product in self:
-            coef = round(product.coef_profitability, 2)
-            product.coef_profitability_group = None
-            if coef < g1[-1]:
-                product.coef_profitability_group = f"Группа 1: от {g1[0]} до {g1[-1]}"
-            elif g2[0] <= coef <= g2[-1]:
-                product.coef_profitability_group = f"Группа 2: от {g2[0]} до {g2[-1]}"
-            elif g3[0] <= coef <= g3[-1]:
-                product.coef_profitability_group = f"Группа 3: от {g3[0]} до {g3[-1]}"
-            elif g4[0] <= coef <= g4[-1]:
-                product.coef_profitability_group = f"Группа 4: от {g4[0]} до {g4[-1]}"
-            elif coef >= g5[0]:
-                product.coef_profitability_group = f"Группа 5: от {g5[0]} до {g5[-1]}"
-            else:
-                product.coef_profitability_group = None
+        for i, g in enumerate([g1, g2, g3, g4, g5]):
+            g_min = round(g[0]["coef_profitability"], 2)
+            g_max = round(g[-1]["coef_profitability"], 2)
+            for item in g:
+                prod = self.env["ozon.products"].search([("id", "=", item["id"])])
+                prod.coef_profitability_group = f"Группа {i+1}: от {g_min} до {g_max}"
 
     def name_get(self):
         """
