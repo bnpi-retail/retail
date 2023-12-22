@@ -174,22 +174,22 @@ class Product(models.Model):
         filled = {"g1": 0, "g2": 0, "g3": 0, "g4": 0, "g5": 0}
         for product in self:
             coef = round(product.sales_per_day_last_30_days, 2)
-            if coef <= g1[-1] and filled["g1"] <= len(g1):
+            if coef <= g1[-1] and filled["g1"] < len(g1):
                 product.sales_per_day_last_30_days_group = (
                     f"Группа 1: от {g1[0]} до {g1[-1]}"
                 )
                 filled["g1"] += 1
-            elif g2[0] <= coef <= g2[-1] and filled["g2"] <= len(g2):
+            elif g2[0] <= coef <= g2[-1] and filled["g2"] < len(g2):
                 product.sales_per_day_last_30_days_group = (
                     f"Группа 2: от {g2[0]} до {g2[-1]}"
                 )
                 filled["g2"] += 1
-            elif g3[0] <= coef <= g3[-1] and filled["g3"] <= len(g3):
+            elif g3[0] <= coef <= g3[-1] and filled["g3"] < len(g3):
                 product.sales_per_day_last_30_days_group = (
                     f"Группа 3: от {g3[0]} до {g3[-1]}"
                 )
                 filled["g3"] += 1
-            elif g4[0] <= coef <= g4[-1] and filled["g4"] <= len(g4):
+            elif g4[0] <= coef <= g4[-1] and filled["g4"] < len(g4):
                 product.sales_per_day_last_30_days_group = (
                     f"Группа 4: от {g4[0]} до {g4[-1]}"
                 )
@@ -219,16 +219,16 @@ class Product(models.Model):
         filled = {"g1": 0, "g2": 0, "g3": 0, "g4": 0, "g5": 0}
         for product in self:
             coef = round(product.coef_profitability, 2)
-            if coef <= g1[-1] and filled["g1"] <= len(g1):
+            if coef <= g1[-1] and filled["g1"] < len(g1):
                 product.coef_profitability_group = f"Группа 1: от {g1[0]} до {g1[-1]}"
                 filled["g1"] += 1
-            elif g2[0] <= coef <= g2[-1] and filled["g2"] <= len(g2):
+            elif g2[0] <= coef <= g2[-1] and filled["g2"] < len(g2):
                 product.coef_profitability_group = f"Группа 2: от {g2[0]} до {g2[-1]}"
                 filled["g2"] += 1
-            elif g3[0] <= coef <= g3[-1] and filled["g3"] <= len(g3):
+            elif g3[0] <= coef <= g3[-1] and filled["g3"] < len(g3):
                 product.coef_profitability_group = f"Группа 3: от {g3[0]} до {g3[-1]}"
                 filled["g3"] += 1
-            elif g4[0] <= coef <= g4[-1] and filled["g4"] <= len(g4):
+            elif g4[0] <= coef <= g4[-1] and filled["g4"] < len(g4):
                 product.coef_profitability_group = f"Группа 4: от {g4[0]} до {g4[-1]}"
                 filled["g4"] += 1
             elif coef >= g5[0]:
@@ -370,9 +370,9 @@ class Product(models.Model):
 
         # полученные коэффициенты записать в ozon.products.percent_expenses, пересчитав в абс.значение (перемножив на цену)
         # для каждого товара считать свою percent_expenses.price (update: прошлые записи с такими же названиями удалить)
-        percent_expenses_records = []
         all_records = self.search([])
         for product in all_records:
+            percent_expenses_records = []
             # создать recordset percent_expenses, умножая каждый коэф на цену продукта
             for item in all_coefs:
                 per_exp_record = self.env["ozon.cost"].create(
@@ -386,7 +386,7 @@ class Product(models.Model):
                 percent_expenses_records.append(per_exp_record.id)
 
             # добавить к нему уже имеющуюся запись "Процент комиссии за продажу"
-            sale_percent_com_record = product.price_our_history_ids.costs.search(
+            sale_percent_com_record = product.percent_expenses.search(
                 [
                     ("product_id", "=", product.id),
                     (
@@ -400,7 +400,9 @@ class Product(models.Model):
                 ],
                 limit=1,
             )
-            percent_expenses_records.append(sale_percent_com_record.id)
 
+            if sale_percent_com_record:
+                percent_expenses_records.append(sale_percent_com_record.id)
             # перезаписать ozon_product.percent_expenses
             product.percent_expenses = [(6, 0, percent_expenses_records)]
+            print(f"Product {product.id_on_platform} percent expenses were updated.")

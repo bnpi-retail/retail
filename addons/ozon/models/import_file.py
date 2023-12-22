@@ -348,10 +348,10 @@ class ImportFile(models.Model):
                                 costs.append(costs_record.id)
 
                             ozon_price_history_data["costs"] = costs
-                            # ozon_product.write(
-                            #     {"percent_expenses": costs},
-                            #     cr=ozon_product,
-                            # )
+                            ozon_product.write(
+                                {"percent_expenses": costs},
+                                cr=ozon_product,
+                            )
 
                         ozon_price_history = self.env["ozon.price_history"].create(
                             ozon_price_history_data
