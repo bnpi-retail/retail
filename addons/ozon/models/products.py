@@ -310,3 +310,86 @@ class Product(models.Model):
         if data:
             # добавить слова к продукту
             self.search_queries = data
+
+    def update_percent_expenses(self):
+        """Запускать еженедельно на весь recordset ozon.products"""
+        date_from = datetime.combine(datetime.now(), time.min) - timedelta(days=30)
+        date_to = datetime.combine(datetime.now(), time.max) - timedelta(days=1)
+        transactions = self.env["ozon.transaction"].read_group(
+            domain=[
+                ("transaction_date", ">=", date_from),
+                ("transaction_date", "<=", date_to),
+            ],
+            fields=[],
+            groupby="name",
+        )
+
+        data = {"revenue": 0}
+        for tran in transactions:
+            name = tran["name"]
+            # взять выручку по транзакциям за последние 30 дней
+            if name in [
+                "Доставка покупателю",
+                "Доставка покупателю — отмена начисления",
+                "Перечисление за доставку от покупателя",
+            ]:
+                data["revenue"] += tran["amount"]
+            elif name in ["Оплата эквайринга"]:
+                continue
+            # взять из транзакций за посл 30 дней расходы по категориям (напр. возвраты, услуги продвижения и т д)
+            else:
+                data[name] = tran["amount"]
+
+        all_coefs = []
+        # разделить каждую статью расходов на выручку
+        for k, v in data.items():
+            if k == "revenue":
+                continue
+            coef = abs(round(v / data["revenue"], 4))
+            if coef == 0:
+                # слишком маленький коэф. можно пренебречь
+                continue
+            coef_percentage_string = f"{coef:.2%}"
+            all_coefs.append(
+                {
+                    "name": k,
+                    "coef": coef,
+                    "coef_percentage_string": coef_percentage_string,
+                }
+            )
+
+        # полученные коэффициенты записать в ozon.products.percent_expenses, пересчитав в абс.значение (перемножив на цену)
+        # для каждого товара считать свою percent_expenses.price (update: прошлые записи с такими же названиями удалить)
+        percent_expenses_records = []
+        for product in self:
+            # создать recordset percent_expenses, умножая каждый коэф на цену продукта
+            for item in all_coefs:
+                per_exp_record = self.env["ozon.cost"].create(
+                    {
+                        "name": item["name"],
+                        "price": round(product.price * item["coef"], 2),
+                        "discription": item["coef_percentage_string"],
+                        "product_id": product.id,
+                    }
+                )
+                percent_expenses_records.append(per_exp_record.id)
+
+            # добавить к нему уже имеющуюся запись "Процент комиссии за продажу"
+            sale_percent_com_record = product.price_our_history_ids.costs.search(
+                [
+                    ("product_id", "=", product.id),
+                    (
+                        "name",
+                        "in",
+                        [
+                            "Процент комиссии за продажу (FBO)",
+                            "Процент комиссии за продажу (FBS)",
+                        ],
+                    ),
+                ],
+                limit=1,
+            )
+            percent_expenses_records.append(sale_percent_com_record.id)
+
+            # перезаписать ozon_product.percent_expenses
+            product.percent_expenses = [(6, 0, percent_expenses_records)]
