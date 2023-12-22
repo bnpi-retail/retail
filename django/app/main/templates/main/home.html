@@ -7,7 +7,12 @@
     {% if user.is_authenticated %}
         <h1>Добро пожаловать, {{ user.email }}!</h1>
         <p>Your API token is: {{ api_token }}</p>
-        <a href="{% url 'logout' %}">Выход</a>
+        <p>
+            <a href="{% url 'download-extension' %}">Скачать расширение Chrome</a>
+        </p>
+        <p>
+            <a href="{% url 'logout' %}">Выход</a>
+        </p>
     {% else %}
         <h1>Добро пожаловать!</h1>
         <a href="{% url 'get_api' %}">Получить токен</a>
