@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime, time
 
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
@@ -36,13 +37,6 @@ class Task(models.Model):
 
     @api.model
     def create(self, values):
-        tasks_day_limit = 50
-        tasks_created_today = self.env["ozon.tasks"].search(
-            [("create_date", "=", fields.Date.today())]
-        )
-        if len(tasks_created_today) >= tasks_day_limit:
-            return
-
         name = values["name"]
         ozon_product_id = values["product"]
         ozon_product = self.get_ozon_product(ozon_product_id)
@@ -67,25 +61,40 @@ class Task(models.Model):
 
         return super(Task, self).create(values)
 
+    def is_task_day_limit_exhausted(self):
+        tasks_day_limit = 50
+        today_beginning = datetime.combine(datetime.now(), time.min)
+        tasks_created_today = self.env["ozon.tasks"].search(
+            [("create_date", ">", today_beginning)]
+        )
+        if len(tasks_created_today) >= tasks_day_limit:
+            print("Today tasks limit exhausted.")
+            return True, 0
+        else:
+            amount_left = tasks_day_limit - len(tasks_created_today)
+            return False, amount_left
+
     def get_ozon_product(self, ozon_product_id):
         result = self.env["ozon.products"].search([("id", "=", ozon_product_id)])
         return result if result else False
 
     def create_tasks_low_price(self):
         """Если profit < ideal_profit, то создается задача 'Низкая цена'"""
-        # взять первые 50шт историй цен с сегодняшней датой и с низкой ценой
-        price_history_records = self.env["ozon.products"].search(
-            [("profit_delta", "<=", 0), ("timestamp", "=", fields.Date.today())],
-            limit=50,
+        is_exhaused, amount_left = self.is_task_day_limit_exhausted()
+        if is_exhaused:
+            return
+        # взять первые 50шт продуктов с отрицательной profit_delta
+        products_records = self.env["ozon.products"].search(
+            [("profit_delta", "<=", 0)],
+            limit=amount_left,
             order="create_date desc",
         )
-        print(len(price_history_records))
         tasks_values = []
-        for rec in price_history_records:
+        for prod in products_records:
             tasks_values.append(
                 {
                     "name": "low_price",
-                    "product": rec.product_id.id,
+                    "product": prod.id,
                 }
             )
         self.create(tasks_values)
