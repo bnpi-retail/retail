@@ -38,7 +38,7 @@ class AnalysisCompetitors(models.Model):
                                 readonly=True)
     search_query = fields.Many2one('ozon.search_queries',
                                    string='Поисковый запрос')
-    worker = fields.Char(string='Сотрудник')
+    worker = fields.Many2one('res.users', string='Сотрудник')
     competitor_record = fields.One2many('ozon.analysis_competitors_record', 
                                         'analysis_id', string='Конкуренты')
 

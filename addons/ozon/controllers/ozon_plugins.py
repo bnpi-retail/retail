@@ -10,12 +10,13 @@ class OzonPlugin(http.Controller):
     def ozon_plugin(self, **kwargs):
         uploaded_file = http.request.httprequest.files.get('file')
         email = http.request.params.get('email')
+        worker = request.env['res.users'].search([('email', '=', email)])
 
         if uploaded_file:
             file_binary_data = uploaded_file.read()
             model_ozon_import_file = http.request.env["ozon.import_file"]
             model_ozon_import_file.create({
-                "worker": email,
+                "worker": worker.id,
                 "data_for_download": "ozon_plugin",
                 "file": base64.b64encode(file_binary_data),
             })
