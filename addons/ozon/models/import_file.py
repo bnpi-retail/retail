@@ -126,32 +126,31 @@ class ImportFile(models.Model):
                             record_competitors_products.id
                         )
                     else:
-                        record_competitors_products = model_competitors_products.create(
-                            {
-                                "id_product": str(sku),
-                                "name": str(name),
-                                "url": str(href),
-                            }
-                        )
-                        ad_reference = "ozon.products_competitors," + str(
-                            record_competitors_products.id
-                        )
 
-                # try:
-                record = model_analysis_competitors_record.create(
-                    {
-                        "is_my_product": is_my_product,
-                        "number": number,
-                        "name": name,
-                        "price": price,
-                        "price_without_sale": price_without_sale,
-                        "price_with_card": price_with_card,
-                        "ad": ad_reference,
-                    }
-                )
-                # except Exception as e:
-                # continue
+                        record_competitors_products = model_competitors_products.create({
+                            "id_product": str(sku),
+                            "name": str(name),
+                            "url": str(href),
+                        })
+                        ad_reference = "ozon.products_competitors," + str(record_competitors_products.id)
 
+                record_data = {}
+                if is_my_product != 'None':
+                    record_data['is_my_product'] = is_my_product
+                if number != 'None':
+                    record_data['number'] = number
+                if name != 'None':
+                    record_data['name'] = name
+                if price != 'None':
+                    record_data['price'] = price
+                if price_without_sale != 'None':
+                    record_data['price_without_sale'] = price_without_sale
+                if price_with_card != 'None':
+                    record_data['price_with_card'] = price_with_card
+                if ad_reference != 'None':
+                    record_data['ad'] = ad_reference
+                record = model_analysis_competitors_record.create(record_data)
+                
                 dict_values[search_reference].append(record.id)
 
             for search_id, ids in dict_values.items():
