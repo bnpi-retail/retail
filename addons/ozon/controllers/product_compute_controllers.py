@@ -20,6 +20,6 @@ class OzonComputePercentExpenses(http.Controller):
         csrf=False,
         methods=["POST"],
     )
-    def compute_ozon_products_coefs_and_groups(self):
+    def compute_ozon_products_percent_expenses(self):
         http.request.env["ozon.products"].update_percent_expenses()
         return "All products' percent expenses were successfully computed."
