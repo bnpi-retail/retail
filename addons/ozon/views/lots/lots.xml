@@ -53,6 +53,12 @@
                         </field>
                         <field name="total_percent_expenses" />
 
+                        <separator string="Прибыль" />
+                        <field name="profit" />
+                        <field name="profit_ideal" />
+                        <field name="profit_delta" />
+
+                        <separator string="История цен" />
                         <field name="price_our_history_ids" widget="one2many_list">
                             <tree limit="10">
                                 <field name="timestamp" />

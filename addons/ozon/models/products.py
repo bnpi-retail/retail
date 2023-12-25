@@ -126,6 +126,36 @@ class Product(models.Model):
     coef_profitability_group = fields.Char(
         string="Группа коэффициента прибыльности",
     )
+    profit = fields.Float(
+        string="Прибыль от актуальной цены", compute="_compute_profit", store=True
+    )
+    profit_ideal = fields.Float(
+        string="Идеальная прибыль", compute="_compute_profit_ideal", store=True
+    )
+    profit_delta = fields.Float(
+        string="Разница между прибылью и идеальной прибылью",
+        compute="_compute_profit_delta",
+        store=True,
+    )
+
+    @api.depends("price", "total_fix_expenses_max", "total_percent_expenses")
+    def _compute_profit(self):
+        for record in self:
+            record.profit = (
+                record.price
+                - record.total_fix_expenses_max
+                - record.total_percent_expenses
+            )
+
+    @api.depends("price")
+    def _compute_profit_ideal(self):
+        for record in self:
+            record.profit_ideal = record.price * 0.2
+
+    @api.depends("profit", "profit_ideal")
+    def _compute_profit_delta(self):
+        for record in self:
+            record.profit_delta = record.profit - record.profit_ideal
 
     @api.depends("fix_expenses_min.price")
     def _compute_total_fix_expenses_min(self):
@@ -341,7 +371,7 @@ class Product(models.Model):
         # полученные коэффициенты записать в ozon.products.percent_expenses, пересчитав в абс.значение (перемножив на цену)
         # для каждого товара считать свою percent_expenses.price (update: прошлые записи с такими же названиями удалить)
         all_records = self.search([])
-        for product in all_records:
+        for i, product in enumerate(all_records):
             percent_expenses_records = []
             # создать recordset percent_expenses, умножая каждый коэф на цену продукта
             for item in all_coefs:
@@ -375,4 +405,9 @@ class Product(models.Model):
                 percent_expenses_records.append(sale_percent_com_record.id)
             # перезаписать ozon_product.percent_expenses
             product.percent_expenses = [(6, 0, percent_expenses_records)]
-            print(f"Product {product.id_on_platform} percent expenses were updated.")
+
+            if i % 100 == 0:
+                self.env.cr.commit()
+            print(
+                f"{i} - Product {product.id_on_platform} percent expenses were updated."
+            )
