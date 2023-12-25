@@ -182,7 +182,6 @@ class ImportFile(models.Model):
                         )
 
             elif values["data_for_download"] == "ozon_products":
-                self.env["ozon.tasks"].create_tasks_low_price()
                 f_path = "/mnt/extra-addons/ozon/products_from_ozon_api.csv"
                 with open(f_path, "w") as f:
                     f.write(content)

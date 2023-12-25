@@ -68,7 +68,6 @@ class Task(models.Model):
             [("create_date", ">", today_beginning)]
         )
         if len(tasks_created_today) >= tasks_day_limit:
-            print("Today tasks limit exhausted.")
             return True, 0
         else:
             amount_left = tasks_day_limit - len(tasks_created_today)
@@ -82,7 +81,7 @@ class Task(models.Model):
         """Если profit < ideal_profit, то создается задача 'Низкая цена'"""
         is_exhaused, amount_left = self.is_task_day_limit_exhausted()
         if is_exhaused:
-            return
+            return "Today tasks limit exhausted."
         # взять первые 50шт продуктов с отрицательной profit_delta
         products_records = self.env["ozon.products"].search(
             [("profit_delta", "<=", 0)],
@@ -98,3 +97,4 @@ class Task(models.Model):
                 }
             )
         self.create(tasks_values)
+        return f"Tasks for {len(products_records)} products were created."
