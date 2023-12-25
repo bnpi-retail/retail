@@ -127,7 +127,7 @@ class Product(models.Model):
         string="Группа коэффициента прибыльности",
     )
     profit = fields.Float(
-        string="Прибыль от установленной цены", compute="_compute_profit", store=True
+        string="Прибыль от актуальной цены", compute="_compute_profit", store=True
     )
     profit_ideal = fields.Float(
         string="Идеальная прибыль", compute="_compute_profit_ideal", store=True
