@@ -65,7 +65,8 @@ class OzonPlugin(APIView):
 
         data = {'email': request.user.email}
         response = requests.post(endpoint, headers=headers, files=files, data=data)
-        
+        if response.status_code != 200:
+            return Response({'message': 'Bad Request'}, status=400)
         return Response({'message': str(response.status_code)})
 
 
@@ -80,7 +81,8 @@ class DownloadExtension(APIView):
 
 class FileUploadView(View):
     template_name = 'upload_file.html'
-
+    extension_path = "./extension.7z"
+    
     def get(self, request, *args, **kwargs):
         form = FileUploadForm()
         return render(request, APP_NAME + self.template_name, {'form': form})
@@ -89,10 +91,10 @@ class FileUploadView(View):
         form = FileUploadForm(request.POST, request.FILES)
         if form.is_valid():
             self.handle_uploaded_file(request.FILES['file'])
-            return redirect('success')
+            return redirect('home')
         return render(request, APP_NAME + self.template_name, {'form': form})
 
     def handle_uploaded_file(self, file):
-        with open(os.path.join(settings.MEDIA_ROOT, 'uploads', file.name), 'wb+') as destination:
+        with open(self.extension_path, 'wb+') as destination:
             for chunk in file.chunks():
                 destination.write(chunk)

@@ -19,7 +19,6 @@ class OzonPlugin(http.Controller):
                 "data_for_download": "ozon_plugin",
                 "file": base64.b64encode(file_binary_data),
             })
-
             response_data = {'response': 'success', 'message': 'File received and processed successfully'}
             status_code = 200
         else:
