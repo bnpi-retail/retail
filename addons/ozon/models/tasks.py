@@ -36,6 +36,13 @@ class Task(models.Model):
 
     @api.model
     def create(self, values):
+        tasks_day_limit = 50
+        tasks_created_today = self.env["ozon.tasks"].search(
+            [("create_date", "=", fields.Date.today())]
+        )
+        if len(tasks_created_today) >= tasks_day_limit:
+            return
+
         name = values["name"]
         ozon_product_id = values["product"]
         ozon_product = self.get_ozon_product(ozon_product_id)
@@ -63,3 +70,22 @@ class Task(models.Model):
     def get_ozon_product(self, ozon_product_id):
         result = self.env["ozon.products"].search([("id", "=", ozon_product_id)])
         return result if result else False
+
+    def create_tasks_low_price(self):
+        """Если profit < ideal_profit, то создается задача 'Низкая цена'"""
+        # взять первые 50шт историй цен с сегодняшней датой и с низкой ценой
+        price_history_records = self.env["ozon.products"].search(
+            [("profit_delta", "<=", 0), ("timestamp", "=", fields.Date.today())],
+            limit=50,
+            order="create_date desc",
+        )
+        print(len(price_history_records))
+        tasks_values = []
+        for rec in price_history_records:
+            tasks_values.append(
+                {
+                    "name": "low_price",
+                    "product": rec.product_id.id,
+                }
+            )
+        self.create(tasks_values)

@@ -20,22 +20,26 @@ from ..ozon_api import (
 class ImportFile(models.Model):
     _name = "ozon.import_file"
     _description = "Импорт"
-    timestamp = fields.Date(string="Дата импорта", default=fields.Date.today, 
-                            readonly=True)
+    timestamp = fields.Date(
+        string="Дата импорта", default=fields.Date.today, readonly=True
+    )
     worker = fields.Char(string="Сотрудник")
 
-    data_for_download = fields.Selection([
-        ("logistics_cost", "Стоимость логистики"),
-        ("ozon_products", "Товары Ozon"),
-        ("ozon_plugin", "Товары Ozon (Плагин)"),
-        ("ozon_commissions", "Комиссии Ozon по категориям"),
-        ("ozon_transactions", "Транзакции Ozon"),
-        ("ozon_stocks", "Остатки товаров Ozon")],
+    data_for_download = fields.Selection(
+        [
+            ("logistics_cost", "Стоимость логистики"),
+            ("ozon_products", "Товары Ozon"),
+            ("ozon_plugin", "Товары Ozon (Плагин)"),
+            ("ozon_commissions", "Комиссии Ozon по категориям"),
+            ("ozon_transactions", "Транзакции Ozon"),
+            ("ozon_stocks", "Остатки товаров Ozon"),
+        ],
         string="Данные для загрузки",
     )
 
-    file = fields.Binary(attachment=True, string="Файл для загрузки своих данных", 
-                         help="Выбрать файл")
+    file = fields.Binary(
+        attachment=True, string="Файл для загрузки своих данных", help="Выбрать файл"
+    )
 
     def name_get(self):
         """
@@ -84,13 +88,18 @@ class ImportFile(models.Model):
                     continue
 
                 (
-                    number, search, seller, sku, price, price_without_sale,
-                    price_with_card, href, name
+                    number,
+                    search,
+                    seller,
+                    sku,
+                    price,
+                    price_without_sale,
+                    price_with_card,
+                    href,
+                    name,
                 ) = values_list
 
-                record_search = model_search_queries.search(
-                    [("words", "=", search)]
-                )
+                record_search = model_search_queries.search([("words", "=", search)])
 
                 if record_search:
                     search_reference = record_search.id
@@ -100,7 +109,7 @@ class ImportFile(models.Model):
 
                 if search_reference not in dict_values:
                     dict_values[search_reference] = []
-                
+
                 record_product = model_products.search(
                     [("id_on_platform", "=", str(sku))]
                 )
@@ -113,38 +122,46 @@ class ImportFile(models.Model):
                         [("id_product", "=", str(sku))]
                     )
                     if record_competitors_products:
-                        ad_reference = "ozon.products_competitors," + str(record_competitors_products.id)
+                        ad_reference = "ozon.products_competitors," + str(
+                            record_competitors_products.id
+                        )
                     else:
-                        record_competitors_products = model_competitors_products.create({
-                            "id_product": str(sku),
-                            "name": str(name),
-                            "url": str(href),
-                        })
-                        ad_reference = "ozon.products_competitors," + str(record_competitors_products.id)
-
-
+                        record_competitors_products = model_competitors_products.create(
+                            {
+                                "id_product": str(sku),
+                                "name": str(name),
+                                "url": str(href),
+                            }
+                        )
+                        ad_reference = "ozon.products_competitors," + str(
+                            record_competitors_products.id
+                        )
 
                 # try:
-                record = model_analysis_competitors_record.create({
-                    "is_my_product": is_my_product,
-                    "number": number,
-                    "name": name,
-                    "price": price,
-                    "price_without_sale": price_without_sale,
-                    "price_with_card": price_with_card,
-                    "ad": ad_reference,
-                })
+                record = model_analysis_competitors_record.create(
+                    {
+                        "is_my_product": is_my_product,
+                        "number": number,
+                        "name": name,
+                        "price": price,
+                        "price_without_sale": price_without_sale,
+                        "price_with_card": price_with_card,
+                        "ad": ad_reference,
+                    }
+                )
                 # except Exception as e:
-                    # continue
-                
+                # continue
+
                 dict_values[search_reference].append(record.id)
 
             for search_id, ids in dict_values.items():
-                model_analysis_competitors.create({
-                    "worker": values["worker"],
-                    "search_query": search_id,
-                    "competitor_record": [(6, 0, ids)]
-                })
+                model_analysis_competitors.create(
+                    {
+                        "worker": values["worker"],
+                        "search_query": search_id,
+                        "competitor_record": [(6, 0, ids)],
+                    }
+                )
 
         if "csv" in mime_type:
             if values["data_for_download"] == "logistics_cost":
@@ -156,13 +173,16 @@ class ImportFile(models.Model):
                         volume = float(volume)
                         price = float(price)
 
-                        logistics_ozon.create({
-                            "trading_scheme": trading_scheme,
-                            "volume": volume,
-                            "price": price,
-                        })
+                        logistics_ozon.create(
+                            {
+                                "trading_scheme": trading_scheme,
+                                "volume": volume,
+                                "price": price,
+                            }
+                        )
 
             elif values["data_for_download"] == "ozon_products":
+                self.env["ozon.tasks"].create_tasks_low_price()
                 f_path = "/mnt/extra-addons/ozon/products_from_ozon_api.csv"
                 with open(f_path, "w") as f:
                     f.write(content)
