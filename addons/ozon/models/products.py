@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, time, timedelta
+from operator import itemgetter
+
 from odoo import models, fields, api
 
 from ..ozon_api import MIN_FIX_EXPENSES, MAX_FIX_EXPENSES
@@ -168,30 +170,15 @@ class Product(models.Model):
 
     def _compute_sales_per_day_last_30_days_group(self):
         coefs = self.search([]).read(fields=["sales_per_day_last_30_days"])
-        coefs = sorted([round(i["sales_per_day_last_30_days"], 2) for i in coefs])
-
+        coefs = sorted(coefs, key=itemgetter("sales_per_day_last_30_days"))
         g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
-        for product in self:
-            coef = round(product.sales_per_day_last_30_days, 2)
-            if coef <= g1[-1]:
-                product.sales_per_day_last_30_days_group = (
-                    f"Группа 1: от {g1[0]} до {g1[-1]}"
-                )
-            elif g2[0] <= coef <= g2[-1]:
-                product.sales_per_day_last_30_days_group = (
-                    f"Группа 2: от {g2[0]} до {g2[-1]}"
-                )
-            elif g3[0] <= coef <= g3[-1]:
-                product.sales_per_day_last_30_days_group = (
-                    f"Группа 3: от {g3[0]} до {g3[-1]}"
-                )
-            elif g4[0] <= coef <= g4[-1]:
-                product.sales_per_day_last_30_days_group = (
-                    f"Группа 4: от {g4[0]} до {g4[-1]}"
-                )
-            elif coef >= g5[0]:
-                product.sales_per_day_last_30_days_group = (
-                    f"Группа 5: от {g5[0]} до {g5[-1]}"
+        for i, g in enumerate([g1, g2, g3, g4, g5]):
+            g_min = round(g[0]["sales_per_day_last_30_days"], 2)
+            g_max = round(g[-1]["sales_per_day_last_30_days"], 2)
+            for item in g:
+                prod = self.env["ozon.products"].search([("id", "=", item["id"])])
+                prod.sales_per_day_last_30_days_group = (
+                    f"Группа {i+1}: от {g_min} до {g_max}"
                 )
 
     def _compute_coef_profitability(self):
@@ -208,21 +195,14 @@ class Product(models.Model):
 
     def _compute_coef_profitability_group(self):
         coefs = self.search([]).read(fields=["coef_profitability"])
-        coefs = sorted([round(i["coef_profitability"], 2) for i in coefs])
-
+        coefs = sorted(coefs, key=itemgetter("coef_profitability"))
         g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
-        for product in self:
-            coef = round(product.coef_profitability, 2)
-            if coef <= g1[-1]:
-                product.coef_profitability_group = f"Группа 1: от {g1[0]} до {g1[-1]}"
-            elif g2[0] <= coef <= g2[-1]:
-                product.coef_profitability_group = f"Группа 2: от {g2[0]} до {g2[-1]}"
-            elif g3[0] <= coef <= g3[-1]:
-                product.coef_profitability_group = f"Группа 3: от {g3[0]} до {g3[-1]}"
-            elif g4[0] <= coef <= g4[-1]:
-                product.coef_profitability_group = f"Группа 4: от {g4[0]} до {g4[-1]}"
-            elif coef >= g5[0]:
-                product.coef_profitability_group = f"Группа 5: от {g5[0]} до {g5[-1]}"
+        for i, g in enumerate([g1, g2, g3, g4, g5]):
+            g_min = round(g[0]["coef_profitability"], 2)
+            g_max = round(g[-1]["coef_profitability"], 2)
+            for item in g:
+                prod = self.env["ozon.products"].search([("id", "=", item["id"])])
+                prod.coef_profitability_group = f"Группа {i+1}: от {g_min} до {g_max}"
 
     def name_get(self):
         """
@@ -310,3 +290,89 @@ class Product(models.Model):
         if data:
             # добавить слова к продукту
             self.search_queries = data
+
+    def update_percent_expenses(self):
+        """Запускать еженедельно на весь recordset ozon.products"""
+        date_from = datetime.combine(datetime.now(), time.min) - timedelta(days=30)
+        date_to = datetime.combine(datetime.now(), time.max) - timedelta(days=1)
+        transactions = self.env["ozon.transaction"].read_group(
+            domain=[
+                ("transaction_date", ">=", date_from),
+                ("transaction_date", "<=", date_to),
+            ],
+            fields=[],
+            groupby="name",
+        )
+
+        data = {"revenue": 0}
+        for tran in transactions:
+            name = tran["name"]
+            # взять выручку по транзакциям за последние 30 дней
+            if name in [
+                "Доставка покупателю",
+                "Доставка покупателю — отмена начисления",
+                "Перечисление за доставку от покупателя",
+            ]:
+                data["revenue"] += tran["amount"]
+            elif name in ["Оплата эквайринга"]:
+                continue
+            # взять из транзакций за посл 30 дней расходы по категориям (напр. возвраты, услуги продвижения и т д)
+            else:
+                data[name] = tran["amount"]
+
+        all_coefs = []
+        # разделить каждую статью расходов на выручку
+        for k, v in data.items():
+            if k == "revenue":
+                continue
+            coef = abs(round(v / data["revenue"], 4))
+            if coef == 0:
+                # слишком маленький коэф. можно пренебречь
+                continue
+            coef_percentage_string = f"{coef:.2%}"
+            all_coefs.append(
+                {
+                    "name": k,
+                    "coef": coef,
+                    "coef_percentage_string": coef_percentage_string,
+                }
+            )
+
+        # полученные коэффициенты записать в ozon.products.percent_expenses, пересчитав в абс.значение (перемножив на цену)
+        # для каждого товара считать свою percent_expenses.price (update: прошлые записи с такими же названиями удалить)
+        all_records = self.search([])
+        for product in all_records:
+            percent_expenses_records = []
+            # создать recordset percent_expenses, умножая каждый коэф на цену продукта
+            for item in all_coefs:
+                per_exp_record = self.env["ozon.cost"].create(
+                    {
+                        "name": item["name"],
+                        "price": round(product.price * item["coef"], 2),
+                        "discription": item["coef_percentage_string"],
+                        "product_id": product.id,
+                    }
+                )
+                percent_expenses_records.append(per_exp_record.id)
+
+            # добавить к нему уже имеющуюся запись "Процент комиссии за продажу"
+            sale_percent_com_record = product.percent_expenses.search(
+                [
+                    ("product_id", "=", product.id),
+                    (
+                        "name",
+                        "in",
+                        [
+                            "Процент комиссии за продажу (FBO)",
+                            "Процент комиссии за продажу (FBS)",
+                        ],
+                    ),
+                ],
+                limit=1,
+            )
+
+            if sale_percent_com_record:
+                percent_expenses_records.append(sale_percent_com_record.id)
+            # перезаписать ozon_product.percent_expenses
+            product.percent_expenses = [(6, 0, percent_expenses_records)]
+            print(f"Product {product.id_on_platform} percent expenses were updated.")

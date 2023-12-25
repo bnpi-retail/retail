@@ -261,17 +261,17 @@ class ImportFile(models.Model):
 
                         ozon_product.populate_search_queries(row["keywords"])
 
-                        all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
-                        if product_fee := self.is_product_fee_exists(ozon_product):
-                            product_fee.write({"product": ozon_product.id, **all_fees})
-                        else:
-                            product_fee = self.env["ozon.product_fee"].create(
-                                {"product": ozon_product.id, **all_fees}
-                            )
-                            ozon_product.write(
-                                values={"product_fee": product_fee},
-                                cr=ozon_product,
-                            )
+                        # all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
+                        # if product_fee := self.is_product_fee_exists(ozon_product):
+                        #     product_fee.write({"product": ozon_product.id, **all_fees})
+                        # else:
+                        #     product_fee = self.env["ozon.product_fee"].create(
+                        #         {"product": ozon_product.id, **all_fees}
+                        #     )
+                        #     ozon_product.write(
+                        #         values={"product_fee": product_fee},
+                        #         cr=ozon_product,
+                        #     )
 
                         if row["trading_scheme"] == "FBO":
                             fix_coms_by_trad_scheme = FBO_FIX_COMMISSIONS
