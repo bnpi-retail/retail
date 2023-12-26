@@ -1,0 +1,54 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_indirect_percent_expenses_form" model="ir.ui.view">
+            <field name="name">Косвенные затраты</field>
+            <field name="model">ozon.indirect_percent_expenses</field>
+            <field name="arch" type="xml">
+                <form>
+                    <button string="Рассчитать и применить" class="oe_highlight" type="object"
+                        name="count_n_apply" args="[]" />
+                    <group string="Дата расчета" style="margin-top: 20px; margin-bottom: 20px;">
+                        <field name="timestamp" />
+                    </group>
+                    <group string="Интервал расчета">
+                        <field name="start_date" />
+                        <field name="end_date" />
+                    </group>
+                    <group string="Лот">
+                        <field name="product" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_indirect_percent_expenses_tree" model="ir.ui.view">
+            <field name="name">Косвенные затраты</field>
+            <field name="model">ozon.indirect_percent_expenses</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="timestamp" />
+                    <field name="start_date" />
+                    <field name="end_date" />
+                    <field name="product" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_indirect_percent_expenses">
+            <field name="name">Косвенные затраты</field>
+            <field name="res_model">ozon.indirect_percent_expenses</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Косвенные затраты"
+            id="menu_indirect_percent_expenses"
+            parent="ozon.menu_root"
+            sequence="36" />
+
+    </data>
+</odoo>
