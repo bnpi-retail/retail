@@ -5,7 +5,7 @@ class SearchQueryQueue(models.Model):
     _name = 'ozon.search_query_queue'
     _description = 'Очередь поисковых запросов'
 
-    query = fields.Char(string='Запрос')
+    query = fields.Many2one('ozon.search_queries', string='Поисковый запрос')
     status = fields.Selection([
         ('complete', 'Выполнен'),
         ('in_processing', 'В обработке'),

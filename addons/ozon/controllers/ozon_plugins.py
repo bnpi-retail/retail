@@ -48,7 +48,7 @@ class OzonPlugin(http.Controller):
         response_data = {
             'response': 'success',
             'length_query': length_query,
-            'searches': [record.query],
+            'searches': [record.query.words],
         }
         response_json = json.dumps(response_data)
         
