@@ -29,6 +29,8 @@
         "security/import/import/ir.model.access.csv",
         "security/competitors/products_competitors/ir.model.access.csv",
         "security/competitors/price_competitors/ir.model.access.csv",
+        "security/competitors/search_query_queue/ir.model.access.csv",
+
         "security/competitors/analysis_competitors/ir.model.access.csv",
         "security/competitors/analysis_competitors_record/ir.model.access.csv",
         "security/count_insurance_percent/count_insurance_percent/ir.model.access.csv",
@@ -59,6 +61,7 @@
         "views/import/import.xml",
         "views/competitors/menu.xml",
         "views/competitors/products_competitors.xml",
+        "views/competitors/search_query_queue.xml",
         "views/competitors/price_competitors.xml",
         "views/competitors/analysis_competitors.xml",
         "views/count_insurance_percent/menu.xml",

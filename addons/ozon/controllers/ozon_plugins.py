@@ -6,7 +6,7 @@ from odoo.http import Response
 
 
 class OzonPlugin(http.Controller):
-    @http.route('/take_ozon_data', auth='public', type='http', csrf=False, methods=["POST"])
+    @http.route('/take_ozon_data', auth='user', type='http', csrf=False, methods=["POST"])
     def ozon_plugin(self, **kwargs):
         uploaded_file = http.request.httprequest.files.get('file')
         email = http.request.params.get('email')
@@ -31,5 +31,29 @@ class OzonPlugin(http.Controller):
         return Response(
             response=response_json,
             status=status_code,
+            content_type='application/json'
+        )
+    
+    @http.route('/take_requests', auth='user', type='http', csrf=False, methods=["POST"])
+    def ozon_requests(self, **kwargs):
+
+        record = request.env['ozon.search_query_queue'] \
+            .search([('status', '=', 'available')], limit=1)
+        
+        length_query = 0
+        if record:
+            record.write({'status': 'in_processing'})
+            length_query = 1
+
+        response_data = {
+            'response': 'success',
+            'length_query': length_query,
+            'searches': [record.query],
+        }
+        response_json = json.dumps(response_data)
+        
+        return Response(
+            response=response_json,
+            status=200,
             content_type='application/json'
         )

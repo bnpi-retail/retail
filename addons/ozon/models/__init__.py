@@ -18,6 +18,7 @@ from . import tasks
 from .competitors import products_competitors
 from .competitors import price_history_competitors
 from .competitors import analysis_competitors
+from .competitors import search_query_queue
 from .price import pricing
 
 

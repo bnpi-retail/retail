@@ -1,9 +1,7 @@
-import os
 import requests
 
 from django.http import FileResponse
 from django.shortcuts import render, redirect
-from django.conf import settings
 from django.views import View
 
 from rest_framework.views import APIView
@@ -68,6 +66,23 @@ class OzonPlugin(APIView):
         if response.status_code != 200:
             return Response({'message': 'Bad Request'}, status=400)
         return Response({'message': str(response.status_code)})
+
+
+class OzonTakeRequests(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        session_id = connect_to_odoo_api_with_auth()
+        if session_id is False: return Response({'status': False})
+        endpoint = "http://odoo-web:8069/take_requests"
+        headers = {"Cookie": f"session_id={session_id}"}
+        response = requests.post(endpoint, headers=headers)
+
+        if response.status_code != 200:
+            return Response({'message': 'Bad Request'}, status=400)
+
+        response_data = response.json()
+        return Response(response_data)
 
 
 class DownloadExtension(APIView):
