@@ -9,6 +9,7 @@
                 <form>
                     <group>
                         <field name="is_selling" />
+                        <field name="is_alive" />
                         <field name="id_on_platform" />
                         <field name="full_categories" />
                         <field name="categories" />
@@ -102,6 +103,7 @@
                     <field name="products" />
                     <field name="price" />
                     <field name="is_selling" />
+                    <field name="is_alive" />
                     <field name="trading_scheme" />
                     <field name="stocks_fbs" />
                     <field name="stocks_fbo" />
