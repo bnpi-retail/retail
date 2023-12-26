@@ -64,6 +64,12 @@ class Product(models.Model):
     is_selling = fields.Boolean(
         string="В продаже", compute="_get_is_selling", store=True, readonly=True
     )
+    is_alive = fields.Boolean(
+        string="Живой товар (в продаже и продавался за посл. 30 дней)",
+        compute="_get_is_alive",
+        store=True,
+        readonly=True,
+    )
 
     fix_expenses = fields.One2many(
         "ozon.fix_expenses",
@@ -281,6 +287,14 @@ class Product(models.Model):
                 record.is_selling = True
             else:
                 record.is_selling = False
+
+    @api.depends("is_selling", "sales_per_day_last_30_days")
+    def _get_is_alive(self):
+        for record in self:
+            if record.is_selling and record.sales_per_day_last_30_days > 0:
+                record.is_alive = True
+            else:
+                record.is_alive = False
 
     def update_coefs_and_groups(self):
         all_records = self.search([])
