@@ -48,6 +48,6 @@ class AnalysisCompetitors(models.Model):
         """
         result = []
         for record in self:
-            display_name = f"{record.timestamp} - {record.worker} - {record.search_query.words}"
+            display_name = f"{record.timestamp} - {record.worker.name} - {record.search_query.words}"
             result.append((record.id, display_name))
         return result
