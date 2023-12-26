@@ -126,31 +126,34 @@ class ImportFile(models.Model):
                             record_competitors_products.id
                         )
                     else:
-
-                        record_competitors_products = model_competitors_products.create({
-                            "id_product": str(sku),
-                            "name": str(name),
-                            "url": str(href),
-                        })
-                        ad_reference = "ozon.products_competitors," + str(record_competitors_products.id)
+                        record_competitors_products = model_competitors_products.create(
+                            {
+                                "id_product": str(sku),
+                                "name": str(name),
+                                "url": str(href),
+                            }
+                        )
+                        ad_reference = "ozon.products_competitors," + str(
+                            record_competitors_products.id
+                        )
 
                 record_data = {}
-                if is_my_product != 'None':
-                    record_data['is_my_product'] = is_my_product
-                if number != 'None':
-                    record_data['number'] = number
-                if name != 'None':
-                    record_data['name'] = name
-                if price != 'None':
-                    record_data['price'] = price
-                if price_without_sale != 'None':
-                    record_data['price_without_sale'] = price_without_sale
-                if price_with_card != 'None':
-                    record_data['price_with_card'] = price_with_card
-                if ad_reference != 'None':
-                    record_data['ad'] = ad_reference
+                if is_my_product != "None":
+                    record_data["is_my_product"] = is_my_product
+                if number != "None":
+                    record_data["number"] = number
+                if name != "None":
+                    record_data["name"] = name
+                if price != "None":
+                    record_data["price"] = price
+                if price_without_sale != "None":
+                    record_data["price_without_sale"] = price_without_sale
+                if price_with_card != "None":
+                    record_data["price_with_card"] = price_with_card
+                if ad_reference != "None":
+                    record_data["ad"] = ad_reference
                 record = model_analysis_competitors_record.create(record_data)
-                
+
                 dict_values[search_reference].append(record.id)
 
             for search_id, ids in dict_values.items():
@@ -340,6 +343,19 @@ class ImportFile(models.Model):
 
                         costs = []
                         if percent_coms_by_trad_scheme:
+                            ozon_product.percent_expenses.search(
+                                [
+                                    ("product_id", "=", ozon_product.id),
+                                    (
+                                        "name",
+                                        "in",
+                                        [
+                                            "Процент комиссии за продажу (FBO)",
+                                            "Процент комиссии за продажу (FBS)",
+                                        ],
+                                    ),
+                                ]
+                            ).unlink()
                             percent_product_commissions = {
                                 k: row[k] for k in percent_coms_by_trad_scheme
                             }
@@ -350,7 +366,6 @@ class ImportFile(models.Model):
                                     / 100,
                                     2,
                                 )
-
                                 costs_record = self.env["ozon.cost"].create(
                                     {
                                         "name": percent_coms_by_trad_scheme[com],
@@ -362,10 +377,6 @@ class ImportFile(models.Model):
                                 costs.append(costs_record.id)
 
                             ozon_price_history_data["costs"] = costs
-                            ozon_product.write(
-                                {"percent_expenses": costs},
-                                cr=ozon_product,
-                            )
 
                         ozon_price_history = self.env["ozon.price_history"].create(
                             ozon_price_history_data
