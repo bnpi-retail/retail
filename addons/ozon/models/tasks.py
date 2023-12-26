@@ -73,15 +73,25 @@ class Task(models.Model):
             amount_left = tasks_day_limit - len(tasks_created_today)
             return False, amount_left
 
+    def is_new_tasks_limit_exhausted(self):
+        """Returns bool and amount of tasks that yet can be created."""
+        limit = 50
+        new_tasks = self.env["ozon.tasks"].search([("status", "=", "new")])
+        if len(new_tasks) == limit:
+            return True, 0
+        else:
+            amount_left = limit - len(new_tasks)
+            return False, amount_left
+
     def get_ozon_product(self, ozon_product_id):
         result = self.env["ozon.products"].search([("id", "=", ozon_product_id)])
         return result if result else False
 
     def create_tasks_low_price(self):
         """Если profit < ideal_profit, то создается задача 'Низкая цена'"""
-        is_exhaused, amount_left = self.is_task_day_limit_exhausted()
+        is_exhaused, amount_left = self.is_new_tasks_limit_exhausted()
         if is_exhaused:
-            return "Today tasks limit exhausted."
+            return "New tasks limit exhausted."
         # взять первые 50шт продуктов с отрицательной profit_delta
         products_records = self.env["ozon.products"].search(
             [("profit_delta", "<=", 0)],
