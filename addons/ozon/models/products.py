@@ -205,7 +205,7 @@ class Product(models.Model):
             product.sales_per_day_last_30_days = total_qty / 30
 
     def _compute_sales_per_day_last_30_days_group(self):
-        coefs = self.search([]).read(fields=["sales_per_day_last_30_days"])
+        coefs = self.read(fields=["sales_per_day_last_30_days"])
         coefs = sorted(coefs, key=itemgetter("sales_per_day_last_30_days"))
         g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
         for i, g in enumerate([g1, g2, g3, g4, g5]):
@@ -230,7 +230,7 @@ class Product(models.Model):
             product.coef_profitability = price_history_record.coef_profitability
 
     def _compute_coef_profitability_group(self):
-        coefs = self.search([]).read(fields=["coef_profitability"])
+        coefs = self.read(fields=["coef_profitability"])
         coefs = sorted(coefs, key=itemgetter("coef_profitability"))
         g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
         for i, g in enumerate([g1, g2, g3, g4, g5]):
@@ -297,20 +297,17 @@ class Product(models.Model):
                 record.is_alive = False
 
     def update_coefs_and_groups(self):
-        all_records = self.search([])
-        all_records._compute_coef_profitability()
-        all_records._compute_coef_profitability_group()
-        all_records._compute_sales_per_day_last_30_days()
-        # TODO: какие товары сегментируем на группы по продажам за посл. 30 дней?
-        # все товары? только активные? только те, у которых были продажи за посл. 30 дней?
-        all_records._compute_sales_per_day_last_30_days_group()
-
-        # inactive_records = self.search([("is_selling", "=", False)])
-        # for rec in inactive_records:
-        #     rec.sales_per_day_last_30_days_group = ""
-
-        # active_records = self.search([("is_selling", "=", True)])
-        # active_records._compute_sales_per_day_last_30_days_group()
+        all_products = self.search([])
+        # coefs
+        all_products._compute_coef_profitability()
+        all_products._compute_sales_per_day_last_30_days()
+        # groups
+        all_products._compute_coef_profitability_group()
+        alive_products = self.search([("is_alive", "=", True)])
+        not_alive_products = all_products - alive_products
+        for rec in not_alive_products:
+            rec.sales_per_day_last_30_days_group = ""
+        alive_products._compute_sales_per_day_last_30_days_group()
 
     def populate_search_queries(self, keywords_string):
         # разделить полученную из csv string keywords на слова
