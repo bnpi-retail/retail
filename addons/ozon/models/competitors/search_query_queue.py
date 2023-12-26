@@ -18,6 +18,6 @@ class SearchQueryQueue(models.Model):
         """
         result = []
         for record in self:
-            display_name = f"{record.query} - {record.status}"
+            display_name = f"{record.query.words} - {record.status}"
             result.append((record.id, display_name))
         return result
