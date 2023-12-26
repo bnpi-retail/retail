@@ -429,6 +429,9 @@ class ImportFile(models.Model):
                 os.remove(f_path)
 
             elif values["data_for_download"] == "ozon_transactions":
+                self.env[
+                    "ozon.indirect_percent_expenses"
+                ].calculate_indirect_expenses_prev_month()
                 self.import_transactions(content)
 
             elif values["data_for_download"] == "ozon_stocks":

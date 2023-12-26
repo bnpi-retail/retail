@@ -31,8 +31,8 @@ class IndirectPercentExpenses(models.Model):
     timestamp = fields.Date(
         string="Дата расчета", default=fields.Date.today, readonly=True
     )
-    date_from = fields.Datetime(string="Начало периода")
-    date_to = fields.Datetime(string="Конец периода")
+    date_from = fields.Datetime(string="Начало периода", readonly=True)
+    date_to = fields.Datetime(string="Конец периода", readonly=True)
 
     # values
     revenue = fields.Float(string="Выручка", readonly=True)
@@ -134,7 +134,7 @@ class IndirectPercentExpenses(models.Model):
         string="Общий коэффициент косвенных затрат", readonly=True
     )
 
-    def get_transactions_groups(self):
+    def calculate_indirect_expenses_prev_month(self):
         """Запускать еженедельно на весь recordset ozon.products"""
         date_from = datetime.combine(datetime.now(), time.min) - timedelta(days=30)
         date_to = datetime.combine(datetime.now(), time.max) - timedelta(days=1)
@@ -155,20 +155,24 @@ class IndirectPercentExpenses(models.Model):
             "coef_total": 0,
         }
         for tran in transactions:
+            if tran["amount"] > 0:
+                data["revenue"] += tran["amount"]
+
+        for tran in transactions:
             name = tran["name"]
             fieldname = STRING_FIELDNAMES.get(name)
             amount = tran["amount"]
-
             if amount > 0:
-                data["revenue"] += amount
+                continue
+            if fieldname:
+                data[fieldname] = amount
+                data[f"coef_{fieldname}"] = abs(
+                    round(amount / data["revenue"], 4) * 100
+                )
             else:
-                if fieldname:
-                    data[fieldname] = amount
-                    data[f"coef_{fieldname}"] = abs(round(amount / data["revenue"], 4))
-                else:
-                    data["other"] += amount
+                data["other"] += amount
 
-        data["coef_other"] = abs(round(data["other"] / data["revenue"], 4))
+        data["coef_other"] = abs(round(data["other"] / data["revenue"], 4) * 100)
 
         for k, v in data.items():
             if k.startswith("coef") and k != "coef_total":
@@ -176,7 +180,7 @@ class IndirectPercentExpenses(models.Model):
 
         self.create(data)
 
-        total_coef = data["coef_total"]
+        total_coef = data["coef_total"] / 100
         coef_percentage_string = f"{total_coef:.2%}"
 
         all_products = self.env["ozon.products"].search([])
