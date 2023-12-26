@@ -16,7 +16,8 @@
                         <group string="Выручка">
                             <field name="revenue" />
                         </group>
-                        <group string="Общий коэффициент затрат, %">
+                        <group
+                            string="Общий коэффициент затрат (кроме Оплаты эквайринга), % ">
                             <field name="coef_total" />
                         </group>
                     </group>

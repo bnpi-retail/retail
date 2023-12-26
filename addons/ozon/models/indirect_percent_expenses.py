@@ -31,8 +31,8 @@ class IndirectPercentExpenses(models.Model):
     timestamp = fields.Date(
         string="Дата расчета", default=fields.Date.today, readonly=True
     )
-    date_from = fields.Datetime(string="Начало периода", readonly=True)
-    date_to = fields.Datetime(string="Конец периода", readonly=True)
+    date_from = fields.Date(string="Начало периода", readonly=True)
+    date_to = fields.Date(string="Конец периода", readonly=True)
 
     # values
     revenue = fields.Float(string="Выручка", readonly=True)
@@ -175,48 +175,16 @@ class IndirectPercentExpenses(models.Model):
         data["coef_other"] = abs(round(data["other"] / data["revenue"], 4) * 100)
 
         for k, v in data.items():
-            if k.startswith("coef") and k != "coef_total":
+            if k.startswith("coef") and k not in ["coef_total", "coef_acquiring"]:
                 data["coef_total"] += v
 
         self.create(data)
 
-        total_coef = data["coef_total"] / 100
-        coef_percentage_string = f"{total_coef:.2%}"
-
-        all_products = self.env["ozon.products"].search([])
-        for i, product in enumerate(all_products):
-            percent_expenses_records = []
-            per_exp_record = self.env["ozon.cost"].create(
-                {
-                    "name": "Общий коэффициент косвенных затрат",
-                    "price": round(product.price * total_coef, 2),
-                    "discription": coef_percentage_string,
-                    "product_id": product.id,
-                }
-            )
-            percent_expenses_records.append(per_exp_record.id)
-            # добавить к нему уже имеющуюся запись "Процент комиссии за продажу"
-            sale_percent_com_record = product.percent_expenses.search(
-                [
-                    ("product_id", "=", product.id),
-                    (
-                        "name",
-                        "in",
-                        [
-                            "Процент комиссии за продажу (FBO)",
-                            "Процент комиссии за продажу (FBS)",
-                        ],
-                    ),
-                ],
-                limit=1,
-            )
-            if sale_percent_com_record:
-                percent_expenses_records.append(sale_percent_com_record.id)
-
-            product.percent_expenses = [(6, 0, percent_expenses_records)]
-
-            if i % 100 == 0:
-                self.env.cr.commit()
-            print(
-                f"{i} - Product {product.id_on_platform} percent expenses were updated."
-            )
+    def name_get(self):
+        """
+        Rename records
+        """
+        result = []
+        for record in self:
+            result.append((record.id, f"С {record.date_from} по {record.date_to}"))
+        return result
