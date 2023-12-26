@@ -21,5 +21,8 @@ class OzonComputePercentExpenses(http.Controller):
         methods=["POST"],
     )
     def compute_ozon_products_percent_expenses(self):
+        http.request.env[
+            "ozon.indirect_percent_expenses"
+        ].calculate_indirect_expenses_prev_month()
         http.request.env["ozon.products"].update_percent_expenses()
         return "All products' percent expenses were successfully computed."

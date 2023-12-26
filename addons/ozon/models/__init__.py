@@ -13,6 +13,7 @@ from . import stock
 from . import product_fee
 from . import sale
 from . import tasks
+from . import indirect_percent_expenses
 
 
 from .competitors import products_competitors
@@ -22,5 +23,4 @@ from .competitors import search_query_queue
 from .price import pricing
 
 
-from .count_insurance_percent import count_insurance_percent
 from .search_queries import search_queries
