@@ -15,6 +15,13 @@ class Product(models.Model):
     categories = fields.Many2one("ozon.categories", string="Название категории")
     id_on_platform = fields.Char(string="ID на площадке", unique=True)
     full_categories = fields.Char(string="Наименоваие раздела")
+    supplementary_categories = fields.One2many(
+        "ozon.supplementary_categories",
+        "product_id",
+        string="Вспомогательные категории",
+        copy=True,
+        readonly=True,
+    )
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
     seller = fields.Many2one("retail.seller", string="Продавец")
