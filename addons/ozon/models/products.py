@@ -17,7 +17,7 @@ class Product(models.Model):
     _name = "ozon.products"
     _description = "Лоты"
 
-    categories = fields.Many2one("ozon.categories", string="Название категории")
+    categories = fields.Many2one("ozon.categories", string="Основная категория")
     id_on_platform = fields.Char(string="ID на площадке", unique=True)
     supplementary_categories = fields.One2many(
         "ozon.supplementary_categories",
