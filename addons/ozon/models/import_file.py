@@ -190,8 +190,8 @@ class ImportFile(models.Model):
                 if not is_my_product:
                     if record_competitors_products:
                         record_price_history_competitors["product_competitors"] = record_competitors_products.id
-                    if record_competitors_products.product_id:
-                        record_price_history_competitors["product_id"] = record_competitors_products.product
+                    # if record_competitors_products.product_id:
+                        # record_price_history_competitors["product_id"] = record_competitors_products.product
                     
 
                 model_price_history_competitors.create(record_price_history_competitors)
