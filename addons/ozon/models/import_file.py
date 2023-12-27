@@ -187,15 +187,15 @@ class ImportFile(models.Model):
                     record_data["ad"] = ad_reference
                 record = model_analysis_competitors_record.create(record_data)
 
-                if product_id:
-                    record_price_history_competitors["product_id"] = product_id
                 if record_competitors_products:
                     record_price_history_competitors["product_competitors"] = record_competitors_products.id
+                if record_competitors_products.product_id:
+                    record_price_history_competitors["product_id"] = record_competitors_products.product_id
+                    
 
                 model_price_history_competitors.create(record_price_history_competitors)
                 dict_values[search_reference].append(record.id)
 
-                
             for search_id, ids in dict_values.items():
                 model_analysis_competitors.create({
                     "worker": values["worker"],
