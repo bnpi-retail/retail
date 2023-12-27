@@ -93,7 +93,7 @@ class ImportFile(models.Model):
                     dict_products[search] = []
 
             for search in dict_products:
-                record_search = model_search_queries.search([("words", "=", search)])
+                record_product = model_products.search([("id_on_platform", "=", str(sku))])
                 if record_search:
                     dict_products[search].append(record_search.id)
 
@@ -144,7 +144,10 @@ class ImportFile(models.Model):
                             record_competitors_products.id
                         )
                     else:
-                        product_id = dict_products[search][0]
+                        try:
+                            product_id = dict_products[search][0]
+                        except Exception as e:
+                            product_id = None
                         if product_id:
                             record_competitors_products = model_competitors_products.create({
                                 "id_product": str(sku),
