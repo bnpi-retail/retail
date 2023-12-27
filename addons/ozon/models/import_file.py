@@ -326,7 +326,6 @@ class ImportFile(models.Model):
                                 {
                                     "categories": ozon_category.id,
                                     "id_on_platform": row["id_on_platform"],
-                                    "full_categories": row["full_categories"],
                                     "products": retail_product.id,
                                     "price": row["price"],
                                     "seller": seller.id,

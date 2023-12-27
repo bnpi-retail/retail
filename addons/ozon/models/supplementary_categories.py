@@ -7,5 +7,5 @@ class Categories(models.Model):
     _name = "ozon.supplementary_categories"
     _description = "Вспомогательные категории Ozon"
 
-    name = fields.Char(string="Название категории")
+    name = fields.Char(string="Название")
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")

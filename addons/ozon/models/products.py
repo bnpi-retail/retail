@@ -19,7 +19,6 @@ class Product(models.Model):
 
     categories = fields.Many2one("ozon.categories", string="Название категории")
     id_on_platform = fields.Char(string="ID на площадке", unique=True)
-    full_categories = fields.Char(string="Наименоваие раздела")
     supplementary_categories = fields.One2many(
         "ozon.supplementary_categories",
         "product_id",
@@ -348,8 +347,8 @@ class Product(models.Model):
         cats_list = split_keywords_on_slash(full_categories_string)
         cats_list = remove_latin_characters(cats_list)
         sup_cat_data = [{"name": cat, "product_id": self.id} for cat in cats_list]
-        sup_cat_ids = self.env["ozon.supplementary_categories"].create(sup_cat_data)
-        self.supplementary_categories = [(6, 0, sup_cat_ids)]
+        sup_cat_recs = self.env["ozon.supplementary_categories"].create(sup_cat_data)
+        self.supplementary_categories = [(6, 0, sup_cat_recs.ids)]
 
     def update_percent_expenses(self):
         latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
