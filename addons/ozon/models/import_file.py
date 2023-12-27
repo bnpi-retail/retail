@@ -90,7 +90,7 @@ class ImportFile(models.Model):
                 sku = values_list[3]
                 if search not in dict_products:
                     dict_products[search] = {'skus': [], 'products': []}
-                dict_products['skus'].append(sku)
+                dict_products[search]['skus'].append(sku)
 
             for search in dict_products:
                 for sku in dict_products[search]['skus']:
