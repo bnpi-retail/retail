@@ -15,7 +15,6 @@ from ..ozon_api import (
     FBS_FIX_COMMISSIONS,
     FBS_PERCENT_COMMISSIONS,
 )
-from ..helpers import remove_latin_characters, split_keywords_on_slash
 
 
 class ImportFile(models.Model):
@@ -340,6 +339,9 @@ class ImportFile(models.Model):
                             print(f"product {row['id_on_platform']} created")
 
                         ozon_product.populate_search_queries(row["keywords"])
+                        ozon_product.populate_supplementary_categories(
+                            row["full_categories"]
+                        )
 
                         # all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
                         # if product_fee := self.is_product_fee_exists(ozon_product):
