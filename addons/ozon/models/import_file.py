@@ -131,7 +131,7 @@ class ImportFile(models.Model):
                 record_product = model_products.search(
                     [("id_on_platform", "=", str(sku))]
                 )
-                
+
                 is_my_product = False
                 if record_product:
                     ad_reference = "ozon.products," + str(record_product.id)
@@ -191,9 +191,9 @@ class ImportFile(models.Model):
                 if not is_my_product:
                     if record_competitors_products:
                         record_price_history_competitors["product_competitors"] = record_competitors_products.id
-                    
-
-                model_price_history_competitors.create(record_price_history_competitors)
+                
+                if not is_my_product:
+                    model_price_history_competitors.create(record_price_history_competitors)
                 dict_values[search_reference].append(record.id)
 
             for search_id, ids in dict_values.items():
