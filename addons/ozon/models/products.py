@@ -291,7 +291,7 @@ class Product(models.Model):
     @api.depends("is_selling", "sales_per_day_last_30_days")
     def _get_is_alive(self):
         for record in self:
-            if record.is_selling and record.sales_per_day_last_30_days > 0:
+            if record.is_selling or record.sales_per_day_last_30_days > 0:
                 record.is_alive = True
             else:
                 record.is_alive = False
