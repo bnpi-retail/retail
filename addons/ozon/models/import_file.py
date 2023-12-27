@@ -95,7 +95,7 @@ class ImportFile(models.Model):
 
             for search in dict_products:
                 record_product = model_products.search([("id_on_platform", "=", str(sku))])
-                if record_search:
+                if record_product:
                     dict_products[search].append(record_product.id)
 
             # Create 
