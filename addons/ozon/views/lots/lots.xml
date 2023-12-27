@@ -48,6 +48,30 @@
                             <field name="total_fix_expenses_max" />
                         </group>
                     </group>
+                    <notebook>
+                        <page string="Page number 1">
+
+                            <field name="percent_expenses">
+                                <tree>
+                                    <field name="name" />
+                                    <field name="discription" />
+                                    <field name="price" />
+                                </tree>
+                            </field>
+                            <field name="total_percent_expenses" />
+                        </page>
+                        <page string="Page number 2" autofocus="autofocus">
+                            <field name="percent_expenses">
+                                <tree>
+                                    <field name="name" />
+                                    <field name="discription" />
+                                    <field name="price" />
+                                </tree>
+                            </field>
+                            <field name="total_percent_expenses" />
+                        </page>
+                    </notebook>
+
                     <group>
                         <field name="percent_expenses">
                             <tree>

@@ -342,17 +342,14 @@ class ImportFile(models.Model):
                             row["full_categories"]
                         )
 
-                        # all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
-                        # if product_fee := self.is_product_fee_exists(ozon_product):
-                        #     product_fee.write({"product": ozon_product.id, **all_fees})
-                        # else:
-                        #     product_fee = self.env["ozon.product_fee"].create(
-                        #         {"product": ozon_product.id, **all_fees}
-                        #     )
-                        #     ozon_product.write(
-                        #         values={"product_fee": product_fee},
-                        #         cr=ozon_product,
-                        #     )
+                        all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
+                        if product_fee := self.is_product_fee_exists(ozon_product):
+                            product_fee.write({**all_fees})
+                        else:
+                            product_fee = self.env["ozon.product_fee"].create(
+                                {"product": ozon_product.id, **all_fees}
+                            )
+                        ozon_product.write({"product_fee": product_fee.id})
 
                         if row["trading_scheme"] == "FBO":
                             fix_coms_by_trad_scheme = FBO_FIX_COMMISSIONS
@@ -688,7 +685,7 @@ class ImportFile(models.Model):
 
     def is_product_fee_exists(self, ozon_product):
         result = self.env["ozon.product_fee"].search(
-            [("product.id", "=", ozon_product.id)],
+            [("product", "=", ozon_product.id)],
             limit=1,
         )
         return result if result else False
