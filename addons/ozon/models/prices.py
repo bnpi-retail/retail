@@ -144,6 +144,42 @@ class FixExpenses(models.Model):
     price_history_id = fields.Many2one("ozon.price_history", string="История цен")
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
 
+    def create_from_ozon_product_fee(self, product_id, price_history_id):
+        product_fee = self.env["ozon.product_fee"].search(
+            [("product", "=", product_id)]
+        )
+        field_names = [
+            field
+            for field in product_fee.fields_get_keys()
+            if field
+            not in [
+                "product",
+                "id",
+                "__last_update",
+                "display_name",
+                "create_uid",
+                "create_date",
+                "write_uid",
+                "write_date",
+            ]
+        ]
+        fieldnames_and_strings = [
+            (k, v.string) for k, v in product_fee._fields.items() if k in field_names
+        ]
+        data = []
+        for field, string in fieldnames_and_strings:
+            rec = {
+                "name": string,
+                "price": product_fee[field],
+                "discription": "",
+                "price_history_id": price_history_id,
+            }
+            data.append(rec)
+
+        recs = self.create(data)
+
+        return recs.ids
+
 
 class Costs(models.Model):
     _name = "ozon.cost"
