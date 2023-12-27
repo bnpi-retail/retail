@@ -4,7 +4,12 @@ from operator import itemgetter
 
 from odoo import models, fields, api
 
-from ..ozon_api import MIN_FIX_EXPENSES, MAX_FIX_EXPENSES
+from ..ozon_api import (
+    MIN_FIX_EXPENSES_FBS,
+    MAX_FIX_EXPENSES_FBS,
+    MIN_FIX_EXPENSES_FBO,
+    MAX_FIX_EXPENSES_FBO,
+)
 from ..helpers import (
     split_list,
     split_keywords,
@@ -89,26 +94,47 @@ class Product(models.Model):
         copy=True,
         readonly=True,
     )
-
-    fix_expenses_min = fields.One2many(
+    # FBO fix expenses
+    fbo_fix_expenses_min = fields.One2many(
         "ozon.fix_expenses",
         "product_id",
-        string="Фиксированные затраты минимальные",
+        string="Фиксированные затраты минимальные (FBO)",
         readonly=True,
-        domain=[("name", "in", MIN_FIX_EXPENSES)],
+        domain=[("name", "in", MIN_FIX_EXPENSES_FBO)],
     )
-    total_fix_expenses_min = fields.Float(
-        string="Итого", compute="_compute_total_fix_expenses_min", store=True
+    total_fbo_fix_expenses_min = fields.Float(
+        string="Итого", compute="_compute_total_fbo_fix_expenses_min", store=True
     )
-    fix_expenses_max = fields.One2many(
+    fbo_fix_expenses_max = fields.One2many(
         "ozon.fix_expenses",
         "product_id",
-        string="Фиксированные затраты максимальные",
+        string="Фиксированные затраты максимальные (FBO)",
         readonly=True,
-        domain=[("name", "in", MAX_FIX_EXPENSES)],
+        domain=[("name", "in", MAX_FIX_EXPENSES_FBO)],
     )
-    total_fix_expenses_max = fields.Float(
-        string="Итого", compute="_compute_total_fix_expenses_max", store=True
+    total_fbo_fix_expenses_max = fields.Float(
+        string="Итого", compute="_compute_total_fbo_fix_expenses_max", store=True
+    )
+    # FBS fix expenses
+    fbs_fix_expenses_min = fields.One2many(
+        "ozon.fix_expenses",
+        "product_id",
+        string="Фиксированные затраты минимальные (FBS)",
+        readonly=True,
+        domain=[("name", "in", MIN_FIX_EXPENSES_FBS)],
+    )
+    total_fbs_fix_expenses_min = fields.Float(
+        string="Итого", compute="_compute_total_fbs_fix_expenses_min", store=True
+    )
+    fbs_fix_expenses_max = fields.One2many(
+        "ozon.fix_expenses",
+        "product_id",
+        string="Фиксированные затраты максимальные (FBS)",
+        readonly=True,
+        domain=[("name", "in", MAX_FIX_EXPENSES_FBS)],
+    )
+    total_fbs_fix_expenses_max = fields.Float(
+        string="Итого", compute="_compute_total_fbs_fix_expenses_max", store=True
     )
 
     percent_expenses = fields.One2many(
@@ -155,14 +181,26 @@ class Product(models.Model):
         store=True,
     )
 
-    @api.depends("price", "total_fix_expenses_max", "total_percent_expenses")
+    @api.depends(
+        "price",
+        "total_fbs_fix_expenses_max",
+        "total_fbo_fix_expenses_max",
+        "total_percent_expenses",
+    )
     def _compute_profit(self):
         for record in self:
-            record.profit = (
-                record.price
-                - record.total_fix_expenses_max
-                - record.total_percent_expenses
-            )
+            if record.trading_scheme == "FBS":
+                record.profit = (
+                    record.price
+                    - record.total_fbs_fix_expenses_max
+                    - record.total_percent_expenses
+                )
+            elif record.trading_scheme == "FBO":
+                record.profit = (
+                    record.price
+                    - record.total_fbo_fix_expenses_max
+                    - record.total_percent_expenses
+                )
 
     @api.depends("price")
     def _compute_profit_ideal(self):
@@ -174,15 +212,33 @@ class Product(models.Model):
         for record in self:
             record.profit_delta = record.profit - record.profit_ideal
 
-    @api.depends("fix_expenses_min.price")
-    def _compute_total_fix_expenses_min(self):
+    @api.depends("fbo_fix_expenses_min.price")
+    def _compute_total_fbo_fix_expenses_min(self):
         for record in self:
-            record.total_fix_expenses_min = sum(record.fix_expenses_min.mapped("price"))
+            record.total_fbo_fix_expenses_min = sum(
+                record.fbo_fix_expenses_min.mapped("price")
+            )
 
-    @api.depends("fix_expenses_max.price")
-    def _compute_total_fix_expenses_max(self):
+    @api.depends("fbo_fix_expenses_max.price")
+    def _compute_total_fbo_fix_expenses_max(self):
         for record in self:
-            record.total_fix_expenses_max = sum(record.fix_expenses_max.mapped("price"))
+            record.total_fbo_fix_expenses_max = sum(
+                record.fbo_fix_expenses_max.mapped("price")
+            )
+
+    @api.depends("fbs_fix_expenses_min.price")
+    def _compute_total_fbs_fix_expenses_min(self):
+        for record in self:
+            record.total_fbs_fix_expenses_min = sum(
+                record.fbs_fix_expenses_min.mapped("price")
+            )
+
+    @api.depends("fbs_fix_expenses_max.price")
+    def _compute_total_fbs_fix_expenses_max(self):
+        for record in self:
+            record.total_fbs_fix_expenses_max = sum(
+                record.fbs_fix_expenses_max.mapped("price")
+            )
 
     @api.depends("percent_expenses.price")
     def _compute_total_percent_expenses(self):

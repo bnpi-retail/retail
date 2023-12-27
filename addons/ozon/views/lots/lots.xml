@@ -28,50 +28,56 @@
                         <field name="stocks_fbs" />
                         <field name="stocks_fbo" />
                     </group>
-                    <group>
-                        <group>
-                            <field name="fix_expenses_min">
-                                <tree>
-                                    <field name="name" />
-                                    <field name="price" />
-                                </tree>
-                            </field>
-                            <field name="total_fix_expenses_min" />
-                        </group>
-                        <group>
-                            <field name="fix_expenses_max">
-                                <tree>
-                                    <field name="name" />
-                                    <field name="price" />
-                                </tree>
-                            </field>
-                            <field name="total_fix_expenses_max" />
-                        </group>
-                    </group>
-                    <notebook>
-                        <page string="Page number 1">
 
-                            <field name="percent_expenses">
-                                <tree>
-                                    <field name="name" />
-                                    <field name="discription" />
-                                    <field name="price" />
-                                </tree>
-                            </field>
-                            <field name="total_percent_expenses" />
+                    <separator string="Фиксированные затраты" />
+                    <notebook>
+                        <page string="FBS" autofocus="autofocus">
+                            <group>
+                                <group>
+                                    <field name="fbs_fix_expenses_min">
+                                        <tree>
+                                            <field name="name" />
+                                            <field name="price" />
+                                        </tree>
+                                    </field>
+                                    <field name="total_fbs_fix_expenses_min" />
+                                </group>
+                                <group>
+                                    <field name="fbs_fix_expenses_max">
+                                        <tree>
+                                            <field name="name" />
+                                            <field name="price" />
+                                        </tree>
+                                    </field>
+                                    <field name="total_fbs_fix_expenses_max" />
+                                </group>
+                            </group>
                         </page>
-                        <page string="Page number 2" autofocus="autofocus">
-                            <field name="percent_expenses">
-                                <tree>
-                                    <field name="name" />
-                                    <field name="discription" />
-                                    <field name="price" />
-                                </tree>
-                            </field>
-                            <field name="total_percent_expenses" />
+                        <page string="FBO">
+                            <group>
+                                <group>
+                                    <field name="fbo_fix_expenses_min">
+                                        <tree>
+                                            <field name="name" />
+                                            <field name="price" />
+                                        </tree>
+                                    </field>
+                                    <field name="total_fbo_fix_expenses_min" />
+                                </group>
+                                <group>
+                                    <field name="fbo_fix_expenses_max">
+                                        <tree>
+                                            <field name="name" />
+                                            <field name="price" />
+                                        </tree>
+                                    </field>
+                                    <field name="total_fbo_fix_expenses_max" />
+                                </group>
+                            </group>
                         </page>
                     </notebook>
 
+                    <separator string="Процентные затраты" />
                     <group>
                         <field name="percent_expenses">
                             <tree>

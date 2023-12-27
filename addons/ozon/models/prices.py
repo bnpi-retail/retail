@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from email.policy import default
 from odoo import models, fields, api
 
-from ..ozon_api import MIN_FIX_EXPENSES, MAX_FIX_EXPENSES
+from ..ozon_api import MAX_FIX_EXPENSES_FBO, MAX_FIX_EXPENSES_FBS
 
 
 class CountPrice(models.Model):
@@ -208,23 +208,30 @@ class PriceHistory(models.Model):
 
     previous_price = fields.Float(string="Предыдущая цена", readonly=True)
     timestamp = fields.Date(string="Дата", default=fields.Date.today, readonly=True)
-    total_cost_fix = fields.Float(
-        string="Итого фикс.затраты",
-        related="product.total_fix_expenses_max",
-        store=True,
-    )
-    total_cost_percent = fields.Float(
-        string="Итого проц.затраты",
-        related="product.total_percent_expenses",
-        store=True,
-    )
+
+    @api.model
+    def _change_fix_expenses_domain(self):
+        if self.product.trading_scheme == "FBS":
+            domain = [("name", "in", MAX_FIX_EXPENSES_FBS)]
+        elif self.product.trading_scheme == "FBO":
+            domain = [("name", "in", MAX_FIX_EXPENSES_FBO)]
+        else:
+            domain = []
+        return domain
+
     fix_expenses = fields.One2many(
         "ozon.fix_expenses",
         "price_history_id",
         string="Фиксированные затраты максимальные",
         copy=True,
         readonly=True,
-        domain=[("name", "in", MAX_FIX_EXPENSES)],
+        domain=_change_fix_expenses_domain,
+    )
+
+    total_cost_fix = fields.Float(
+        string="Итого фикс.затраты",
+        compute="_compute_total_cost_fix",
+        store=True,
     )
     costs = fields.One2many(
         "ozon.cost",
@@ -232,6 +239,11 @@ class PriceHistory(models.Model):
         string="Процент от продаж",
         copy=True,
         readonly=True,
+    )
+    total_cost_percent = fields.Float(
+        string="Итого проц.затраты",
+        related="product.total_percent_expenses",
+        store=True,
     )
 
     profit = fields.Float(
@@ -252,6 +264,11 @@ class PriceHistory(models.Model):
     )
 
     product_id = fields.Many2one("ozon.products", string="Лот")
+
+    @api.depends("fix_expenses.price")
+    def _compute_total_cost_fix(self):
+        for record in self:
+            record.total_cost_fix = sum(record.fix_expenses.mapped("price"))
 
     @api.depends("price", "total_cost_fix", "total_cost_percent")
     def _compute_profit(self):
