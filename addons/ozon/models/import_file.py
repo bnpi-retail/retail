@@ -86,17 +86,17 @@ class ImportFile(models.Model):
                 values_list = line.split(",")
                 if len(values_list) != 9:
                     continue
-
                 search = values_list[1]
                 sku = values_list[3]
-
                 if search not in dict_products:
-                    dict_products[search] = []
+                    dict_products[search] = {'skus': [], 'products': []}
+                dict_products['skus'].append(sku)
 
             for search in dict_products:
-                record_product = model_products.search([("id_on_platform", "=", str(sku))])
-                if record_product:
-                    dict_products[search].append(record_product.id)
+                for sku in dict_products[search]['skus']:
+                    record_product = model_products.search([("id_on_platform", "=", str(sku))])
+                    if record_product:
+                        dict_products[search]['products'].append(record_product.id)
 
             # Create 
             dict_values = {}
@@ -145,10 +145,7 @@ class ImportFile(models.Model):
                             record_competitors_products.id
                         )
                     else:
-                        try:
-                            product_id = dict_products[search][0]
-                        except Exception as e:
-                            product_id = None
+                        product_id = dict_products[search]['products'][0]
                         if product_id:
                             record_competitors_products = model_competitors_products.create({
                                 "id_product": str(sku),
