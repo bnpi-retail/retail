@@ -11,8 +11,9 @@
             <tree>
                 <field name="timestamp"/>
                 <field name="product_competitors"/>
+                <field name="price_with_card"/>
                 <field name="price"/>
-                <field name="final_price"/>
+                <field name="price_without_sale"/>
                 <field name="sales"/>
                 <field name="balance"/>
             </tree>

@@ -15,10 +15,11 @@ class PriceHistoryCompetitors(models.Model):
                                           string='Товар конкурента')
     
     price = fields.Float(string='Цена')
-    final_price = fields.Float(string='Цена со скидкой')
+    price_with_card = fields.Float(string='Цена по карте Ozon')
+    price_without_sale = fields.Float(string='Цена без скидки')
+
     sales = fields.Integer(string='Продажи')
     balance = fields.Integer(string='Остатки')
-
     product_id = fields.Many2one('ozon.products', string='Лот')
 
     def name_get(self):
