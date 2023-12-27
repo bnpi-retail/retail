@@ -5,16 +5,27 @@ from operator import itemgetter
 from odoo import models, fields, api
 
 from ..ozon_api import MIN_FIX_EXPENSES, MAX_FIX_EXPENSES
-from ..helpers import split_list, split_keywords
+from ..helpers import (
+    split_list,
+    split_keywords,
+    split_keywords_on_slash,
+    remove_latin_characters,
+)
 
 
 class Product(models.Model):
     _name = "ozon.products"
     _description = "Лоты"
 
-    categories = fields.Many2one("ozon.categories", string="Название категории")
+    categories = fields.Many2one("ozon.categories", string="Основная категория")
     id_on_platform = fields.Char(string="ID на площадке", unique=True)
-    full_categories = fields.Char(string="Наименоваие раздела")
+    supplementary_categories = fields.One2many(
+        "ozon.supplementary_categories",
+        "product_id",
+        string="Вспомогательные категории",
+        copy=True,
+        readonly=True,
+    )
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
     seller = fields.Many2one("retail.seller", string="Продавец")
@@ -331,6 +342,13 @@ class Product(models.Model):
         if data:
             # добавить слова к продукту
             self.search_queries = data
+
+    def populate_supplementary_categories(self, full_categories_string: str):
+        cats_list = split_keywords_on_slash(full_categories_string)
+        cats_list = remove_latin_characters(cats_list)
+        sup_cat_data = [{"name": cat, "product_id": self.id} for cat in cats_list]
+        sup_cat_recs = self.env["ozon.supplementary_categories"].create(sup_cat_data)
+        self.supplementary_categories = [(6, 0, sup_cat_recs.ids)]
 
     def update_percent_expenses(self):
         latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(

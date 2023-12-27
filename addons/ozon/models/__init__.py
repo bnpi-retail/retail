@@ -14,6 +14,7 @@ from . import product_fee
 from . import sale
 from . import tasks
 from . import indirect_percent_expenses
+from . import supplementary_categories
 
 
 from .competitors import products_competitors
