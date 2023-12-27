@@ -145,7 +145,10 @@ class ImportFile(models.Model):
                             record_competitors_products.id
                         )
                     else:
-                        product_id = dict_products[search]['products'][0]
+                        try:
+                            product_id = dict_products[search]['products'][0]
+                        except Exception as e:
+                            product_id = None
                         if product_id:
                             record_competitors_products = model_competitors_products.create({
                                 "id_product": str(sku),
@@ -184,14 +187,12 @@ class ImportFile(models.Model):
                     record_data["ad"] = ad_reference
                 record = model_analysis_competitors_record.create(record_data)
 
-                # record_price_history_competitors["product_competitors"] = ad_reference_id
-                # try:
-                #     product_id = dict_products[search]
-                #     record_price_history_competitors["product_id"] = product_id
-                # except KeyError as e:
-                #     pass
+                if product_id:
+                    record_price_history_competitors["product_id"] = product_id
+                if record_competitors_products:
+                    record_price_history_competitors["product_competitors"] = record_competitors_products.id
 
-                # model_price_history_competitors.create(record_price_history_competitors)
+                model_price_history_competitors.create(record_price_history_competitors)
                 dict_values[search_reference].append(record.id)
 
                 
