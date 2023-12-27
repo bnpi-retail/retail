@@ -88,6 +88,7 @@ class ImportFile(models.Model):
                     continue
 
                 search = values_list[1]
+                sku = values_list[3]
 
                 if search not in dict_products:
                     dict_products[search] = []
@@ -95,7 +96,7 @@ class ImportFile(models.Model):
             for search in dict_products:
                 record_product = model_products.search([("id_on_platform", "=", str(sku))])
                 if record_search:
-                    dict_products[search].append(record_search.id)
+                    dict_products[search].append(record_product.id)
 
             # Create 
             dict_values = {}
