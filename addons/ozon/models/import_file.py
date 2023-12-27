@@ -144,7 +144,7 @@ class ImportFile(models.Model):
                             record_competitors_products.id
                         )
                     else:
-                        product_id = next(iter(dict_products.get(search, [])), None)
+                        product_id = dict_products[search][0]
                         if product_id:
                             record_competitors_products = model_competitors_products.create({
                                 "id_product": str(sku),
