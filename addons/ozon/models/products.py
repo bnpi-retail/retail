@@ -5,6 +5,7 @@ from lxml import etree
 
 from odoo import models, fields, api
 
+from .indirect_percent_expenses import STRING_FIELDNAMES
 from ..ozon_api import (
     MIN_FIX_EXPENSES_FBS,
     MAX_FIX_EXPENSES_FBS,
@@ -146,8 +147,54 @@ class Product(models.Model):
         readonly=True,
     )
 
-    total_percent_expenses = fields.Float(
-        string="Итого", compute="_compute_total_percent_expenses", store=True
+    @api.model
+    def _fbo_percent_expenses_domain(self):
+        indir_per_expenses = STRING_FIELDNAMES
+        if indir_per_expenses.get("Выручка"):
+            indir_per_expenses.pop("Выручка")
+        domain = [
+            (
+                "name",
+                "in",
+                ["Процент комиссии за продажу (FBO)", *indir_per_expenses.keys()],
+            )
+        ]
+        return domain
+
+    fbo_percent_expenses = fields.One2many(
+        "ozon.cost",
+        "product_id",
+        string="Процент от продаж (FBO)",
+        readonly=True,
+        domain=_fbo_percent_expenses_domain,
+    )
+    total_fbo_percent_expenses = fields.Float(
+        string="Итого", compute="_compute_total_fbo_percent_expenses", store=True
+    )
+
+    @api.model
+    def _fbs_percent_expenses_domain(self):
+        indir_per_expenses = STRING_FIELDNAMES
+        if indir_per_expenses.get("Выручка"):
+            indir_per_expenses.pop("Выручка")
+        domain = [
+            (
+                "name",
+                "in",
+                ["Процент комиссии за продажу (FBS)", *indir_per_expenses.keys()],
+            )
+        ]
+        return domain
+
+    fbs_percent_expenses = fields.One2many(
+        "ozon.cost",
+        "product_id",
+        string="Процент от продаж (FBS)",
+        readonly=True,
+        domain=_fbs_percent_expenses_domain,
+    )
+    total_fbs_percent_expenses = fields.Float(
+        string="Итого", compute="_compute_total_fbs_percent_expenses", store=True
     )
 
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
@@ -186,7 +233,8 @@ class Product(models.Model):
         "price",
         "total_fbs_fix_expenses_max",
         "total_fbo_fix_expenses_max",
-        "total_percent_expenses",
+        "total_fbs_percent_expenses",
+        "total_fbo_percent_expenses",
     )
     def _compute_profit(self):
         for record in self:
@@ -194,13 +242,13 @@ class Product(models.Model):
                 record.profit = (
                     record.price
                     - record.total_fbs_fix_expenses_max
-                    - record.total_percent_expenses
+                    - record.total_fbs_percent_expenses
                 )
             elif record.trading_scheme == "FBO":
                 record.profit = (
                     record.price
                     - record.total_fbo_fix_expenses_max
-                    - record.total_percent_expenses
+                    - record.total_fbo_percent_expenses
                 )
 
     @api.depends("price")
@@ -241,10 +289,19 @@ class Product(models.Model):
                 record.fbs_fix_expenses_max.mapped("price")
             )
 
-    @api.depends("percent_expenses.price")
-    def _compute_total_percent_expenses(self):
+    @api.depends("fbo_percent_expenses.price")
+    def _compute_total_fbo_percent_expenses(self):
         for record in self:
-            record.total_percent_expenses = sum(record.percent_expenses.mapped("price"))
+            record.total_fbo_percent_expenses = sum(
+                record.fbo_percent_expenses.mapped("price")
+            )
+
+    @api.depends("fbs_percent_expenses.price")
+    def _compute_total_fbs_percent_expenses(self):
+        for record in self:
+            record.total_fbs_percent_expenses = sum(
+                record.fbs_percent_expenses.mapped("price")
+            )
 
     @api.depends("price_our_history_ids.price")
     def _compute_price_history_values(self):

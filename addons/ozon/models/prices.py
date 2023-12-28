@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from email.policy import default
 from odoo import models, fields, api
 
+from .indirect_percent_expenses import STRING_FIELDNAMES
 from ..ozon_api import (
     MAX_FIX_EXPENSES_FBO,
     MAX_FIX_EXPENSES_FBS,
@@ -274,10 +275,25 @@ class PriceHistory(models.Model):
 
     @api.model
     def _change_costs_domain(self):
+        indir_per_expenses = STRING_FIELDNAMES
+        if indir_per_expenses.get("Выручка"):
+            indir_per_expenses.pop("Выручка")
         if self.product.trading_scheme == "FBS":
-            domain = [("name", "in", list(FBS_PERCENT_COMMISSIONS.values()))]
+            domain = [
+                (
+                    "name",
+                    "in",
+                    ["Процент комиссии за продажу (FBS)", *indir_per_expenses.keys()],
+                )
+            ]
         elif self.product.trading_scheme == "FBO":
-            domain = [("name", "in", list(FBO_PERCENT_COMMISSIONS.values()))]
+            domain = [
+                (
+                    "name",
+                    "in",
+                    ["Процент комиссии за продажу (FBO)", *indir_per_expenses.keys()],
+                )
+            ]
         else:
             domain = []
         return domain
