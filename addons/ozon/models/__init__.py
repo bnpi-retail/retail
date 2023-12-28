@@ -16,8 +16,8 @@ from . import indirect_percent_expenses
 from . import supplementary_categories
 
 from . import products
-from .products import tracked_search_queries
-from .products import lots_for_gpt
+from . import lots_for_gpt
+from . import tracked_search_queries
 
 from .competitors import products_competitors
 from .competitors import price_history_competitors
