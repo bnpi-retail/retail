@@ -3,7 +3,12 @@ from datetime import datetime, timedelta
 from email.policy import default
 from odoo import models, fields, api
 
-from ..ozon_api import MAX_FIX_EXPENSES_FBO, MAX_FIX_EXPENSES_FBS
+from ..ozon_api import (
+    MAX_FIX_EXPENSES_FBO,
+    MAX_FIX_EXPENSES_FBS,
+    FBO_PERCENT_COMMISSIONS,
+    FBS_PERCENT_COMMISSIONS,
+)
 
 
 class CountPrice(models.Model):
@@ -266,16 +271,28 @@ class PriceHistory(models.Model):
         compute="_compute_total_cost_fix",
         store=True,
     )
+
+    @api.model
+    def _change_costs_domain(self):
+        if self.product.trading_scheme == "FBS":
+            domain = [("name", "in", list(FBS_PERCENT_COMMISSIONS.values()))]
+        elif self.product.trading_scheme == "FBO":
+            domain = [("name", "in", list(FBO_PERCENT_COMMISSIONS.values()))]
+        else:
+            domain = []
+        return domain
+
     costs = fields.One2many(
         "ozon.cost",
         "price_history_id",
         string="Процент от продаж",
         copy=True,
         readonly=True,
+        domain=_change_costs_domain,
     )
     total_cost_percent = fields.Float(
         string="Итого проц.затраты",
-        related="product.total_percent_expenses",
+        compute="_compute_total_cost_percent",
         store=True,
     )
 
@@ -302,6 +319,11 @@ class PriceHistory(models.Model):
     def _compute_total_cost_fix(self):
         for record in self:
             record.total_cost_fix = sum(record.fix_expenses.mapped("price"))
+
+    @api.depends("costs.price")
+    def _compute_total_cost_percent(self):
+        for record in self:
+            record.total_cost_percent = sum(record.costs.mapped("price"))
 
     @api.depends("price", "total_cost_fix", "total_cost_percent")
     def _compute_profit(self):
