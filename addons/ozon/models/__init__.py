@@ -4,7 +4,6 @@ from . import conditions_placing_ozon
 from . import ozon_fee
 from . import logistics_price
 from . import localization_index
-from . import products
 from . import prices
 from . import import_file
 from . import categories
@@ -15,6 +14,9 @@ from . import sale
 from . import tasks
 from . import indirect_percent_expenses
 
+from .products import products
+from .products import tracked_search_queries
+from .products import lots_for_gpt
 
 from .competitors import products_competitors
 from .competitors import price_history_competitors

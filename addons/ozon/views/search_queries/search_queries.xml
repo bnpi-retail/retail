@@ -3,7 +3,7 @@
 
     <!-- Form -->
     <record id="view_search_queries_form" model="ir.ui.view">
-        <field name="name">Поисковые запросы</field>
+        <field name="name">Ключевые слова"</field>
         <field name="model">ozon.search_queries</field>
         <field name="arch" type="xml">
             <form>
@@ -16,7 +16,7 @@
 
     <!-- Tree -->
     <record id="view_search_queries_tree" model="ir.ui.view">
-        <field name="name">Поисковые запросы</field>
+        <field name="name">Ключевые слова</field>
         <field name="model">ozon.search_queries</field>
         <field name="arch" type="xml">
             <tree>
@@ -27,13 +27,13 @@
 
     <!-- Action -->
     <record model="ir.actions.act_window" id="action_search_queries">
-        <field name="name">Поисковые запросы</field>
+        <field name="name">Ключевые слова</field>
         <field name="res_model">ozon.search_queries</field>
         <field name="view_mode">tree,form</field>
     </record>
 
     <!-- Menu -->
-    <menuitem name="Поисковые запросы"
+    <menuitem name="Ключевые слова"
         id="menu_search_queries"
         parent="ozon.menu_issue"
         action="action_search_queries"

@@ -1,0 +1,8 @@
+<odoo>
+  <data>
+    <menuitem name="Лоты" 
+      id="main_menu_products"
+      parent="ozon.menu_root"
+      sequence="20"/>
+  </data>
+</odoo>

@@ -34,6 +34,7 @@ DEBUG = True
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
 EXTENSION_APPS = [
+    'gpt',
     'main',
     'account',
     'ozon_plugin',

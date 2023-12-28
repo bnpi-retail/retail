@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ozon_products,Access Ozon Products,model_ozon_products,base.group_user,1,1,1,1
+access_ozon_tracked_search_queries,Access Ozon Tracked Search Queries,model_ozon_tracked_search_queries,base.group_user,1,1,1,1
+access_ozon_lots_for_gpt,Access Ozon Lots For Gpt,model_ozon_lots_for_gpt,base.group_user,1,1,1,1

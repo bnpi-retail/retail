@@ -7,6 +7,8 @@
             <field name="model">ozon.products</field>
             <field name="arch" type="xml">
                 <form>
+
+                    <!-- Main info -->
                     <group>
                         <field name="is_selling" />
                         <field name="is_alive" />
@@ -24,6 +26,7 @@
                         <field name="stocks_fbs" />
                         <field name="stocks_fbo" />
                     </group>
+
                     <group>
                         <group>
                             <field name="fix_expenses_min">
@@ -90,6 +93,17 @@
                             </tree>
                         </field>
                     </group>
+
+                    <!-- Отслеживаемые позиции  -->
+                    <group string="Отслеживаемые поисковые запросы по описанию">
+                        <field name="description" />
+                        <field name="tracked_search_queries" widget="one2many_list">
+                            <tree>
+                                <field name="name" />
+                            </tree>
+                        </field>
+                    </group>
+
                 </form>
             </field>
         </record>
@@ -119,10 +133,11 @@
         </record>
 
         <!-- Menu -->
-        <menuitem name="Лоты"
-            id="menu_products"
-            parent="ozon.menu_root"
-            action="action_products"
-            sequence="20" />
+        <menuitem name="Лоты" 
+            id="menu_products" 
+            parent="main_menu_products" 
+            action="action_products" 
+            sequence="20"/>
+
     </data>
 </odoo>

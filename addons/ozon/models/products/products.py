@@ -4,13 +4,21 @@ from operator import itemgetter
 
 from odoo import models, fields, api
 
-from ..ozon_api import MIN_FIX_EXPENSES, MAX_FIX_EXPENSES
-from ..helpers import split_list, split_keywords
+from ...ozon_api import MIN_FIX_EXPENSES, MAX_FIX_EXPENSES
+from ...helpers import split_list, split_keywords
 
 
 class Product(models.Model):
     _name = "ozon.products"
     _description = "Лоты"
+
+    # GPT
+    description = fields.Text(string="Описание товара")
+    tracked_search_queries = fields.One2many(
+        'ozon.tracked_search_queries',
+        'link_ozon_products', 
+        string='Поисковые запросы'
+    )
 
     categories = fields.Many2one("ozon.categories", string="Название категории")
     id_on_platform = fields.Char(string="ID на площадке", unique=True)

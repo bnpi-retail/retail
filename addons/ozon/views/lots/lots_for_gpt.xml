@@ -1,0 +1,45 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_action_lots_for_gpt_form" model="ir.ui.view">
+            <field name="name">Очередь для формирования поисковых запросов</field>
+            <field name="model">ozon.lots_for_gpt</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="product"/>
+                        <field name="status"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_action_lots_for_gpt_tree" model="ir.ui.view">
+            <field name="name">Очередь для формирования поисковых запросов</field>
+            <field name="model">ozon.lots_for_gpt</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="product"/>
+                    <field name="status"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_lots_for_gpt">
+            <field name="name">Очередь для формирования поисковых запросов</field>
+            <field name="res_model">ozon.lots_for_gpt</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Очередь для формирования поисковых запросов" 
+            id="menu_lots_for_gpt" 
+            parent="main_menu_products" 
+            action="action_lots_for_gpt" 
+            sequence="20"/>
+
+    </data>
+</odoo>
