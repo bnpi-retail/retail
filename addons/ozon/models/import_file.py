@@ -376,30 +376,6 @@ class ImportFile(models.Model):
                             "previous_price": previous_price,
                         }
 
-                        # fix_expenses = []
-                        # if fix_coms_by_trad_scheme:
-                        #     fix_product_commissions = {
-                        #         k: row[k] for k in fix_coms_by_trad_scheme
-                        #     }
-                        #     for com, value in fix_product_commissions.items():
-                        #         fix_expenses_record = self.env[
-                        #             "ozon.fix_expenses"
-                        #         ].create(
-                        #             {
-                        #                 "name": fix_coms_by_trad_scheme[com],
-                        #                 "price": value,
-                        #                 "discription": "",
-                        #                 "product_id": ozon_product.id,
-                        #             }
-                        #         )
-                        #         fix_expenses.append(fix_expenses_record.id)
-
-                        #     ozon_price_history_data["fix_expenses"] = fix_expenses
-                        #     ozon_product.write(
-                        #         {"fix_expenses": fix_expenses},
-                        #         cr=ozon_product,
-                        #     )
-
                         # costs = []
                         # if percent_coms_by_trad_scheme:
                         #     ozon_product.percent_expenses.search(
@@ -440,6 +416,7 @@ class ImportFile(models.Model):
                         ozon_price_history = self.env["ozon.price_history"].create(
                             ozon_price_history_data
                         )
+
                         fix_expenses_ids = self.env[
                             "ozon.fix_expenses"
                         ].create_from_ozon_product_fee(
@@ -448,6 +425,19 @@ class ImportFile(models.Model):
                         ozon_price_history.fix_expenses = fix_expenses_ids
                         ozon_product.write(
                             {"fix_expenses": fix_expenses_ids},
+                            cr=ozon_product,
+                        )
+
+                        percent_expenses_ids = self.env[
+                            "ozon.cost"
+                        ].create_from_ozon_product_fee(
+                            product_id=ozon_product.id,
+                            price_history_id=ozon_price_history.id,
+                            price=ozon_product.price,
+                        )
+                        ozon_price_history.costs = percent_expenses_ids
+                        ozon_product.write(
+                            {"percent_expenses": percent_expenses_ids},
                             cr=ozon_product,
                         )
                         print(

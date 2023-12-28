@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, time, timedelta
 from operator import itemgetter
+from lxml import etree
 
 from odoo import models, fields, api
 
@@ -452,3 +453,18 @@ class Product(models.Model):
             print(
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
+
+    # def fields_view_get(
+    #     self, view_id=None, view_type="form", toolbar=False, submenu=False
+    # ):
+    #     res = super(Product, self).fields_view_get(view_id, view_type, toolbar, submenu)
+    #     doc = etree.XML(res["arch"])
+    #     af = "autofocus"
+    #     if view_type == "form":
+    #         if self.trading_scheme == "FBS":
+    #             page = doc.xpath('//page[@id="page_fbs"]')[0].set(af, af)
+    #         elif self.trading_scheme == "FBO":
+    #             doc.xpath('//page[@id="page_fbo"]')[0].set(af, af)
+
+    #     res["arch"] = etree.tostring(doc, encoding="unicode")
+    #     return res

@@ -154,6 +154,9 @@ class FixExpenses(models.Model):
             if field
             not in [
                 "product",
+                "sales_percent_fbo",
+                "sales_percent_fbs",
+                "sales_percent",
                 "id",
                 "__last_update",
                 "display_name",
@@ -190,6 +193,36 @@ class Costs(models.Model):
     discription = fields.Text(string="Описание")
     price_history_id = fields.Many2one("ozon.price_history", string="История цен")
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
+
+    def create_from_ozon_product_fee(self, product_id, price_history_id, price):
+        product_fee = self.env["ozon.product_fee"].search(
+            [("product", "=", product_id)]
+        )
+        field_names = [
+            field
+            for field in product_fee.fields_get_keys()
+            if field
+            in [
+                "sales_percent_fbo",
+                "sales_percent_fbs",
+            ]
+        ]
+        fieldnames_and_strings = [
+            (k, v.string) for k, v in product_fee._fields.items() if k in field_names
+        ]
+        data = []
+        for field, string in fieldnames_and_strings:
+            rec = {
+                "name": string,
+                "price": round(price * product_fee[field] / 100, 2),
+                "discription": f"{product_fee[field]}%",
+                "price_history_id": price_history_id,
+            }
+            data.append(rec)
+
+        recs = self.create(data)
+
+        return recs.ids
 
 
 class PriceHistory(models.Model):

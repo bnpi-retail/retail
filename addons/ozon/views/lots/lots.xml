@@ -31,7 +31,7 @@
 
                     <separator string="Фиксированные затраты" />
                     <notebook>
-                        <page string="FBS" autofocus="autofocus">
+                        <page id="page_fbs" string="FBS">
                             <group>
                                 <group>
                                     <field name="fbs_fix_expenses_min">
@@ -53,7 +53,7 @@
                                 </group>
                             </group>
                         </page>
-                        <page string="FBO">
+                        <page id="page_fbo" string="FBO">
                             <group>
                                 <group>
                                     <field name="fbo_fix_expenses_min">
