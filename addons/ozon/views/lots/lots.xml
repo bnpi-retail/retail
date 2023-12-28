@@ -13,8 +13,12 @@
                         <field name="is_selling" />
                         <field name="is_alive" />
                         <field name="id_on_platform" />
-                        <field name="full_categories" />
                         <field name="categories" />
+                        <field name="supplementary_categories">
+                            <tree>
+                                <field name="name" />
+                            </tree>
+                        </field>
                         <field name="products" />
                         <field name="price" />
                         <field name="seller" />

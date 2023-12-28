@@ -78,9 +78,11 @@ class ImportFile(models.Model):
             model_competitors_products = self.env["ozon.products_competitors"]
             model_analysis_competitors = self.env["ozon.analysis_competitors"]
             model_price_history_competitors = self.env["ozon.price_history_competitors"]
-            model_analysis_competitors_record = self.env["ozon.analysis_competitors_record"]
+            model_analysis_competitors_record = self.env[
+                "ozon.analysis_competitors_record"
+            ]
 
-            # Find product from all ads 
+            # Find product from all ads
             dict_products = {}
             for line in lines[1:]:
                 values_list = line.split(",")
@@ -89,16 +91,18 @@ class ImportFile(models.Model):
                 search = values_list[1]
                 sku = values_list[3]
                 if search not in dict_products:
-                    dict_products[search] = {'skus': [], 'products': []}
-                dict_products[search]['skus'].append(sku)
+                    dict_products[search] = {"skus": [], "products": []}
+                dict_products[search]["skus"].append(sku)
 
             for search in dict_products:
-                for sku in dict_products[search]['skus']:
-                    record_product = model_products.search([("id_on_platform", "=", str(sku))])
+                for sku in dict_products[search]["skus"]:
+                    record_product = model_products.search(
+                        [("id_on_platform", "=", str(sku))]
+                    )
                     if record_product:
-                        dict_products[search]['products'].append(record_product.id)
+                        dict_products[search]["products"].append(record_product.id)
 
-            # Create 
+            # Create
             dict_values = {}
             for line in lines[1:]:
                 values_list = line.split(",")
@@ -147,22 +151,30 @@ class ImportFile(models.Model):
                         )
                     else:
                         try:
-                            product_id = dict_products[search]['products'][0]
+                            product_id = dict_products[search]["products"][0]
                         except Exception as e:
                             product_id = None
                         if product_id:
-                            record_competitors_products = model_competitors_products.create({
-                                "id_product": str(sku),
-                                "name": str(name),
-                                "url": str(href),
-                                "product": product_id,
-                            })
+                            record_competitors_products = (
+                                model_competitors_products.create(
+                                    {
+                                        "id_product": str(sku),
+                                        "name": str(name),
+                                        "url": str(href),
+                                        "product": product_id,
+                                    }
+                                )
+                            )
                         else:
-                            record_competitors_products = model_competitors_products.create({
-                                "id_product": str(sku),
-                                "name": str(name),
-                                "url": str(href),
-                            })
+                            record_competitors_products = (
+                                model_competitors_products.create(
+                                    {
+                                        "id_product": str(sku),
+                                        "name": str(name),
+                                        "url": str(href),
+                                    }
+                                )
+                            )
                         ad_reference = "ozon.products_competitors," + str(
                             record_competitors_products.id
                         )
@@ -180,28 +192,38 @@ class ImportFile(models.Model):
                     record_price_history_competitors["price"] = price
                 if price_without_sale != "None":
                     record_data["price_without_sale"] = price_without_sale
-                    record_price_history_competitors["price_without_sale"] = price_without_sale
+                    record_price_history_competitors[
+                        "price_without_sale"
+                    ] = price_without_sale
                 if price_with_card != "None":
                     record_data["price_with_card"] = price_with_card
-                    record_price_history_competitors["price_with_card"] = price_with_card
+                    record_price_history_competitors[
+                        "price_with_card"
+                    ] = price_with_card
                 if ad_reference != "None":
                     record_data["ad"] = ad_reference
                 record = model_analysis_competitors_record.create(record_data)
 
                 if not is_my_product:
                     if record_competitors_products:
-                        record_price_history_competitors["product_competitors"] = record_competitors_products.id
-                
+                        record_price_history_competitors[
+                            "product_competitors"
+                        ] = record_competitors_products.id
+
                 if not is_my_product:
-                    model_price_history_competitors.create(record_price_history_competitors)
+                    model_price_history_competitors.create(
+                        record_price_history_competitors
+                    )
                 dict_values[search_reference].append(record.id)
 
             for search_id, ids in dict_values.items():
-                model_analysis_competitors.create({
-                    "worker": values["worker"],
-                    "search_query": search_id,
-                    "competitor_record": [(6, 0, ids)],
-                })
+                model_analysis_competitors.create(
+                    {
+                        "worker": values["worker"],
+                        "search_query": search_id,
+                        "competitor_record": [(6, 0, ids)],
+                    }
+                )
 
         if "csv" in mime_type:
             if values["data_for_download"] == "logistics_cost":
@@ -318,6 +340,9 @@ class ImportFile(models.Model):
                             print(f"product {row['id_on_platform']} created")
 
                         ozon_product.populate_search_queries(row["keywords"])
+                        ozon_product.populate_supplementary_categories(
+                            row["full_categories"]
+                        )
 
                         # all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
                         # if product_fee := self.is_product_fee_exists(ozon_product):

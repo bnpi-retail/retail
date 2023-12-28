@@ -29,7 +29,9 @@ class Task(models.Model):
     )
     product = fields.Many2one("ozon.products", string="Товар", required=True)
     decision = fields.Char(string="Решение")
-    manager = fields.Char(string="Менеджер")
+    manager = fields.Many2one(
+        "res.users", string="Менеджер", default=lambda self: self.env.user
+    )
 
     @api.model
     def _expand_groups(self, states, domain, order):
@@ -40,7 +42,6 @@ class Task(models.Model):
         name = values["name"]
         ozon_product_id = values["product"]
         ozon_product = self.get_ozon_product(ozon_product_id)
-        next_check_datetime = values.get("next_check_datetime")
 
         """Если по данному товару уже есть задача такого же типа
         и дата след. проверки > сегодняшней даты, то задача не создается."""

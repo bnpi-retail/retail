@@ -13,8 +13,9 @@ from . import product_fee
 from . import sale
 from . import tasks
 from . import indirect_percent_expenses
+from . import supplementary_categories
 
-from .products import products
+from . import products
 from .products import tracked_search_queries
 from .products import lots_for_gpt
 
