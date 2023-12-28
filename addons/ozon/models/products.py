@@ -511,17 +511,25 @@ class Product(models.Model):
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
 
-    # def fields_view_get(
-    #     self, view_id=None, view_type="form", toolbar=False, submenu=False
-    # ):
-    #     res = super(Product, self).fields_view_get(view_id, view_type, toolbar, submenu)
-    #     doc = etree.XML(res["arch"])
-    #     af = "autofocus"
-    #     if view_type == "form":
-    #         if self.trading_scheme == "FBS":
-    #             page = doc.xpath('//page[@id="page_fbs"]')[0].set(af, af)
-    #         elif self.trading_scheme == "FBO":
-    #             doc.xpath('//page[@id="page_fbo"]')[0].set(af, af)
+    def get_view(self, view_id=None, view_type="form", **options):
+        res = super(Product, self).get_view(view_id=view_id, view_type=view_type)
+        if view_type == "form":
+            # view = self.env["ir.ui.view"].search([("id", "=", res["id"])], limit=1)
+            doc = etree.XML(res["arch"])
+            af = "autofocus"
+            params = self.env.context.get("params")
+            if params:
+                prod_id = params.get("id")
+                if prod_id:
+                    prod = self.browse(prod_id)
+                    if prod.trading_scheme == "FBS":
+                        doc.xpath('//page[@id="page_fbs_fix"]')[0].set(af, af)
+                        doc.xpath('//page[@id="page_fbs_percent"]')[0].set(af, af)
 
-    #     res["arch"] = etree.tostring(doc, encoding="unicode")
-    #     return res
+                    elif prod.trading_scheme == "FBO":
+                        doc.xpath('//page[@id="page_fbo_fix"]')[0].set(af, af)
+                        doc.xpath('//page[@id="page_fbo_percent"]')[0].set(af, af)
+
+            res["arch"] = etree.tostring(doc, encoding="unicode")
+
+        return res
