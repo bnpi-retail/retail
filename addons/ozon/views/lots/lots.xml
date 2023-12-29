@@ -182,19 +182,29 @@
             </field>
         </record>
 
-        <!-- Action -->
+        <!-- Actions -->
         <record model="ir.actions.act_window" id="action_products">
             <field name="name">Лоты</field>
             <field name="res_model">ozon.products</field>
             <field name="view_mode">tree,form,graph</field>
         </record>
 
+        <record model="ir.actions.server" id="action_products_create_mass_pricing">
+            <field name="name">Создать массовое назначение цен</field>
+            <field name="model_id" ref="model_ozon_products" />
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="state">code</field>
+            <field name="code">
+                records.create_mass_pricing()
+            </field>
+        </record>
+
         <!-- Menu -->
-        <menuitem name="Лоты" 
-            id="menu_products" 
-            parent="main_menu_products" 
-            action="action_products" 
-            sequence="20"/>
+        <menuitem name="Лоты"
+            id="menu_products"
+            parent="main_menu_products"
+            action="action_products"
+            sequence="20" />
 
     </data>
 </odoo>
