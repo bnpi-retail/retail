@@ -424,11 +424,12 @@ class Product(models.Model):
         all_products._compute_coef_profitability()
         all_products._compute_sales_per_day_last_30_days()
         # groups
-        all_products._compute_coef_profitability_group()
         alive_products = self.search([("is_alive", "=", True)])
         not_alive_products = all_products - alive_products
         for rec in not_alive_products:
+            rec.coef_profitability_group = ""
             rec.sales_per_day_last_30_days_group = ""
+        alive_products._compute_coef_profitability_group()
         alive_products._compute_sales_per_day_last_30_days_group()
 
     def populate_search_queries(self, keywords_string):
