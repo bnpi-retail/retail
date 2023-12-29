@@ -1,23 +1,6 @@
 <odoo>
     <data>
 
-
-
-
-<record id="view_products_search" model="ir.ui.view">
-    <field name="name">products.model.search</field>
-    <field name="model">retail.products</field>
-    <field name="arch" type="xml">
-        <search>
-            <filter string="String" name="filter_name" domain="[('product_id', '=', 1)]"/>
-        </search>
-    </field>
-</record>
-
-
-
-
-
         <!-- Form -->
         <record id="view_products_form" model="ir.ui.view">
             <field name="name">Товары</field>
@@ -25,8 +8,7 @@
             <field name="arch" type="xml">
                 <form>
                     <div name="button_box" position="inside">
-<button class="oe_stat_button" type="object" name="get_cost_price" string="Себестоимость"/>
-
+                        <button class="oe_stat_button" type="object" name="get_cost_price" string="Себестоимость"/>
                     </div>
 
                     <group style="margin-top: 20px; margin-bottom: 20px;">
@@ -66,7 +48,6 @@
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_products">
-            <field name="context">{'search_default_filter_name': 1}</field>
             <field name="name">Товары</field>
             <field name="res_model">retail.products</field>
             <field name="view_mode">tree,form</field>
