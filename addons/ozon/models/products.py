@@ -248,6 +248,7 @@ class Product(models.Model):
             'context': {
                 'create': False,
                 'views': [(False, 'tree'), (False, 'form'), (False, 'graph')],
+                'graph_mode': 'line',
             }
         }
 
@@ -275,6 +276,7 @@ class Product(models.Model):
             'context': {
                 'create': False,
                 'views': [(False, 'tree'), (False, 'form'), (False, 'graph')],
+                'graph_mode': 'line',
             }
         }
 

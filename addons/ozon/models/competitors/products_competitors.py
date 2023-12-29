@@ -15,18 +15,27 @@ class ProductCompetitors(models.Model):
 
     product = fields.Many2one('ozon.products', string='Лот')
 
+    price_competitors_count = fields.One2many(
+        'ozon.price_history_competitors', 
+        'product_competitors', 
+        string='Количество цен товара конкурента'
+    )
     get_price_competitors_count = fields.Integer(compute='compute_count_price_competitors')
-    @api.depends('product')
+    @api.depends('price_competitors_count')
     def compute_count_price_competitors(self):
+        current_time = datetime.now()
+        three_months_ago = current_time - timedelta(days=90)
+
         for record in self:
             record.get_price_competitors_count = self.env['ozon.price_history_competitors'] \
-                .search_count([('product_competitors', '=', record.id)])
+                .search_count([('product_competitors', '=', record.id),
+                               ('timestamp', '>=', three_months_ago.strftime('%Y-%m-%d %H:%M:%S'))])
 
     def get_price_competitors(self):
         self.ensure_one()
 
         current_time = datetime.now()
-        three_months_ago = current_time - timedelta(days=90) 
+        three_months_ago = current_time - timedelta(days=90)
 
         return {
             'type': 'ir.actions.act_window',
@@ -40,6 +49,7 @@ class ProductCompetitors(models.Model):
             'context': {
                 'create': False,
                 'views': [(False, 'tree'), (False, 'form'), (False, 'graph')],
+                'graph_mode': 'line',
             }
         }
 

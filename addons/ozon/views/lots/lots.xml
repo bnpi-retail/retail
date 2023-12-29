@@ -130,14 +130,7 @@
                         <field name="profit_ideal" />
                         <field name="profit_delta" />
 
-                        <separator string="История цен" />
-                        <field name="price_our_history_ids" widget="one2many_list">
-                            <tree limit="10">
-                                <field name="timestamp" />
-                                <field name="provider" />
-                                <field name="price" />
-                            </tree>
-                        </field>
+                        <separator string="История цен конкурентов" />
                         <field name="price_history_ids" widget="one2many_list">
                             <tree limit="10">
                                 <field name="timestamp" />
@@ -152,14 +145,6 @@
                         <field name="coef_profitability" />
                         <field name="coef_profitability_group" />
 
-                        <separator string='Продажи' />
-                        <field name="sales">
-                            <tree>
-                                <field name="date" />
-                                <field name="qty" />
-                                <field name="revenue" />
-                            </tree>
-                        </field>
                     </group>
 
                     <!-- GPT Отслеживаемые позиции --> 

@@ -8,7 +8,9 @@
         <field name="arch" type="xml">
             <form>
                 <div name="button_box" position="inside">
-                    <button class="oe_stat_button" type="object" name="get_price_competitors" string="История цен конкурентов"/>
+                     <button class="oe_stat_button" type="object" name="get_price_competitors">
+                            <field string="История цен конкурентов" name="get_price_competitors_count" widget="statinfo"/>
+                        </button>
                 </div>
 
                 <group>
