@@ -1,0 +1,49 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_ozon_mass_pricing_form" model="ir.ui.view">
+            <field name="name">Массовое назначение цен</field>
+            <field name="model">ozon.mass_pricing</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="status" />
+                        <field name="product" />
+                        <field name="new_price" />
+                        <field name="comment" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_mass_pricing_tree" model="ir.ui.view">
+            <field name="name">Массовое назначение цен</field>
+            <field name="model">ozon.mass_pricing</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="product" />
+                    <field name="new_price" />
+                    <field name="comment" />
+                    <field name="status" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_mass_pricing">
+            <field name="name">Массовое назначение цен</field>
+            <field name="res_model">ozon.mass_pricing</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Массовое назначение цен (new)"
+            id="menu_mass_pricing"
+            parent="menu_price"
+            action="action_mass_pricing"
+            sequence="40" />
+
+    </data>
+</odoo>

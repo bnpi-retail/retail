@@ -48,6 +48,7 @@
         "views/price/price_history.xml",
         "views/price/our_fix_price.xml",
         "views/price/pricing.xml",
+        "views/price/mass_pricing.xml",
         "views/lots/menu.xml",
         "views/lots/lots.xml",
         "views/lots/tracked_search_queries.xml",
