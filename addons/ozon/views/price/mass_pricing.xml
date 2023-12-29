@@ -51,7 +51,7 @@
             <field name="view_id" ref="view_ozon_mass_pricing_form" />
             <field name="binding_model_id" ref="model_ozon_mass_pricing" />
         </record> -->
-        <record model="ir.actions.server" id="action_mass_pricing_aaaab">
+        <record model="ir.actions.server" id="action_mass_pricing_update_prices_in_ozon">
             <field name="name">Назначить цены в Ozon</field>
             <field name="model_id" ref="model_ozon_mass_pricing" />
             <field name="binding_model_id" ref="model_ozon_mass_pricing" />

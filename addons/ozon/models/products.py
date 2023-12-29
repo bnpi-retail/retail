@@ -531,3 +531,7 @@ class Product(models.Model):
             res["arch"] = etree.tostring(doc, encoding="unicode")
 
         return res
+
+    def create_mass_pricing(self):
+        for prod in self:
+            self.env["ozon.mass_pricing"].create_from_product(prod)

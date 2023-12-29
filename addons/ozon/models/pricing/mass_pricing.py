@@ -27,6 +27,8 @@ class MassPricing(models.Model):
             comment = f"Торгуем в убыток: прибыль от актуальной цены {profit}"
         elif profit_delta < 0:
             comment = f"Прибыль от актуальной цены {profit} меньше, чем идеальная прибыль {profit_ideal}"
+        else:
+            comment = "Причина назначения цены не обнаружена"
         new_price = product.price + abs(profit_delta)
 
         self.create(
