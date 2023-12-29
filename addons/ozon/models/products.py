@@ -3,15 +3,25 @@
 
 from datetime import datetime, time, timedelta
 from operator import itemgetter
+from lxml import etree
 
 from odoo import models, fields, api
-from ..ozon_api import MIN_FIX_EXPENSES, MAX_FIX_EXPENSES
+
+from .indirect_percent_expenses import STRING_FIELDNAMES
+from ..ozon_api import (
+    MIN_FIX_EXPENSES_FBS,
+    MAX_FIX_EXPENSES_FBS,
+    MIN_FIX_EXPENSES_FBO,
+    MAX_FIX_EXPENSES_FBO,
+)
+
 from ..helpers import (
     split_list,
     split_keywords,
     split_keywords_on_slash,
     remove_latin_characters,
 )
+
 
 class Product(models.Model):
     _name = "ozon.products"
@@ -20,9 +30,7 @@ class Product(models.Model):
     # GPT
     description = fields.Text(string="Описание товара")
     tracked_search_queries = fields.One2many(
-        'ozon.tracked_search_queries',
-        'link_ozon_products', 
-        string='Поисковые запросы'
+        "ozon.tracked_search_queries", "link_ozon_products", string="Поисковые запросы"
     )
 
     categories = fields.Many2one("ozon.categories", string="Название категории")
@@ -93,26 +101,47 @@ class Product(models.Model):
         copy=True,
         readonly=True,
     )
-
-    fix_expenses_min = fields.One2many(
+    # FBO fix expenses
+    fbo_fix_expenses_min = fields.One2many(
         "ozon.fix_expenses",
         "product_id",
-        string="Фиксированные затраты минимальные",
+        string="Фиксированные затраты минимальные (FBO)",
         readonly=True,
-        domain=[("name", "in", MIN_FIX_EXPENSES)],
+        domain=[("name", "in", MIN_FIX_EXPENSES_FBO)],
     )
-    total_fix_expenses_min = fields.Float(
-        string="Итого", compute="_compute_total_fix_expenses_min", store=True
+    total_fbo_fix_expenses_min = fields.Float(
+        string="Итого", compute="_compute_total_fbo_fix_expenses_min", store=True
     )
-    fix_expenses_max = fields.One2many(
+    fbo_fix_expenses_max = fields.One2many(
         "ozon.fix_expenses",
         "product_id",
-        string="Фиксированные затраты максимальные",
+        string="Фиксированные затраты максимальные (FBO)",
         readonly=True,
-        domain=[("name", "in", MAX_FIX_EXPENSES)],
+        domain=[("name", "in", MAX_FIX_EXPENSES_FBO)],
     )
-    total_fix_expenses_max = fields.Float(
-        string="Итого", compute="_compute_total_fix_expenses_max", store=True
+    total_fbo_fix_expenses_max = fields.Float(
+        string="Итого", compute="_compute_total_fbo_fix_expenses_max", store=True
+    )
+    # FBS fix expenses
+    fbs_fix_expenses_min = fields.One2many(
+        "ozon.fix_expenses",
+        "product_id",
+        string="Фиксированные затраты минимальные (FBS)",
+        readonly=True,
+        domain=[("name", "in", MIN_FIX_EXPENSES_FBS)],
+    )
+    total_fbs_fix_expenses_min = fields.Float(
+        string="Итого", compute="_compute_total_fbs_fix_expenses_min", store=True
+    )
+    fbs_fix_expenses_max = fields.One2many(
+        "ozon.fix_expenses",
+        "product_id",
+        string="Фиксированные затраты максимальные (FBS)",
+        readonly=True,
+        domain=[("name", "in", MAX_FIX_EXPENSES_FBS)],
+    )
+    total_fbs_fix_expenses_max = fields.Float(
+        string="Итого", compute="_compute_total_fbs_fix_expenses_max", store=True
     )
 
     percent_expenses = fields.One2many(
@@ -123,8 +152,44 @@ class Product(models.Model):
         readonly=True,
     )
 
-    total_percent_expenses = fields.Float(
-        string="Итого", compute="_compute_total_percent_expenses", store=True
+    fbo_percent_expenses = fields.One2many(
+        "ozon.cost",
+        "product_id",
+        string="Процент от продаж (FBO)",
+        readonly=True,
+        domain=[
+            (
+                "name",
+                "in",
+                [
+                    "Процент комиссии за продажу (FBO)",
+                    "Общий коэффициент косвенных затрат",
+                ],
+            )
+        ],
+    )
+    total_fbo_percent_expenses = fields.Float(
+        string="Итого", compute="_compute_total_fbo_percent_expenses", store=True
+    )
+
+    fbs_percent_expenses = fields.One2many(
+        "ozon.cost",
+        "product_id",
+        string="Процент от продаж (FBS)",
+        readonly=True,
+        domain=[
+            (
+                "name",
+                "in",
+                [
+                    "Процент комиссии за продажу (FBS)",
+                    "Общий коэффициент косвенных затрат",
+                ],
+            )
+        ],
+    )
+    total_fbs_percent_expenses = fields.Float(
+        string="Итого", compute="_compute_total_fbs_percent_expenses", store=True
     )
 
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
@@ -213,14 +278,27 @@ class Product(models.Model):
             }
         }
 
-    @api.depends("price", "total_fix_expenses_max", "total_percent_expenses")
+    @api.depends(
+        "price",
+        "total_fbs_fix_expenses_max",
+        "total_fbo_fix_expenses_max",
+        "total_fbs_percent_expenses",
+        "total_fbo_percent_expenses",
+    )
     def _compute_profit(self):
         for record in self:
-            record.profit = (
-                record.price
-                - record.total_fix_expenses_max
-                - record.total_percent_expenses
-            )
+            if record.trading_scheme == "FBS":
+                record.profit = (
+                    record.price
+                    - record.total_fbs_fix_expenses_max
+                    - record.total_fbs_percent_expenses
+                )
+            elif record.trading_scheme == "FBO":
+                record.profit = (
+                    record.price
+                    - record.total_fbo_fix_expenses_max
+                    - record.total_fbo_percent_expenses
+                )
 
     @api.depends("price")
     def _compute_profit_ideal(self):
@@ -232,20 +310,47 @@ class Product(models.Model):
         for record in self:
             record.profit_delta = record.profit - record.profit_ideal
 
-    @api.depends("fix_expenses_min.price")
-    def _compute_total_fix_expenses_min(self):
+    @api.depends("fbo_fix_expenses_min.price")
+    def _compute_total_fbo_fix_expenses_min(self):
         for record in self:
-            record.total_fix_expenses_min = sum(record.fix_expenses_min.mapped("price"))
+            record.total_fbo_fix_expenses_min = sum(
+                record.fbo_fix_expenses_min.mapped("price")
+            )
 
-    @api.depends("fix_expenses_max.price")
-    def _compute_total_fix_expenses_max(self):
+    @api.depends("fbo_fix_expenses_max.price")
+    def _compute_total_fbo_fix_expenses_max(self):
         for record in self:
-            record.total_fix_expenses_max = sum(record.fix_expenses_max.mapped("price"))
+            record.total_fbo_fix_expenses_max = sum(
+                record.fbo_fix_expenses_max.mapped("price")
+            )
 
-    @api.depends("percent_expenses.price")
-    def _compute_total_percent_expenses(self):
+    @api.depends("fbs_fix_expenses_min.price")
+    def _compute_total_fbs_fix_expenses_min(self):
         for record in self:
-            record.total_percent_expenses = sum(record.percent_expenses.mapped("price"))
+            record.total_fbs_fix_expenses_min = sum(
+                record.fbs_fix_expenses_min.mapped("price")
+            )
+
+    @api.depends("fbs_fix_expenses_max.price")
+    def _compute_total_fbs_fix_expenses_max(self):
+        for record in self:
+            record.total_fbs_fix_expenses_max = sum(
+                record.fbs_fix_expenses_max.mapped("price")
+            )
+
+    @api.depends("fbo_percent_expenses.price")
+    def _compute_total_fbo_percent_expenses(self):
+        for record in self:
+            record.total_fbo_percent_expenses = sum(
+                record.fbo_percent_expenses.mapped("price")
+            )
+
+    @api.depends("fbs_percent_expenses.price")
+    def _compute_total_fbs_percent_expenses(self):
+        for record in self:
+            record.total_fbs_percent_expenses = sum(
+                record.fbs_percent_expenses.mapped("price")
+            )
 
     @api.depends("price_our_history_ids.price")
     def _compute_price_history_values(self):
@@ -394,11 +499,12 @@ class Product(models.Model):
         all_products._compute_coef_profitability()
         all_products._compute_sales_per_day_last_30_days()
         # groups
-        all_products._compute_coef_profitability_group()
         alive_products = self.search([("is_alive", "=", True)])
         not_alive_products = all_products - alive_products
         for rec in not_alive_products:
+            rec.coef_profitability_group = ""
             rec.sales_per_day_last_30_days_group = ""
+        alive_products._compute_coef_profitability_group()
         alive_products._compute_sales_per_day_last_30_days_group()
 
     def populate_search_queries(self, keywords_string):
@@ -453,7 +559,7 @@ class Product(models.Model):
             )
             percent_expenses_records.append(per_exp_record.id)
             # добавить к нему уже имеющуюся запись "Процент комиссии за продажу"
-            sale_percent_com_record = product.percent_expenses.search(
+            sale_percent_com_recs = product.percent_expenses.search(
                 [
                     ("product_id", "=", product.id),
                     (
@@ -465,10 +571,10 @@ class Product(models.Model):
                         ],
                     ),
                 ],
-                limit=1,
             )
-            if sale_percent_com_record:
-                percent_expenses_records.append(sale_percent_com_record.id)
+            if sale_percent_com_recs:
+                percent_expenses_records.extend(sale_percent_com_recs.ids)
+                print(percent_expenses_records)
 
             product.percent_expenses = [(6, 0, percent_expenses_records)]
 
@@ -477,3 +583,26 @@ class Product(models.Model):
             print(
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
+
+    def get_view(self, view_id=None, view_type="form", **options):
+        res = super(Product, self).get_view(view_id=view_id, view_type=view_type)
+        if view_type == "form":
+            # view = self.env["ir.ui.view"].search([("id", "=", res["id"])], limit=1)
+            doc = etree.XML(res["arch"])
+            af = "autofocus"
+            params = self.env.context.get("params")
+            if params:
+                prod_id = params.get("id")
+                if prod_id:
+                    prod = self.browse(prod_id)
+                    if prod.trading_scheme == "FBS":
+                        doc.xpath('//page[@id="page_fbs_fix"]')[0].set(af, af)
+                        doc.xpath('//page[@id="page_fbs_percent"]')[0].set(af, af)
+
+                    elif prod.trading_scheme == "FBO":
+                        doc.xpath('//page[@id="page_fbo_fix"]')[0].set(af, af)
+                        doc.xpath('//page[@id="page_fbo_percent"]')[0].set(af, af)
+
+            res["arch"] = etree.tostring(doc, encoding="unicode")
+
+        return res

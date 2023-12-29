@@ -10,7 +10,7 @@
     "author": "My Company",
     "website": "https://www.yourcompany.com",
     "category": "Uncategorized",
-    "version": "0.1",
+    "version": "0.2.1",
     "depends": ["base", "retail"],
     # always loaded
     "data": [
