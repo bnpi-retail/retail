@@ -136,7 +136,7 @@ class IndirectPercentExpenses(models.Model):
 
     def calculate_indirect_expenses_prev_month(self):
         """Запускать еженедельно на весь recordset ozon.products"""
-        date_from = datetime.combine(datetime.now(), time.min) - timedelta(days=30)
+        date_from = datetime.combine(datetime.now(), time.min) - timedelta(days=90)
         date_to = datetime.combine(datetime.now(), time.max) - timedelta(days=1)
         transactions = self.env["ozon.transaction"].read_group(
             domain=[

@@ -20,6 +20,7 @@ from ..helpers import (
     remove_latin_characters,
 )
 
+
 class Product(models.Model):
     _name = "ozon.products"
     _description = "Лоты"
@@ -27,9 +28,7 @@ class Product(models.Model):
     # GPT
     description = fields.Text(string="Описание товара")
     tracked_search_queries = fields.One2many(
-        'ozon.tracked_search_queries',
-        'link_ozon_products', 
-        string='Поисковые запросы'
+        "ozon.tracked_search_queries", "link_ozon_products", string="Поисковые запросы"
     )
 
     categories = fields.Many2one("ozon.categories", string="Название категории")
@@ -155,51 +154,41 @@ class Product(models.Model):
         readonly=True,
     )
 
-    @api.model
-    def _fbo_percent_expenses_domain(self):
-        indir_per_expenses = STRING_FIELDNAMES
-        if indir_per_expenses.get("Выручка"):
-            indir_per_expenses.pop("Выручка")
-        domain = [
-            (
-                "name",
-                "in",
-                ["Процент комиссии за продажу (FBO)", *indir_per_expenses.keys()],
-            )
-        ]
-        return domain
-
     fbo_percent_expenses = fields.One2many(
         "ozon.cost",
         "product_id",
         string="Процент от продаж (FBO)",
         readonly=True,
-        domain=_fbo_percent_expenses_domain,
+        domain=[
+            (
+                "name",
+                "in",
+                [
+                    "Процент комиссии за продажу (FBO)",
+                    "Общий коэффициент косвенных затрат",
+                ],
+            )
+        ],
     )
     total_fbo_percent_expenses = fields.Float(
         string="Итого", compute="_compute_total_fbo_percent_expenses", store=True
     )
-
-    @api.model
-    def _fbs_percent_expenses_domain(self):
-        indir_per_expenses = STRING_FIELDNAMES
-        if indir_per_expenses.get("Выручка"):
-            indir_per_expenses.pop("Выручка")
-        domain = [
-            (
-                "name",
-                "in",
-                ["Процент комиссии за продажу (FBS)", *indir_per_expenses.keys()],
-            )
-        ]
-        return domain
 
     fbs_percent_expenses = fields.One2many(
         "ozon.cost",
         "product_id",
         string="Процент от продаж (FBS)",
         readonly=True,
-        domain=_fbs_percent_expenses_domain,
+        domain=[
+            (
+                "name",
+                "in",
+                [
+                    "Процент комиссии за продажу (FBS)",
+                    "Общий коэффициент косвенных затрат",
+                ],
+            )
+        ],
     )
     total_fbs_percent_expenses = fields.Float(
         string="Итого", compute="_compute_total_fbs_percent_expenses", store=True
@@ -494,7 +483,7 @@ class Product(models.Model):
             )
             percent_expenses_records.append(per_exp_record.id)
             # добавить к нему уже имеющуюся запись "Процент комиссии за продажу"
-            sale_percent_com_record = product.percent_expenses.search(
+            sale_percent_com_recs = product.percent_expenses.search(
                 [
                     ("product_id", "=", product.id),
                     (
@@ -506,10 +495,10 @@ class Product(models.Model):
                         ],
                     ),
                 ],
-                limit=1,
             )
-            if sale_percent_com_record:
-                percent_expenses_records.append(sale_percent_com_record.id)
+            if sale_percent_com_recs:
+                percent_expenses_records.extend(sale_percent_com_recs.ids)
+                print(percent_expenses_records)
 
             product.percent_expenses = [(6, 0, percent_expenses_records)]
 
