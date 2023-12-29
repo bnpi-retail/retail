@@ -18,21 +18,20 @@ class MassPricing(models.Model):
     new_price = fields.Float(string="Новая цена")
     comment = fields.Text(string="Причина")
 
-    def create_from_task(self, task_record):
-        prod = task_record.product
-        price = round(prod.price, 2)
-        profit = round(prod.profit, 2)
-        profit_delta = round(prod.profit_delta, 2)
-        profit_ideal = round(prod.profit_ideal, 2)
+    def create_from_product(self, product):
+        price = round(product.price, 2)
+        profit = round(product.profit, 2)
+        profit_delta = round(product.profit_delta, 2)
+        profit_ideal = round(product.profit_ideal, 2)
         if profit < 0:
             comment = f"Торгуем в убыток: прибыль от актуальной цены {profit}"
         elif profit_delta < 0:
             comment = f"Прибыль от актуальной цены {profit} меньше, чем идеальная прибыль {profit_ideal}"
-        new_price = prod.price + abs(profit_delta)
+        new_price = product.price + abs(profit_delta)
 
         self.create(
             {
-                "product": prod.id,
+                "product": product.id,
                 "price": price,
                 "new_price": new_price,
                 "comment": comment,
