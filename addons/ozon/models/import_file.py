@@ -254,6 +254,7 @@ class ImportFile(models.Model):
                         if ozon_product := self.is_ozon_product_exists(
                             id_on_platform=row["id_on_platform"]
                         ):
+                            ozon_product.price = row["price"]
                             retail_product = self.is_retail_product_exists(
                                 product_id=row["product_id"]
                             )
@@ -344,27 +345,24 @@ class ImportFile(models.Model):
                             row["full_categories"]
                         )
 
-                        # all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
-                        # if product_fee := self.is_product_fee_exists(ozon_product):
-                        #     product_fee.write({"product": ozon_product.id, **all_fees})
-                        # else:
-                        #     product_fee = self.env["ozon.product_fee"].create(
-                        #         {"product": ozon_product.id, **all_fees}
-                        #     )
-                        #     ozon_product.write(
-                        #         values={"product_fee": product_fee},
-                        #         cr=ozon_product,
-                        #     )
+                        all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
+                        if product_fee := self.is_product_fee_exists(ozon_product):
+                            product_fee.write({**all_fees})
+                        else:
+                            product_fee = self.env["ozon.product_fee"].create(
+                                {"product": ozon_product.id, **all_fees}
+                            )
+                        ozon_product.write({"product_fee": product_fee.id})
 
-                        if row["trading_scheme"] == "FBO":
-                            fix_coms_by_trad_scheme = FBO_FIX_COMMISSIONS
-                            percent_coms_by_trad_scheme = FBO_PERCENT_COMMISSIONS
-                        elif row["trading_scheme"] == "FBS":
-                            fix_coms_by_trad_scheme = FBS_FIX_COMMISSIONS
-                            percent_coms_by_trad_scheme = FBS_PERCENT_COMMISSIONS
-                        elif row["trading_scheme"] == "":
-                            fix_coms_by_trad_scheme = None
-                            percent_coms_by_trad_scheme = None
+                        # if row["trading_scheme"] == "FBO":
+                        #     fix_coms_by_trad_scheme = FBO_FIX_COMMISSIONS
+                        #     percent_coms_by_trad_scheme = FBO_PERCENT_COMMISSIONS
+                        # elif row["trading_scheme"] == "FBS":
+                        #     fix_coms_by_trad_scheme = FBS_FIX_COMMISSIONS
+                        #     percent_coms_by_trad_scheme = FBS_PERCENT_COMMISSIONS
+                        # elif row["trading_scheme"] == "":
+                        #     fix_coms_by_trad_scheme = None
+                        #     percent_coms_by_trad_scheme = None
 
                         prev_price_history_record = self.is_ozon_price_history_exists(
                             row["id_on_platform"]
@@ -381,71 +379,70 @@ class ImportFile(models.Model):
                             "previous_price": previous_price,
                         }
 
-                        fix_expenses = []
-                        if fix_coms_by_trad_scheme:
-                            fix_product_commissions = {
-                                k: row[k] for k in fix_coms_by_trad_scheme
-                            }
-                            for com, value in fix_product_commissions.items():
-                                fix_expenses_record = self.env[
-                                    "ozon.fix_expenses"
-                                ].create(
-                                    {
-                                        "name": fix_coms_by_trad_scheme[com],
-                                        "price": value,
-                                        "discription": "",
-                                        "product_id": ozon_product.id,
-                                    }
-                                )
-                                fix_expenses.append(fix_expenses_record.id)
+                        # costs = []
+                        # if percent_coms_by_trad_scheme:
+                        #     ozon_product.percent_expenses.search(
+                        #         [
+                        #             ("product_id", "=", ozon_product.id),
+                        #             (
+                        #                 "name",
+                        #                 "in",
+                        #                 [
+                        #                     "Процент комиссии за продажу (FBO)",
+                        #                     "Процент комиссии за продажу (FBS)",
+                        #                 ],
+                        #             ),
+                        #         ]
+                        #     ).unlink()
+                        #     percent_product_commissions = {
+                        #         k: row[k] for k in percent_coms_by_trad_scheme
+                        #     }
+                        #     for com, value in percent_product_commissions.items():
+                        #         abs_com = round(
+                        #             ozon_price_history_data["price"]
+                        #             * float(value)
+                        #             / 100,
+                        #             2,
+                        #         )
+                        #         costs_record = self.env["ozon.cost"].create(
+                        #             {
+                        #                 "name": percent_coms_by_trad_scheme[com],
+                        #                 "price": abs_com,
+                        #                 "discription": f"{value}%",
+                        #                 "product_id": ozon_product.id,
+                        #             }
+                        #         )
+                        #         costs.append(costs_record.id)
 
-                            ozon_price_history_data["fix_expenses"] = fix_expenses
-                            ozon_product.write(
-                                {"fix_expenses": fix_expenses},
-                                cr=ozon_product,
-                            )
-
-                        costs = []
-                        if percent_coms_by_trad_scheme:
-                            ozon_product.percent_expenses.search(
-                                [
-                                    ("product_id", "=", ozon_product.id),
-                                    (
-                                        "name",
-                                        "in",
-                                        [
-                                            "Процент комиссии за продажу (FBO)",
-                                            "Процент комиссии за продажу (FBS)",
-                                        ],
-                                    ),
-                                ]
-                            ).unlink()
-                            percent_product_commissions = {
-                                k: row[k] for k in percent_coms_by_trad_scheme
-                            }
-                            for com, value in percent_product_commissions.items():
-                                abs_com = round(
-                                    ozon_price_history_data["price"]
-                                    * float(value)
-                                    / 100,
-                                    2,
-                                )
-                                costs_record = self.env["ozon.cost"].create(
-                                    {
-                                        "name": percent_coms_by_trad_scheme[com],
-                                        "price": abs_com,
-                                        "discription": f"{value}%",
-                                        "product_id": ozon_product.id,
-                                    }
-                                )
-                                costs.append(costs_record.id)
-
-                            ozon_price_history_data["costs"] = costs
+                        #     ozon_price_history_data["costs"] = costs
 
                         ozon_price_history = self.env["ozon.price_history"].create(
                             ozon_price_history_data
                         )
 
+                        fix_expenses_ids = self.env[
+                            "ozon.fix_expenses"
+                        ].create_from_ozon_product_fee(
+                            ozon_product.id, ozon_price_history.id
+                        )
+                        ozon_price_history.fix_expenses = fix_expenses_ids
+                        ozon_product.write(
+                            {"fix_expenses": fix_expenses_ids},
+                            cr=ozon_product,
+                        )
+
+                        percent_expenses_ids = self.env[
+                            "ozon.cost"
+                        ].create_from_ozon_product_fee(
+                            product_id=ozon_product.id,
+                            price_history_id=ozon_price_history.id,
+                            price=ozon_product.price,
+                        )
+                        ozon_price_history.costs = percent_expenses_ids
+                        ozon_product.write(
+                            {"percent_expenses": percent_expenses_ids},
+                            cr=ozon_product,
+                        )
                         print(
                             f"price history for product {row['id_on_platform']} added"
                         )
@@ -690,7 +687,7 @@ class ImportFile(models.Model):
 
     def is_product_fee_exists(self, ozon_product):
         result = self.env["ozon.product_fee"].search(
-            [("product.id", "=", ozon_product.id)],
+            [("product", "=", ozon_product.id)],
             limit=1,
         )
         return result if result else False
