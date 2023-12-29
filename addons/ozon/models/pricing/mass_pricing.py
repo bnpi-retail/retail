@@ -38,3 +38,7 @@ class MassPricing(models.Model):
                 "comment": comment,
             }
         )
+
+    def update_price_in_ozon(sefl):
+        # TODO
+        pass
