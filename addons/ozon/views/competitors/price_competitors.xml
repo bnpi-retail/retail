@@ -2,6 +2,16 @@
   <data>
 
     <!-- Form -->
+    <record id="view_price_history_graph" model="ir.ui.view">
+        <field name="name">История цены</field>
+        <field name="model">ozon.price_history_competitors</field>
+        <field name="arch" type="xml">
+            <graph string="История цен" type="line">
+                <field name="price" type="measure"/>
+                <field name="timestamp" type="datetime"/>
+            </graph>
+        </field>
+    </record>
 
     <!-- Tree -->
     <record id="view_price_history_competitors_tree" model="ir.ui.view">
@@ -24,7 +34,7 @@
     <record model="ir.actions.act_window" id="action_name_competitors">
         <field name="name">Цены конкурентов</field>
         <field name="res_model">ozon.price_history_competitors</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,graph</field>
     </record>
 
     <!-- Menu -->

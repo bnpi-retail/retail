@@ -55,10 +55,47 @@
                     <field name="search_query"/>
                     <field name="worker"/>
                 </group>
-                <group string="Объявления">
-                    <field name="competitor_record" widget="many2many_tags_cloud">
-                    </field>
-                </group>
+                
+                <separator string="Объявления" />
+                <field name="competitor_record" widget="kanban">
+                    <kanban class="oe_kanban_global_click">
+                        <templates>
+                            <t t-name="kanban-box">
+                                <div t-attf-class="oe_kanban_card">
+                                    <div style="display: block;">
+                                        Номер:
+                                        <field name="number"/>
+                                    </div>
+                                    <div style="display: block;">
+                                        Наименование:
+                                        <field name="name"/>
+                                    </div>
+                                    <div style="display: block;">
+                                        Наш продукт:
+                                        <field name="is_my_product"/>
+                                    </div>
+                                    <div style="display: block;">
+                                        Цена с картой:
+                                        <field name="price_with_card"/>
+                                    </div>
+                                    <div style="display: block;">
+                                        Цена:
+                                        <field name="price"/>
+                                    </div>
+                                    <div style="display: block;">
+                                        Цена без скидки:
+                                        <field name="price_without_sale"/>
+                                    </div>
+                                    <div style="display: block;">
+                                        Объявление:
+                                        <field name="ad"/>
+                                    </div>
+                                </div>
+                            </t>
+                        </templates>
+                    </kanban>
+                </field>
+
             </form>
         </field>
     </record>
@@ -84,7 +121,7 @@
     <record model="ir.actions.act_window" id="action_analysis_competitors">
         <field name="name">Анализ конкурентов</field>
         <field name="res_model">ozon.analysis_competitors</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,kanban</field>
     </record>
 
     <!-- Menu -->

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# import plotly
+
 from datetime import datetime, time, timedelta
 from operator import itemgetter
 
@@ -42,24 +44,20 @@ class Product(models.Model):
     search_queries = fields.One2many(
         "ozon.search_queries", "product_id", string="Поисковые запросы"
     )
-    trading_scheme = fields.Selection(
-        [
-            ("FBS", "FBS"),
-            ("FBO", "FBO"),
-            ("FBS, FBO", "FBS, FBO"),
-            ("", ""),
-        ],
+    trading_scheme = fields.Selection([
+        ("FBS", "FBS"),
+        ("FBO", "FBO"),
+        ("FBS, FBO", "FBS, FBO"),
+        ("", "")],
         string="Схема торговли",
     )
 
-    delivery_location = fields.Selection(
-        [
-            ("PC", "ППЗ/PC"),
-            ("PP", "ПВЗ/PP"),
-            ("SC", "СЦ/SC"),
-            ("TSC", "ТСЦ/TSC"),
-            ("", ""),
-        ],
+    delivery_location = fields.Selection([
+        ("PC", "ППЗ/PC"),
+        ("PP", "ПВЗ/PP"),
+        ("SC", "СЦ/SC"),
+        ("TSC", "ТСЦ/TSC"),
+        ("", "")],
         string="Пункт приема товара",
         help=(
             "ППЦ - Пункт приема заказов (Pickup Center), "
@@ -161,6 +159,60 @@ class Product(models.Model):
         store=True,
     )
 
+    get_sales_count = fields.Integer(compute='compute_count_sales')
+    @api.depends('sales')
+    def compute_count_sales(self):
+        for record in self:
+            record.get_sales_count = len(record.sales)
+
+    def get_sales(self):
+        self.ensure_one()
+
+        current_time = datetime.now()
+        three_months_ago = current_time - timedelta(days=90) 
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'История продаж',
+            'view_mode': 'tree,graph',
+            'res_model': 'ozon.sale',
+            'domain': [
+                ('product', '=', self.id),
+                ('date', '>=', three_months_ago.strftime('%Y-%m-%d %H:%M:%S'))
+            ],
+            'context': {
+                'create': False,
+                'views': [(False, 'tree'), (False, 'form'), (False, 'graph')],
+            }
+        }
+
+    price_history_count = fields.Integer(compute='compute_count_price_history')
+    @api.depends('price_our_history_ids')
+    def compute_count_price_history(self):
+        for record in self:
+            record.price_history_count = len(record.price_our_history_ids)
+
+    def history_price(self):
+        self.ensure_one()
+
+        current_time = datetime.now()
+        three_months_ago = current_time - timedelta(days=90) 
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'История цен',
+            'view_mode': 'tree,graph',
+            'res_model': 'ozon.price_history',
+            'domain': [
+                ('product_id', '=', self.id),
+                ('timestamp', '>=', three_months_ago.strftime('%Y-%m-%d %H:%M:%S'))
+            ],
+            'context': {
+                'create': False,
+                'views': [(False, 'tree'), (False, 'form'), (False, 'graph')],
+            }
+        }
+
     @api.depends("price", "total_fix_expenses_max", "total_percent_expenses")
     def _compute_profit(self):
         for record in self:
@@ -245,6 +297,29 @@ class Product(models.Model):
                 order="create_date desc",
             )
             product.coef_profitability = price_history_record.coef_profitability
+
+    # @api.depends('price_history_ids')
+    # def _compute_plotly_chart(self):
+    #     for rec in self:
+    #         data = [{'x': [], 'y': []}]
+    #         for price_history in rec.price_history_ids:
+    #             data[0]['x'].append(price_history.timestamp)
+    #             data[0]['y'].append(price_history.price)
+    #         data = [{'x': [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
+    #                 'y': [2, 3, 4]}]
+    #         layout = {
+    #             'title': {
+    #                 'text': 'График отслеживания цен конкурентов',
+    #                 'x': 0.5,
+    #             },
+    #             'xaxis': {'title': 'Дата'},
+    #             'yaxis': {'title': 'Цена, руб.'},
+    #             'width': 700,
+    #             'height': 400,
+    #         }
+    #         rec.plotly_chart = plotly.offline.plot({'data': data, 'layout': layout},
+    #                                             include_plotlyjs=False,
+    #                                             output_type='div')
 
     def _compute_coef_profitability_group(self):
         coefs = self.read(fields=["coef_profitability"])

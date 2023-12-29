@@ -8,8 +8,7 @@ class PriceHistoryCompetitors(models.Model):
     _description = 'История цен конкурентов'
 
     timestamp = fields.Date(string='Дата', 
-                            default=fields.Date.today,
-                            readonly=True)
+                            default=fields.Date.today)
     
     product_competitors = fields.Many2one('ozon.products_competitors',
                                           string='Товар конкурента')

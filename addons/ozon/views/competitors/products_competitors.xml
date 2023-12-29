@@ -2,6 +2,24 @@
   <data>
 
     <!-- Form -->
+    <record id="view_products_competitors_form" model="ir.ui.view">
+        <field name="name">Товары конкурентов</field>
+        <field name="model">ozon.products_competitors</field>
+        <field name="arch" type="xml">
+            <form>
+                <div name="button_box" position="inside">
+                    <button class="oe_stat_button" type="object" name="get_price_competitors" string="История цен конкурентов"/>
+                </div>
+
+                <group>
+                    <field name="id_product"/>
+                    <field name="name"/>
+                    <field name="product"/>
+                    <field name="url"/>
+                </group>
+            </form>
+        </field>
+    </record>
 
     <!-- Tree -->
     <record id="view_products_competitors_tree" model="ir.ui.view">
@@ -9,11 +27,13 @@
         <field name="model">ozon.products_competitors</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="name"/>
-                <field name="product"/>
+                <field name="id_product" string="Id товара на Ozon"/>
+                <field name="name" string="Наименование товара"/>
+                <field name="product" string="Лот"/>
             </tree>
         </field>
     </record>
+
 
     <!-- Action -->
     <record model="ir.actions.act_window" id="action_products_competitors">

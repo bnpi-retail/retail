@@ -59,6 +59,7 @@ services:
 
   web:
     image: odoo:16
+    build: .
     container_name: odoo-web
     depends_on:
       - db
