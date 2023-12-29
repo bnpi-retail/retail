@@ -254,6 +254,7 @@ class ImportFile(models.Model):
                         if ozon_product := self.is_ozon_product_exists(
                             id_on_platform=row["id_on_platform"]
                         ):
+                            ozon_product.price = row["price"]
                             retail_product = self.is_retail_product_exists(
                                 product_id=row["product_id"]
                             )
