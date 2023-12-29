@@ -12,6 +12,7 @@ from ..ozon_api import (
     MIN_FIX_EXPENSES_FBO,
     MAX_FIX_EXPENSES_FBO,
 )
+
 from ..helpers import (
     split_list,
     split_keywords,
@@ -19,12 +20,19 @@ from ..helpers import (
     remove_latin_characters,
 )
 
-
 class Product(models.Model):
     _name = "ozon.products"
     _description = "Лоты"
 
-    categories = fields.Many2one("ozon.categories", string="Основная категория")
+    # GPT
+    description = fields.Text(string="Описание товара")
+    tracked_search_queries = fields.One2many(
+        'ozon.tracked_search_queries',
+        'link_ozon_products', 
+        string='Поисковые запросы'
+    )
+
+    categories = fields.Many2one("ozon.categories", string="Название категории")
     id_on_platform = fields.Char(string="ID на площадке", unique=True)
     supplementary_categories = fields.One2many(
         "ozon.supplementary_categories",

@@ -11,6 +11,7 @@ urlpatterns = [
     path('account/', include('account.urls')),
     path('admin/', admin.site.urls),
     path('', include('ozon_plugin.urls')),
+    path('', include('gpt.urls')),
     path('api/token/', obtain_auth_token, name='api_token_obtain'),
     
 ]
