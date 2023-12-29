@@ -10,6 +10,7 @@
                     <group>
                         <field name="status" />
                         <field name="product" />
+                        <field name="price" />
                         <field name="new_price" />
                         <field name="comment" />
                     </group>
@@ -24,6 +25,7 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="product" />
+                    <field name="price" />
                     <field name="new_price" />
                     <field name="comment" />
                     <field name="status" />
