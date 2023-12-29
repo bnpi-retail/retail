@@ -5,3 +5,4 @@ def migrate(cr, installed_version):
     """
 
     cr.execute("ALTER TABLE ozon_tasks DROP COLUMN manager")
+    cr.execute("ALTER TABLE ozon_products DROP COLUMN full_categories")
