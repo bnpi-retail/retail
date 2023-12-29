@@ -107,5 +107,12 @@ class Task(models.Model):
                     "product": prod.id,
                 }
             )
-        self.create(tasks_values)
+        recs = self.create(tasks_values)
+
         return f"Tasks for {len(products_records)} products were created."
+
+    def create_mass_pricing_from_low_price_task(self):
+        if self.name != "low_price":
+            raise ValidationError("Для этой задачи невозможно массовое назначение цен.")
+
+        self.env["ozon.mass_pricing"].create_from_product(product=self.product)
