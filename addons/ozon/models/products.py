@@ -622,5 +622,16 @@ class Product(models.Model):
         return res
 
     def create_mass_pricing(self):
-        for prod in self:
-            self.env["ozon.mass_pricing"].create_from_product(prod)
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Добавить в очередь на изменение цен",
+            "view_mode": "form",
+            "res_model": "ozon.mass_pricing",
+            "target": "new",
+            "context": {
+                "default_product": self.id,
+                "default_price": self.price,
+                "default_new_price": self.price,
+            },
+        }
