@@ -20,6 +20,7 @@ from ..helpers import (
     split_keywords,
     split_keywords_on_slash,
     remove_latin_characters,
+    remove_duplicates_from_list,
 )
 
 
@@ -50,7 +51,7 @@ class Product(models.Model):
     )
     insurance = fields.Float(string="Страховой коэффициент, %")
     search_queries = fields.One2many(
-        "ozon.search_queries", "product_id", string="Поисковые запросы"
+        "ozon.search_queries", "product_id", string="Ключевые слова"
     )
     trading_scheme = fields.Selection(
         [("FBS", "FBS"), ("FBO", "FBO"), ("FBS, FBO", "FBS, FBO"), ("", "")],
@@ -535,7 +536,8 @@ class Product(models.Model):
 
     def populate_supplementary_categories(self, full_categories_string: str):
         cats_list = split_keywords_on_slash(full_categories_string)
-        cats_list = remove_latin_characters(cats_list)
+        cats_list = remove_duplicates_from_list(cats_list)
+
         sup_cat_data = [{"name": cat, "product_id": self.id} for cat in cats_list]
         sup_cat_recs = self.env["ozon.supplementary_categories"].create(sup_cat_data)
         self.supplementary_categories = [(6, 0, sup_cat_recs.ids)]
