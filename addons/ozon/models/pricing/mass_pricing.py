@@ -18,7 +18,8 @@ class MassPricing(models.Model):
     new_price = fields.Float(string="Новая цена")
     comment = fields.Text(string="Причина")
 
-    def create_from_product(self, product):
+    def auto_create_from_product(self, product):
+        """Новая цена назначается автоматически."""
         price = round(product.price, 2)
         profit = round(product.profit, 2)
         profit_delta = round(product.profit_delta, 2)
