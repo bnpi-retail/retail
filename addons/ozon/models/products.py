@@ -460,10 +460,10 @@ class Product(models.Model):
         return super(Product, self).create(values)
 
     @api.model
-    def write(self, values, cr=None):
+    def write(self, values, current_product=None):
         if values.get("fix_expenses"):
             cost_price = self.env["retail.cost_price"].search(
-                [("products", "=", cr["products"].id)],
+                [("products", "=", current_product["products"].id)],
                 order="timestamp desc",
                 limit=1,
             )
@@ -473,7 +473,7 @@ class Product(models.Model):
                     "name": "Себестоимость товара",
                     "price": cost_price.price,
                     "discription": "Поиск себестоимости товара в 'Retail'",
-                    "product_id": cr.id,
+                    "product_id": current_product.id,
                 }
             )
             values["fix_expenses"] = [fix_expense_record.id] + values["fix_expenses"]
@@ -577,7 +577,6 @@ class Product(models.Model):
             )
             if sale_percent_com_recs:
                 percent_expenses_records.extend(sale_percent_com_recs.ids)
-                print(percent_expenses_records)
 
             product.percent_expenses = [(6, 0, percent_expenses_records)]
 
@@ -586,6 +585,16 @@ class Product(models.Model):
             print(
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
+
+    def _update_percent_expenses(self, percent_expenses_ids):
+        per_exp_recs = self.env["ozon.cost"].browse(percent_expenses_ids)
+        names = [rec.name for rec in per_exp_recs]
+        new_percent_expenses_ids = percent_expenses_ids
+        for per_exp in self.percent_expenses:
+            if per_exp.name not in names:
+                new_percent_expenses_ids.append(per_exp.id)
+
+        self.percent_expenses = [(6, 0, new_percent_expenses_ids)]
 
     def get_view(self, view_id=None, view_type="form", **options):
         res = super(Product, self).get_view(view_id=view_id, view_type=view_type)
