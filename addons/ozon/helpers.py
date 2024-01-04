@@ -48,3 +48,7 @@ def remove_latin_characters(words_list: list) -> list:
         if updated_word:
             updated_words.append(updated_word)
     return updated_words
+
+
+def remove_duplicates_from_list(words_list) -> list:
+    return list(set(words_list))

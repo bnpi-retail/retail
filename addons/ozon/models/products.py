@@ -20,6 +20,7 @@ from ..helpers import (
     split_keywords,
     split_keywords_on_slash,
     remove_latin_characters,
+    remove_duplicates_from_list,
 )
 
 
@@ -50,22 +51,21 @@ class Product(models.Model):
     )
     insurance = fields.Float(string="Страховой коэффициент, %")
     search_queries = fields.One2many(
-        "ozon.search_queries", "product_id", string="Поисковые запросы"
+        "ozon.search_queries", "product_id", string="Ключевые слова"
     )
-    trading_scheme = fields.Selection([
-        ("FBS", "FBS"),
-        ("FBO", "FBO"),
-        ("FBS, FBO", "FBS, FBO"),
-        ("", "")],
+    trading_scheme = fields.Selection(
+        [("FBS", "FBS"), ("FBO", "FBO"), ("FBS, FBO", "FBS, FBO"), ("", "")],
         string="Схема торговли",
     )
 
-    delivery_location = fields.Selection([
-        ("PC", "ППЗ/PC"),
-        ("PP", "ПВЗ/PP"),
-        ("SC", "СЦ/SC"),
-        ("TSC", "ТСЦ/TSC"),
-        ("", "")],
+    delivery_location = fields.Selection(
+        [
+            ("PC", "ППЗ/PC"),
+            ("PP", "ПВЗ/PP"),
+            ("SC", "СЦ/SC"),
+            ("TSC", "ТСЦ/TSC"),
+            ("", ""),
+        ],
         string="Пункт приема товара",
         help=(
             "ППЦ - Пункт приема заказов (Pickup Center), "
@@ -224,8 +224,9 @@ class Product(models.Model):
         store=True,
     )
 
-    get_sales_count = fields.Integer(compute='compute_count_sales')
-    @api.depends('sales')
+    get_sales_count = fields.Integer(compute="compute_count_sales")
+
+    @api.depends("sales")
     def compute_count_sales(self):
         for record in self:
             record.get_sales_count = len(record.sales)
@@ -234,26 +235,27 @@ class Product(models.Model):
         self.ensure_one()
 
         current_time = datetime.now()
-        three_months_ago = current_time - timedelta(days=90) 
+        three_months_ago = current_time - timedelta(days=90)
 
         return {
-            'type': 'ir.actions.act_window',
-            'name': 'История продаж',
-            'view_mode': 'tree,graph',
-            'res_model': 'ozon.sale',
-            'domain': [
-                ('product', '=', self.id),
-                ('date', '>=', three_months_ago.strftime('%Y-%m-%d %H:%M:%S'))
+            "type": "ir.actions.act_window",
+            "name": "История продаж",
+            "view_mode": "tree,graph",
+            "res_model": "ozon.sale",
+            "domain": [
+                ("product", "=", self.id),
+                ("date", ">=", three_months_ago.strftime("%Y-%m-%d %H:%M:%S")),
             ],
-            'context': {
-                'create': False,
-                'views': [(False, 'tree'), (False, 'form'), (False, 'graph')],
-                'graph_mode': 'line',
-            }
+            "context": {
+                "create": False,
+                "views": [(False, "tree"), (False, "form"), (False, "graph")],
+                "graph_mode": "line",
+            },
         }
 
-    price_history_count = fields.Integer(compute='compute_count_price_history')
-    @api.depends('price_our_history_ids')
+    price_history_count = fields.Integer(compute="compute_count_price_history")
+
+    @api.depends("price_our_history_ids")
     def compute_count_price_history(self):
         for record in self:
             record.price_history_count = len(record.price_our_history_ids)
@@ -262,22 +264,22 @@ class Product(models.Model):
         self.ensure_one()
 
         current_time = datetime.now()
-        three_months_ago = current_time - timedelta(days=90) 
+        three_months_ago = current_time - timedelta(days=90)
 
         return {
-            'type': 'ir.actions.act_window',
-            'name': 'История цен',
-            'view_mode': 'tree,graph',
-            'res_model': 'ozon.price_history',
-            'domain': [
-                ('product_id', '=', self.id),
-                ('timestamp', '>=', three_months_ago.strftime('%Y-%m-%d %H:%M:%S'))
+            "type": "ir.actions.act_window",
+            "name": "История цен",
+            "view_mode": "tree,graph",
+            "res_model": "ozon.price_history",
+            "domain": [
+                ("product_id", "=", self.id),
+                ("timestamp", ">=", three_months_ago.strftime("%Y-%m-%d %H:%M:%S")),
             ],
-            'context': {
-                'create': False,
-                'views': [(False, 'tree'), (False, 'form'), (False, 'graph')],
-                'graph_mode': 'line',
-            }
+            "context": {
+                "create": False,
+                "views": [(False, "tree"), (False, "form"), (False, "graph")],
+                "graph_mode": "line",
+            },
         }
 
     @api.depends(
@@ -300,6 +302,13 @@ class Product(models.Model):
                     record.price
                     - record.total_fbo_fix_expenses_max
                     - record.total_fbo_percent_expenses
+                )
+            # TODO: удалить после того, как все товары будут либо FBS, либо FBO
+            else:
+                record.profit = (
+                    record.price
+                    - record.total_fbs_fix_expenses_max
+                    - record.total_fbs_percent_expenses
                 )
 
     @api.depends("price")
@@ -393,17 +402,10 @@ class Product(models.Model):
                     f"Группа {i+1}: от {g_min} до {g_max}"
                 )
 
+    @api.depends("profit_delta", "profit_ideal")
     def _compute_coef_profitability(self):
         for product in self:
-            price_history_record = self.env["ozon.price_history"].search(
-                [
-                    ("product", "=", product.id),
-                    ("price", "=", product.price),
-                ],
-                limit=1,
-                order="create_date desc",
-            )
-            product.coef_profitability = price_history_record.coef_profitability
+            product.coef_profitability = product.profit_delta / product.profit_ideal
 
     # @api.depends('price_history_ids')
     # def _compute_plotly_chart(self):
@@ -459,10 +461,10 @@ class Product(models.Model):
         return super(Product, self).create(values)
 
     @api.model
-    def write(self, values, cr=None):
+    def write(self, values, current_product=None):
         if values.get("fix_expenses"):
             cost_price = self.env["retail.cost_price"].search(
-                [("products", "=", cr["products"].id)],
+                [("products", "=", current_product["products"].id)],
                 order="timestamp desc",
                 limit=1,
             )
@@ -472,7 +474,7 @@ class Product(models.Model):
                     "name": "Себестоимость товара",
                     "price": cost_price.price,
                     "discription": "Поиск себестоимости товара в 'Retail'",
-                    "product_id": cr.id,
+                    "product_id": current_product.id,
                 }
             )
             values["fix_expenses"] = [fix_expense_record.id] + values["fix_expenses"]
@@ -534,7 +536,8 @@ class Product(models.Model):
 
     def populate_supplementary_categories(self, full_categories_string: str):
         cats_list = split_keywords_on_slash(full_categories_string)
-        cats_list = remove_latin_characters(cats_list)
+        cats_list = remove_duplicates_from_list(cats_list)
+
         sup_cat_data = [{"name": cat, "product_id": self.id} for cat in cats_list]
         sup_cat_recs = self.env["ozon.supplementary_categories"].create(sup_cat_data)
         self.supplementary_categories = [(6, 0, sup_cat_recs.ids)]
@@ -576,7 +579,6 @@ class Product(models.Model):
             )
             if sale_percent_com_recs:
                 percent_expenses_records.extend(sale_percent_com_recs.ids)
-                print(percent_expenses_records)
 
             product.percent_expenses = [(6, 0, percent_expenses_records)]
 
@@ -585,6 +587,16 @@ class Product(models.Model):
             print(
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
+
+    def _update_percent_expenses(self, percent_expenses_ids):
+        per_exp_recs = self.env["ozon.cost"].browse(percent_expenses_ids)
+        names = [rec.name for rec in per_exp_recs]
+        new_percent_expenses_ids = percent_expenses_ids
+        for per_exp in self.percent_expenses:
+            if per_exp.name not in names:
+                new_percent_expenses_ids.append(per_exp.id)
+
+        self.percent_expenses = [(6, 0, new_percent_expenses_ids)]
 
     def get_view(self, view_id=None, view_type="form", **options):
         res = super(Product, self).get_view(view_id=view_id, view_type=view_type)

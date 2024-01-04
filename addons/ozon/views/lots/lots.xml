@@ -10,10 +10,10 @@
 
                     <div name="button_box" position="inside">
                         <button class="oe_stat_button" type="object" name="history_price">
-                            <field string="История цен" name="price_history_count" widget="statinfo"/>
+                            <field string="История цен" name="price_history_count" widget="statinfo" />
                         </button>
                         <button class="oe_stat_button" type="object" name="get_sales">
-                            <field string="История продаж" name="get_sales_count" widget="statinfo"/>
+                            <field string="История продаж" name="get_sales_count" widget="statinfo" />
                         </button>
                     </div>
 
@@ -96,6 +96,7 @@
                                 <field name="fbs_percent_expenses">
                                     <tree>
                                         <field name="name" />
+                                        <field name="discription" />
                                         <field name="price" />
                                     </tree>
                                 </field>
@@ -107,6 +108,7 @@
                                 <field name="fbo_percent_expenses">
                                     <tree>
                                         <field name="name" />
+                                        <field name="discription" />
                                         <field name="price" />
                                     </tree>
                                 </field>
@@ -147,7 +149,7 @@
 
                     </group>
 
-                    <!-- GPT Отслеживаемые позиции --> 
+                    <!-- GPT Отслеживаемые позиции -->
                     <group string="Отслеживаемые поисковые запросы по описанию">
                         <field name="description" />
                     </group>
