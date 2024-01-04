@@ -52,20 +52,19 @@ class Product(models.Model):
     search_queries = fields.One2many(
         "ozon.search_queries", "product_id", string="Поисковые запросы"
     )
-    trading_scheme = fields.Selection([
-        ("FBS", "FBS"),
-        ("FBO", "FBO"),
-        ("FBS, FBO", "FBS, FBO"),
-        ("", "")],
+    trading_scheme = fields.Selection(
+        [("FBS", "FBS"), ("FBO", "FBO"), ("FBS, FBO", "FBS, FBO"), ("", "")],
         string="Схема торговли",
     )
 
-    delivery_location = fields.Selection([
-        ("PC", "ППЗ/PC"),
-        ("PP", "ПВЗ/PP"),
-        ("SC", "СЦ/SC"),
-        ("TSC", "ТСЦ/TSC"),
-        ("", "")],
+    delivery_location = fields.Selection(
+        [
+            ("PC", "ППЗ/PC"),
+            ("PP", "ПВЗ/PP"),
+            ("SC", "СЦ/SC"),
+            ("TSC", "ТСЦ/TSC"),
+            ("", ""),
+        ],
         string="Пункт приема товара",
         help=(
             "ППЦ - Пункт приема заказов (Pickup Center), "
@@ -224,8 +223,9 @@ class Product(models.Model):
         store=True,
     )
 
-    get_sales_count = fields.Integer(compute='compute_count_sales')
-    @api.depends('sales')
+    get_sales_count = fields.Integer(compute="compute_count_sales")
+
+    @api.depends("sales")
     def compute_count_sales(self):
         for record in self:
             record.get_sales_count = len(record.sales)
@@ -234,26 +234,27 @@ class Product(models.Model):
         self.ensure_one()
 
         current_time = datetime.now()
-        three_months_ago = current_time - timedelta(days=90) 
+        three_months_ago = current_time - timedelta(days=90)
 
         return {
-            'type': 'ir.actions.act_window',
-            'name': 'История продаж',
-            'view_mode': 'tree,graph',
-            'res_model': 'ozon.sale',
-            'domain': [
-                ('product', '=', self.id),
-                ('date', '>=', three_months_ago.strftime('%Y-%m-%d %H:%M:%S'))
+            "type": "ir.actions.act_window",
+            "name": "История продаж",
+            "view_mode": "tree,graph",
+            "res_model": "ozon.sale",
+            "domain": [
+                ("product", "=", self.id),
+                ("date", ">=", three_months_ago.strftime("%Y-%m-%d %H:%M:%S")),
             ],
-            'context': {
-                'create': False,
-                'views': [(False, 'tree'), (False, 'form'), (False, 'graph')],
-                'graph_mode': 'line',
-            }
+            "context": {
+                "create": False,
+                "views": [(False, "tree"), (False, "form"), (False, "graph")],
+                "graph_mode": "line",
+            },
         }
 
-    price_history_count = fields.Integer(compute='compute_count_price_history')
-    @api.depends('price_our_history_ids')
+    price_history_count = fields.Integer(compute="compute_count_price_history")
+
+    @api.depends("price_our_history_ids")
     def compute_count_price_history(self):
         for record in self:
             record.price_history_count = len(record.price_our_history_ids)
@@ -262,22 +263,22 @@ class Product(models.Model):
         self.ensure_one()
 
         current_time = datetime.now()
-        three_months_ago = current_time - timedelta(days=90) 
+        three_months_ago = current_time - timedelta(days=90)
 
         return {
-            'type': 'ir.actions.act_window',
-            'name': 'История цен',
-            'view_mode': 'tree,graph',
-            'res_model': 'ozon.price_history',
-            'domain': [
-                ('product_id', '=', self.id),
-                ('timestamp', '>=', three_months_ago.strftime('%Y-%m-%d %H:%M:%S'))
+            "type": "ir.actions.act_window",
+            "name": "История цен",
+            "view_mode": "tree,graph",
+            "res_model": "ozon.price_history",
+            "domain": [
+                ("product_id", "=", self.id),
+                ("timestamp", ">=", three_months_ago.strftime("%Y-%m-%d %H:%M:%S")),
             ],
-            'context': {
-                'create': False,
-                'views': [(False, 'tree'), (False, 'form'), (False, 'graph')],
-                'graph_mode': 'line',
-            }
+            "context": {
+                "create": False,
+                "views": [(False, "tree"), (False, "form"), (False, "graph")],
+                "graph_mode": "line",
+            },
         }
 
     @api.depends(
@@ -300,6 +301,13 @@ class Product(models.Model):
                     record.price
                     - record.total_fbo_fix_expenses_max
                     - record.total_fbo_percent_expenses
+                )
+            # TODO: удалить после того, как все товары будут либо FBS, либо FBO
+            else:
+                record.profit = (
+                    record.price
+                    - record.total_fbs_fix_expenses_max
+                    - record.total_fbs_percent_expenses
                 )
 
     @api.depends("price")
@@ -393,17 +401,10 @@ class Product(models.Model):
                     f"Группа {i+1}: от {g_min} до {g_max}"
                 )
 
+    @api.depends("profit_delta", "profit_ideal")
     def _compute_coef_profitability(self):
         for product in self:
-            price_history_record = self.env["ozon.price_history"].search(
-                [
-                    ("product", "=", product.id),
-                    ("price", "=", product.price),
-                ],
-                limit=1,
-                order="create_date desc",
-            )
-            product.coef_profitability = price_history_record.coef_profitability
+            product.coef_profitability = product.profit_delta / product.profit_ideal
 
     # @api.depends('price_history_ids')
     # def _compute_plotly_chart(self):
