@@ -1,5 +1,7 @@
 from odoo import models, fields, api
 
+from ...ozon_api import set_price
+
 
 class MassPricing(models.Model):
     _name = "ozon.mass_pricing"

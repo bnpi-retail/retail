@@ -1,3 +1,19 @@
+import json
+
+import os
+import requests
+
+OZON_CLIENT_ID = os.getenv("OZON_CLIENT_ID")
+OZON_API_KEY = os.getenv("OZON_API_KEY")
+
+if not OZON_CLIENT_ID or not OZON_API_KEY:
+    raise ValueError("Env variables $OZON_CLIENT_ID and $OZON_API_KEY weren't found")
+
+headers = {
+    "Client-Id": OZON_CLIENT_ID,
+    "Api-Key": OZON_API_KEY,
+}
+
 ALL_COMMISSIONS = {
     "acquiring": "Максимальная комиссия за эквайринг",
     "fbo_fulfillment_amount": "Комиссия за сборку заказа (FBO)",
@@ -98,3 +114,19 @@ MAX_FIX_EXPENSES = [
     "Комиссия за возврат и отмену (FBO)",
     "Комиссия за обратную логистику до (FBO)",
 ]
+
+
+def set_price(prices: list):
+    """Takes as argument a list of prices = [
+        {
+            'product_id': int,
+            'price': int,
+        }
+    ]
+    """
+    result = requests.post(
+        "https://api-seller.ozon.ru/v1/product/import/prices",
+        headers=headers,
+        data=json.dumps({"prices": prices}),
+    ).json()
+    return result["result"]
