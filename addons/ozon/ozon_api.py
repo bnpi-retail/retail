@@ -1,3 +1,19 @@
+import json
+
+import os
+import requests
+
+OZON_CLIENT_ID = os.getenv("OZON_CLIENT_ID")
+OZON_API_KEY = os.getenv("OZON_API_KEY")
+
+if not OZON_CLIENT_ID or not OZON_API_KEY:
+    raise ValueError("Env variables $OZON_CLIENT_ID and $OZON_API_KEY weren't found")
+
+headers = {
+    "Client-Id": OZON_CLIENT_ID,
+    "Api-Key": OZON_API_KEY,
+}
+
 ALL_COMMISSIONS = {
     "acquiring": "Максимальная комиссия за эквайринг",
     "fbo_fulfillment_amount": "Комиссия за сборку заказа (FBO)",
@@ -98,3 +114,38 @@ MAX_FIX_EXPENSES = [
     "Комиссия за возврат и отмену (FBO)",
     "Комиссия за обратную логистику до (FBO)",
 ]
+
+
+def set_price(prices: list):
+    """Takes as argument a list of prices = [
+        {
+            'product_id': int,
+            'price': int,
+        }
+    ]
+    """
+    response = requests.post(
+        "https://api-seller.ozon.ru/v1/product/import/prices",
+        headers=headers,
+        data=json.dumps({"prices": prices}),
+    ).json()
+    if response.get("result"):
+        return response["result"]
+    else:
+        return response
+
+
+def get_product_info_list_by_sku(sku_list: list):
+    result = requests.post(
+        "https://api-seller.ozon.ru/v2/product/info/list",
+        headers=headers,
+        data=json.dumps({"sku": sku_list}),
+    ).json()
+
+    return result["result"]["items"]
+
+
+def get_product_id_by_sku(sku_list: list) -> list:
+    product_info_list = get_product_info_list_by_sku(sku_list)
+    product_ids = [i["id"] for i in product_info_list]
+    return product_ids
