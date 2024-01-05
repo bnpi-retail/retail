@@ -194,6 +194,7 @@
         <record model="ir.actions.server" id="action_add_product_to_mass_pricing_queue">
             <field name="name">Добавить в очередь на изменение цен</field>
             <field name="model_id" ref="model_ozon_products" />
+            <field name="binding_model_id" ref="model_ozon_products" />
             <field name="binding_view_types">form</field>
             <field name="state">code</field>
             <field name="code">
