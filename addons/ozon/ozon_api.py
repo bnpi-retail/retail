@@ -124,12 +124,15 @@ def set_price(prices: list):
         }
     ]
     """
-    result = requests.post(
+    response = requests.post(
         "https://api-seller.ozon.ru/v1/product/import/prices",
         headers=headers,
         data=json.dumps({"prices": prices}),
     ).json()
-    return result["result"]
+    if response.get("result"):
+        return response["result"]
+    else:
+        return response
 
 
 def get_product_info_list_by_sku(sku_list: list):

@@ -1,6 +1,7 @@
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
 
-from ...ozon_api import set_price
+from ...ozon_api import get_product_id_by_sku, set_price
 
 
 class MassPricing(models.Model):
@@ -14,6 +15,7 @@ class MassPricing(models.Model):
         ],
         string="Статус",
         default="created",
+        readonly=True,
     )
     product = fields.Many2one("ozon.products", string="Товар Ozon")
     price = fields.Float(string="Текущая цена")
@@ -43,6 +45,25 @@ class MassPricing(models.Model):
             }
         )
 
-    def update_price_in_ozon(sefl):
-        # TODO
+    def update_price_in_ozon(self):
+        for rec in self:
+            if rec.status == "applied":
+                raise ValidationError(
+                    f"Цена для товара {rec.product.products.name} уже изменена"
+                )
+            sku = rec.product.id_on_platform
+            product_id = get_product_id_by_sku([sku])[0]
+            response = set_price(
+                [{"product_id": product_id, "price": str(int(rec.new_price))}]
+            )
+            if isinstance(response, dict) and response.get("code"):
+                raise ValidationError(f"Ошибка в Ozon. Попробуйте позже.\n{response}")
+
+            if response[0]["updated"]:
+                rec.status = "applied"
+            else:
+                raise ValidationError(
+                    f"Не смог изменить цену товара {rec.product.products.name}.\n{response['errors']}"
+                )
+
         pass
