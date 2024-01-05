@@ -345,13 +345,44 @@ class ImportFile(models.Model):
                         )
 
                         all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
+
                         if product_fee := self.is_product_fee_exists(ozon_product):
+                            are_fees_the_same = True
+                            for key, new_value in all_fees.items():
+                                if product_fee[key] != float(new_value):
+                                    are_fees_the_same = False
+                                    break
                             product_fee.write({**all_fees})
                         else:
+                            are_fees_the_same = False
                             product_fee = self.env["ozon.product_fee"].create(
                                 {"product": ozon_product.id, **all_fees}
                             )
                             ozon_product.write({"product_fee": product_fee.id})
+
+                        if are_fees_the_same:
+                            fix_expenses_ids = ozon_product.fix_expenses.ids
+                            percent_expenses_ids = ozon_product.percent_expenses.ids
+                        else:
+                            fix_expenses_ids = self.env[
+                                "ozon.fix_expenses"
+                            ].create_from_ozon_product_fee(ozon_product.id)
+
+                            ozon_product.write(
+                                {"fix_expenses": fix_expenses_ids},
+                                current_product=ozon_product,
+                            )
+
+                            percent_expenses_ids = self.env[
+                                "ozon.cost"
+                            ].create_from_ozon_product_fee(
+                                product_id=ozon_product.id,
+                                price=ozon_product.price,
+                            )
+
+                            ozon_product._update_percent_expenses(
+                                percent_expenses_ids=percent_expenses_ids
+                            )
 
                         prev_price_history_record = self.is_ozon_price_history_exists(
                             row["id_on_platform"]
@@ -360,27 +391,6 @@ class ImportFile(models.Model):
                             previous_price = prev_price_history_record.price
                         else:
                             previous_price = 0
-
-                        fix_expenses_ids = self.env[
-                            "ozon.fix_expenses"
-                        ].create_from_ozon_product_fee(ozon_product.id)
-
-                        ozon_product.write(
-                            {"fix_expenses": fix_expenses_ids},
-                            current_product=ozon_product,
-                        )
-
-                        percent_expenses_ids = self.env[
-                            "ozon.cost"
-                        ].create_from_ozon_product_fee(
-                            product_id=ozon_product.id,
-                            price=ozon_product.price,
-                        )
-
-                        ozon_product._update_percent_expenses(
-                            percent_expenses_ids=percent_expenses_ids
-                        )
-
                         ozon_price_history = self.env["ozon.price_history"].create(
                             {
                                 "product": ozon_product.id,

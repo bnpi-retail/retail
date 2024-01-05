@@ -246,15 +246,16 @@ class PriceHistory(models.Model):
     previous_price = fields.Float(string="Предыдущая цена", readonly=True)
     timestamp = fields.Date(string="Дата", default=fields.Date.today, readonly=True)
 
-    @api.model
+    # @api.model
     def _change_fix_expenses_domain(self):
-        if self.product.trading_scheme == "FBS":
-            domain = [("name", "in", MAX_FIX_EXPENSES_FBS)]
-        elif self.product.trading_scheme == "FBO":
-            domain = [("name", "in", MAX_FIX_EXPENSES_FBO)]
-        else:
-            domain = []
-        return domain
+        for rec in self:
+            if rec.product.trading_scheme == "FBS":
+                domain = [("name", "in", MAX_FIX_EXPENSES_FBS)]
+            elif rec.product.trading_scheme == "FBO":
+                domain = [("name", "in", MAX_FIX_EXPENSES_FBO)]
+            else:
+                domain = []
+            return domain
 
     fix_expenses = fields.One2many(
         "ozon.fix_expenses",
@@ -276,25 +277,32 @@ class PriceHistory(models.Model):
         indir_per_expenses = STRING_FIELDNAMES
         if indir_per_expenses.get("Выручка"):
             indir_per_expenses.pop("Выручка")
-        if self.product.trading_scheme == "FBS":
-            domain = [
-                (
-                    "name",
-                    "in",
-                    ["Процент комиссии за продажу (FBS)", *indir_per_expenses.keys()],
-                )
-            ]
-        elif self.product.trading_scheme == "FBO":
-            domain = [
-                (
-                    "name",
-                    "in",
-                    ["Процент комиссии за продажу (FBO)", *indir_per_expenses.keys()],
-                )
-            ]
-        else:
-            domain = []
-        return domain
+        for rec in self:
+            if rec.product.trading_scheme == "FBS":
+                domain = [
+                    (
+                        "name",
+                        "in",
+                        [
+                            "Процент комиссии за продажу (FBS)",
+                            *indir_per_expenses.keys(),
+                        ],
+                    )
+                ]
+            elif rec.product.trading_scheme == "FBO":
+                domain = [
+                    (
+                        "name",
+                        "in",
+                        [
+                            "Процент комиссии за продажу (FBO)",
+                            *indir_per_expenses.keys(),
+                        ],
+                    )
+                ]
+            else:
+                domain = []
+            return domain
 
     costs = fields.One2many(
         "ozon.cost",
