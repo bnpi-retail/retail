@@ -393,3 +393,11 @@ class PriceHistory(models.Model):
                 (id, f"{record.timestamp},  " f"{record.product.products.name}")
             )
         return result
+
+
+class ProfitabilityNorm(models.Model):
+    _name = "ozon.profitability_norm"
+    _description = "Норма прибыльности"
+
+    name = fields.Char(string="Наименование")
+    value = fields.Float(string="Значение")

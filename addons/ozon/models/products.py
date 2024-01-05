@@ -206,6 +206,9 @@ class Product(models.Model):
     sales_per_day_last_30_days_group = fields.Char(
         string="Группа коэффициента продаваемости",
     )
+    profitability_norm = fields.Many2one(
+        "ozon.profitability_norm", string="Норма прибыльности"
+    )
     coef_profitability = fields.Float(
         string="Коэффициент прибыльности",
     )
