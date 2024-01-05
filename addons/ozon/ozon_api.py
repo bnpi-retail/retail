@@ -130,3 +130,19 @@ def set_price(prices: list):
         data=json.dumps({"prices": prices}),
     ).json()
     return result["result"]
+
+
+def get_product_info_list_by_sku(sku_list: list):
+    result = requests.post(
+        "https://api-seller.ozon.ru/v2/product/info/list",
+        headers=headers,
+        data=json.dumps({"sku": sku_list}),
+    ).json()
+
+    return result["result"]["items"]
+
+
+def get_product_id_by_sku(sku_list: list) -> list:
+    product_info_list = get_product_info_list_by_sku(sku_list)
+    product_ids = [i["id"] for i in product_info_list]
+    return product_ids
