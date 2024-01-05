@@ -351,7 +351,7 @@ class ImportFile(models.Model):
                             product_fee = self.env["ozon.product_fee"].create(
                                 {"product": ozon_product.id, **all_fees}
                             )
-                        ozon_product.write({"product_fee": product_fee.id})
+                            ozon_product.write({"product_fee": product_fee.id})
 
                         prev_price_history_record = self.is_ozon_price_history_exists(
                             row["id_on_platform"]
