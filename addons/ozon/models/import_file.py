@@ -361,23 +361,10 @@ class ImportFile(models.Model):
                         else:
                             previous_price = 0
 
-                        ozon_price_history_data = {
-                            "product": ozon_product.id,
-                            "provider": ozon_product.seller.id,
-                            "price": float(row["price"]),
-                            "previous_price": previous_price,
-                        }
-
-                        ozon_price_history = self.env["ozon.price_history"].create(
-                            ozon_price_history_data
-                        )
-
                         fix_expenses_ids = self.env[
                             "ozon.fix_expenses"
-                        ].create_from_ozon_product_fee(
-                            ozon_product.id, ozon_price_history.id
-                        )
-                        ozon_price_history.fix_expenses = fix_expenses_ids
+                        ].create_from_ozon_product_fee(ozon_product.id)
+
                         ozon_product.write(
                             {"fix_expenses": fix_expenses_ids},
                             current_product=ozon_product,
@@ -387,12 +374,22 @@ class ImportFile(models.Model):
                             "ozon.cost"
                         ].create_from_ozon_product_fee(
                             product_id=ozon_product.id,
-                            price_history_id=ozon_price_history.id,
                             price=ozon_product.price,
                         )
-                        ozon_price_history.costs = percent_expenses_ids
+
                         ozon_product._update_percent_expenses(
                             percent_expenses_ids=percent_expenses_ids
+                        )
+
+                        ozon_price_history = self.env["ozon.price_history"].create(
+                            {
+                                "product": ozon_product.id,
+                                "provider": ozon_product.seller.id,
+                                "price": float(row["price"]),
+                                "previous_price": previous_price,
+                                "fix_expenses": fix_expenses_ids,
+                                "costs": percent_expenses_ids,
+                            }
                         )
                         print(
                             f"price history for product {row['id_on_platform']} added"

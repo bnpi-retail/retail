@@ -150,7 +150,7 @@ class FixExpenses(models.Model):
     price_history_id = fields.Many2one("ozon.price_history", string="История цен")
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
 
-    def create_from_ozon_product_fee(self, product_id, price_history_id):
+    def create_from_ozon_product_fee(self, product_id):
         product_fee = self.env["ozon.product_fee"].search(
             [("product", "=", product_id)]
         )
@@ -181,7 +181,6 @@ class FixExpenses(models.Model):
                 "name": string,
                 "price": product_fee[field],
                 "discription": "",
-                "price_history_id": price_history_id,
             }
             data.append(rec)
 
@@ -200,7 +199,7 @@ class Costs(models.Model):
     price_history_id = fields.Many2one("ozon.price_history", string="История цен")
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
 
-    def create_from_ozon_product_fee(self, product_id, price_history_id, price):
+    def create_from_ozon_product_fee(self, product_id, price):
         product_fee = self.env["ozon.product_fee"].search(
             [("product", "=", product_id)]
         )
@@ -222,7 +221,6 @@ class Costs(models.Model):
                 "name": string,
                 "price": round(price * product_fee[field] / 100, 2),
                 "discription": f"{product_fee[field]}%",
-                "price_history_id": price_history_id,
             }
             data.append(rec)
 
