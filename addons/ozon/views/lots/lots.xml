@@ -206,6 +206,17 @@
                 }</field>
         </record> -->
 
+        <!-- Action to call profitability_norm wizard. This action calls wizard model form view -->
+        <record id="wizard_action_profitability_norm" model="ir.actions.act_window">
+            <field name="name">Назначить норму прибыльности</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="res_model">ozon.profitability_norm.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="wizard_view_profitability_norm_form" />
+            <field name="target">new</field>
+        </record>
+
         <!-- Menu -->
         <menuitem name="Лоты"
             id="menu_products"

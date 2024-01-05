@@ -401,3 +401,17 @@ class ProfitabilityNorm(models.Model):
 
     name = fields.Char(string="Наименование")
     value = fields.Float(string="Значение")
+
+
+class ProfitabilityNormWizard(models.TransientModel):
+    _name = "ozon.profitability_norm.wizard"
+    _description = "Wizard Норма прибыльности"
+
+    profitability_norm = fields.Many2one(
+        "ozon.profitability_norm", string="Норма прибыльности"
+    )
+
+    def change_profitability_norm(self):
+        prod_ids = self._context["active_ids"]
+        products = self.env["ozon.products"].browse(prod_ids)
+        products.write({"profitability_norm": self.profitability_norm})
