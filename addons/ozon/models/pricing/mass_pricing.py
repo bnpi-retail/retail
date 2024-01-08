@@ -45,7 +45,7 @@ class MassPricing(models.Model):
             }
         )
 
-    def update_price_in_ozon(self):
+    def set_price_in_ozon_and_update_price(self):
         for rec in self:
             if rec.status == "applied":
                 raise ValidationError(
@@ -61,6 +61,7 @@ class MassPricing(models.Model):
 
             if response[0]["updated"]:
                 rec.status = "applied"
+                rec.product.price = rec.new_price
             else:
                 raise ValidationError(
                     f"Не смог изменить цену товара {rec.product.products.name}.\n{response['errors']}"
