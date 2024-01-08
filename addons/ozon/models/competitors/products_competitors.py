@@ -3,33 +3,42 @@ from odoo import models, fields, api
 
 
 class ProductCompetitors(models.Model):
-    _name = 'ozon.products_competitors'
-    _description = 'Товары конкуренты'
-    
-    id_product = fields.Char(string='Id товара на Ozon')
-    
-    name = fields.Char(string='Наименование товара')
+    _name = "ozon.products_competitors"
+    _description = "Товары конкуренты"
 
-    url = fields.Char(string='URL товара', widget="url", 
-                      help='Укажите ссылку на товар в поле')
+    id_product = fields.Char(string="Id товара на Ozon")
 
-    product = fields.Many2one('ozon.products', string='Лот')
+    name = fields.Char(string="Наименование товара")
+
+    url = fields.Char(
+        string="URL товара", widget="url", help="Укажите ссылку на товар в поле"
+    )
+
+    product = fields.Many2one("ozon.products", string="Лот")
 
     price_competitors_count = fields.One2many(
-        'ozon.price_history_competitors', 
-        'product_competitors', 
-        string='Количество цен товара конкурента'
+        "ozon.price_history_competitors",
+        "product_competitors",
+        string="Количество цен товара конкурента",
     )
-    get_price_competitors_count = fields.Integer(compute='compute_count_price_competitors')
-    @api.depends('price_competitors_count')
+    get_price_competitors_count = fields.Integer(
+        compute="compute_count_price_competitors"
+    )
+
+    @api.depends("price_competitors_count")
     def compute_count_price_competitors(self):
         current_time = datetime.now()
         three_months_ago = current_time - timedelta(days=90)
 
         for record in self:
-            record.get_price_competitors_count = self.env['ozon.price_history_competitors'] \
-                .search_count([('product_competitors', '=', record.id),
-                               ('timestamp', '>=', three_months_ago.strftime('%Y-%m-%d %H:%M:%S'))])
+            record.get_price_competitors_count = self.env[
+                "ozon.price_history_competitors"
+            ].search_count(
+                [
+                    ("product_competitors", "=", record.id),
+                    ("timestamp", ">=", three_months_ago.strftime("%Y-%m-%d %H:%M:%S")),
+                ]
+            )
 
     def get_price_competitors(self):
         self.ensure_one()
@@ -38,26 +47,33 @@ class ProductCompetitors(models.Model):
         three_months_ago = current_time - timedelta(days=90)
 
         return {
-            'type': 'ir.actions.act_window',
-            'name': 'История цен конкурентов',
-            'view_mode': 'tree,graph',
-            'res_model': 'ozon.price_history_competitors',
-            'domain': [
-                ('product_competitors', '=', self.id),
-                ('timestamp', '>=', three_months_ago.strftime('%Y-%m-%d %H:%M:%S'))
+            "type": "ir.actions.act_window",
+            "name": "История цен конкурентов",
+            "view_mode": "tree,graph",
+            "res_model": "ozon.price_history_competitors",
+            "domain": [
+                ("product_competitors", "=", self.id),
+                ("timestamp", ">=", three_months_ago.strftime("%Y-%m-%d %H:%M:%S")),
             ],
-            'context': {
-                'create': False,
-                'views': [(False, 'tree'), (False, 'form'), (False, 'graph')],
-                'graph_mode': 'line',
-            }
+            "context": {
+                "create": False,
+                "views": [(False, "tree"), (False, "form"), (False, "graph")],
+                "graph_mode": "line",
+            },
         }
 
     def name_get(self):
         """
-        Rename name records 
+        Rename name records
         """
         result = []
         for record in self:
             result.append((record.id, record.name))
         return result
+
+    def get_last_price(self):
+        self.ensure_one()
+        price_history = self.price_competitors_count.search(
+            [], limit=1, order="create_date desc"
+        )
+        return price_history.price if price_history else None

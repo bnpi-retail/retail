@@ -50,6 +50,7 @@
         "views/price/pricing.xml",
         "views/price/mass_pricing.xml",
         "views/price/profitability_norm.xml",
+        "views/price/pricing_strategy.xml",
         "views/lots/menu.xml",
         "views/lots/lots.xml",
         "views/lots/tracked_search_queries.xml",
