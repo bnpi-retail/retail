@@ -314,10 +314,13 @@ class Product(models.Model):
                     - record.total_fbs_percent_expenses
                 )
 
-    @api.depends("price")
+    @api.depends("price", "profitability_norm.value")
     def _compute_profit_ideal(self):
         for record in self:
-            record.profit_ideal = record.price * 0.2
+            if record.profitability_norm:
+                record.profit_ideal = record.price * record.profitability_norm.value
+            else:
+                record.profit_ideal = record.price * 0.2
 
     @api.depends("profit", "profit_ideal")
     def _compute_profit_delta(self):
