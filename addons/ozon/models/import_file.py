@@ -2,6 +2,7 @@ import ast
 import base64
 import csv
 import os
+import timeit
 
 import magic
 
@@ -249,8 +250,10 @@ class ImportFile(models.Model):
                     f.write(content)
 
                 with open(f_path) as csvfile:
+                    price_history_data_list = []
                     reader = csv.DictReader(csvfile)
                     for row in reader:
+                        # s0 = timeit.default_timer()
                         if ozon_product := self.is_ozon_product_exists(
                             id_on_platform=row["id_on_platform"]
                         ):
@@ -341,12 +344,12 @@ class ImportFile(models.Model):
                             )
 
                             print(f"product {row['id_on_platform']} created")
-
+                        # s1 = timeit.default_timer()
                         ozon_product.populate_search_queries(row["keywords"])
                         ozon_product.populate_supplementary_categories(
                             row["full_categories"]
                         )
-
+                        # s2 = timeit.default_timer()
                         all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
 
                         if product_fee := self.is_product_fee_exists(ozon_product):
@@ -363,6 +366,7 @@ class ImportFile(models.Model):
                             )
                             ozon_product.write({"product_fee": product_fee.id})
 
+                        # s3 = timeit.default_timer()
                         if are_fees_the_same:
                             fix_expenses_ids = ozon_product.fix_expenses.ids
                             percent_expenses_ids = ozon_product.percent_expenses.ids
@@ -386,28 +390,43 @@ class ImportFile(models.Model):
                             ozon_product._update_percent_expenses(
                                 percent_expenses_ids=percent_expenses_ids
                             )
+                        # s4 = timeit.default_timer()
 
                         prev_price_history_record = self.is_ozon_price_history_exists(
                             row["id_on_platform"]
                         )
+                        # s41 = timeit.default_timer()
                         if prev_price_history_record:
                             previous_price = prev_price_history_record.price
                         else:
                             previous_price = 0
-                        ozon_price_history = self.env["ozon.price_history"].create(
-                            {
-                                "product": ozon_product.id,
-                                "provider": ozon_product.seller.id,
-                                "price": float(row["price"]),
-                                "previous_price": previous_price,
-                                "fix_expenses": fix_expenses_ids,
-                                "costs": percent_expenses_ids,
-                            }
-                        )
+                        # s42 = timeit.default_timer()
+                        price_history_data = {
+                            "product": ozon_product.id,
+                            "provider": ozon_product.seller.id,
+                            "price": float(row["price"]),
+                            "previous_price": previous_price,
+                            "fix_expenses": fix_expenses_ids,
+                            "costs": percent_expenses_ids,
+                        }
+                        price_history_data_list.append(price_history_data)
                         print(
                             f"price history for product {row['id_on_platform']} added"
                         )
+                        # s5 = timeit.default_timer()
+                        # print(f"total: {s5-s0}")
+                        # print(f"update ozon_product: {s1-s0}")
+                        # print(f"keywords & categories: {s2-s1}")
+                        # print(f"product_fee: {s3-s2}")
+                        # print(f"fix_&_percent_expenses: {s4-s3}")
+                        # print(f"price_history_total: {s5-s4}")
+                        # print(f"is_ozon_price_history_exists: {s41-s4}")
+                        # print(f"prev_price: {s42-s41}")
+                        # print(f"create price_history: {s5-s42}")
 
+                    ozon_price_history = self.env["ozon.price_history"].create(
+                        price_history_data_list
+                    )
                 os.remove(f_path)
 
             elif values["data_for_download"] == "ozon_commissions":
