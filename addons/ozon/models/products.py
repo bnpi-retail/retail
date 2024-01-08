@@ -45,6 +45,7 @@ class Product(models.Model):
     )
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
+    old_price = fields.Float(string="Цена до учёта скидок", readonly=True)
     seller = fields.Many2one("retail.seller", string="Продавец")
     index_localization = fields.Many2one(
         "ozon.localization_index", string="Индекс локализации"

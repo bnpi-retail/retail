@@ -254,7 +254,9 @@ class ImportFile(models.Model):
                         if ozon_product := self.is_ozon_product_exists(
                             id_on_platform=row["id_on_platform"]
                         ):
-                            ozon_product.price = row["price"]
+                            ozon_product.write(
+                                {"price": row["price"], "old_price": row["old_price"]}
+                            )
                             retail_product = self.is_retail_product_exists(
                                 product_id=row["product_id"]
                             )
@@ -330,6 +332,7 @@ class ImportFile(models.Model):
                                     "description": row["description"],
                                     "products": retail_product.id,
                                     "price": row["price"],
+                                    "old_price": row["old_price"],
                                     "seller": seller.id,
                                     "index_localization": localization_index.id,
                                     "trading_scheme": row["trading_scheme"],

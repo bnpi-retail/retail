@@ -29,6 +29,7 @@
                             </tree>
                         </field>
                         <field name="products" />
+                        <field name="old_price" style="text-decoration:line-through;" />
                         <field name="price" />
                         <field name="seller" />
                         <field name="index_localization" />
