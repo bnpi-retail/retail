@@ -57,7 +57,7 @@
             <field name="binding_model_id" ref="model_ozon_mass_pricing" />
             <field name="state">code</field>
             <field name="code">
-                records.update_price_in_ozon()
+                records.set_price_in_ozon_and_update_price()
             </field>
         </record>
 
