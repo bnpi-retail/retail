@@ -15,7 +15,6 @@
     # always loaded
     "data": [
         ### security
-        "security/price/count_price/ir.model.access.csv",
         "security/price/price_history/ir.model.access.csv",
         "security/price/fix_expenses/ir.model.access.csv",
         "security/price/cost/ir.model.access.csv",
@@ -46,7 +45,6 @@
         ### views
         "views/menu.xml",
         "views/price/menu.xml",
-        "views/price/count_price.xml",
         "views/price/price_history.xml",
         "views/price/our_fix_price.xml",
         "views/price/pricing.xml",
