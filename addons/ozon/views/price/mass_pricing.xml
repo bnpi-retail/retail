@@ -9,10 +9,19 @@
                 <form>
                     <group>
                         <field name="status" />
-                        <field name="product" />
-                        <field name="price" />
-                        <field name="new_price" />
+                        <field name="strategy" />
                         <field name="comment" />
+                    </group>
+                    <group>
+                        <group string="Наш товар">
+                            <field name="product" />
+                            <field name="price" />
+                            <field name="new_price" />
+                        </group>
+                        <group string="Товар конкурента">
+                            <field name="competitor_product" />
+                            <field name="competitor_price" />
+                        </group>
                     </group>
                 </form>
             </field>

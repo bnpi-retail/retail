@@ -20,7 +20,14 @@ class MassPricing(models.Model):
     product = fields.Many2one("ozon.products", string="Товар Ozon")
     price = fields.Float(string="Текущая цена")
     new_price = fields.Float(string="Новая цена")
+    competitor_product = fields.Many2one(
+        "ozon.products_competitors", string="Товар конкурента"
+    )
+    competitor_price = fields.Float(string="Цена товара конкурента")
     comment = fields.Text(string="Причина")
+    strategy = fields.Many2one(
+        "ozon.pricing_strategy", string="Стратегия назначения цены"
+    )
 
     def auto_create_from_product(self, product):
         """Новая цена назначается автоматически."""
