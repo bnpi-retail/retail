@@ -20,7 +20,7 @@
 
         <!-- Tree -->
         <record id="view_mass_pricing_tree" model="ir.ui.view">
-            <field name="name">Массовое назначение цен</field>
+            <field name="name">Очередь изменения цен</field>
             <field name="model">ozon.mass_pricing</field>
             <field name="arch" type="xml">
                 <tree>
@@ -36,7 +36,7 @@
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_mass_pricing">
-            <field name="name">Массовое назначение цен</field>
+            <field name="name">Очередь изменения цен</field>
             <field name="res_model">ozon.mass_pricing</field>
             <field name="view_mode">tree,form</field>
         </record>
@@ -62,7 +62,7 @@
         </record>
 
         <!-- Menu -->
-        <menuitem name="Массовое назначение цен (new)"
+        <menuitem name="Очередь изменения цен"
             id="menu_mass_pricing"
             parent="menu_price"
             action="action_mass_pricing"
