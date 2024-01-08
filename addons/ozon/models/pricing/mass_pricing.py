@@ -29,15 +29,18 @@ class MassPricing(models.Model):
     )
     comment = fields.Text(string="Причина")
 
+    def is_product_in_queue(self, product):
+        res = self.env["ozon.mass_pricing"].search([("product", "=", product.id)])
+        return res if res else False
+
     def auto_create_from_strategy_competitors(self):
-        limit = 50
         strategy_id = "lower_3_percent_min_competitor"
         strategy = self.env["ozon.pricing_strategy"].search(
             [("strategy_id", "=", strategy_id)]
         )
         # search for products which have at least one competitor
         products = self.env["ozon.products"].search(
-            [("price_history_ids", "!=", None)], limit=limit
+            [("price_history_ids", "!=", None), ("is_alive", "=", True)],
         )
         data = []
         for prod in products:
@@ -45,6 +48,10 @@ class MassPricing(models.Model):
             comp_prices = prod.price_history_ids.mapped("price")
             if not comp_prices:
                 continue
+            # TODO: ??? if this product is already in queue to change price?
+            if self.is_product_in_queue(product=prod):
+                continue
+
             min_comp_price = min(comp_prices)
             comp_prod = prod.price_history_ids.search(
                 [("price", "=", min_comp_price)]
@@ -65,9 +72,7 @@ class MassPricing(models.Model):
             )
 
         self.create(data)
-        print(
-            f"В очередь на изменение цен по стратегии '{strategy.name}' добавлено {len(data)} товаров."
-        )
+        return f"В очередь на изменение цен по стратегии '{strategy.name}' добавлено {len(data)} товаров."
 
     def auto_create_from_product(self, product):
         """Новая цена назначается автоматически."""
