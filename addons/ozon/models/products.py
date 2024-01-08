@@ -213,7 +213,7 @@ class Product(models.Model):
         string="Отклонение от прибыли",
     )
     coef_profitability_group = fields.Char(
-        string="Группа коэффициента прибыльности",
+        string="Группа отклонения от прибыли",
     )
     profit = fields.Float(
         string="Прибыль от актуальной цены", compute="_compute_profit", store=True
@@ -421,7 +421,9 @@ class Product(models.Model):
             g_max = round(g[-1]["coef_profitability"], 2)
             for item in g:
                 prod = self.env["ozon.products"].search([("id", "=", item["id"])])
-                prod.coef_profitability_group = f"Группа {i+1}: от {g_min} до {g_max}"
+                prod.coef_profitability_group = (
+                    f"Группа {i+1}: от {g_min*100}% до {g_max*100}%"
+                )
 
     # @api.depends('price_history_ids')
     # def _compute_plotly_chart(self):

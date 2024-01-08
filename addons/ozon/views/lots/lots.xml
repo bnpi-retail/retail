@@ -137,7 +137,7 @@
                         <field name="sales_per_day_last_30_days" />
                         <field name="sales_per_day_last_30_days_group" />
                         <field name="coef_profitability" widget="percentage"
-                            style="max-width: 70px;" />
+                            style="max-width: 58px;" />
                         <field name="coef_profitability_group" />
 
                     </group>
