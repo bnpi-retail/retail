@@ -6,7 +6,7 @@ from ...ozon_api import get_product_id_by_sku, set_price
 
 class MassPricing(models.Model):
     _name = "ozon.mass_pricing"
-    _description = "Очередь назначения цен"
+    _description = "Очередь изменения цен"
 
     status = fields.Selection(
         [
