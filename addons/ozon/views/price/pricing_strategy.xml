@@ -9,6 +9,7 @@
                 <form>
                     <group>
                         <field name="name" />
+                        <field name="strategy_id" attrs="{'readonly': [('id','!=',False)]}" />
                     </group>
                 </form>
             </field>

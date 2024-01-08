@@ -24,10 +24,50 @@ class MassPricing(models.Model):
         "ozon.products_competitors", string="Товар конкурента"
     )
     competitor_price = fields.Float(string="Цена товара конкурента")
-    comment = fields.Text(string="Причина")
     strategy = fields.Many2one(
         "ozon.pricing_strategy", string="Стратегия назначения цены"
     )
+    comment = fields.Text(string="Причина")
+
+    def auto_create_from_strategy_competitors(self):
+        limit = 50
+        strategy_id = "lower_3_percent_min_competitor"
+        strategy = self.env["ozon.pricing_strategy"].search(
+            [("strategy_id", "=", strategy_id)]
+        )
+        # search for products which have at least one competitor
+        products = self.env["ozon.products"].search(
+            [("price_history_ids", "!=", None)], limit=limit
+        )
+        data = []
+        for prod in products:
+            # get competitors prices
+            comp_prices = prod.price_history_ids.mapped("price")
+            if not comp_prices:
+                continue
+            min_comp_price = min(comp_prices)
+            comp_prod = prod.price_history_ids.search(
+                [("price", "=", min_comp_price)]
+            ).product_competitors
+
+            new_price = round(min_comp_price * 0.97, 2)
+            comment = f"Автоматическое изменение цены по стратегии: '{strategy.name}'"
+            data.append(
+                {
+                    "product": prod.id,
+                    "price": prod.price,
+                    "new_price": new_price,
+                    "competitor_product": comp_prod.id,
+                    "competitor_price": min_comp_price,
+                    "strategy": strategy.id,
+                    "comment": comment,
+                }
+            )
+
+        self.create(data)
+        print(
+            f"В очередь на изменение цен по стратегии '{strategy.name}' добавлено {len(data)} товаров."
+        )
 
     def auto_create_from_product(self, product):
         """Новая цена назначается автоматически."""
@@ -74,9 +114,24 @@ class MassPricing(models.Model):
                     f"Не смог изменить цену товара {rec.product.products.name}.\n{response['errors']}"
                 )
 
+    def name_get(self):
+        """
+        Rename name records
+        """
+        result = []
+        for record in self:
+            result.append(
+                (
+                    record.id,
+                    f"{record.product.products.name}, {record.price} -> {record.new_price}",
+                )
+            )
+        return result
+
 
 class PricingStrategy(models.Model):
     _name = "ozon.pricing_strategy"
     _description = "Стратегия назначения цен"
 
     name = fields.Char(string="Стратегия назначения цен")
+    strategy_id = fields.Char(string="ID стратегии")
