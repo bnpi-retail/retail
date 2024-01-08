@@ -67,4 +67,9 @@ class MassPricing(models.Model):
                     f"Не смог изменить цену товара {rec.product.products.name}.\n{response['errors']}"
                 )
 
-        pass
+
+class PricingStrategy(models.Model):
+    _name = "ozon.pricing_strategy"
+    _description = "Стратегия назначения цен"
+
+    name = fields.Char(string="Стратегия назначения цен")

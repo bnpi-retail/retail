@@ -2,3 +2,4 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_ozon_pricing,Access Ozon Pricing,model_ozon_pricing,base.group_user,1,1,1,1
 access_ozon_pricing,Access Ozon Fake Pricing,model_ozon_fake_pricing,base.group_user,1,1,1,1
 access_ozon_mass_pricing,Access Ozon Mass Pricing,model_ozon_mass_pricing,base.group_user,1,1,1,1
+access_ozon_pricing_strategy,Access Ozon Pricing Strategy,model_ozon_pricing_strategy,base.group_user,1,1,1,1
