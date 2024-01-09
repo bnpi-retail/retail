@@ -22,6 +22,9 @@ class CostAct(models.Model):
         "retail.cost_act_product", "act_id", string="Товары"
     )
 
+    def apply(self):
+        pass
+
 
 class CostActProduct(models.Model):
     _name = "retail.cost_act_product"
