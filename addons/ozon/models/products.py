@@ -284,6 +284,7 @@ class Product(models.Model):
                 "create": False,
                 "views": [(False, "tree"), (False, "form"), (False, "graph")],
                 "graph_mode": "line",
+                "measure": "price",
                 "group_by": "timestamp:day",
             },
         }
