@@ -292,28 +292,6 @@ class ImportFile(models.Model):
                                         "fee": 20,
                                     }
                                 )
-                            if localization_index := self.is_ozon_localization_index_exists(
-                                row["lower_threshold"],
-                                row["upper_threshold"],
-                                row["coefficient"],
-                                row["percent"],
-                            ):
-                                pass
-                            else:
-                                localization_index = self.env[
-                                    "ozon.localization_index"
-                                ].create(
-                                    {
-                                        "lower_threshold": float(
-                                            row["lower_threshold"]
-                                        ),
-                                        "upper_threshold": float(
-                                            row["upper_threshold"]
-                                        ),
-                                        "coefficient": float(row["coefficient"]),
-                                        "percent": float(row["percent"]),
-                                    }
-                                )
 
                             retail_product = self.env["retail.products"].create(
                                 {
@@ -337,9 +315,7 @@ class ImportFile(models.Model):
                                     "price": row["price"],
                                     "old_price": row["old_price"],
                                     "seller": seller.id,
-                                    "index_localization": localization_index.id,
                                     "trading_scheme": row["trading_scheme"],
-                                    "delivery_location": row["delivery_location"],
                                 }
                             )
 
@@ -462,7 +438,6 @@ class ImportFile(models.Model):
                                 "category": ozon_category.id,
                                 "type": row["commission_type"],
                                 "trading_scheme": row["trading_scheme"],
-                                "delivery_location": row["delivery_location"],
                             }
                         )
                         print(f"{i}th commission was created")
