@@ -18,5 +18,5 @@ class CostPrice(models.Model):
         """
         result = []
         for record in self:
-            result.append((record.id, record.product.name))
+            result.append((record.id, record.product_id.name))
         return result
