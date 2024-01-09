@@ -289,6 +289,8 @@ class Product(models.Model):
                 "graph_mode": "line",
                 "group_by": "timestamp:day",
                 "measures": ["price"],
+                "type": "measure",
+                "graph_measure": "average",
             },
         }
 
