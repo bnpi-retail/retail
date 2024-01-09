@@ -1,0 +1,43 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_cost_act_type_form" model="ir.ui.view">
+            <field name="name">Тип акта себестоимости</field>
+            <field name="model">retail.cost_act_type</field>
+            <field name="arch" type="xml">
+                <form class="oe_form">
+                    <group style="margin-top: 20px; margin-bottom: 20px;">
+                        <field name="name" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_cost_act_type_tree" model="ir.ui.view">
+            <field name="name">Тип акта себестоимости</field>
+            <field name="model">retail.cost_act_type</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_cost_act_type">
+            <field name="name">Тип акта себестоимости</field>
+            <field name="res_model">retail.cost_act_type</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Типы актов"
+            id="menu_cost_act_type"
+            parent="main_menu_cost_price"
+            action="action_cost_act_type"
+            sequence="3" />
+
+    </data>
+</odoo>

@@ -19,39 +19,45 @@ class Product(models.Model):
     weight = fields.Float(string="Вес, кг")
     volume = fields.Float(string="Объем, л", compute="_compute_volume", store=True)
 
-    cost_prices = fields.One2many('retail.cost_price', 'products', string='Количество себестоимостей товара')
-    
-    get_cost_price_count = fields.Integer(compute='compute_cost_price')
-    @api.depends('cost_prices')
+    cost_prices = fields.One2many(
+        "retail.cost_price", "products", string="Количество себестоимостей товара"
+    )
+
+    get_cost_price_count = fields.Integer(compute="compute_cost_price")
+
+    @api.depends("cost_prices")
     def compute_cost_price(self):
         current_time = datetime.now()
-        three_months_ago = current_time - timedelta(days=90) 
-        
+        three_months_ago = current_time - timedelta(days=90)
+
         for record in self:
-            record.get_cost_price_count = self.env['retail.cost_price'] \
-                .search_count([('products', '=', record.id),
-                               ('timestamp', '>=', three_months_ago.strftime('%Y-%m-%d %H:%M:%S'))])
+            record.get_cost_price_count = self.env["retail.cost_price"].search_count(
+                [
+                    ("products", "=", record.id),
+                    ("timestamp", ">=", three_months_ago.strftime("%Y-%m-%d %H:%M:%S")),
+                ]
+            )
 
     def get_cost_price(self):
         self.ensure_one()
 
         current_time = datetime.now()
-        three_months_ago = current_time - timedelta(days=90) 
+        three_months_ago = current_time - timedelta(days=90)
 
         return {
-            'type': 'ir.actions.act_window',
-            'name': 'История себестоимости',
-            'view_mode': 'tree,graph',
-            'res_model': 'retail.cost_price',
-            'domain': [
-                ('products', '=', self.id),
-                ('timestamp', '>=', three_months_ago.strftime('%Y-%m-%d %H:%M:%S'))
+            "type": "ir.actions.act_window",
+            "name": "История себестоимости",
+            "view_mode": "tree,graph",
+            "res_model": "retail.cost_price",
+            "domain": [
+                ("products", "=", self.id),
+                ("timestamp", ">=", three_months_ago.strftime("%Y-%m-%d %H:%M:%S")),
             ],
-            'context': {
-                'create': False,
-                'views': [(False, 'tree'), (False, 'form'), (False, 'graph')],
-                'graph_mode': 'line',
-            }
+            "context": {
+                "create": False,
+                "views": [(False, "tree"), (False, "form"), (False, "graph")],
+                "graph_mode": "line",
+            },
         }
 
     @api.depends("length", "width", "height")

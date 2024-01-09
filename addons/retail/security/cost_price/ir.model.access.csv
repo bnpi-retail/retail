@@ -1,2 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_retail_cost_price,Access Retail Cost Price,model_retail_cost_price,base.group_user,1,1,1,1
+access_retail_cost_act,Access Retail Cost Act,model_retail_cost_act,base.group_user,1,1,1,1
+access_retail_cost_act_product,Access Retail Cost Act Product,model_retail_cost_act_product,base.group_user,1,1,1,1
+access_retail_cost_act_type,Access Retail Cost Act Type,model_retail_cost_act_type,base.group_user,1,1,1,1
