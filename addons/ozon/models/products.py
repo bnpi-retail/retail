@@ -255,7 +255,7 @@ class Product(models.Model):
                 "views": [(False, "tree"), (False, "form"), (False, "graph")],
                 "graph_mode": "line",
                 "group_by": "timestamp:day",
-                 "y_axis_field": "price",
+                "measures": ["price"],
             },
         }
 
@@ -286,7 +286,7 @@ class Product(models.Model):
                 "views": [(False, "tree"), (False, "form"), (False, "graph")],
                 "graph_mode": "line",
                 "group_by": "timestamp:day",
-                 "y_axis_field": "price",
+                "measures": ["price"],
             },
         }
 
