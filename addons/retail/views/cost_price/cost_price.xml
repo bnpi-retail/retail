@@ -6,13 +6,11 @@
             <field name="name">Себестоимость</field>
             <field name="model">retail.cost_price</field>
             <field name="arch" type="xml">
-                <form class="oe_form">
+                <form>
                     <group>
-                        <field name="products" />
-                    </group>
-                    <group style="margin-top: 20px; margin-bottom: 20px;">
                         <field name="timestamp" />
-                        <field name="seller" />
+                        <field name="product_id" />
+                        <field name="cost_type_id" />
                         <field name="price" />
                     </group>
                 </form>
@@ -26,8 +24,8 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="timestamp" />
-                    <field name="products" />
-                    <field name="seller" />
+                    <field name="product_id" />
+                    <field name="cost_type_id" />
                     <field name="price" />
                 </tree>
             </field>

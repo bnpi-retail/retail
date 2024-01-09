@@ -20,7 +20,7 @@ class Product(models.Model):
     volume = fields.Float(string="Объем, л", compute="_compute_volume", store=True)
 
     cost_prices = fields.One2many(
-        "retail.cost_price", "products", string="Количество себестоимостей товара"
+        "retail.cost_price", "product_id", string="Себестоимость"
     )
 
     get_cost_price_count = fields.Integer(compute="compute_cost_price")
@@ -33,7 +33,7 @@ class Product(models.Model):
         for record in self:
             record.get_cost_price_count = self.env["retail.cost_price"].search_count(
                 [
-                    ("products", "=", record.id),
+                    ("product_id", "=", record.id),
                     ("timestamp", ">=", three_months_ago.strftime("%Y-%m-%d %H:%M:%S")),
                 ]
             )
