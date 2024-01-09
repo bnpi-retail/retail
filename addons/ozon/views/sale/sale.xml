@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <graph string="Продажи товара" type="line">
                     <field name="qty" type="measure"/>
-                    <field name="date" type="datetime"/>
+                    <field interval="day" name="date" type="datetime"/>
                 </graph>
             </field>
         </record>

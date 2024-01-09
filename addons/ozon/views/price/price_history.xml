@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <graph string="История цен" type="line">
                     <field name="price" type="measure"/>
-                    <field name="timestamp" type="datetime"/>
+                    <field interval="day" name="timestamp" type="datetime"/>
                 </graph>
             </field>
         </record>
