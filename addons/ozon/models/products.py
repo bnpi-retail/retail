@@ -472,20 +472,17 @@ class Product(models.Model):
 
         return super(Product, self).create(values)
 
-    # @api.model
     def write(self, values, current_product=None):
         if isinstance(values, dict) and values.get("fix_expenses"):
-            cost_price = self.env["retail.cost_price"].search(
-                [("products", "=", current_product["products"].id)],
-                order="timestamp desc",
-                limit=1,
+            cost_prices = self.env["retail.cost_price"].search(
+                [("product_id", "=", current_product["products"].id)]
             )
-
+            total_cost_price = sum(cost_prices.mapped("price"))
             fix_expense_record = self.env["ozon.fix_expenses"].create(
                 {
                     "name": "Себестоимость товара",
-                    "price": cost_price.price,
-                    "discription": "Поиск себестоимости товара в 'Retail'",
+                    "price": total_cost_price,
+                    "discription": "Общая себестоимость товара",
                     "product_id": current_product.id,
                 }
             )
