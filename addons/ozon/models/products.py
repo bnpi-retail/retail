@@ -255,7 +255,7 @@ class Product(models.Model):
                 "views": [(False, "tree"), (False, "form"), (False, "graph")],
                 "graph_mode": "line",
                 "measure": "revenue",
-                # "group_by": "date:day",
+                "interval": "day",
             },
         }
 
@@ -285,7 +285,7 @@ class Product(models.Model):
                 "create": False,
                 "views": [(False, "tree"), (False, "form"), (False, "graph")],
                 "graph_mode": "line",
-                "measure": "price",
+                "measure": "profit",
                 # "group_by": "timestamp:day",
             },
         }
