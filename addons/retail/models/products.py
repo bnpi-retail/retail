@@ -58,7 +58,7 @@ class Product(models.Model):
             "view_mode": "tree,graph",
             "res_model": "retail.cost_price",
             "domain": [
-                ("products", "=", self.id),
+                ("product_id", "=", self.id),
                 ("timestamp", ">=", three_months_ago.strftime("%Y-%m-%d %H:%M:%S")),
             ],
             "context": {
