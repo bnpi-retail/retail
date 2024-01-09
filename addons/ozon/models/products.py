@@ -286,7 +286,7 @@ class Product(models.Model):
                 "views": [(False, "tree"), (False, "form"), (False, "graph")],
                 "graph_mode": "line",
                 "measure": "profit",
-                # "group_by": "timestamp:day",
+                "interval": "day",
             },
         }
 

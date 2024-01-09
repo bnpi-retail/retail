@@ -2,7 +2,7 @@
     <data>
 
         <!-- Graph -->
-        <record id="view_price_history_graph" model="ir.ui.view">
+        <record id="view_price_price_history_graph" model="ir.ui.view">
             <field name="name">История цены</field>
             <field name="model">ozon.price_history</field>
             <field name="arch" type="xml">
@@ -12,7 +12,6 @@
                 </graph>
             </field>
         </record>
-
 
         <!-- Form -->
         <record id="view_price_history_form" model="ir.ui.view">
@@ -73,7 +72,6 @@
                     <field name="timestamp" />
                     <field name="product" />
                     <field name="provider" />
-                    <!-- <field name="price"/> -->
                     <field name="price" />
                 </tree>
             </field>
@@ -84,7 +82,7 @@
             <field name="name">История цен</field>
             <field name="res_model">ozon.price_history</field>
             <field name="view_mode">tree,form,graph</field>
-            <field name="context">{"graph_mode": "line", "measure": "price"}</field>
+            <field name="context">{"graph_mode": "line", "measure": "profit"}</field>
         </record>
 
         <!-- Menu -->
