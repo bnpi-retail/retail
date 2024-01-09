@@ -1,0 +1,22 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_cost_act_product_form" model="ir.ui.view">
+            <field name="name">Товар в акте</field>
+            <field name="model">retail.cost_act_product</field>
+            <field name="arch" type="xml">
+                <form class="oe_form">
+                    <group style="margin-top: 20px; margin-bottom: 20px;">
+                        <field name="product_id" />
+                        <field name="qty" />
+                        <field name="cost" />
+                        <field name="total" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

@@ -25,6 +25,7 @@
         "views/cost_price/acts.xml",
         "views/cost_price/cost_price.xml",
         "views/cost_price/type_acts.xml",
+        "views/cost_price/act_products.xml",
         "views/import/import.xml",
         "views/products/products.xml",
         "views/seller/seller.xml",

@@ -13,7 +13,14 @@
                         <field name="act_type" />
                     </group>
                     <group>
-                        <field name="cost_act_product_ids" />
+                        <field name="cost_act_product_ids">
+                            <tree>
+                                <field name="product_id" />
+                                <field name="qty" />
+                                <field name="cost" />
+                                <field name="total" />
+                            </tree>
+                        </field>
                     </group>
 
                 </form>
