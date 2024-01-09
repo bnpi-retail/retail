@@ -9,7 +9,8 @@
                 <form>
                     <div name="button_box" position="inside">
                         <button class="oe_stat_button" type="object" name="get_cost_price">
-                            <field string="История себестоимости" name="get_cost_price_count" widget="statinfo"/>
+                            <field string="История себестоимости" name="get_cost_price_count"
+                                widget="statinfo" />
                         </button>
                     </div>
                     <group style="margin-top: 20px; margin-bottom: 20px;">
@@ -28,6 +29,15 @@
                             <field name="weight" />
                             <field name="volume" />
                         </group>
+                    </group>
+                    <group string="Себестоимость">
+                        <field name="cost_prices">
+                            <tree>
+                                <field name="cost_type_id" />
+                                <field name="price" />
+                                <field name="timestamp" />
+                            </tree>
+                        </field>
                     </group>
                 </form>
             </field>

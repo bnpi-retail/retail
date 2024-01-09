@@ -23,7 +23,25 @@ class CostAct(models.Model):
     )
 
     def apply(self):
-        pass
+        for prod in self.cost_act_product_ids:
+            # есть ли уже себестоимость такого типа по данному товару?
+            if cost_price_item := self.env["retail.cost_price"].search(
+                [
+                    ("cost_type_id", "=", self.act_type.id),
+                    ("product_id", "=", prod.product_id.id),
+                ]
+            ):
+                cost_price_item.price = prod.cost
+            else:
+                # создаем для товара статью себестоимости
+                self.env["retail.cost_price"].create(
+                    {
+                        "product_id": prod.product_id.id,
+                        "cost_type_id": self.act_type.id,
+                        "price": prod.cost,
+                    }
+                )
+        self.status = "applied"
 
 
 class CostActProduct(models.Model):

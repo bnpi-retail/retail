@@ -7,7 +7,8 @@
             <field name="model">retail.cost_act</field>
             <field name="arch" type="xml">
                 <form class="oe_form">
-                    <button name="apply" string="Применить" type="object" class="btn-primary" />
+                    <button name="apply" string="Применить" type="object" class="btn-primary"
+                        attrs="{'invisible': ['|',('id','=',False),('status','=','applied')]}" />
                     <group style="margin-top: 20px; margin-bottom: 20px;">
                         <field name="date" />
                         <field name="status" />
