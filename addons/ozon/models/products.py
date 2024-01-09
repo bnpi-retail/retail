@@ -257,7 +257,6 @@ class Product(models.Model):
                 "group_by": "timestamp:day",
                 "measures": ["price"],
                 "type": "measure",
-                "graph_measure": "average",
             },
         }
 
@@ -290,7 +289,6 @@ class Product(models.Model):
                 "group_by": "timestamp:day",
                 "measures": ["price"],
                 "type": "measure",
-                "graph_measure": "average",
             },
         }
 
