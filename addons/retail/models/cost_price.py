@@ -4,21 +4,19 @@ from odoo import models, fields, api
 
 
 class CostPrice(models.Model):
-    _name = 'retail.cost_price'
-    _description = 'Cost of price'
+    _name = "retail.cost_price"
+    _description = "Себестоимость"
 
-    products = fields.Many2one('retail.products', string='Наменование товар')
-    seller = fields.Many2one('retail.seller', string='Продавец')
-    price = fields.Float(string='Закупочная стоимость, р.')
-    timestamp = fields.Date(string='Дата', 
-                            default=fields.Date.today, readonly=True)
-    
+    timestamp = fields.Date(string="Дата", default=fields.Date.today, readonly=True)
+    product_id = fields.Many2one("retail.products", string="Товар")
+    cost_type_id = fields.Many2one("retail.cost_act_type", string="Тип")
+    price = fields.Float(string="Стоимость")
 
     def name_get(self):
         """
-        Rename name records 
+        Rename name records
         """
         result = []
         for record in self:
-            result.append((record.id, record.products.name))
+            result.append((record.id, record.product_id.name))
         return result

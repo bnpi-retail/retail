@@ -1,0 +1,9 @@
+<odoo>
+    <data>
+        <menuitem name="Себестоимость"
+            id="main_menu_cost_price"
+            parent="retail.menu_root"
+            sequence="20" />
+    </data>
+</odoo>
+  

@@ -634,14 +634,6 @@ class ImportFile(models.Model):
 
         os.remove(f_path)
 
-    def is_retail_cost_price_exists(self, ozon_product):
-        result = self.env["retail.cost_price"].search(
-            [("products", "=", ozon_product.products.id)],
-            order="timestamp desc",
-            limit=1,
-        )
-        return result if result else False
-
     def is_product_fee_exists(self, ozon_product):
         result = self.env["ozon.product_fee"].search(
             [("product", "=", ozon_product.id)],

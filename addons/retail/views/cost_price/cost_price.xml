@@ -1,51 +1,49 @@
 <odoo>
-  <data>
-  
-    <!-- Form -->
-    <record id="view_cost_price_form" model="ir.ui.view">
-        <field name="name">Себестоимость</field>
-        <field name="model">retail.cost_price</field>
-        <field name="arch" type="xml">
-            <form class="oe_form">
-                <group>
-                    <field name="products"/>
-                </group>
-                <group style="margin-top: 20px; margin-bottom: 20px;">
-                    <field name="timestamp"/>
-                    <field name="seller"/>
-                    <field name="price"/>
-                </group>
-            </form>
-        </field>
-    </record>
+    <data>
 
-    <!-- Tree -->
-    <record id="view_cost_price_tree" model="ir.ui.view">
-        <field name="name">Себестоимость</field>
-        <field name="model">retail.cost_price</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="timestamp"/>
-                <field name="products"/>
-                <field name="seller"/>
-                <field name="price"/>
-            </tree>
-        </field>
-    </record>
+        <!-- Form -->
+        <record id="view_cost_price_form" model="ir.ui.view">
+            <field name="name">Себестоимость</field>
+            <field name="model">retail.cost_price</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="timestamp" />
+                        <field name="product_id" />
+                        <field name="cost_type_id" />
+                        <field name="price" />
+                    </group>
+                </form>
+            </field>
+        </record>
 
-    <!-- Action -->
-    <record model="ir.actions.act_window" id="action_cost_price">
-    <field name="name">Себестоимость</field>
-    <field name="res_model">retail.cost_price</field>
-    <field name="view_mode">tree,form</field>
-    </record>
+        <!-- Tree -->
+        <record id="view_cost_price_tree" model="ir.ui.view">
+            <field name="name">Себестоимость</field>
+            <field name="model">retail.cost_price</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="timestamp" />
+                    <field name="product_id" />
+                    <field name="cost_type_id" />
+                    <field name="price" />
+                </tree>
+            </field>
+        </record>
 
-    <!-- Menu -->
-    <menuitem name="Себестоимость"
-        id="menu_cost_price"
-        parent="retail.menu_root"
-        action="action_cost_price"
-        sequence="20"/>
-        
-  </data>
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_cost_price">
+            <field name="name">Себестоимость</field>
+            <field name="res_model">retail.cost_price</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Себестоимость"
+            id="menu_cost_price"
+            parent="main_menu_cost_price"
+            action="action_cost_price"
+            sequence="2" />
+
+    </data>
 </odoo>

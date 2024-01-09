@@ -474,24 +474,40 @@ class Product(models.Model):
 
         return super(Product, self).create(values)
 
-    # @api.model
-    def write(self, values, current_product=None):
-        if isinstance(values, dict) and values.get("fix_expenses"):
-            cost_price = self.env["retail.cost_price"].search(
-                [("products", "=", current_product["products"].id)],
-                order="timestamp desc",
-                limit=1,
-            )
+    def get_total_cost_price(self):
+        ret_product = self.env["retail.products"].search(
+            [("id", "=", self.products.id)]
+        )
+        return ret_product.total_cost_price
 
-            fix_expense_record = self.env["ozon.fix_expenses"].create(
+    def create_update_fix_exp_cost_price(self, total_cost_price):
+        self.ensure_one()
+        if fix_exp_rec_cost_price := self.env["ozon.fix_expenses"].search(
+            [("product_id", "=", self.id), ("name", "=", "Себестоимость товара")],
+            limit=1,
+            order="create_date desc",
+        ):
+            fix_exp_rec_cost_price.price = total_cost_price
+        else:
+            fix_exp_rec_cost_price = self.env["ozon.fix_expenses"].create(
                 {
                     "name": "Себестоимость товара",
-                    "price": cost_price.price,
-                    "discription": "Поиск себестоимости товара в 'Retail'",
-                    "product_id": current_product.id,
+                    "price": total_cost_price,
+                    "discription": "Общая себестоимость товара",
+                    "product_id": self.id,
                 }
             )
-            values["fix_expenses"] = [fix_expense_record.id] + values["fix_expenses"]
+        return fix_exp_rec_cost_price
+
+    def write(self, values, current_product=None):
+        if isinstance(values, dict) and values.get("fix_expenses"):
+            total_cost_price = current_product.get_total_cost_price()
+            fix_exp_rec_cost_price = current_product.create_update_fix_exp_cost_price(
+                total_cost_price
+            )
+            values["fix_expenses"] = [fix_exp_rec_cost_price.id] + values[
+                "fix_expenses"
+            ]
 
         return super(Product, self).write(values)
 

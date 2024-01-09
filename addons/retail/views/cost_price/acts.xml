@@ -1,0 +1,60 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_cost_act_form" model="ir.ui.view">
+            <field name="name">Акт присвоения статьи себестоимости</field>
+            <field name="model">retail.cost_act</field>
+            <field name="arch" type="xml">
+                <form class="oe_form">
+                    <button name="apply" string="Применить" type="object" class="btn-primary"
+                        attrs="{'invisible': ['|',('id','=',False),('status','=','applied')]}" />
+                    <group style="margin-top: 20px; margin-bottom: 20px;">
+                        <field name="date" />
+                        <field name="status" />
+                        <field name="act_type" />
+                    </group>
+                    <group>
+                        <field name="cost_act_product_ids">
+                            <tree>
+                                <field name="product_id" />
+                                <field name="qty" />
+                                <field name="cost" />
+                                <field name="total" />
+                            </tree>
+                        </field>
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_cost_act_tree" model="ir.ui.view">
+            <field name="name">Акт присвоения статьи себестоимости</field>
+            <field name="model">retail.cost_act</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="date" />
+                    <field name="status" />
+                    <field name="act_type" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_cost_act">
+            <field name="name">Акт присвоения статьи себестоимости</field>
+            <field name="res_model">retail.cost_act</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Акты"
+            id="menu_cost_act"
+            parent="main_menu_cost_price"
+            action="action_cost_act"
+            sequence="1" />
+
+    </data>
+</odoo>
