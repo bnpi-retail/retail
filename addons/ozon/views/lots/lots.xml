@@ -19,113 +19,159 @@
 
                     <!-- Main info -->
                     <group>
-                        <field name="is_selling" />
-                        <field name="is_alive" />
-                        <field name="id_on_platform" />
-                        <field name="categories" />
-                        <field name="supplementary_categories">
-                            <tree>
-                                <field name="name" />
-                            </tree>
-                        </field>
-                        <field name="products" />
-                        <field name="old_price" style="text-decoration:line-through;" />
-                        <field name="price" />
-                        <field name="seller" />
-                        <field name="index_localization" />
-                        <field name="trading_scheme" />
-                        <field name="delivery_location" />
-                        <field name="insurance" />
-                        <field name="search_queries" widget="many2many_tags" />
-                        <field name="stocks_fbs" />
-                        <field name="stocks_fbo" />
+                        <group>
+                            <field name="id_on_platform" />
+                            <field name="products" />
+                        </group>
+                        <group>
+                            <group>
+                                <field name="is_selling" />
+                                <field name="is_alive" />
+                            </group>
+                            <group>
+                                <field name="trading_scheme" />
+                                <field name="stocks_fbs" />
+                                <field name="stocks_fbo" />
+                            </group>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <group string="Цена">
+                                <field name="price" />
+                                <field name="old_price" style="text-decoration:line-through;" />
+                            </group>
+                            <group string="Прибыль">
+                                <field name="profit" />
+                                <field name="profit_ideal" />
+                                <field name="profit_delta" />
+                                <field name="profitability_norm" />
+                            </group>
+                        </group>
+                        <group string="Коэффициенты">
+                            <field name="sales_per_day_last_30_days" />
+                            <field name="sales_per_day_last_30_days_group" />
+                            <field name="coef_profitability" widget="percentage"
+                                style="max-width: 58px;" />
+                            <field name="coef_profitability_group" />
+                        </group>
                     </group>
 
 
-                    <separator string="Фиксированные затраты" />
+                    <separator string="Комиссии и себестоимость" />
                     <notebook>
-                        <page id="page_fbs_fix" string="FBS">
-                            <group>
-                                <group>
-                                    <field name="fbs_fix_expenses_min">
-                                        <tree>
-                                            <field name="name" />
-                                            <field name="price" />
-                                        </tree>
-                                    </field>
-                                    <field name="total_fbs_fix_expenses_min" />
-                                </group>
-                                <group>
-                                    <field name="fbs_fix_expenses_max">
-                                        <tree>
-                                            <field name="name" />
-                                            <field name="price" />
-                                        </tree>
-                                    </field>
-                                    <field name="total_fbs_fix_expenses_max" />
-                                </group>
-                            </group>
+                        <page id="page_fix_expenses" string="Фиксированные затраты">
+                            <notebook>
+                                <page id="page_fbs_fix" string="FBS">
+                                    <group>
+                                        <group>
+                                            <field name="fbs_fix_expenses_min">
+                                                <tree>
+                                                    <field name="name" />
+                                                    <field name="price" />
+                                                </tree>
+                                            </field>
+                                            <field name="total_fbs_fix_expenses_min" />
+                                        </group>
+                                        <group>
+                                            <field name="fbs_fix_expenses_max">
+                                                <tree>
+                                                    <field name="name" />
+                                                    <field name="price" />
+                                                </tree>
+                                            </field>
+                                            <field name="total_fbs_fix_expenses_max" />
+                                        </group>
+                                    </group>
+                                </page>
+                                <page id="page_fbo_fix" string="FBO">
+                                    <group>
+                                        <group>
+                                            <field name="fbo_fix_expenses_min">
+                                                <tree>
+                                                    <field name="name" />
+                                                    <field name="price" />
+                                                </tree>
+                                            </field>
+                                            <field name="total_fbo_fix_expenses_min" />
+                                        </group>
+                                        <group>
+                                            <field name="fbo_fix_expenses_max">
+                                                <tree>
+                                                    <field name="name" />
+                                                    <field name="price" />
+                                                </tree>
+                                            </field>
+                                            <field name="total_fbo_fix_expenses_max" />
+                                        </group>
+                                    </group>
+                                </page>
+                            </notebook>
                         </page>
-                        <page id="page_fbo_fix" string="FBO">
-                            <group>
-                                <group>
-                                    <field name="fbo_fix_expenses_min">
-                                        <tree>
-                                            <field name="name" />
-                                            <field name="price" />
-                                        </tree>
-                                    </field>
-                                    <field name="total_fbo_fix_expenses_min" />
-                                </group>
-                                <group>
-                                    <field name="fbo_fix_expenses_max">
-                                        <tree>
-                                            <field name="name" />
-                                            <field name="price" />
-                                        </tree>
-                                    </field>
-                                    <field name="total_fbo_fix_expenses_max" />
-                                </group>
-                            </group>
+                        <page id="page_percent_expenses" string="Процентные затраты">
+                            <notebook>
+                                <page id="page_fbs_percent" string="FBS">
+                                    <group>
+                                        <field name="fbs_percent_expenses">
+                                            <tree>
+                                                <field name="name" />
+                                                <field name="discription" />
+                                                <field name="price" />
+                                            </tree>
+                                        </field>
+                                        <field name="total_fbs_percent_expenses" />
+                                    </group>
+                                </page>
+                                <page id="page_fbo_percent" string="FBO">
+                                    <group>
+                                        <field name="fbo_percent_expenses">
+                                            <tree>
+                                                <field name="name" />
+                                                <field name="discription" />
+                                                <field name="price" />
+                                            </tree>
+                                        </field>
+                                        <field name="total_fbo_percent_expenses" />
+                                    </group>
+                                </page>
+                            </notebook>
                         </page>
                     </notebook>
 
-                    <separator string="Процентные затраты" />
+                    <separator string="Комиссии и себестоимость" />
                     <notebook>
-                        <page id="page_fbs_percent" string="FBS">
+                        <page id="page_categories" string="Категории">
                             <group>
-                                <field name="fbs_percent_expenses">
+                                <field name="categories" />
+                                <field name="supplementary_categories">
                                     <tree>
                                         <field name="name" />
-                                        <field name="discription" />
-                                        <field name="price" />
                                     </tree>
                                 </field>
-                                <field name="total_fbs_percent_expenses" />
                             </group>
                         </page>
-                        <page id="page_fbo_percent" string="FBO">
+                        <page id="page_description" string="Описание">
                             <group>
-                                <field name="fbo_percent_expenses">
+                                <field name="description" />
+                            </group>
+                        </page>
+                        <page id="page_keywords" string="Ключевые слова">
+                            <group>
+                                <field name="search_queries" widget="many2many_tags" />
+                            </group>
+                        </page>
+                        <page id="page_search_queries" string="Поисковые запросы">
+                            <group>
+                                <field name="tracked_search_queries" widget="one2many_list"
+                                    string="Отслеживаемые поисковые запросы по описанию">
                                     <tree>
                                         <field name="name" />
-                                        <field name="discription" />
-                                        <field name="price" />
                                     </tree>
                                 </field>
-                                <field name="total_fbo_percent_expenses" />
                             </group>
                         </page>
                     </notebook>
-
-                    <group>
-                        <separator string="Прибыль" />
-                        <field name="profit" />
-                        <field name="profit_ideal" />
-                        <field name="profit_delta" />
-                        <field name="profitability_norm" />
-
-                        <separator string="История цен конкурентов" />
+                    <group string="Конкуренты">
                         <field name="price_history_ids" widget="one2many_list">
                             <tree limit="10">
                                 <field name="timestamp" />
@@ -133,30 +179,7 @@
                                 <field name="price" />
                             </tree>
                         </field>
-
-                        <separator string='Коэффициенты' />
-                        <field name="sales_per_day_last_30_days" />
-                        <field name="sales_per_day_last_30_days_group" />
-                        <field name="coef_profitability" widget="percentage"
-                            style="max-width: 58px;" />
-                        <field name="coef_profitability_group" />
-
                     </group>
-
-                    <!-- GPT Отслеживаемые позиции -->
-                    <group string="Отслеживаемые поисковые запросы по описанию">
-                        <field name="description" />
-                    </group>
-                    <field name="tracked_search_queries" widget="one2many_list">
-                        <tree>
-                            <field name="name" />
-                        </tree>
-                    </field>
-
-                    <!-- <div>
-                        <field name="plotly_chart" widget="plotly_chart"/>
-                    </div> -->
-
                 </form>
             </field>
         </record>
