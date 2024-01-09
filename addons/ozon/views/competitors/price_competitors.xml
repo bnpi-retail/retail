@@ -1,6 +1,18 @@
 <odoo>
   <data>
 
+    <!-- Graph -->
+    <record id="view_price_history_competitors_graph" model="ir.ui.view">
+        <field name="name">История цены</field>
+        <field name="model">ozon.price_history_competitors</field>
+        <field name="arch" type="xml">
+            <graph string="История цен" type="line">
+                <field name="price" type="measure"/>
+                <field interval="day" name="timestamp" type="datetime"/>
+            </graph>
+        </field>
+    </record>
+
     <!-- Form -->
     <record id="view_price_history_graph" model="ir.ui.view">
         <field name="name">История цены</field>

@@ -59,6 +59,8 @@ class ProductCompetitors(models.Model):
                 "create": False,
                 "views": [(False, "tree"), (False, "form"), (False, "graph")],
                 "graph_mode": "line",
+                "measure": "price_with_card",
+                "interval": "day",
             },
         }
 
