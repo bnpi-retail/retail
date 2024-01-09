@@ -182,7 +182,7 @@
         <record model="ir.actions.act_window" id="action_products">
             <field name="name">Лоты</field>
             <field name="res_model">ozon.products</field>
-            <field name="view_mode">tree,form,graph</field>
+            <field name="view_mode">tree,form</field>
         </record>
 
         <record model="ir.actions.server" id="action_add_product_to_mass_pricing_queue">
