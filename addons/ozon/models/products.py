@@ -254,7 +254,7 @@ class Product(models.Model):
                 "create": False,
                 "views": [(False, "tree"), (False, "form"), (False, "graph")],
                 "graph_mode": "line",
-                "group_by": "timestamp:day",
+                # "group_by": "timestamp:day",
             },
         }
 
@@ -284,7 +284,7 @@ class Product(models.Model):
                 "create": False,
                 "views": [(False, "tree"), (False, "form"), (False, "graph")],
                 "graph_mode": "line",
-                "group_by": "timestamp:day",
+                # "group_by": "timestamp:day",
             },
         }
 
