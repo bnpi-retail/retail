@@ -1,6 +1,18 @@
 <odoo>
     <data>
 
+        <!-- Graph -->
+        <record id="view_sale_graph" model="ir.ui.view">
+            <field name="name">Продажи товара</field>
+            <field name="model">ozon.sale</field>
+            <field name="arch" type="xml">
+                <graph string="Продажи товара" type="line">
+                    <field name="qty" type="measure"/>
+                    <field name="date" type="datetime"/>
+                </graph>
+            </field>
+        </record>
+
         <!-- Form -->
         <record id="view_sale_form" model="ir.ui.view">
             <field name="name">Продажи товара</field>
@@ -47,7 +59,8 @@
         <record model="ir.actions.act_window" id="action_sale">
             <field name="name">Продажи товаров</field>
             <field name="res_model">ozon.sale</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">tree,form,graph</field>
+            <field name="context">{"graph_mode": "line", "measure": "revenue"}</field>
         </record>
 
         <!-- Menu -->

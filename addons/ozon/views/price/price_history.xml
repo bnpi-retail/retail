@@ -84,7 +84,7 @@
             <field name="name">История цен</field>
             <field name="res_model">ozon.price_history</field>
             <field name="view_mode">tree,form,graph</field>
-            <field name="context">{'graph_mode': 'line'}</field>
+            <field name="context">{"graph_mode": "line", "measure": "price"}</field>
         </record>
 
         <!-- Menu -->
