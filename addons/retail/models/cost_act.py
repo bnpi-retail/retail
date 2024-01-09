@@ -34,13 +34,21 @@ class CostAct(models.Model):
                 cost_price_item.price = prod.cost
             else:
                 # создаем для товара статью себестоимости
-                self.env["retail.cost_price"].create(
+                cost_price_item = self.env["retail.cost_price"].create(
                     {
                         "product_id": prod.product_id.id,
                         "cost_type_id": self.act_type.id,
                         "price": prod.cost,
                     }
                 )
+
+            # обновляем общую себестоимость в ozon.products
+            ozon_products = self.env["ozon.products"].search(
+                [("products", "=", prod.product_id.id)]
+            )
+            for op in ozon_products:
+                op.create_update_fix_exp_cost_price(prod.product_id.total_cost_price)
+
         self.status = "applied"
 
 

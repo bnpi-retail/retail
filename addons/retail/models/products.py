@@ -22,8 +22,16 @@ class Product(models.Model):
     cost_prices = fields.One2many(
         "retail.cost_price", "product_id", string="Себестоимость"
     )
+    total_cost_price = fields.Float(
+        string="Итого", compute="_compute_total_cost_price", store=True
+    )
 
     get_cost_price_count = fields.Integer(compute="compute_cost_price")
+
+    @api.depends("cost_prices", "cost_prices.price")
+    def _compute_total_cost_price(self):
+        for record in self:
+            record.total_cost_price = sum(record.cost_prices.mapped("price"))
 
     @api.depends("cost_prices")
     def compute_cost_price(self):

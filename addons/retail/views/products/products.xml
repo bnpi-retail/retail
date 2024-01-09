@@ -38,6 +38,7 @@
                                 <field name="timestamp" />
                             </tree>
                         </field>
+                        <field name="total_cost_price" />
                     </group>
                 </form>
             </field>
