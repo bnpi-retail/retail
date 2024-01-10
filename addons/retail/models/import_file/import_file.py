@@ -1,3 +1,4 @@
+import base64
 from importlib.metadata import requires
 import os
 import xml.etree.ElementTree as ET
@@ -38,18 +39,6 @@ class ImportFile(models.Model):
             name = f"Загруженный файл № {id}"
             result.append((id, name))
         return result
-
-    def open_file(self):
-        """
-        Open file products and read
-        """
-        script_directory = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(script_directory, "files", "products.xml")
-
-        with open(path, "r") as file:
-            content = file.read()
-
-        return content
 
     def get_local_index_id(self):
         local_index = self.env["ozon.localization_index"].search([], limit=1).id
@@ -170,9 +159,7 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
-    def import_cost_price(self):
-        content = self.open_file()
-
+    def import_cost_price(self, content):
         root = ET.fromstring(content)
         cost_type_id = (
             self.env["retail.cost_act_type"]
@@ -182,7 +169,7 @@ class ImportFile(models.Model):
         cost_act_data = {"act_type": cost_type_id}
 
         cost_act_prod_ids_data = []
-        for offer in root.findall(".//offer"):
+        for offer in root.findall("offer"):
             artikul = offer.find("artikul").text
             if retail_product := self.is_retail_product_exists(product_id=artikul):
                 cp = float(offer.find("CostPrice").text)
@@ -201,8 +188,9 @@ class ImportFile(models.Model):
         """
         1) Fill database different data
         """
-
+        content = base64.b64decode(values["file"])
+        content = content.decode("utf-8")
         if values["data_for_download"] == "cost_price":
-            self.import_cost_price()
+            self.import_cost_price(content)
 
         return super(ImportFile, self).create(values)
