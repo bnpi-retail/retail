@@ -18,49 +18,52 @@
                     </div>
 
                     <!-- Main info -->
-                    <group>
-                        <group>
-                            <field name="id_on_platform" />
-                            <field name="products" />
-                        </group>
-                        <group>
-                            <group>
-                                <field name="is_selling" />
-                                <field name="is_alive" />
-                            </group>
-                            <group>
-                                <field name="trading_scheme" />
-                                <field name="stocks_fbs" />
-                                <field name="stocks_fbo" />
-                            </group>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <group string="Цена">
-                                <field name="price" />
-                                <field name="old_price" style="text-decoration:line-through;" />
-                            </group>
-                            <group string="Прибыль">
-                                <field name="profit" />
-                                <field name="profit_ideal" />
-                                <field name="profit_delta" />
-                                <field name="profitability_norm" />
-                            </group>
-                        </group>
-                        <group string="Коэффициенты">
-                            <field name="sales_per_day_last_30_days" />
-                            <field name="sales_per_day_last_30_days_group" />
-                            <field name="coef_profitability" widget="percentage"
-                                style="max-width: 58px;" />
-                            <field name="coef_profitability_group" />
-                        </group>
-                    </group>
-
-
-                    <separator string="Комиссии и себестоимость" />
                     <notebook>
-                        <page id="page_fix_expenses" string="Фиксированные затраты">
+                        <page id="page_lot_main_info" string="Общая информация">
+                            <group>
+                                <group>
+                                    <field name="id_on_platform" />
+                                    <field name="products" />
+                                </group>
+                                <group>
+                                    <group>
+                                        <field name="is_selling" />
+                                        <field name="is_alive" />
+                                    </group>
+                                    <group>
+                                        <field name="trading_scheme" />
+                                        <field name="stocks_fbs" />
+                                        <field name="stocks_fbo" />
+                                    </group>
+                                </group>
+                            </group>
+                        </page>
+                        <page id="page_lot_price_profit_info" string="Цена и прибыль">
+                            <group>
+                                <group>
+                                    <group string="Цена">
+                                        <field name="price" />
+                                        <field name="old_price"
+                                            style="text-decoration:line-through;" />
+                                    </group>
+                                    <group string="Прибыль">
+                                        <field name="profit" />
+                                        <field name="profit_ideal" />
+                                        <field name="profit_delta" />
+                                        <field name="profitability_norm" />
+                                    </group>
+                                </group>
+                                <group string="Коэффициенты">
+                                    <field name="sales_per_day_last_30_days" />
+                                    <field name="sales_per_day_last_30_days_group" />
+                                    <field name="coef_profitability" widget="percentage"
+                                        style="max-width: 58px;" />
+                                    <field name="coef_profitability_group" />
+                                </group>
+                            </group>
+                        </page>
+                        <page id="page_lot_expenses_info" string="Комиссии и себестоимость">
+                            <separator string="Фиксированные затраты" />
                             <notebook>
                                 <page id="page_fbs_fix" string="FBS">
                                     <group>
@@ -107,8 +110,8 @@
                                     </group>
                                 </page>
                             </notebook>
-                        </page>
-                        <page id="page_percent_expenses" string="Процентные затраты">
+
+                            <separator string="Процентные затраты" />
                             <notebook>
                                 <page id="page_fbs_percent" string="FBS">
                                     <group>
@@ -136,11 +139,7 @@
                                 </page>
                             </notebook>
                         </page>
-                    </notebook>
-
-                    <separator string="Описание" />
-                    <notebook>
-                        <page id="page_categories" string="Категории">
+                        <page id="page_lot_description_info" string="Описание">
                             <group>
                                 <field name="categories" />
                                 <field name="supplementary_categories">
@@ -149,18 +148,15 @@
                                     </tree>
                                 </field>
                             </group>
-                        </page>
-                        <page id="page_description" string="Описание">
+
                             <group>
                                 <field name="description" />
                             </group>
-                        </page>
-                        <page id="page_keywords" string="Ключевые слова">
                             <group>
                                 <field name="search_queries" widget="many2many_tags" />
                             </group>
                         </page>
-                        <page id="page_search_queries" string="Поисковые запросы">
+                        <page id="page_lot_promotion_info" string="Продвижение">
                             <group>
                                 <field name="tracked_search_queries" widget="one2many_list"
                                     string="Отслеживаемые поисковые запросы по описанию">
@@ -170,16 +166,18 @@
                                 </field>
                             </group>
                         </page>
+                        <page id="page_lot_competitors_info" string="Конкуренты">
+                            <group string="Конкуренты">
+                                <field name="price_history_ids" widget="one2many_list">
+                                    <tree limit="10">
+                                        <field name="timestamp" />
+                                        <field name="product_competitors" />
+                                        <field name="price" />
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
                     </notebook>
-                    <group string="Конкуренты">
-                        <field name="price_history_ids" widget="one2many_list">
-                            <tree limit="10">
-                                <field name="timestamp" />
-                                <field name="product_competitors" />
-                                <field name="price" />
-                            </tree>
-                        </field>
-                    </group>
                 </form>
             </field>
         </record>
