@@ -89,7 +89,7 @@ class Product(models.Model):
         string="В продаже", compute="_get_is_selling", store=True, readonly=True
     )
     is_alive = fields.Boolean(
-        string="Живой товар (в продаже и продавался за посл. 30 дней)",
+        string="Живой товар (у которого есть себестоимость)",
         compute="_get_is_alive",
         store=True,
         readonly=True,
@@ -519,10 +519,17 @@ class Product(models.Model):
             else:
                 record.is_selling = False
 
-    @api.depends("is_selling", "sales_per_day_last_30_days")
+    @api.depends("is_selling", "sales_per_day_last_30_days", "fix_expenses")
     def _get_is_alive(self):
         for record in self:
-            if record.is_selling or record.sales_per_day_last_30_days > 0:
+            if self.env["ozon.fix_expenses"].search(
+                [
+                    ("name", "=", "Себестоимость товара"),
+                    ("price", ">", 0),
+                    ("product_id", "=", record.id),
+                ]
+            ):
+                # if record.is_selling or record.sales_per_day_last_30_days > 0:
                 record.is_alive = True
             else:
                 record.is_alive = False
