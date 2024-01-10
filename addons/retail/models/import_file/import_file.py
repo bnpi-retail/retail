@@ -163,9 +163,9 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
-    def is_cost_price_exists(self, product_id):
+    def is_cost_price_exists(self, product_id, cost_type_id):
         result = self.env["retail.cost_price"].search(
-            [("products", "=", product_id)],
+            [("product_id", "=", product_id), ("cost_type_id", "=", cost_type_id)],
             limit=1,
         )
         return result if result else False
@@ -174,20 +174,27 @@ class ImportFile(models.Model):
         content = self.open_file()
 
         root = ET.fromstring(content)
+        cost_type_id = (
+            self.env["retail.cost_act_type"]
+            .search([("name", "=", "Себестоимость 1С")])
+            .id
+        )
+        cost_act_data = {"act_type": cost_type_id}
 
+        cost_act_prod_ids_data = []
         for offer in root.findall(".//offer"):
             artikul = offer.find("artikul").text
             if retail_product := self.is_retail_product_exists(product_id=artikul):
                 cp = float(offer.find("CostPrice").text)
-                if cost_price := self.is_cost_price_exists(product_id=artikul):
-                    cost_price.write({"price": cp})
-                else:
-                    self.env["retail.cost_price"].create(
-                        {
-                            "products": retail_product.id,
-                            "price": cp,
-                        }
-                    )
+                prod_data = {"product_id": retail_product.id, "cost": cp}
+                cost_act_prod_ids_data.append(prod_data)
+
+        cost_act_prod_ids = (
+            self.env["retail.cost_act_product"].create(cost_act_prod_ids_data).ids
+        )
+        cost_act_data["cost_act_product_ids"] = cost_act_prod_ids
+
+        self.env["retail.cost_act"].create(cost_act_data)
 
     @api.model
     def create(self, values):
