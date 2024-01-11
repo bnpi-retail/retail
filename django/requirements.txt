@@ -2,6 +2,7 @@ requests==2.31.0
 django==4.2.5
 djangorestframework==3.14.0
 django-cors-headers
+django-redis==5.4.0
 psycopg2-binary==2.9.6
 openai==1.6.1 
 # beautifulsoup4==4.12.2 

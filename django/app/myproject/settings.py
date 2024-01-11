@@ -20,10 +20,15 @@ CORS_ALLOW_HEADERS = [
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://retail-extension.bnpi.dev",
+    "https://www.ozon.ru",
+    "https://retail-react.bnpi.devpoints",
+    "https://localhost:3000",
 ]
 CORS_ALLOWED_ORIGINS = [
     "https://retail-extension.bnpi.dev",
     "https://www.ozon.ru",
+    "https://retail-react.bnpi.devpoints",
+    "https://localhost:3000",
 ]
 CORS_ALLOW_CREDENTIALS = False
 
@@ -91,6 +96,16 @@ DATABASES = {
         'PASSWORD': os.getenv('DJANGO_POSTGRES_PASSWORD'),
         'HOST': 'django-db',
         'PORT': '5432',
+    },
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://django-redis:{os.getenv('REDIS_PORT')}/{os.getenv('REDIS_NUMBER')}",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
     },
 }
 

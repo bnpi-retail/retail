@@ -1,14 +1,16 @@
 import requests
+import tempfile
 
 from django.http import FileResponse
 from django.shortcuts import render, redirect
 from django.views import View
+from django.core.cache import cache
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .forms import FileUploadForm
+from .forms import FileUploadForm, ApiToken
 from account.services import connect_to_odoo_api_with_auth
 
 
@@ -21,12 +23,19 @@ class CheckAuth(APIView):
     def post(self, request):
         return Response({'message': 'Authentication successful'}, status=200)
 
+
 class OzonPlugin(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         session_id = connect_to_odoo_api_with_auth()
         if session_id is False: return Response({'status': False})
+
+        token = request.auth
+        api_key = token.key
+        key = f'all--{api_key}'
+        data = cache.get(key)
+        if data is None: data = []
         
         csv_data = ""
         csv_data += ','.join(['number',
@@ -39,23 +48,21 @@ class OzonPlugin(APIView):
                               'href',
                               'name'
                               ]) + '\n'
-        for item in request.data:
-            elements = item.get('elements')
-            csv_list = []
-            for element in elements:
-                row = [
-                    str(element.get('number', '')),
-                    str(element.get('search', '')),
-                    str(element.get('seller', '')),
-                    str(element.get('sku', '')),
-                    str(element.get('price', '')),
-                    str(element.get('price_without_sale', '')),
-                    str(element.get('price_with_card', '')),
-                    str(element.get('href', '')),
-                    str(element.get('name', '')),
-                ]
-                csv_list.append(','.join(row))
-            csv_data += '\n'.join(csv_list) + '\n'
+        csv_list = []
+        for element in data:
+            row = [
+                str(element.get('number', '')),
+                str(element.get('search', '')),
+                str(element.get('seller', '')),
+                str(element.get('sku', '')),
+                str(element.get('price', '')),
+                str(element.get('price_without_sale', '')),
+                str(element.get('price_with_card', '')),
+                str(element.get('href', '')),
+                str(element.get('name', '')),
+            ]
+            csv_list.append(','.join(row))
+        csv_data += '\n'.join(csv_list) + '\n'
 
         endpoint = "http://odoo-web:8069/take_ozon_data"
         headers = {"Cookie": f"session_id={session_id}"}
@@ -113,3 +120,129 @@ class FileUploadView(View):
         with open(self.extension_path, 'wb+') as destination:
             for chunk in file.chunks():
                 destination.write(chunk)
+
+
+class AdsUsers(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        token = request.auth
+        api_key = token.key
+        data = cache.get(api_key)
+        return Response(data)
+
+    def post(self, request, *args, **kwargs):
+        token = request.auth
+        api_key = token.key
+        ad = request.data
+
+        data = cache.get(api_key)
+        if data is None: data = []
+        data.append(ad)
+        cache.set(api_key, data)
+
+        return Response({'message': 'Объявление успешно сохранено'})
+
+
+class AllAdsUsers(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        token = request.auth
+        api_key = token.key
+        ads = request.data
+
+        key = f'all--{api_key}'
+        data = cache.get(key)
+        if data is None: data = []
+        data.extend(ads)
+        cache.set(key, data)
+
+        return Response({'message': 'Успешно сохранены все данные'})
+
+
+class GetInfoAboutAds(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        token = request.auth
+        api_key = token.key
+
+        key = f'all--{api_key}'
+        data = cache.get(key)
+        if data is None:
+            return Response({'product': 0, 'search': 0})
+        
+        all_searches = set()
+
+        for index, product in enumerate(data):
+            search = product.get('search')
+            if not search: continue
+            if search not in all_searches:
+                all_searches.add(search)
+
+        return Response({'product': index, 'search': len(all_searches)})
+
+
+class DeleteAds(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        token = request.auth
+        api_key = token.key
+
+        key = f'all--{api_key}'
+        cache.set(key, None)
+        cache.set(api_key, [])
+
+        return Response({'status': 'success'})
+
+
+class DownloadCsvFile(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        session_id = connect_to_odoo_api_with_auth()
+        if session_id is False: return Response({'status': False})
+
+        token = request.auth
+        api_key = token.key
+        key = f'all--{api_key}'
+        data = cache.get(key)
+        if data is None: data = []
+
+        csv_data = ""
+        csv_data += ','.join(['number',
+                              'search',
+                              'seller',
+                              'sku',
+                              'price',
+                              'price_without_sale',
+                              'price_with_card',
+                              'href',
+                              'name'
+                              ]) + '\n'
+        csv_list = []
+        for element in data:
+            row = [
+                str(element.get('number', '')),
+                str(element.get('search', '')),
+                str(element.get('seller', '')),
+                str(element.get('sku', '')),
+                str(element.get('price', '')),
+                str(element.get('price_without_sale', '')),
+                str(element.get('price_with_card', '')),
+                str(element.get('href', '')),
+                str(element.get('name', '')),
+            ]
+            csv_list.append(','.join(row))
+        csv_data += '\n'.join(csv_list) + '\n'
+
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        temp_file.write(csv_data.encode())
+        temp_file.close()
+
+        # Отправьте файл обратно клиенту
+        response = FileResponse(open(temp_file.name, 'rb'))
+        response['Content-Disposition'] = 'attachment; filename="output.csv"'
+        return response

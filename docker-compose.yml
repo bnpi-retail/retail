@@ -10,9 +10,28 @@ services:
     depends_on:
       - web
       - django
+      - frontend
     networks:
       - odoo-network
       - temporal-network
+      - frontend-network
+
+  ### Frontend
+  frontend:
+    build:
+      context: ./frontend
+      target: builder-client
+    ports:
+      - 3000:3000
+    volumes:
+      - ./frontend/public:/home/node/app/public
+      - ./frontend/src:/home/node/app/src
+      - ./frontend/package.json:/home/node/app/package.json
+    tty: true
+    environment:
+      NODE_ENV: "development"
+    networks:
+      - frontend-network
 
   ### Django
   django-db:
@@ -26,6 +45,13 @@ services:
       - POSTGRES_DB=${DJANGO_POSTGRES_DB}
       - POSTGRES_PASSWORD=${DJANGO_POSTGRES_PASSWORD}
       - POSTGRES_USER=${DJANGO_POSTGRES_USER}
+    networks:
+      - django-network
+
+  django-redis:
+    volumes:
+      - ./django/db/redis:/data
+    image: redis:7-alpine
     networks:
       - django-network
 
@@ -43,6 +69,9 @@ services:
     networks:
       - django-network
       - odoo-network
+    depends_on:
+      - django-db
+      - django-redis
 
   ### Odoo
   db:
@@ -166,4 +195,5 @@ networks:
     name: temporal-network
   odoo-network:
   django-network:
+  frontend-network:
 
