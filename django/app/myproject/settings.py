@@ -21,13 +21,13 @@ CORS_ALLOW_HEADERS = [
 CSRF_TRUSTED_ORIGINS = [
     "https://retail-extension.bnpi.dev",
     "https://www.ozon.ru",
-    "https://retail-react.bnpi.devpoints",
+    "https://retail-react.bnpi.dev",
     "https://localhost:3000",
 ]
 CORS_ALLOWED_ORIGINS = [
     "https://retail-extension.bnpi.dev",
     "https://www.ozon.ru",
-    "https://retail-react.bnpi.devpoints",
+    "https://retail-react.bnpi.dev",
     "https://localhost:3000",
 ]
 CORS_ALLOW_CREDENTIALS = False
