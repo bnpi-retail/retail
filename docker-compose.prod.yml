@@ -35,6 +35,13 @@ services:
     networks:
       - django-network
 
+  django-redis:
+    volumes:
+      - ./django/db/redis:/data
+    image: redis:7-alpine
+    networks:
+      - django-network
+      
   django:
     restart: always
     build: ./django
