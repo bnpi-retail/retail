@@ -7,6 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 ### CORS
 CORS_ALLOW_HEADERS = [
+    'Access-Control-Allow-Origin',
     'accept',
     'accept-encoding',
     'authorization',
@@ -22,14 +23,19 @@ CSRF_TRUSTED_ORIGINS = [
     "https://retail-extension.bnpi.dev",
     "https://www.ozon.ru",
     "https://retail-react.bnpi.dev",
-    "https://localhost:3000",
 ]
-CORS_ALLOWED_ORIGINS = [
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = (
     "https://retail-extension.bnpi.dev",
     "https://www.ozon.ru",
     "https://retail-react.bnpi.dev",
-    "https://localhost:3000",
-]
+)
+
+# CORS_ALLOWED_ORIGINS = [
+#     "https://retail-extension.bnpi.dev",
+#     "https://www.ozon.ru",
+#     "https://retail-react.bnpi.dev",
+# ]
 CORS_ALLOW_CREDENTIALS = False
 
 SECRET_KEY = os.getenv('SECRET_KEY')
