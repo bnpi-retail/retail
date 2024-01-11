@@ -13,6 +13,7 @@ services:
     networks:
       - odoo-network
       - temporal-network
+      - frontend-network
     volumes:
       - ./nginx/certificate/retail.bnpi.dev:/etc/letsencrypt/live/retail.bnpi.dev
       - ./nginx/certificate/retail-temporal.bnpi.dev:/etc/letsencrypt/live/retail-temporal.bnpi.dev
@@ -49,6 +50,24 @@ services:
       - django-network
       - odoo-network
 
+
+  ### Frontend
+  frontend:
+    build:
+      context: ./frontend
+      target: builder-client
+    ports:
+      - 3000:3000
+    volumes:
+      - ./frontend/public:/home/node/app/public
+      - ./frontend/src:/home/node/app/src
+      - ./frontend/package.json:/home/node/app/package.json
+    tty: true
+    environment:
+      NODE_ENV: "development"
+    networks:
+      - frontend-network
+      
   ### Odoo
   db:
     image: postgres:16
@@ -170,5 +189,6 @@ networks:
     name: temporal-network
   odoo-network:
   django-network:
+  frontend-network:
 
 
