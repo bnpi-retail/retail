@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 ### CORS
 CORS_ALLOW_HEADERS = [
-    'Access-Control-Allow-Origin',
+    'access-control-allow-origin',
     'accept',
     'accept-encoding',
     'authorization',
@@ -25,18 +25,18 @@ CSRF_TRUSTED_ORIGINS = [
     "https://retail-react.bnpi.dev",
 ]
 CORS_ORIGIN_ALLOW_ALL = False
-CORS_ORIGIN_WHITELIST = (
+CORS_ORIGIN_WHITELIST = [
     "https://retail-extension.bnpi.dev",
     "https://www.ozon.ru",
     "https://retail-react.bnpi.dev",
-)
+]
 
 # CORS_ALLOWED_ORIGINS = [
 #     "https://retail-extension.bnpi.dev",
 #     "https://www.ozon.ru",
 #     "https://retail-react.bnpi.dev",
 # ]
-CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_CREDENTIALS = True
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
@@ -64,9 +64,9 @@ INSTALLED_APPS = [
 ] + EXTENSION_APPS
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
