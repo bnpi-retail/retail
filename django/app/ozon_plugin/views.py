@@ -72,7 +72,7 @@ class OzonPlugin(APIView):
         response = requests.post(endpoint, headers=headers, files=files, data=data)
         if response.status_code != 200:
             return Response({'message': 'Bad Request'}, status=400)
-        return Response({'message': str(response.status_code)})
+        return Response({'message': str(response.status_code), 'data': data})
 
 
 class OzonTakeRequests(APIView):
