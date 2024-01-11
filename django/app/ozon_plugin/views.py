@@ -68,8 +68,8 @@ class OzonPlugin(APIView):
         headers = {"Cookie": f"session_id={session_id}"}
         files = {'file': ('output.csv', csv_data)}
 
-        data = {'email': request.user.email}
-        response = requests.post(endpoint, headers=headers, files=files, data=data)
+        email = {'email': request.user.email}
+        response = requests.post(endpoint, headers=headers, files=files, data=email)
         if response.status_code != 200:
             return Response({'message': 'Bad Request'}, status=400)
         return Response({'message': str(response.status_code), 'data': data})
