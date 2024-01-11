@@ -17,6 +17,7 @@ services:
       - ./nginx/certificate/retail.bnpi.dev:/etc/letsencrypt/live/retail.bnpi.dev
       - ./nginx/certificate/retail-temporal.bnpi.dev:/etc/letsencrypt/live/retail-temporal.bnpi.dev
       - ./nginx/certificate/retail-extension.bnpi.dev:/etc/letsencrypt/live/retail-extension.bnpi.dev
+      - ./nginx/certificate/retail-react.bnpi.dev:/etc/letsencrypt/live/retail-extension.bnpi.dev
 
   ### Django
   django-db:
