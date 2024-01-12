@@ -46,8 +46,7 @@ const Contact = () => {
   };
 
   const handleDeleteSelected = () => {
-    const updatedData = data.filter((item) => !selectedItems.includes(item));
-    setData(updatedData);
+    setData(prevData => prevData.filter((item) => !selectedItems.includes(item)));
     setSelectedItems([]);
   };
 
@@ -68,9 +67,9 @@ const Contact = () => {
 
           if (response.ok) {
             const data = await response.json();
-            alert('Данные успешно сохранены!')
+            alert('Данные успешно сохранены!');
           } else {
-            alert(`Ошибка запроса: ${response.status}`)
+            alert(`Ошибка запроса: ${response.status}`);
           }
         }
       } catch (error) {
