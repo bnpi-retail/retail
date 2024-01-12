@@ -158,6 +158,7 @@ class AllAdsUsers(APIView):
         if data is None: data = []
         data.extend(ads)
         cache.set(key, data)
+        cache.set(api_key, None)
 
         return Response({'message': 'Успешно сохранены все данные'})
 
