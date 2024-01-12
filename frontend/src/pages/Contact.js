@@ -62,7 +62,7 @@ const Contact = () => {
               'Content-Type': 'application/json',
               'Authorization': `Token ${apiToken}`,
             },
-            body: JSON.stringify(prevData.filter((item) => !selectedItems.includes(item))),
+            body: JSON.stringify(data.filter((item) => !selectedItems.includes(item))),
           });
 
           if (response.ok) {
