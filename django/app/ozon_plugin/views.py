@@ -142,7 +142,7 @@ class AdsUsers(APIView):
         data = cache.get(api_key)
         if data is None: data = []
         data.append(ad)
-        cache.set(api_key, data)
+        cache.set(api_key, data, 20000)
 
         return Response({'message': 'Объявление успешно сохранено'})
 
@@ -159,7 +159,7 @@ class AllAdsUsers(APIView):
         data = cache.get(key)
         if data is None: data = []
         data.extend(ads)
-        cache.set(key, data)
+        cache.set(key, data, 20000)
         cache.set(api_key, None)
 
         return Response({'message': 'Успешно сохранены все данные'})
