@@ -81,6 +81,11 @@ const Contact = () => {
     fetchData();
   };
 
+  const proccess = () => {
+    handleDeleteSelected();
+    handleSaveButtonClick();
+  };
+
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
       <h1 style={{ marginBottom: '20px' }}>Собранные объявления</h1>
@@ -98,11 +103,11 @@ const Contact = () => {
                 cursor: 'pointer', // добавим курсор "pointer" для указания на кликабельность
               }}
             >
+              <Image src={item.pictures} style={{ maxWidth: 250, height: 250, margin: '0 auto' }} />
               <div>
                 <strong>{item.name}</strong>
                 <p>Цена: {item.price} руб.</p>
               </div>
-              <Image src={item.pictures} style={{ maxWidth: 250, height: 250, margin: '0 auto' }} />
               <input
                 type="checkbox"
                 id={`checkbox-${item.number}`}
@@ -113,11 +118,8 @@ const Contact = () => {
           </li>
         ))}
       </ul>
-      <Button style={{ marginTop: '20px' }} onClick={handleDeleteSelected}>
-        Удалить выбранные
-      </Button>
-      <Button style={{ marginTop: '20px', marginLeft: '10px' }} onClick={handleSaveButtonClick}>
-        Сохранить
+      <Button style={{ marginTop: '20px' }} onClick={proccess}>
+        {selectedItems.length > 0 ? 'Удалить выбранные и продолжить' : 'Продолжить'}
       </Button>
     </div>
   );
