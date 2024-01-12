@@ -519,12 +519,15 @@ class Product(models.Model):
 
     def _compute_is_alive(self):
         for record in self:
-            cost_price = self.env["ozon.fix_expenses"].search(
-                [
-                    ("name", "=", "Себестоимость товара"),
-                    ("price", ">", 0),
-                    ("product_id", "=", record.id),
-                ]
+            # cost_price = self.env["ozon.fix_expenses"].search(
+            #     [
+            #         ("name", "=", "Себестоимость товара"),
+            #         ("price", ">", 0),
+            #         ("product_id", "=", record.id),
+            #     ]
+            # )
+            cost_price = self.env["retail.cost_price"].search(
+                [("product_id", "=", record.products.id)]
             )
             if cost_price and (
                 record.is_selling or record.sales_per_day_last_30_days > 0
