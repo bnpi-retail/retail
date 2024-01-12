@@ -354,35 +354,36 @@ class ImportFile(models.Model):
                             fix_expenses_ids = ozon_product.fix_expenses.ids
                             percent_expenses_ids = ozon_product.percent_expenses.ids
                         else:
-                            fix_expenses_ids = self.env[
+                            fix_expenses = self.env[
                                 "ozon.fix_expenses"
-                            ].create_from_ozon_product_fee(ozon_product_id)
-
-                            ozon_product.write(
-                                {"fix_expenses": fix_expenses_ids},
-                                current_product=ozon_product,
-                            )
-
-                            percent_expenses_ids = self.env[
+                            ].create_from_ozon_product_fee(product_fee)
+                            fix_expenses_ids = fix_expenses.ids
+                            percent_expenses = self.env[
                                 "ozon.cost"
                             ].create_from_ozon_product_fee(
-                                product_id=ozon_product_id,
+                                product_fee=product_fee,
                                 price=ozon_product.price,
                             )
+                            percent_expenses_ids = percent_expenses.ids
 
-                            ozon_product._update_percent_expenses(
-                                percent_expenses_ids=percent_expenses_ids
+                            ozon_product.write(
+                                {
+                                    "fix_expenses": fix_expenses_ids,
+                                    "percent_expenses": percent_expenses_ids,
+                                },
+                                percent_expenses=percent_expenses,
                             )
                         # s4 = timeit.default_timer()
 
                         prev_price_history_record = self.is_ozon_price_history_exists(
-                            row_id_on_platform
+                            ozon_product_id
                         )
                         # s41 = timeit.default_timer()
                         if prev_price_history_record:
                             previous_price = prev_price_history_record.price
                         else:
                             previous_price = 0
+
                         # s42 = timeit.default_timer()
                         price_history_data = {
                             "product": ozon_product_id,
@@ -405,7 +406,6 @@ class ImportFile(models.Model):
                         # print(f"price_history_total: {s5-s4}")
                         # print(f"is_ozon_price_history_exists: {s41-s4}")
                         # print(f"prev_price: {s42-s41}")
-                        # print(f"create price_history: {s5-s42}")
 
                     ozon_price_history = self.env["ozon.price_history"].create(
                         price_history_data_list
@@ -520,11 +520,10 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
-    def is_ozon_price_history_exists(self, product_id_on_platform):
-        """Ищет последнюю запись истории цен по данному ozon.product.id_on_platform"""
+    def is_ozon_price_history_exists(self, product_id):
         result = self.env["ozon.price_history"].search(
             [
-                ("product.id_on_platform", "=", product_id_on_platform),
+                ("product", "=", product_id),
             ],
             order="create_date desc",
             limit=1,
@@ -635,9 +634,7 @@ class ImportFile(models.Model):
                         )
                         print(f"Product {row['id_on_platform']} stocks were created")
 
-                    ozon_product.write(
-                        {"stock": stock.id}, current_product=ozon_product
-                    )
+                    ozon_product.write({"stock": stock.id})
 
         os.remove(f_path)
 

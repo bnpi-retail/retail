@@ -175,6 +175,8 @@ class ImportFile(models.Model):
                 cp = float(offer.find("CostPrice").text)
                 prod_data = {"product_id": retail_product.id, "cost": cp}
                 cost_act_prod_ids_data.append(prod_data)
+            else:
+                print(f"Товар с артикулом {artikul} не найден")
 
         cost_act_prod_ids = (
             self.env["retail.cost_act_product"].create(cost_act_prod_ids_data).ids
