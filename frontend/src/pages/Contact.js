@@ -62,11 +62,10 @@ const Contact = () => {
               'Content-Type': 'application/json',
               'Authorization': `Token ${apiToken}`,
             },
-            body: JSON.stringify(data),
+            body: JSON.stringify(prevData.filter((item) => !selectedItems.includes(item))),
           });
 
           if (response.ok) {
-            const data = await response.json();
             alert('Данные успешно сохранены!');
           } else {
             alert(`Ошибка запроса: ${response.status}`);
