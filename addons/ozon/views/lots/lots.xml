@@ -37,9 +37,7 @@
                                     </group>
                                 </group>
                             </group>
-                            <group string="Изображения">
-                                <field name="imgs_html" string="Изображения" />
-                            </group>
+
                         </page>
                         <page id="page_lot_price_profit_info" string="Цена и прибыль">
                             <group>
@@ -157,6 +155,9 @@
                             </group>
                             <group>
                                 <field name="search_queries" widget="many2many_tags" />
+                            </group>
+                            <group string="Изображения">
+                                <field name="imgs_html" string="Изображения" />
                             </group>
                         </page>
                         <page id="page_lot_promotion_info" string="Продвижение">
