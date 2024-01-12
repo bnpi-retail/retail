@@ -49,6 +49,10 @@ class CostAct(models.Model):
             for op in ozon_products:
                 op.create_update_fix_exp_cost_price(prod.product_id.total_cost_price)
 
+            print(
+                f"Cost price for retail product {prod.product_id.product_id} updated/added."
+            )
+
         self.status = "applied"
 
 
