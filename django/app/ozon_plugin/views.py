@@ -35,6 +35,8 @@ class OzonPlugin(APIView):
         api_key = token.key
         key = f'all--{api_key}'
         data = cache.get(key)
+        cache.get(api_key, None)
+        cache.get(key, None)
         if data is None: data = []
         
         csv_data = ""
