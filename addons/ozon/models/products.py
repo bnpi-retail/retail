@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # import plotly
+import ast
 
 from datetime import datetime, time, timedelta
 from operator import itemgetter
@@ -46,6 +47,8 @@ class Product(models.Model):
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
     old_price = fields.Float(string="Цена до учёта скидок", readonly=True)
+    imgs_urls = fields.Char(string="Ссылки на изображения")
+    imgs_html = fields.Html(compute="_compute_imgs")
     seller = fields.Many2one("retail.seller", string="Продавец")
     index_localization = fields.Many2one(
         "ozon.localization_index", string="Индекс локализации"
@@ -673,3 +676,14 @@ class Product(models.Model):
                 "default_new_price": self.price,
             },
         }
+
+    def _compute_imgs(self):
+        for rec in self:
+            rec.imgs_html = False
+            if rec.imgs_urls:
+                render_html = []
+                imgs_urls_list = ast.literal_eval(rec.imgs_urls)
+                for img in imgs_urls_list:
+                    render_html.append(f"<img src='{img}' width='400'/>")
+
+                rec.imgs_html = "\n".join(render_html)
