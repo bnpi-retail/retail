@@ -181,7 +181,7 @@ class GetInfoAboutAds(APIView):
             if search not in all_searches:
                 all_searches.add(search)
 
-        return Response({'product': index, 'search': len(all_searches)})
+        return Response({'product': index + 1, 'search': len(all_searches)})
 
 
 class DeleteAds(APIView):
