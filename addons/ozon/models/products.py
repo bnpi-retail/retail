@@ -533,6 +533,8 @@ class Product(models.Model):
             else:
                 record.is_alive = False
 
+            print(f"Product {record} processed")
+
     def update_coefs_and_groups(self):
         all_products = self.search([])
         # coefs
