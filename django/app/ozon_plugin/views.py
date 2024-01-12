@@ -129,7 +129,7 @@ class AdsUsers(APIView):
         token = request.auth
         api_key = token.key
         data = cache.get(api_key)
-        cache.set(api_key, None)
+        # cache.set(api_key, None)
         return Response(data)
 
     def post(self, request, *args, **kwargs):
