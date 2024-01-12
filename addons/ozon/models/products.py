@@ -90,8 +90,6 @@ class Product(models.Model):
     )
     is_alive = fields.Boolean(
         string="Живой товар",
-        compute="_get_is_alive",
-        store=True,
         readonly=True,
     )
 
@@ -519,8 +517,7 @@ class Product(models.Model):
             else:
                 record.is_selling = False
 
-    @api.depends("is_selling", "sales_per_day_last_30_days", "fix_expenses")
-    def _get_is_alive(self):
+    def _compute_is_alive(self):
         for record in self:
             cost_price = self.env["ozon.fix_expenses"].search(
                 [
@@ -541,6 +538,8 @@ class Product(models.Model):
         # coefs
         all_products._compute_coef_profitability()
         all_products._compute_sales_per_day_last_30_days()
+        # is_alive
+        all_products._compute_is_alive()
         # groups
         alive_products = self.search([("is_alive", "=", True)])
         not_alive_products = all_products - alive_products
