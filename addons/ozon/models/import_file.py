@@ -258,7 +258,11 @@ class ImportFile(models.Model):
                             id_on_platform=row["id_on_platform"]
                         ):
                             ozon_product.write(
-                                {"price": row["price"], "old_price": row["old_price"]}
+                                {
+                                    "price": row["price"],
+                                    "old_price": row["old_price"],
+                                    "imgs_urls": row["img_urls"],
+                                }
                             )
                             retail_product = self.is_retail_product_exists(
                                 product_id=row["product_id"]
@@ -314,6 +318,7 @@ class ImportFile(models.Model):
                                     "products": retail_product.id,
                                     "price": row["price"],
                                     "old_price": row["old_price"],
+                                    "imgs_urls": row["img_urls"],
                                     "seller": seller.id,
                                     "trading_scheme": row["trading_scheme"],
                                 }
