@@ -56,8 +56,8 @@ const Contact = () => {
       try {
 
         if (apiToken) {
-          // const response = await fetch('http://localhost:8000/ads_users/save_all', {
-          const response = await fetch('https://retail-extension.bnpi.dev/ads_users/save_all', {
+          const response = await fetch('http://localhost:8000/ads_users/save_all', {
+          // const response = await fetch('https://retail-extension.bnpi.dev/ads_users/save_all', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ const Contact = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                cursor: 'pointer', // добавим курсор "pointer" для указания на кликабельность
+                cursor: 'pointer',
               }}
             >
               <Image src={item.pictures} style={{ maxWidth: 250, height: 250, margin: '0 auto' }} />
