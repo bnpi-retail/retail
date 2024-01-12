@@ -19,7 +19,7 @@
 
                     <!-- Main info -->
                     <notebook>
-                        <page id="page_lot_main_info" string="Общая информация">
+                        <page id="page_lot_price_profit_main_info" string="Цена и прибыль">
                             <group>
                                 <group>
                                     <field name="id_on_platform" />
@@ -37,8 +37,6 @@
                                     </group>
                                 </group>
                             </group>
-                        </page>
-                        <page id="page_lot_price_profit_info" string="Цена и прибыль">
                             <group>
                                 <group>
                                     <group string="Цена">
@@ -62,6 +60,7 @@
                                 </group>
                             </group>
                         </page>
+
                         <page id="page_lot_expenses_info" string="Комиссии и себестоимость">
                             <separator string="Фиксированные затраты" />
                             <notebook>
@@ -193,8 +192,7 @@
                     <field name="is_selling" />
                     <field name="is_alive" />
                     <field name="trading_scheme" />
-                    <field name="stocks_fbs" />
-                    <field name="stocks_fbo" />
+                    <field name="coef_profitability" />
                 </tree>
             </field>
         </record>

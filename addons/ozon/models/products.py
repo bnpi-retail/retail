@@ -89,9 +89,7 @@ class Product(models.Model):
         string="В продаже", compute="_get_is_selling", store=True, readonly=True
     )
     is_alive = fields.Boolean(
-        string="Живой товар (у которого есть себестоимость)",
-        compute="_get_is_alive",
-        store=True,
+        string="Живой товар",
         readonly=True,
     )
 
@@ -519,26 +517,34 @@ class Product(models.Model):
             else:
                 record.is_selling = False
 
-    @api.depends("is_selling", "sales_per_day_last_30_days", "fix_expenses")
-    def _get_is_alive(self):
+    def _compute_is_alive(self):
         for record in self:
-            if self.env["ozon.fix_expenses"].search(
-                [
-                    ("name", "=", "Себестоимость товара"),
-                    ("price", ">", 0),
-                    ("product_id", "=", record.id),
-                ]
+            # cost_price = self.env["ozon.fix_expenses"].search(
+            #     [
+            #         ("name", "=", "Себестоимость товара"),
+            #         ("price", ">", 0),
+            #         ("product_id", "=", record.id),
+            #     ]
+            # )
+            cost_price = self.env["retail.cost_price"].search(
+                [("product_id", "=", record.products.id)]
+            )
+            if cost_price and (
+                record.is_selling or record.sales_per_day_last_30_days > 0
             ):
-                # if record.is_selling or record.sales_per_day_last_30_days > 0:
                 record.is_alive = True
             else:
                 record.is_alive = False
+
+            print(f"Product {record} processed")
 
     def update_coefs_and_groups(self):
         all_products = self.search([])
         # coefs
         all_products._compute_coef_profitability()
         all_products._compute_sales_per_day_last_30_days()
+        # is_alive
+        all_products._compute_is_alive()
         # groups
         alive_products = self.search([("is_alive", "=", True)])
         not_alive_products = all_products - alive_products
