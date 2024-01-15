@@ -228,7 +228,9 @@ class Product(models.Model):
         compute="_compute_profit_delta",
         store=True,
     )
-
+    pricing_strategy_id = fields.Many2one(
+        "ozon.pricing_strategy", string="Стратегия назначения цен"
+    )
     get_sales_count = fields.Integer(compute="compute_count_sales")
 
     @api.depends("sales")
@@ -694,18 +696,29 @@ class Product(models.Model):
 
                 rec.imgs_html = "\n".join(render_html)
 
+    @api.onchange("pricing_strategy_id")
+    def onchange_pricing_stragegy_id(self):
+        if self.pricing_strategy_id.strategy_id == "lower_3_percent_min_competitor":
+            # if product has at least one competitor
+            if min_comp_price := self.env.context.get("min_competitors_price"):
+                multiple = self.pricing_strategy_id.value
+                self.price = round(min_comp_price * multiple, 2)
+
     def calculator(self):
         self.ensure_one()
         calculator_view = self.env["ir.ui.view"].search(
             [("model", "=", "ozon.products"), ("name", "=", "Калькулятор")]
         )
-
+        comp_prices = self.price_history_ids.mapped("price")
+        min_competitors_price = min(comp_prices) if comp_prices else None
+        print(self)
         return {
             "type": "ir.actions.act_window",
             "name": "Калькулятор",
             "view_mode": "form",
             "view_id": calculator_view.id,
             "res_model": "ozon.products",
+            "res_id": self.id,
             "target": "new",
             "context": {
                 "default_products": self.id,
@@ -713,5 +726,15 @@ class Product(models.Model):
                 "default_profit": self.profit,
                 "default_profitability_norm": self.profitability_norm,
                 "default_coef_profitability": self.coef_profitability,
+                "default_total_fbs_fix_expenses_max": self.total_fbs_fix_expenses_max,
+                "default_total_fbo_fix_expenses_max": self.total_fbo_fix_expenses_max,
+                "default_total_fbs_percent_expenses": self.total_fbs_percent_expenses,
+                "default_total_fbo_percent_expenses": self.total_fbo_percent_expenses,
+                "min_competitors_price": min_competitors_price,
             },
         }
+
+    def reset_calculator(self):
+        self.profitability_norm = False
+        self.pricing_strategy_id = False
+        return self.calculator()

@@ -249,14 +249,16 @@
             <field name="arch" type="xml">
                 <form create="false" write="false" delete="false">
                     <style>
-                        <!-- header{
-                                display:none !important;
-                                } --> footer{ display:none !important; } </style>
+                        <!-- header{display:none !important;}  --> footer{ display:none !important;} </style>
+
                     <field name="products" readonly="true" style="margin-bottom: 30px;" />
+                    <button type="object" name="reset_calculator"
+                        string="Сбросить" />
                     <group>
                         <group>
                             <field name="profitability_norm"
                                 string="Обеспечить норму прибыльности в" />
+                            <field name="pricing_strategy_id" />
                         </group>
                         <group>
                             <field name="price" />
@@ -267,8 +269,10 @@
                                 style="max-width: 58px;" readonly="true" />
 
                         </group>
-
-
+                        <field name="total_fbs_fix_expenses_max" invisible="true" />
+                        <field name="total_fbo_fix_expenses_max" invisible="true" />
+                        <field name="total_fbs_percent_expenses" invisible="true" />
+                        <field name="total_fbo_percent_expenses" invisible="true" />
                     </group>
 
                 </form>
