@@ -414,6 +414,7 @@ class Product(models.Model):
                     f"Группа {i+1}: от {g_min} до {g_max}"
                 )
 
+    @api.onchange("profit_delta", "profit_ideal")
     @api.depends("profit_delta", "profit_ideal")
     def _compute_coef_profitability(self):
         for product in self:
@@ -692,3 +693,25 @@ class Product(models.Model):
                     render_html.append(f"<img src='{img}' width='400'/>")
 
                 rec.imgs_html = "\n".join(render_html)
+
+    def calculator(self):
+        self.ensure_one()
+        calculator_view = self.env["ir.ui.view"].search(
+            [("model", "=", "ozon.products"), ("name", "=", "Калькулятор")]
+        )
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Калькулятор",
+            "view_mode": "form",
+            "view_id": calculator_view.id,
+            "res_model": "ozon.products",
+            "target": "new",
+            "context": {
+                "default_products": self.id,
+                "default_price": self.price,
+                "default_profit": self.profit,
+                "default_profitability_norm": self.profitability_norm,
+                "default_coef_profitability": self.coef_profitability,
+            },
+        }

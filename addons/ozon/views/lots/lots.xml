@@ -5,6 +5,7 @@
         <record id="view_action_products_form" model="ir.ui.view">
             <field name="name">Лоты</field>
             <field name="model">ozon.products</field>
+            <field name="priority">1</field>
             <field name="arch" type="xml">
                 <form>
 
@@ -31,7 +32,7 @@
                                         <field name="is_alive" />
                                     </group>
                                     <group>
-                                        <field name="trading_scheme" />
+                                        <field name="trading_scheme" readonly="true" />
                                         <field name="stocks_fbs" />
                                         <field name="stocks_fbo" />
                                     </group>
@@ -48,15 +49,15 @@
                                         <field name="profit" />
                                         <field name="profit_ideal" />
                                         <field name="profit_delta" />
-                                        <field name="profitability_norm" />
+                                        <field name="profitability_norm" readonly="true" />
                                     </group>
                                 </group>
                                 <group string="Коэффициенты">
-                                    <field name="sales_per_day_last_30_days" />
-                                    <field name="sales_per_day_last_30_days_group" />
+                                    <field name="sales_per_day_last_30_days" readonly="true" />
+                                    <field name="sales_per_day_last_30_days_group" readonly="true" />
                                     <field name="coef_profitability" widget="percentage"
-                                        style="max-width: 58px;" />
-                                    <field name="coef_profitability_group" />
+                                        style="max-width: 58px;" readonly="true" />
+                                    <field name="coef_profitability_group" readonly="true" />
                                 </group>
                             </group>
                         </page>
@@ -239,6 +240,50 @@
             <field name="view_mode">form</field>
             <field name="view_id" ref="wizard_view_profitability_norm_form" />
             <field name="target">new</field>
+        </record>
+
+        <!-- Calculator form -->
+        <record id="view_products_calculator_form" model="ir.ui.view">
+            <field name="name">Калькулятор</field>
+            <field name="model">ozon.products</field>
+            <field name="arch" type="xml">
+                <form create="false" write="false" delete="false">
+                    <style>
+                        <!-- header{
+                                display:none !important;
+                                } --> footer{ display:none !important; } </style>
+                    <field name="products" readonly="true" style="margin-bottom: 30px;" />
+                    <group>
+                        <group>
+                            <field name="profitability_norm"
+                                string="Обеспечить норму прибыльности в" />
+                        </group>
+                        <group>
+                            <field name="price" />
+                            <field name="profit" />
+                            <field name="profit_ideal" />
+                            <field name="profit_delta" />
+                            <field name="coef_profitability" widget="percentage"
+                                style="max-width: 58px;" readonly="true" />
+
+                        </group>
+
+
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.server" id="action_product_calculator">
+            <field name="name">Калькулятор</field>
+            <field name="model_id" ref="model_ozon_products" />
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="binding_view_types">form</field>
+            <field name="state">code</field>
+            <field name="code">
+                action = records.calculator()
+            </field>
         </record>
 
         <!-- Menu -->
