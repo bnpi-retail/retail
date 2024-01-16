@@ -52,3 +52,7 @@ def remove_latin_characters(words_list: list) -> list:
 
 def remove_duplicates_from_list(words_list) -> list:
     return list(set(words_list))
+
+
+def mean(lst: list) -> float:
+    return round(sum(lst) / len(lst), 2)

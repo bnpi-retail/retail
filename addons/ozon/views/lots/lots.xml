@@ -18,6 +18,32 @@
                         </button>
                     </div>
 
+                    <separator string="Калькулятор стратегий назначения цен" />
+
+                    <group>
+                        <button type="object" name="calculate" string="Рассчитать"
+                            class="oe_highlight" />
+                        <separator />
+                        <group>
+                            <field name="pricing_strategy_ids">
+                                <tree editable="bottom" edit="True">
+                                    <field name="name" />
+                                    <field name="value" widget="percentage" />
+                                </tree>
+                            </field>
+                        </group>
+                        <group>
+                            <field name="product_calculator_ids">
+                                <tree>
+                                    <field name="name" />
+                                    <field name="value" />
+                                    <field name="new_value" />
+                                </tree>
+                            </field>
+                        </group>
+
+                    </group>
+
                     <!-- Main info -->
                     <notebook>
                         <page id="page_lot_price_profit_main_info" string="Цена и прибыль">
