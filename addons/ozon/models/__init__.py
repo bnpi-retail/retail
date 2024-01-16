@@ -25,5 +25,5 @@ from .competitors import analysis_competitors
 from .competitors import search_query_queue
 from .pricing import pricing
 from .pricing import mass_pricing
-
 from .search_queries import search_queries
+from .analysis_data import analysis_data

@@ -7,3 +7,5 @@ from . import ozon_plugins
 from . import product_compute_controllers
 from . import tasks_controllers
 from . import get_discriptions
+from . import get_all_skus_of_lots
+from . import analysis_data

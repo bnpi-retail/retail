@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
                 <form>
                     <group string="Остатки товароа по схемам торговли">
+                        <field name="timestamp" />
                         <field name="product">
                             <tree>
                                 <field name="products">
@@ -18,6 +19,8 @@
                             </tree>
                         </field>
                         <field name="stocks_fbs" />
+                        <field name="stocks_reserved_fbs" />
+
                         <field name="stocks_fbo" />
                     </group>
                 </form>
@@ -30,12 +33,15 @@
             <field name="model">ozon.stock</field>
             <field name="arch" type="xml">
                 <tree>
+                    <field name="timestamp" />
                     <field name="product">
                         <tree>
                             <field name="id_on_platform" />
                         </tree>
                     </field>
                     <field name="stocks_fbs" />
+                    <field name="stocks_reserved_fbs" />
+                    
                     <field name="stocks_fbo" />
                 </tree>
             </field>

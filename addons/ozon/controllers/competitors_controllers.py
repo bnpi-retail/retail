@@ -18,12 +18,14 @@ class CompetitorsGetSKUs(http.Controller):
     def get_sku_competitors(self, range=None, **post):
         if not range:
             return "Miss required parametr 'range'"
-
+        
         range_value = int(range)
         records = http.request.env["ozon.products_competitors"].search([], limit=range_value)
         product_competitors = records.mapped('id_product')
         
         response_data = {'product_competitors': product_competitors}
+        print(response_data)
+        
         json_response = json.dumps(response_data)
         return http.Response(json_response, content_type='application/json')
 
@@ -39,20 +41,22 @@ class CompetitorsGetSKUs(http.Controller):
         print(ads)
 
         for ad in ads:
-            if ad['no_data'] == 1:
-                continue
+            if ad['no_data'] == 1: continue
             
-            result = model_products_competitors.search(
+            product_competitors = model_products_competitors.search(
                 [("id_product", "=", sku)],
                 limit=1,
             )
-            model_price_history_competitors.create({
-                'product_competitors': result.id,
+            values = {
+                'product_competitors': product_competitors.id,
                 'balance': ad['balance'],
                 'sales': ad['sales'],
-                'price': ad['price'],
-                'final_price': ad['final_price'],
-            })
+                'price_without_sale': ad['price'],
+                'price': ad['final_price'],
+            }
+            if ad.get('ozon_card_price'):
+                values['price_with_card'] = ad.get('ozon_card_price')
+            model_price_history_competitors.create(values)
 
         json_response = {'answer': 'success!'}
         return http.Response(json_response, content_type='application/json')
