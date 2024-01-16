@@ -140,3 +140,10 @@ class PricingStrategy(models.Model):
 
     name = fields.Char(string="Стратегия назначения цен")
     strategy_id = fields.Char(string="ID стратегии")
+    value = fields.Float(string="Множитель цены", compute="_compute_value")
+
+    @api.depends("strategy_id")
+    def _compute_value(self):
+        for rec in self:
+            if rec.strategy_id == "lower_3_percent_min_competitor":
+                rec.value = 0.97
