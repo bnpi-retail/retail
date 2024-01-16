@@ -171,13 +171,13 @@
                         </page>
                         <page id="page_lot_competitors_info" string="Конкуренты">
                             <group string="Конкуренты">
-                                <field name="price_history_ids" widget="one2many_list">
+                                <!-- <field name="competitors_with_price_ids" widget="one2many_list">
                                     <tree limit="10">
                                         <field name="timestamp" />
                                         <field name="product_competitors" />
                                         <field name="price" />
                                     </tree>
-                                </field>
+                                </field> -->
                             </group>
                         </page>
                     </notebook>

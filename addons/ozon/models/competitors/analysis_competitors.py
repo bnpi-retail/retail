@@ -17,7 +17,7 @@ class AnalysisCompetitorsLine(models.Model):
         ('ozon.products', 'Лот'),
         ('ozon.products_competitors', 'Товар конкурента'),
     ], string='Товар')
-
+    
     def name_get(self):
         """
         Rename name records 
@@ -42,6 +42,33 @@ class AnalysisCompetitors(models.Model):
     competitor_record = fields.One2many('ozon.analysis_competitors_record', 
                                         'analysis_id', string='Конкуренты')
 
+    @api.model
+    def create(self, values):
+        record = super(AnalysisCompetitors, self).create(values)
+
+        model_products = self.env["ozon.products"]
+        competitors_records = self.env['ozon.analysis_competitors_record'] \
+            .browse(record.competitor_record.ids)
+        
+        status = False
+        my_products = []
+        competitors_products_ids = []
+        for competitors_record in competitors_records:
+            if competitors_record.is_my_product is True:
+                status = True
+                my_products.append(competitors_record)
+            else:
+                competitors_products_ids.append(competitors_record.id)
+
+        if status is False:
+            return record
+
+        for product in my_products:
+            product.ad.write({'competitors_with_price_ids': [(5, 0, 0)]})
+            product.ad.write({'competitors_with_price_ids': competitors_products_ids})
+
+        return record
+    
     def name_get(self):
         """
         Rename name records 

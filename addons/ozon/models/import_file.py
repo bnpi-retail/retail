@@ -87,8 +87,7 @@ class ImportFile(models.Model):
             dict_products = {}
             for line in lines[1:]:
                 values_list = line.split(",")
-                if len(values_list) != 9:
-                    continue
+                if len(values_list) != 9: continue
                 search = values_list[1]
                 sku = values_list[3]
                 if search not in dict_products:
@@ -157,24 +156,20 @@ class ImportFile(models.Model):
                             product_id = None
                         if product_id:
                             record_competitors_products = (
-                                model_competitors_products.create(
-                                    {
-                                        "id_product": str(sku),
-                                        "name": str(name),
-                                        "url": str(href),
-                                        "product": product_id,
-                                    }
-                                )
+                                model_competitors_products.create({
+                                    "id_product": str(sku),
+                                    "name": str(name),
+                                    "url": str(href),
+                                    "product": product_id
+                                })
                             )
                         else:
                             record_competitors_products = (
-                                model_competitors_products.create(
-                                    {
-                                        "id_product": str(sku),
-                                        "name": str(name),
-                                        "url": str(href),
-                                    }
-                                )
+                                model_competitors_products.create({
+                                    "id_product": str(sku),
+                                    "name": str(name),
+                                    "url": str(href)
+                                })
                             )
                         ad_reference = "ozon.products_competitors," + str(
                             record_competitors_products.id

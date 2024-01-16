@@ -78,8 +78,8 @@ class Product(models.Model):
         ),
     )
 
-    price_history_ids = fields.One2many(
-        "ozon.price_history_competitors", "product_id", string="История цен конкурентов"
+    competitors_with_price_ids = fields.One2many(
+        "ozon.price_history_competitors", "product_id", string="Актуальные цены конкурентов"
     )
 
     price_our_history_ids = fields.One2many(

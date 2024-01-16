@@ -30,12 +30,3 @@ class PriceHistoryCompetitors(models.Model):
                            f'{record.timestamp},  '
                            f'{record.product_competitors.product.products.name}'))
         return result
-    
-    @api.model
-    def create(self, values):
-        record = super(PriceHistoryCompetitors, self).create(values)
-
-        product_record = record.product_competitors.product
-        product_record.write({'price_history_ids': [(4, record.id)]})
-
-        return record
