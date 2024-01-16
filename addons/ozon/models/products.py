@@ -397,7 +397,7 @@ class Product(models.Model):
 
     @api.depends("sales")
     def _compute_sales_per_day_last_30_days(self):
-        for i, product in enumerate(self):
+        for product in self:
             date_from = datetime.combine(datetime.now(), time.min) - timedelta(days=30)
             date_to = datetime.combine(datetime.now(), time.max) - timedelta(days=1)
             # взять все продажи за посл 30 дней
@@ -420,7 +420,7 @@ class Product(models.Model):
         for i, g in enumerate([g1, g2, g3, g4, g5]):
             g_min = round(g[0]["sales_per_day_last_30_days"], 2)
             g_max = round(g[-1]["sales_per_day_last_30_days"], 2)
-            for idx, item in g:
+            for item in g:
                 prod = self.env["ozon.products"].search([("id", "=", item["id"])])
                 prod.sales_per_day_last_30_days_group = (
                     f"Группа {i+1}: от {g_min} до {g_max}"
@@ -429,7 +429,7 @@ class Product(models.Model):
     @api.onchange("profit_delta", "profit_ideal")
     @api.depends("profit_delta", "profit_ideal")
     def _compute_coef_profitability(self):
-        for i, product in enumerate(self):
+        for product in self:
             product.coef_profitability = round(
                 product.profit_delta / product.profit_ideal, 2
             )
@@ -441,7 +441,7 @@ class Product(models.Model):
         for i, g in enumerate([g1, g2, g3, g4, g5]):
             g_min = round(g[0]["coef_profitability"], 2)
             g_max = round(g[-1]["coef_profitability"], 2)
-            for idx, item in g:
+            for item in g:
                 prod = self.env["ozon.products"].search([("id", "=", item["id"])])
                 prod.coef_profitability_group = (
                     f"Группа {i+1}: от {g_min*100}% до {g_max*100}%"
@@ -534,7 +534,7 @@ class Product(models.Model):
                 record.is_selling = False
 
     def _compute_is_alive(self):
-        for i, record in enumerate(self):
+        for record in self:
             cost_price = self.env["retail.cost_price"].search(
                 [("product_id", "=", record.products.id)]
             )
@@ -747,8 +747,7 @@ class Product(models.Model):
         return self.calculator()
 
     def _compute_product_calculator_ids(self):
-        for i, rec in enumerate(self):
-            prod_id = rec.id_on_platform
+        for rec in self:
             if pc_recs := rec.product_calculator_ids:
                 for pc_rec in pc_recs:
                     if pc_rec.name == "Цена":
