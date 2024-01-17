@@ -80,7 +80,9 @@ class Product(models.Model):
     )
 
     competitors_with_price_ids = fields.One2many(
-        "ozon.analysis_competitors_record", "product_id", string="Актуальные цены конкурентов"
+        "ozon.analysis_competitors_record",
+        "product_id",
+        string="Актуальные цены конкурентов",
     )
 
     price_our_history_ids = fields.One2many(
@@ -685,7 +687,6 @@ class Product(models.Model):
             for record in records:
                 record.is_calculate = True
 
-            
     def create_mass_pricing(self):
         self.ensure_one()
         return {
@@ -830,8 +831,8 @@ class Product(models.Model):
             strategy_id = price_strategy.strategy_id
 
             if strategy_id == "lower_min_competitor":
-                if self.price_history_ids:
-                    comp_prices = self.price_history_ids.mapped("price")
+                if self.competitors_with_price_ids:
+                    comp_prices = self.competitors_with_price_ids.mapped("price")
                     min_comp_price = min(comp_prices)
                     new_price = round(min_comp_price * (1 - strategy_value), 2)
 
