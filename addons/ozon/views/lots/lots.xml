@@ -228,6 +228,11 @@
                                 </field>
                             </group>
                         </page>
+                        <page id="page_analysis_data" string="Аналитические данные">
+                            <group>
+                                <field name="imgs_html_analysis_data" string="График продаж" />
+                            </group>
+                        </page>
                     </notebook>
                 </form>
             </field>
