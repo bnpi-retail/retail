@@ -26,7 +26,7 @@ class AnalysysDataLotsController(http.Controller):
             
             model_analysis_data.create({
                 "timestamp_from": today,
-                "one_week_ago": one_week_ago,
+                "timestamp_to": one_week_ago,
                 "product": product.id,
                 "hits_view": info["hits_view"],
                 "hits_tocart": info["hits_tocart"],
