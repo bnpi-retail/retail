@@ -17,37 +17,57 @@ class DrawOdooController(http.Controller):
                 methods=["GET"])
     def get_data_for_draw(self, **kwargs):
         model_sale = http.request.env["ozon.sale"]
-        records = model_sale.search([("is_calculate", "=", True)])
 
-        data = {}
-        for record in records:
-            if record.product not in data:
-                data[record.product] = []
-            data[record.product].append(record)
-        
+        current_date = date.today()
+        current_year = date(current_date.year, 1, 1)
+        last_year = date(current_date.year - 1, 1, 1)
+        year_before_last = date(current_date.year - 2, 1, 1)
+
+        records_current_year = model_sale.search([
+            ("is_calculate", "=", True),
+            ("date", ">=", current_year),
+        ])
+        records_last_year = model_sale.search([
+            ("is_calculate", "=", True),
+            ("date", ">=", last_year),
+            ("date", "<", current_year),
+        ])
+        records_year_before_last = model_sale.search([
+            ("is_calculate", "=", True),
+            ("date", ">=", year_before_last),
+            ("date", "<", last_year),
+        ])
+
         data_for_graph = {}
-        for product, records_list in data.items():
-            if product not in data_for_graph:
-                data_for_graph[product.id] = {"dates": [], "qty": [], "revenue": []}
+        for records in [records_current_year, records_last_year, records_year_before_last]:
+            data = {}
+            for record in records:
+                if record.product not in data:
+                    data[record.product] = []
+                data[record.product].append(record)
 
-            records_list.sort(key=attrgetter('date'))
+            for product, records_list in data.items():
+                if product not in data_for_graph:
+                    data_for_graph[product.id] = {"dates": [], "qty": [], "revenue": []}
 
-            all_weeks = {i: {"qty": 0, "revenue": 0} for i in range(1, 53)}
+                records_list.sort(key=attrgetter('date'))
 
-            for record in records_list:
-                date = record.date
-                week_key = (date.year, date.isocalendar()[1])  # Используем кортеж из года и номера недели
-                
-                while week_key[1] not in all_weeks:
-                    date -= timedelta(days=1)
-                    week_key = (date.year, date.isocalendar()[1])
-                
-                all_weeks[week_key[1]]["qty"] += record.qty
-                all_weeks[week_key[1]]["revenue"] += record.revenue
+                all_weeks = {i: {"qty": 0, "revenue": 0} for i in range(1, 53)}
 
-            serialized_records = [{"week": week, "qty": data["qty"], "revenue": data["revenue"]} for week, data in all_weeks.items()]
+                for record in records_list:
+                    date = record.date
+                    week_key = date.isocalendar()[1]
 
-            data_for_graph[product.id] = serialized_records
+                    while week_key not in all_weeks:
+                        date -= timedelta(days=1)
+                        week_key = date.isocalendar()[1]
+
+                    all_weeks[week_key]["qty"] += record.qty
+                    all_weeks[week_key]["revenue"] += record.revenue
+
+                serialized_records = [{"week": week, "qty": data["qty"], "revenue": data["revenue"]} for week, data in all_weeks.items()]
+
+                data_for_graph[product.id].update({"records": serialized_records})
 
         json_response = json.dumps(data_for_graph)
         return http.Response(json_response, content_type="application/json")
