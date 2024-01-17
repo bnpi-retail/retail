@@ -32,17 +32,20 @@ class DrawOdooController(http.Controller):
 
             records_list.sort(key=attrgetter('date'))
 
-            grouped_records = {date.strftime("%Y-%m-%d"): list(group) for date, group in groupby(records_list, key=lambda x: x.date)}
+            all_weeks = {i: {"qty": 0, "revenue": 0} for i in range(1, 53)}
 
-            all_weeks = {datetime(2022, 1, 1) + timedelta(weeks=i): [] for i in range(1, 53)}
+            for record in records_list:
+                date = record.date
+                week_key = date.isocalendar()[1]
+                
+                while week_key not in all_weeks:
+                    date -= timedelta(days=1)
+                    week_key = date.isocalendar()[1]
+                
+                all_weeks[week_key]["qty"] += record.qty
+                all_weeks[week_key]["revenue"] += record.revenue
 
-            for week, records in all_weeks.items():
-                if week in grouped_records:
-                    all_weeks[week] = [{"date": date, "qty": record.qty, "revenue": record.revenue} for date, group in grouped_records.items() for record in group]
-                else:
-                    all_weeks[week] = [{"date": week.strftime("%Y-%m-%d"), "qty": 0, "revenue": 0}]
-
-            serialized_records = [record for week_records in all_weeks.values() for record in week_records]
+            serialized_records = [{"week": week, "qty": data["qty"], "revenue": data["revenue"]} for week, data in all_weeks.items()]
 
             data_for_graph[product.id] = serialized_records
 
