@@ -1,6 +1,9 @@
 import json
 import ast
 
+from itertools import groupby
+from operator import attrgetter
+
 from odoo import http
 from odoo.http import Response
 
@@ -24,17 +27,19 @@ class DrawOdooController(http.Controller):
         data_for_graph = {}
         for product, records_list in data.items():
             if product not in data_for_graph:
-                data_for_graph[product.id] = {"dates": [], "qty": []}
+                data_for_graph[product.id] = {"dates": [], "qty": [], "revenue": []}
 
-            for record in records_list:
-                data_for_graph[product.id]["dates"].append(record.date.strftime("%Y-%m-%d"))
-                data_for_graph[product.id]["qty"].append(record.qty)
+            records_list.sort(key=attrgetter('date'))
+            grouped_records = {week: list(group) for week, group in groupby(records_list, key=lambda x: x.date.strftime("%U-%Y"))}
 
-        json_response = json.dumps(data_for_graph)
+            # for record in records_list:
+            #     data_for_graph[product.id]["dates"].append(record.date.strftime("%Y-%m-%d"))
+            #     data_for_graph[product.id]["qty"].append(record.qty)
+
+        json_response = json.dumps(grouped_records)
         return http.Response(json_response, content_type="application/json")
 
-
-    @http.route("/api/v1/save-numbers-of-products-history", 
+    @http.route("/api/v1/api/v1/save-images-for-lots", 
                 auth="user", 
                 type="http", 
                 csrf=False, 
