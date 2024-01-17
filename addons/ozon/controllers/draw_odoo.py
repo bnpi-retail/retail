@@ -3,7 +3,7 @@ import ast
 
 from itertools import groupby
 from operator import attrgetter
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 
 from odoo import http
 from odoo.http import Response
