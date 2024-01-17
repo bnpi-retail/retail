@@ -79,7 +79,7 @@ class Product(models.Model):
     )
 
     competitors_with_price_ids = fields.One2many(
-        "ozon.price_history_competitors", "product_id", string="Актуальные цены конкурентов"
+        "ozon.analysis_competitors_record", "product_id", string="Актуальные цены конкурентов"
     )
 
     price_our_history_ids = fields.One2many(
@@ -670,6 +670,13 @@ class Product(models.Model):
 
         return res
 
+    def draw_plot(self):
+        model_stock = self.env["ozon.stock"]
+        for rec in self:
+            records = model_stock.search(["product", "=", rec.id])
+            for record in records:
+                record.is_calculate = True
+            
     def create_mass_pricing(self):
         self.ensure_one()
         return {

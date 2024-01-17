@@ -21,9 +21,6 @@ class AnalysisData(models.Model):
         result = []
         for record in self:
             id = record.id
-            if record.product.products.name:
-                name = (id, f"{record.timestamp},  " f"{record.product.products.name}")
-            else:
-                name = (id, f"{record.timestamp}")
+            name = (id, f"{record.product.products.name}")
             result.append(name)
         return result

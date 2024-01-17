@@ -18,7 +18,7 @@ class PriceHistoryCompetitors(models.Model):
 
     sales = fields.Integer(string='Продажи')
     balance = fields.Integer(string='Остатки')
-    product_id = fields.Many2one('ozon.products', string='Лот')
+    # product_id = fields.Many2one('ozon.products', string='Лот')
 
     def name_get(self):
         """

@@ -171,13 +171,17 @@
                         </page>
                         <page id="page_lot_competitors_info" string="Конкуренты">
                             <group string="Конкуренты">
-                                <!-- <field name="competitors_with_price_ids" widget="one2many_list">
+                                <field name="competitors_with_price_ids" widget="one2many_list">
                                     <tree limit="10">
-                                        <field name="timestamp" />
-                                        <field name="product_competitors" />
-                                        <field name="price" />
+                                        <field name="number"/>
+                                        <field name="name"/>
+                                        <field name="price_with_card"/>
+                                        <field name="price"/>
+                                        <field name="price_without_sale"/>
+                                        <field name="is_my_product"/>
+                                        <field name="ad"/>
                                     </tree>
-                                </field> -->
+                                </field>
                             </group>
                         </page>
                     </notebook>
@@ -216,6 +220,16 @@
             <field name="state">code</field>
             <field name="code">
                 action = records.create_mass_pricing()
+            </field>
+        </record>
+
+        <record model="ir.actions.server" id="action_draw_plot">
+            <field name="name">Рассчитывать PLOT</field>
+            <field name="model_id" ref="model_ozon_mass_pricing" />
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="state">code</field>
+            <field name="code">
+                records.draw_plot()
             </field>
         </record>
 

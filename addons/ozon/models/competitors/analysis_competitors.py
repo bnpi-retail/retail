@@ -11,6 +11,7 @@ class AnalysisCompetitorsLine(models.Model):
     price = fields.Float(string='Цена', default=None)
     price_without_sale = fields.Float(string='Цена без скидки', default=None)
     price_with_card = fields.Float(string='Цена по карте Ozon', default=None)
+    product_id = fields.Many2one('ozon.products', string='Лот')
     analysis_id = fields.Many2one('ozon.analysis_competitors', 
                                   string='Анализ конкурента')
     ad = fields.Reference([
@@ -41,7 +42,7 @@ class AnalysisCompetitors(models.Model):
     worker = fields.Many2one('res.users', string='Сотрудник')
     competitor_record = fields.One2many('ozon.analysis_competitors_record', 
                                         'analysis_id', string='Конкуренты')
-
+    
     @api.model
     def create(self, values):
         record = super(AnalysisCompetitors, self).create(values)
