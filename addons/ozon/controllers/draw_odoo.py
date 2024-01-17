@@ -3,7 +3,7 @@ import ast
 
 from itertools import groupby
 from operator import attrgetter
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 
 from odoo import http
 from odoo.http import Response
@@ -17,11 +17,11 @@ class DrawOdooController(http.Controller):
                 methods=["GET"])
     def get_data_for_draw(self, **kwargs):
         model_sale = http.request.env["ozon.sale"]
-
-        current_date = datetime.now().year
-        current_year = date(current_date.year, 1, 1)
-        last_year = date(current_date.year - 1, 1, 1)
-        year_before_last = date(current_date.year - 2, 1, 1)
+        
+        current_date = datetime.now()
+        current_year = datetime.combine(current_date, datetime.min.time())
+        last_year = current_year - timedelta(days=365)
+        year_before_last = current_year - timedelta(days=365 * 2)
 
         records_current_year = model_sale.search([
             ("is_calculate", "=", True),
