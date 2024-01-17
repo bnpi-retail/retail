@@ -248,6 +248,7 @@
                     <field name="price" />
                     <field name="is_selling" />
                     <field name="is_alive" />
+                    <field name="price_index" />
                     <field name="trading_scheme" />
                     <field name="coef_profitability" />
                 </tree>
