@@ -6,6 +6,7 @@ from odoo.http import Response
 
 
 class DrawOdooController(http.Controller):
+    
     @http.route("/api/v1/get-data-for-draw-graphs", 
                 auth="user", 
                 csrf=False,
@@ -21,18 +22,17 @@ class DrawOdooController(http.Controller):
             data[record.product].append(record)
         
         data_for_graph = {}
-        for records in data.values():
-            if records[0].product not in data_for_graph:
-                data_for_graph[records[0].product] = []
+        for product, records_list in data.items():
+            if product not in data_for_graph:
+                data_for_graph[product] = {"dates": [], "qty": []}
 
-            dates = records.mapped("date")
-            qty = records.mapped("qty")
-
-            data_for_graph[records[0]]["dates"] = dates
-            data_for_graph[records[0]]["qty"] = qty
+            for record in records_list:
+                data_for_graph[product]["dates"].append(record.date)
+                data_for_graph[product]["qty"].append(record.qty)
 
         json_response = json.dumps(data_for_graph)
         return http.Response(json_response, content_type="application/json")
+
 
     @http.route("/api/v1/save-numbers-of-products-history", 
                 auth="user", 
