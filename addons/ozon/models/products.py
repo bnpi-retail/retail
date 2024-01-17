@@ -3,8 +3,8 @@
 import ast
 
 from datetime import datetime, time, timedelta
-from operator import itemgetter
 from lxml import etree
+from operator import itemgetter
 
 from odoo import models, fields, api
 
@@ -22,6 +22,7 @@ from ..helpers import (
     split_keywords_on_slash,
     remove_latin_characters,
     remove_duplicates_from_list,
+    mean,
 )
 
 
@@ -230,6 +231,15 @@ class Product(models.Model):
     )
     pricing_strategy_id = fields.Many2one(
         "ozon.pricing_strategy", string="Стратегия назначения цен"
+    )
+    pricing_strategy_ids = fields.Many2many(
+        "ozon.pricing_strategy", string="Стратегии назначения цен"
+    )
+    product_calculator_ids = fields.One2many(
+        "ozon.product_calculator",
+        "product_id",
+        string="Рассчитываемые параметры",
+        readonly=True,
     )
     get_sales_count = fields.Integer(compute="compute_count_sales")
 
@@ -525,13 +535,6 @@ class Product(models.Model):
 
     def _compute_is_alive(self):
         for record in self:
-            # cost_price = self.env["ozon.fix_expenses"].search(
-            #     [
-            #         ("name", "=", "Себестоимость товара"),
-            #         ("price", ">", 0),
-            #         ("product_id", "=", record.id),
-            #     ]
-            # )
             cost_price = self.env["retail.cost_price"].search(
                 [("product_id", "=", record.products.id)]
             )
@@ -542,21 +545,26 @@ class Product(models.Model):
             else:
                 record.is_alive = False
 
-            print(f"Product {record} processed")
-
     def update_coefs_and_groups(self):
         all_products = self.search([])
-        # coefs
-        all_products._compute_coef_profitability()
-        all_products._compute_sales_per_day_last_30_days()
-        # is_alive
-        all_products._compute_is_alive()
+        for i, prod in enumerate(all_products):
+            # product calculator ids
+            prod._compute_product_calculator_ids()
+            # coefs
+            prod._compute_coef_profitability()
+            prod._compute_sales_per_day_last_30_days()
+            # is_alive
+            prod._compute_is_alive()
+            print(
+                f"{i} - Product {prod.id_on_platform} calculator_ids, coef_profitability, sales_per_day_last_30_days and is_alive were updated"
+            )
         # groups
         alive_products = self.search([("is_alive", "=", True)])
         not_alive_products = all_products - alive_products
-        for rec in not_alive_products:
+        for i, rec in enumerate(not_alive_products):
             rec.coef_profitability_group = ""
             rec.sales_per_day_last_30_days_group = ""
+            print(f"{i} - Not alive product {rec.id_on_platform} was updated")
         alive_products._compute_coef_profitability_group()
         alive_products._compute_sales_per_day_last_30_days_group()
 
@@ -718,7 +726,6 @@ class Product(models.Model):
         )
         comp_prices = self.price_history_ids.mapped("price")
         min_competitors_price = min(comp_prices) if comp_prices else None
-        print(self)
         return {
             "type": "ir.actions.act_window",
             "name": "Калькулятор",
@@ -745,3 +752,126 @@ class Product(models.Model):
         self.profitability_norm = False
         self.pricing_strategy_id = False
         return self.calculator()
+
+    def _compute_product_calculator_ids(self):
+        for rec in self:
+            if pc_recs := rec.product_calculator_ids:
+                for pc_rec in pc_recs:
+                    if pc_rec.name == "Цена":
+                        pc_rec.value = rec.price
+                    elif pc_rec.name == "Прибыль":
+                        pc_rec.value = rec.profit
+                    elif pc_rec.name == "Идеальная прибыль":
+                        pc_rec.value = rec.profit_ideal
+                    elif pc_rec.name == "Разница между прибылью и идеальной прибылью":
+                        pc_rec.value = rec.profit_delta
+                    elif pc_rec.name == "Отклонение от прибыли":
+                        pc_rec.value = rec.coef_profitability
+            else:
+                self.env["ozon.product_calculator"].create(
+                    [
+                        {
+                            "name": "Цена",
+                            "product_id": rec.id,
+                            "value": rec.price,
+                        },
+                        {
+                            "name": "Прибыль",
+                            "product_id": rec.id,
+                            "value": rec.profit,
+                        },
+                        {
+                            "name": "Идеальная прибыль",
+                            "product_id": rec.id,
+                            "value": rec.profit_ideal,
+                        },
+                        {
+                            "name": "Разница между прибылью и идеальной прибылью",
+                            "product_id": rec.id,
+                            "value": rec.profit_delta,
+                        },
+                        {
+                            "name": "Отклонение от прибыли",
+                            "product_id": rec.id,
+                            "value": rec.coef_profitability,
+                        },
+                    ]
+                )
+
+    @api.onchange("pricing_strategy_ids")
+    def onchange_pricing_stragegy_ids(self):
+        prod_calc_ids = self.product_calculator_ids.ids
+        prod_calc_recs = self.env["ozon.product_calculator"].browse(prod_calc_ids)
+        if not self.pricing_strategy_ids:
+            for prod_calc_rec in prod_calc_recs:
+                prod_calc_rec.new_value = 0
+            return
+
+        # constants
+        if self.trading_scheme in ["FBS", "FBS, FBO", ""]:
+            total_expenses = (
+                self.total_fbs_fix_expenses_max + self.total_fbs_percent_expenses
+            )
+        elif self.trading_scheme == "FBO":
+            total_expenses = (
+                self.total_fbo_fix_expenses_max + self.total_fbo_percent_expenses
+            )
+        prof_norm = self.profitability_norm.value if self.profitability_norm else 0.2
+
+        # TODO: как считать новые значения, если применяется несколько стратегий?
+        new_prices = []
+        new_profits = []
+        new_profit_ideals = []
+        new_profit_deltas = []
+        new_coef_profs = []
+        for price_strategy in self.pricing_strategy_ids:
+            strategy_value = price_strategy.value
+            strategy_id = price_strategy.strategy_id
+
+            if strategy_id == "lower_min_competitor":
+                if self.price_history_ids:
+                    comp_prices = self.price_history_ids.mapped("price")
+                    min_comp_price = min(comp_prices)
+                    new_price = round(min_comp_price * (1 - strategy_value), 2)
+
+            if strategy_id == "profitability_norm":
+                prof_norm = strategy_value
+                if prof_norm == 0:
+                    return
+                new_price = total_expenses / (1 - prof_norm)
+
+            new_profit = new_price - total_expenses
+            new_profit_ideal = new_price * prof_norm
+            new_profit_delta = new_profit - new_profit_ideal
+            new_coef_profitability = round(new_profit_delta / new_profit_ideal, 2)
+
+            new_prices.append(new_price)
+            new_profits.append(new_profit)
+            new_profit_ideals.append(new_profit_ideal)
+            new_profit_deltas.append(new_profit_delta)
+            new_coef_profs.append(new_coef_profitability)
+
+        for prod_calc_rec in prod_calc_recs:
+            if prod_calc_rec.name == "Цена":
+                prod_calc_rec.new_value = mean(new_prices)
+            elif prod_calc_rec.name == "Прибыль":
+                prod_calc_rec.new_value = mean(new_profits)
+            elif prod_calc_rec.name == "Идеальная прибыль":
+                prod_calc_rec.new_value = mean(new_profit_ideals)
+            elif prod_calc_rec.name == "Разница между прибылью и идеальной прибылью":
+                prod_calc_rec.new_value = mean(new_profit_deltas)
+            elif prod_calc_rec.name == "Отклонение от прибыли":
+                prod_calc_rec.new_value = mean(new_coef_profs)
+
+    def calculate(self):
+        return super(Product, self).write({})
+
+
+class ProductCalculator(models.Model):
+    _name = "ozon.product_calculator"
+    _description = "Калькулятор лота"
+
+    product_id = fields.Many2one("ozon.products", string="Товар Ozon")
+    name = fields.Char(string="Параметр")
+    value = fields.Float(string="Текущее значение")
+    new_value = fields.Float(string="Новое значение")

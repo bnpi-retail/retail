@@ -247,7 +247,7 @@ class ImportFile(models.Model):
                 with open(f_path) as csvfile:
                     price_history_data_list = []
                     reader = csv.DictReader(csvfile)
-                    for row in reader:
+                    for i, row in enumerate(reader):
                         # s0 = timeit.default_timer()
                         if ozon_product := self.is_ozon_product_exists(
                             id_on_platform=row["id_on_platform"]
@@ -387,7 +387,7 @@ class ImportFile(models.Model):
                         }
                         price_history_data_list.append(price_history_data)
                         print(
-                            f"price history for product {row['id_on_platform']} added"
+                            f"{i} - Price history for product {row['id_on_platform']} added"
                         )
                         # s5 = timeit.default_timer()
                         # print(f"total: {s5-s0}")
@@ -552,7 +552,7 @@ class ImportFile(models.Model):
 
         with open(f_path) as csvfile:
             reader = csv.DictReader(csvfile)
-            for row in reader:
+            for i, row in enumerate(reader):
                 if self.is_ozon_transaction_exists(
                     transaction_id=row["transaction_id"]
                 ):
@@ -587,7 +587,7 @@ class ImportFile(models.Model):
                     "posting_number": row["posting_number"],
                 }
                 ozon_transaction = self.env["ozon.transaction"].create(data)
-                print(f"Transaction {row['transaction_id']} was created")
+                print(f"{i} - Transaction {row['transaction_id']} was created")
                 # creating ozon.sale records
                 if row["name"] == "Доставка покупателю":
                     self.create_sale_from_transaction(
@@ -605,7 +605,7 @@ class ImportFile(models.Model):
 
         with open(f_path) as csvfile:
             reader = csv.DictReader(csvfile)
-            for row in reader:
+            for i, row in enumerate(reader):
                 if ozon_product := self.is_ozon_product_exists(
                     id_on_platform=row["id_on_platform"]
                 ):
@@ -616,7 +616,9 @@ class ImportFile(models.Model):
                                 "stocks_fbo": row["stocks_fbo"],
                             }
                         )
-                        print(f"Product {row['id_on_platform']} stocks were updated")
+                        print(
+                            f"{i} - Product {row['id_on_platform']} stocks were updated"
+                        )
                     else:
                         stock = self.env["ozon.stock"].create(
                             {
@@ -626,7 +628,9 @@ class ImportFile(models.Model):
                                 "_prod_id": row["product_id"],
                             }
                         )
-                        print(f"Product {row['id_on_platform']} stocks were created")
+                        print(
+                            f"{i} - Product {row['id_on_platform']} stocks were created"
+                        )
 
                     ozon_product.write(
                         {"stock": stock.id}, current_product=ozon_product
