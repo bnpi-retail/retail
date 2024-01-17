@@ -40,7 +40,7 @@ class DrawOdooController(http.Controller):
                 if week in grouped_records:
                     all_weeks[week] = [{"date": date, "qty": record.qty, "revenue": record.revenue} for date, group in grouped_records.items() for record in group]
                 else:
-                    all_weeks[week] = [{"date": week, "qty": 0, "revenue": 0}]
+                    all_weeks[week] = [{"date": week.strftime("%Y-%m-%d"), "qty": 0, "revenue": 0}]
 
             serialized_records = [record for week_records in all_weeks.values() for record in week_records]
 
