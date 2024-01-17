@@ -32,6 +32,7 @@
                         </field>
                         <field name="qty" />
                         <field name="revenue" />
+                        <field name="is_calculate" />
                     </group>
                 </form>
             </field>
