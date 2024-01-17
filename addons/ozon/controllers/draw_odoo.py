@@ -18,7 +18,7 @@ class DrawOdooController(http.Controller):
     def get_data_for_draw(self, **kwargs):
         model_sale = http.request.env["ozon.sale"]
 
-        current_date = date.today()
+        current_date = datetime.now().year
         current_year = date(current_date.year, 1, 1)
         last_year = date(current_date.year - 1, 1, 1)
         year_before_last = date(current_date.year - 2, 1, 1)
