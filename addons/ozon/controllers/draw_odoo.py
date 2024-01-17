@@ -24,11 +24,11 @@ class DrawOdooController(http.Controller):
         data_for_graph = {}
         for product, records_list in data.items():
             if product not in data_for_graph:
-                data_for_graph[product] = {"dates": [], "qty": []}
+                data_for_graph[product.id] = {"dates": [], "qty": []}
 
             for record in records_list:
-                data_for_graph[product]["dates"].append(record.date)
-                data_for_graph[product]["qty"].append(record.qty)
+                data_for_graph[product.id]["dates"].append(record.date)
+                data_for_graph[product.id]["qty"].append(record.qty)
 
         json_response = json.dumps(data_for_graph)
         return http.Response(json_response, content_type="application/json")
