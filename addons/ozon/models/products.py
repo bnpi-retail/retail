@@ -48,6 +48,24 @@ class Product(models.Model):
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
     old_price = fields.Float(string="Цена до учёта скидок", readonly=True)
+    ext_comp_min_price = fields.Float(
+        string="Минимальная цена товара у конкурентов на другой площадке", readonly=True
+    )
+    ozon_comp_min_price = fields.Float(
+        string="Минимальная цена товара у конкурентов на Ozon", readonly=True
+    )
+    self_marketplaces_min_price = fields.Float(
+        string="Минимальная цена вашего товара на других площадках", readonly=True
+    )
+    price_index = fields.Selection(
+        [
+            ("WITHOUT_INDEX", "Без индекса"),
+            ("PROFIT", "Выгодный"),
+            ("AVG_PROFIT", "Умеренный"),
+            ("NON_PROFIT", "Невыгодный"),
+        ],
+        string="Ценовой индекс",
+    )
     imgs_urls = fields.Char(string="Ссылки на изображения")
     imgs_html = fields.Html(compute="_compute_imgs")
     seller = fields.Many2one("retail.seller", string="Продавец")
