@@ -9,7 +9,7 @@ class ProductStock(models.Model):
     _description = "Остатки товаров"
 
     product = fields.Many2one("ozon.products", string="Товар Ozon")
-    timestamp = fields.Date(string="Дата", readonly=True)
+    timestamp = fields.Date(string='Дата', default=fields.Date.today)
     stocks_fbs = fields.Integer(string="Остатки FBS")
     stocks_reserved_fbs = fields.Integer(string="Зарезервирово остатков FBS")
     is_calculate = fields.Boolean(

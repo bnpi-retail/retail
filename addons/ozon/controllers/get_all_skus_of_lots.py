@@ -34,7 +34,6 @@ class LotsForGPTController(http.Controller):
             
             model_stock.create({
                 "product": product.id,
-                "timestamp": info["data"],
                 "stocks_fbs": info["present"],
                 "stocks_reserved_fbs": info["reserved"],
             })
