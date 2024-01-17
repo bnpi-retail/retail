@@ -65,6 +65,7 @@ class Product(models.Model):
             ("NON_PROFIT", "Невыгодный"),
         ],
         string="Ценовой индекс",
+        readonly=True,
     )
     imgs_urls = fields.Char(string="Ссылки на изображения")
     imgs_html = fields.Html(compute="_compute_imgs")
