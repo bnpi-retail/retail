@@ -17,7 +17,7 @@ class DrawOdooController(http.Controller):
                 methods=["GET"])
     def get_data_for_draw(self, **kwargs):
         model_sale = http.request.env["ozon.sale"]
-        
+
         current_date = datetime.now()
         current_year = datetime.combine(current_date, datetime.min.time())
         last_year = current_year - timedelta(days=365)
@@ -48,7 +48,7 @@ class DrawOdooController(http.Controller):
 
             for product, records_list in data.items():
                 if product not in data_for_graph:
-                    data_for_graph[product.id] = {"dates": [], "qty": [], "revenue": []}
+                    data_for_graph[(product.id, records_list[0].date.year)] = {"dates": [], "qty": [], "revenue": []}
 
                 records_list.sort(key=attrgetter('date'))
 
@@ -67,8 +67,8 @@ class DrawOdooController(http.Controller):
 
                 serialized_records = [{"week": week, "qty": data["qty"], "revenue": data["revenue"]} for week, data in all_weeks.items()]
 
-                data_for_graph[product.id].update({"records": serialized_records})
-
+                data_for_graph[(product.id, records_list[0].date.year)] = serialized_records
+                
         json_response = json.dumps(data_for_graph)
         return http.Response(json_response, content_type="application/json")
 
