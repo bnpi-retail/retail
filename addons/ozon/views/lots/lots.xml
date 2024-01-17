@@ -89,12 +89,22 @@
                                         <field name="profitability_norm" readonly="true" />
                                     </group>
                                 </group>
-                                <group string="Коэффициенты">
-                                    <field name="sales_per_day_last_30_days" readonly="true" />
-                                    <field name="sales_per_day_last_30_days_group" readonly="true" />
-                                    <field name="coef_profitability" widget="percentage"
-                                        style="max-width: 58px;" readonly="true" />
-                                    <field name="coef_profitability_group" readonly="true" />
+                                <group>
+                                    <group string="Коэффициенты">
+                                        <field name="sales_per_day_last_30_days" readonly="true" />
+                                        <field name="sales_per_day_last_30_days_group"
+                                            readonly="true" />
+                                        <field name="coef_profitability" widget="percentage"
+                                            style="max-width: 58px;" readonly="true" />
+                                        <field name="coef_profitability_group" readonly="true" />
+                                    </group>
+                                    <group string="Ценовой индекс и цены конкурентов">
+                                        <field name="price_index" />
+                                        <field name="ozon_comp_min_price" />
+                                        <field name="ext_comp_min_price" />
+                                        <field name="self_marketplaces_min_price" />
+                                    </group>
+
                                 </group>
                             </group>
                         </page>
