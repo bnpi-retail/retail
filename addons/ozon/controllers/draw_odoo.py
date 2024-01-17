@@ -6,7 +6,7 @@ from odoo.http import Response
 
 
 class DrawOdooController(http.Controller):
-    @http.route("/api/v1/get-all-skus-of-lots", 
+    @http.route("/api/v1/get-data-for-draw-graphs", 
                 auth="user", 
                 csrf=False,
                 methods=["GET"])
