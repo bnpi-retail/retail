@@ -681,9 +681,10 @@ class Product(models.Model):
     def draw_plot(self):
         model_stock = self.env["ozon.stock"]
         for rec in self:
-            records = model_stock.search(["product", "=", rec.id])
+            records = model_stock.search([("product", "=", rec.id)])
             for record in records:
                 record.is_calculate = True
+
             
     def create_mass_pricing(self):
         self.ensure_one()

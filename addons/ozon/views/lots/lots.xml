@@ -255,7 +255,7 @@
             <field name="binding_model_id" ref="model_ozon_products" />
             <field name="state">code</field>
             <field name="code">
-                records.draw_plot()
+                action = records.draw_plot()
             </field>
         </record>
 
