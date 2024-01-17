@@ -82,7 +82,7 @@ services:
       - POSTGRES_PASSWORD=odoo
       - POSTGRES_USER=odoo
     volumes:
-      - ./data/odoo-data:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
     restart: always
     networks:
       - odoo-network
