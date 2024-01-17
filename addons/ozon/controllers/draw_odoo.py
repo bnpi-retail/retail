@@ -36,14 +36,14 @@ class DrawOdooController(http.Controller):
 
             for record in records_list:
                 date = record.date
-                week_key = date.isocalendar()[1]
+                week_key = (date.year, date.isocalendar()[1])  # Используем кортеж из года и номера недели
                 
-                while week_key not in all_weeks:
+                while week_key[1] not in all_weeks:
                     date -= timedelta(days=1)
-                    week_key = date.isocalendar()[1]
+                    week_key = (date.year, date.isocalendar()[1])
                 
-                all_weeks[week_key]["qty"] += record.qty
-                all_weeks[week_key]["revenue"] += record.revenue
+                all_weeks[week_key[1]]["qty"] += record.qty
+                all_weeks[week_key[1]]["revenue"] += record.revenue
 
             serialized_records = [{"week": week, "qty": data["qty"], "revenue": data["revenue"]} for week, data in all_weeks.items()]
 
