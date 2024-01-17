@@ -11,7 +11,9 @@ class ProductSale(models.Model):
     date = fields.Date(string="Дата продажи", readonly=True)
     qty = fields.Integer(string="Кол-во проданного товара", readonly=True)
     revenue = fields.Float(string="Выручка", readonly=True)
-
+    is_calculate = fields.Boolean(
+        string="Учавствует в расчетах", default=False
+    )
     total_qty = fields.Integer(
         string="Кол-во проданного товара за всё время", computed="_compute_total_qty"
     )

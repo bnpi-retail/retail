@@ -679,9 +679,9 @@ class Product(models.Model):
         return res
 
     def draw_plot(self):
-        model_stock = self.env["ozon.stock"]
+        model_sale = self.env["ozon.sale"]
         for rec in self:
-            records = model_stock.search([("product", "=", rec.id)])
+            records = model_sale.search([("product", "=", rec.id)])
             for record in records:
                 record.is_calculate = True
 

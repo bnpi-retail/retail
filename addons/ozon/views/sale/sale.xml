@@ -51,6 +51,7 @@
                     </field>
                     <field name="qty" />
                     <field name="revenue" />
+                    <field name="is_calculate" />
                 </tree>
             </field>
         </record>

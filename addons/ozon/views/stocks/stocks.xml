@@ -43,7 +43,6 @@
                     <field name="stocks_reserved_fbs" />
                     
                     <field name="stocks_fbo" />
-                    <field name="is_calculate" />
                 </tree>
             </field>
         </record>
