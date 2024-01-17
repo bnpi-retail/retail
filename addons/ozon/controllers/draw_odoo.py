@@ -31,8 +31,9 @@ class DrawOdooController(http.Controller):
 
             records_list.sort(key=attrgetter('date'))
             grouped_records = {date.strftime("%Y-%m-%d"): list(group) for date, group in groupby(records_list, key=lambda x: x.date)}
+            serialized_records = [{"date": date, "qty": record.qty} for date, group in grouped_records.items() for record in group]
 
-            data_for_graph[product.id] = grouped_records
+            data_for_graph[product.id] = serialized_records
             # for record in records_list:
             #     data_for_graph[product.id]["dates"].append(record.date.strftime("%Y-%m-%d"))
             #     data_for_graph[product.id]["qty"].append(record.qty)
