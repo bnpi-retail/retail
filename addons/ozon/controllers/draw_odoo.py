@@ -30,7 +30,8 @@ class DrawOdooController(http.Controller):
                 data_for_graph[product.id] = {"dates": [], "qty": [], "revenue": []}
 
             # records_list.sort(key=attrgetter('date'))
-            grouped_records = {week: list(group) for week, group in groupby(records_list, key=lambda x: x.date)}
+            grouped_records = {date.strftime("%Y-%m-%d"): list(group) for date, group in groupby(records_list, key=lambda x: x.date)}
+
 
             data_for_graph[product.id] = grouped_records
             # for record in records_list:
