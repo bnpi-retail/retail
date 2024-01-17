@@ -34,6 +34,7 @@ class ImportFile(models.Model):
             ("ozon_commissions", "Комиссии Ozon по категориям"),
             ("ozon_transactions", "Транзакции Ozon"),
             ("ozon_stocks", "Остатки товаров Ozon"),
+            ("ozon_prices", "Цены Ozon"),
         ],
         string="Данные для загрузки",
     )
@@ -87,7 +88,8 @@ class ImportFile(models.Model):
             dict_products = {}
             for line in lines[1:]:
                 values_list = line.split(",")
-                if len(values_list) != 9: continue
+                if len(values_list) != 9:
+                    continue
                 search = values_list[1]
                 sku = values_list[3]
                 if search not in dict_products:
@@ -156,20 +158,24 @@ class ImportFile(models.Model):
                             product_id = None
                         if product_id:
                             record_competitors_products = (
-                                model_competitors_products.create({
-                                    "id_product": str(sku),
-                                    "name": str(name),
-                                    "url": str(href),
-                                    "product": product_id
-                                })
+                                model_competitors_products.create(
+                                    {
+                                        "id_product": str(sku),
+                                        "name": str(name),
+                                        "url": str(href),
+                                        "product": product_id,
+                                    }
+                                )
                             )
                         else:
                             record_competitors_products = (
-                                model_competitors_products.create({
-                                    "id_product": str(sku),
-                                    "name": str(name),
-                                    "url": str(href)
-                                })
+                                model_competitors_products.create(
+                                    {
+                                        "id_product": str(sku),
+                                        "name": str(name),
+                                        "url": str(href),
+                                    }
+                                )
                             )
                         ad_reference = "ozon.products_competitors," + str(
                             record_competitors_products.id
@@ -449,6 +455,8 @@ class ImportFile(models.Model):
 
             elif values["data_for_download"] == "ozon_stocks":
                 self.import_stocks(content)
+            elif values["data_for_download"] == "ozon_prices":
+                self.import_prices(content)
 
         return super(ImportFile, self).create(values)
 
@@ -635,6 +643,33 @@ class ImportFile(models.Model):
                     ozon_product.write(
                         {"stock": stock.id}, current_product=ozon_product
                     )
+
+        os.remove(f_path)
+
+    def import_prices(self, content):
+        f_path = "/mnt/extra-addons/ozon/__pycache__/prices.csv"
+        with open(f_path, "w") as f:
+            f.write(content)
+
+        with open(f_path) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for i, row in enumerate(reader):
+                if ozon_product := self.is_ozon_product_exists(
+                    id_on_platform=row["id_on_platform"]
+                ):
+                    ozon_product.write(
+                        {
+                            "price": row["price"],
+                            "old_price": row["old_price"],
+                            "ext_comp_min_price": row["ext_comp_min_price"],
+                            "ozon_comp_min_price": row["ozon_comp_min_price"],
+                            "self_marketplaces_min_price": row[
+                                "self_marketplaces_min_price"
+                            ],
+                            "price_index": row["price_index"],
+                        }
+                    )
+                print(f"{i} - Product {row['id_on_platform']} prices were updated")
 
         os.remove(f_path)
 
