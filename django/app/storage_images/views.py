@@ -78,4 +78,4 @@ class DrawGraph(APIView):
 
         if response.status_code != 200:
             return Response({'message': 'Bad Request'}, status=400)
-        return Response({'message': f"{response.status_code}--{last_file_url}--{current_file_url}"})
+        return Response({'message': f"{response.status_code}--{product_id}--{last_file_url}--{current_file_url}"})
