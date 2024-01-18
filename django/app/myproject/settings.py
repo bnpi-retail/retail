@@ -24,7 +24,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://www.ozon.ru",
     "https://retail-react.bnpi.dev",
     "https://localhost:3000",
-    "django:8000",
+    "http://django:8000",
 ]
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = [
@@ -32,7 +32,7 @@ CORS_ORIGIN_WHITELIST = [
     "https://www.ozon.ru",
     "https://retail-react.bnpi.dev",
     "https://localhost:3000",
-    "django:8000"
+    "https://django:8000"
 ]
 CORS_ALLOW_CREDENTIALS = True
 
