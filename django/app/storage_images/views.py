@@ -74,7 +74,7 @@ class DrawGraph(APIView):
         ])
         csv_data.seek(0)
 
-        endpoint = "http://odoo-web:8069/take_ozon_data"
+        endpoint = "http://odoo-web:8069/ozon_urls_images_lots"
         headers = {"Cookie": f"session_id={session_id}"}
         files = {'file': ('output.csv', csv_data)}
 
