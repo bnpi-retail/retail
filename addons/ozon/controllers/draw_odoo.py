@@ -18,8 +18,7 @@ class DrawOdooController(http.Controller):
     def get_data_for_draw(self, **kwargs):
         model_sale = http.request.env["ozon.sale"]
 
-        current_date = datetime.now()
-        current_year = datetime.combine(current_date, datetime.min.time())
+        current_year = datetime.combine(datetime.now(), datetime.min.time())
         last_year = current_year - timedelta(days=365)
         year_before_last = current_year - timedelta(days=365 * 2)
 
@@ -39,7 +38,7 @@ class DrawOdooController(http.Controller):
         ])
 
         data_for_graph = {}
-        for records in [records_current_year, records_last_year, records_year_before_last]:
+        for records in [records_current_year]:
             data = {}
             for record in records:
                 if record.product not in data:
@@ -51,7 +50,6 @@ class DrawOdooController(http.Controller):
                     data_for_graph[f"{product.id}--{records_list[0].date.year}"] = {"dates": [], "qty": [], "revenue": []}
 
                 records_list.sort(key=attrgetter('date'))
-
                 all_weeks = {i: {"qty": 0, "revenue": 0} for i in range(1, 53)}
 
                 for record in records_list:
