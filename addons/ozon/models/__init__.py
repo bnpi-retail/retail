@@ -18,6 +18,8 @@ from . import supplementary_categories
 from . import products
 from . import lots_for_gpt
 from . import tracked_search_queries
+from . import posting
+from . import warehouse
 
 from .competitors import products_competitors
 from .competitors import price_history_competitors
