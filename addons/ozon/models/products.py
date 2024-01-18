@@ -714,8 +714,6 @@ class Product(models.Model):
             records = model_sale.search([("product", "=", rec.id)])
 
             for record in records:
-                record.is_calculate = True
-
                 if record.date.year == time_now.year:
                     records_this_year["dates"].append(records.date)
                     records_this_year["num"].append(records.qty)
@@ -724,7 +722,7 @@ class Product(models.Model):
                     records_last_year["dates"].append(records.date)
                     records_last_year["num"].append(records.qty)
 
-        raise ValueError(f"{records_this_year}--{len(records)}")
+        raise ValueError(f"{records_last_year}--{len(records)}")
         endpoint = "https://google.com"
         response = requests.get(endpoint)
 
