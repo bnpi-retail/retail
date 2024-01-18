@@ -728,7 +728,7 @@ class Product(models.Model):
 
             rec.imgs_html_analysis_data = False
             
-            current_year = datetime.combine(datetime.now(), datetime.min.time())
+            current_year = datetime.now().year
             imgs_urls = [f"http://81.31.247.40:9090/{rec.id}--{current_year}.png"]
 
             render_html = []
