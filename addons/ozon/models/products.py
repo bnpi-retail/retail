@@ -66,10 +66,18 @@ class Product(models.Model):
         string="Ценовой индекс",
         readonly=True,
     )
-    imgs_url_this_year = fields.Char(string="Ссылка на объект аналитический данных за этот")
-    imgs_url_last_year = fields.Char(string="Ссылки на объект аналитических данных за прошлый год")
-    imgs_html_analysis_data_this_year = fields.Html(compute="_compute_imgs_analysis_data_last_year")
-    imgs_html_analysis_data_last_year = fields.Html(compute="_compute_imgs_analysis_data_this_year")
+    imgs_url_this_year = fields.Char(
+        string="Ссылка на объект аналитический данных за этот"
+    )
+    imgs_url_last_year = fields.Char(
+        string="Ссылки на объект аналитических данных за прошлый год"
+    )
+    imgs_html_analysis_data_this_year = fields.Html(
+        compute="_compute_imgs_analysis_data_this_year"
+    )
+    imgs_html_analysis_data_last_year = fields.Html(
+        compute="_compute_imgs_analysis_data_last_year"
+    )
 
     imgs_urls = fields.Char(string="Ссылки на изображения")
     imgs_html = fields.Html(compute="_compute_imgs")
@@ -221,6 +229,8 @@ class Product(models.Model):
     )
 
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
+    posting_ids = fields.Many2many("ozon.posting", string="Отправления Ozon")
+    postings_count = fields.Integer(compute="_compute_count_postings")
     sales = fields.One2many(
         "ozon.sale",
         "product",
@@ -267,6 +277,7 @@ class Product(models.Model):
         readonly=True,
     )
     get_sales_count = fields.Integer(compute="compute_count_sales")
+    price_history_count = fields.Integer(compute="compute_count_price_history")
 
     @api.depends("sales")
     def compute_count_sales(self):
@@ -296,8 +307,6 @@ class Product(models.Model):
                 "interval": "day",
             },
         }
-
-    price_history_count = fields.Integer(compute="compute_count_price_history")
 
     @api.depends("price_our_history_ids")
     def compute_count_price_history(self):
@@ -745,17 +754,17 @@ class Product(models.Model):
 
     def _compute_imgs_analysis_data_last_year(self):
         for rec in self:
-            rec.imgs_html = False
+            rec.imgs_html_analysis_data_last_year = False
             if rec.imgs_url_last_year:
-                rec.imgs_html = "\n".join(
+                rec.imgs_html_analysis_data_last_year = "\n".join(
                     f"<img src='{rec.imgs_url_last_year}' width='400'/>"
                 )
 
     def _compute_imgs_analysis_data_this_year(self):
         for rec in self:
-            rec.imgs_html = False
+            rec.imgs_html_analysis_data_this_year = False
             if rec.imgs_url_this_year:
-                rec.imgs_html = "\n".join(
+                rec.imgs_html_analysis_data_this_year = "\n".join(
                     f"<img src='{rec.imgs_url_this_year}' width='400'/>"
                 )
 
@@ -924,6 +933,24 @@ class Product(models.Model):
 
     def calculate(self):
         return super(Product, self).write({})
+
+    @api.depends("posting_ids")
+    def _compute_count_postings(self):
+        for record in self:
+            record.postings_count = len(record.posting_ids)
+
+    def get_postings(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "История продаж",
+            "view_mode": "tree",
+            "res_model": "ozon.posting",
+            "domain": [
+                ("product_ids", "in", [self.id]),
+            ],
+            "context": {"create": False},
+        }
 
 
 class ProductCalculator(models.Model):

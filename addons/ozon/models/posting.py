@@ -15,7 +15,9 @@ class Posting(models.Model):
     order_id = fields.Char(
         string="Идентификатор заказа, к которому относится отправление"
     )
-    status = fields.Char(string="Статус отправления")
+    status = fields.Selection(
+        [("delivered", "Доставлено"), ("cancelled", "Отменено")], string="Статус"
+    )
     product_ids = fields.Many2many("ozon.products", string="Товары Ozon")
     region = fields.Char(string="Регион доставки")
     city = fields.Char(string="Город доставки")
