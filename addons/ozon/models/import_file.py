@@ -35,6 +35,7 @@ class ImportFile(models.Model):
             ("ozon_transactions", "Транзакции Ozon"),
             ("ozon_stocks", "Остатки товаров Ozon"),
             ("ozon_prices", "Цены Ozon"),
+            ("ozon_urls_images_lots", 'Ссылки графиков "История продаж" для лотов'),
         ],
         string="Данные для загрузки",
     )
@@ -228,7 +229,18 @@ class ImportFile(models.Model):
                 )
 
         if "csv" in mime_type:
-            if values["data_for_download"] == "logistics_cost":
+            if values["data_for_download"] == "ozon_urls_images_lots":
+                model_products = self.env["ozon.products"]
+
+                for line in lines:
+                    if not line: continue
+                    
+                    product_id, url_this_year, url_last_year = line.split(",")
+                    record = model_products.search([("id", "=", product_id)])
+                    record.imgs_url_last_year = url_last_year
+                    record.imgs_url_this_year = url_this_year
+
+            elif values["data_for_download"] == "logistics_cost":
                 logistics_ozon = self.env["ozon.logistics_ozon"]
 
                 for line in lines:

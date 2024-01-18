@@ -1,4 +1,6 @@
 import io
+import csv
+import requests
 import matplotlib.pyplot as plt
 
 from django.core.files.base import ContentFile
@@ -6,6 +8,8 @@ from django.core.files.storage import default_storage
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from account.services import connect_to_odoo_api_with_auth
 
 
 class DrawGraph(APIView):
@@ -24,7 +28,6 @@ class DrawGraph(APIView):
         plt.figure(figsize=(10, 5))
 
         plt.plot(current_dates, current_num, marker='o', label='Текущий год')
-
         plt.plot(last_dates, last_num, marker='o', label='Предыдущий год')
 
         plt.title('График продаж')
@@ -39,10 +42,39 @@ class DrawGraph(APIView):
         plt.savefig(buffer, format='png')
         buffer.seek(0)
 
-        filename = 'graph.png'
-        file_path = default_storage.save(filename, ContentFile(buffer.read()))
+        current_filename = 'current_graph.png'
+        current_file_path = default_storage.save(current_filename, ContentFile(buffer.read()))
+        current_file_url = default_storage.url(current_file_path)
 
-        file_url = default_storage.url(file_path)
+        buffer.seek(0)
+        buffer.truncate()
 
-        data = {'current_data': current_data, 'last_data': last_data, 'graph_url': file_url}
-        return Response(data, status=200)
+        plt.clf()
+        plt.plot(last_dates, last_num, marker='o', label='Предыдущий год')
+
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
+
+        last_filename = 'last_graph.png'
+        last_file_path = default_storage.save(last_filename, ContentFile(buffer.read()))
+        last_file_url = default_storage.url(last_file_path)
+
+        session_id = connect_to_odoo_api_with_auth()
+        if session_id is False: return Response({'status': False})
+
+        csv_data = io.StringIO()
+        csv_writer = csv.writer(csv_data)
+        csv_writer.writerow(['id', 'url_last_year', 'url_this_year'])
+        csv_writer.writerow([id, last_file_url, current_file_url])
+        csv_data.seek(0)
+
+        endpoint = "http://odoo-web:8069/take_ozon_data"
+        headers = {"Cookie": f"session_id={session_id}"}
+        files = {'file': ('output.csv', csv_data)}
+
+        response = requests.post(endpoint, headers=headers, files=files)
+        if response.status_code != 200:
+            return Response({'message': 'Bad Request'}, status=400)
+        return Response({'message': str(response.status_code)})
+
