@@ -724,7 +724,7 @@ class Product(models.Model):
                     records_last_year["dates"] = records.date
                     records_last_year["num"] = records.qty
 
-        raise ValueError(records_this_year)
+        raise ValueError(f"{records_this_year}--{len(records)}")
         endpoint = "https://google.com"
         response = requests.get(endpoint)
 
