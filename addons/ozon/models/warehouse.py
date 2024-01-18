@@ -8,4 +8,4 @@ class Warehouse(models.Model):
     _description = "Склад Ozon"
 
     name = fields.Char(string="Название")
-    w_id = fields.Integer(string="Идентификатор")
+    w_id = fields.Char(string="Идентификатор")

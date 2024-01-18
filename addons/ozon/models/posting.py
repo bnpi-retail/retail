@@ -7,12 +7,12 @@ class Posting(models.Model):
     _name = "ozon.posting"
     _description = "Отправление Ozon"
 
-    in_process_at = fields.Datetime(string="Дата и время начала обработки отправления")
+    posting_number = fields.Char(string="Номер отправления", index=True)
+    in_process_at = fields.Date(string="Дата начала обработки отправления")
     trading_scheme = fields.Selection(
         [("FBS", "FBS"), ("FBO", "FBO")], string="Схема торговли"
     )
-    posting_number = fields.Char(string="Номер отправления")
-    order_id = fields.Integer(
+    order_id = fields.Char(
         string="Идентификатор заказа, к которому относится отправление"
     )
     status = fields.Char(string="Статус отправления")
