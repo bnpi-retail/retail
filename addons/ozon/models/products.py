@@ -728,6 +728,12 @@ class Product(models.Model):
         endpoint = "https://google.com"
         response = requests.get(endpoint)
 
+        self.env.user.notify_warning(
+            title="Status Code",
+            message=f"Status code: {response.status_code}",
+            sticky=False
+        )
+        
     def create_mass_pricing(self):
         self.ensure_one()
         return {
