@@ -45,6 +45,7 @@ EXTENSION_APPS = [
     'main',
     'account',
     'ozon_plugin',
+    'storage_images',
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',

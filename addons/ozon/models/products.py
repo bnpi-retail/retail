@@ -1,6 +1,7 @@
 import ast
 import requests
 
+from os import getenv
 from datetime import datetime, time, timedelta
 from operator import itemgetter
 from lxml import etree
@@ -707,7 +708,7 @@ class Product(models.Model):
 
         time_now = datetime.now()
 
-        records_this_year = {"dates": [], "num": []}
+        records_current_year = {"dates": [], "num": []}
         records_last_year = {"dates": [], "num": []}
 
         for rec in self:
@@ -715,17 +716,31 @@ class Product(models.Model):
 
             for record in records:
                 if record.date.year == time_now.year:
-                    records_this_year["dates"].append(records.date)
-                    records_this_year["num"].append(records.qty)
+                    records_current_year["dates"].append(records.date)
+                    records_current_year["num"].append(records.qty)
 
                 elif record.date.year == time_now.year - 1:
                     records_last_year["dates"].append(records.date)
                     records_last_year["num"].append(records.qty)
 
-        raise ValueError(f"{records_last_year}--{len(records)}")
-        endpoint = "https://google.com"
-        response = requests.get(endpoint)
+        endpoint = "http://django:8000/api/v1/draw_graph"
 
+        payload = {
+            "current": records_current_year,
+            "last": records_last_year,
+        }
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Token {getenv('API_TOKEN_DJANGO')}',
+        }
+
+        response = requests.post(endpoint, json=payload, headers=headers)
+        
+        if response.status_code != 200:
+            raise ValueError(response.status_code)
+        raise ValueError(response.json())
+    
     def create_mass_pricing(self):
         self.ensure_one()
         return {

@@ -8,8 +8,9 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('', include('main.urls')),
-    path('account/', include('account.urls')),
     path('admin/', admin.site.urls),
+    path('account/', include('account.urls')),
+    path('api/v1/', include('storage_images.urls')),
     path('', include('ozon_plugin.urls')),
     path('', include('gpt.urls')),
     path('api/token/', obtain_auth_token, name='api_token_obtain'),
