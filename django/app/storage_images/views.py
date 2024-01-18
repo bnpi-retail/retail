@@ -67,7 +67,11 @@ class DrawGraph(APIView):
         csv_data = io.StringIO()
         csv_writer = csv.writer(csv_data)
         csv_writer.writerow(['id', 'url_last_year', 'url_this_year'])
-        csv_writer.writerow([product_id, last_file_url, current_file_url])
+        csv_writer.writerow([
+            product_id, 
+            f"https://retail-extension.bnpi.dev{last_file_url}",
+            f"https://retail-extension.bnpi.dev{current_file_url}"
+        ])
         csv_data.seek(0)
 
         endpoint = "http://odoo-web:8069/take_ozon_data"
