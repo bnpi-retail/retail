@@ -36,6 +36,7 @@ class ImportFile(models.Model):
             ("ozon_stocks", "Остатки товаров Ozon"),
             ("ozon_prices", "Цены Ozon"),
             ("ozon_urls_images_lots", 'Ссылки графиков "История продаж" для лотов'),
+            ("ozon_postings", "Отправления Ozon"),
         ],
         string="Данные для загрузки",
     )
@@ -469,6 +470,8 @@ class ImportFile(models.Model):
                 self.import_stocks(content)
             elif values["data_for_download"] == "ozon_prices":
                 self.import_prices(content)
+            elif values["data_for_download"] == "ozon_postings":
+                self.import_postings(content)
 
         return super(ImportFile, self).create(values)
 
@@ -683,6 +686,60 @@ class ImportFile(models.Model):
                     )
                 print(f"{i} - Product {row['id_on_platform']} prices were updated")
 
+        os.remove(f_path)
+
+    def import_postings(self, content):
+        f_path = "/mnt/extra-addons/ozon/__pycache__/postings.csv"
+        with open(f_path, "w") as f:
+            f.write(content)
+
+        with open(f_path) as csvfile:
+            reader = csv.DictReader(csvfile)
+            data = []
+            for i, row in enumerate(reader):
+                posting_number = row["posting_number"]
+                status = row["status"]
+                if self.env["ozon.posting"].search(
+                    [("posting_number", "=", posting_number), ("status", "=", status)]
+                ):
+                    continue
+                """Создаем отправление только если хотя бы один из товаров в отправлении
+                соответствует нашему товару"""
+                skus = ast.literal_eval(row["skus"])
+                product_ids = []
+                for sku in skus:
+                    if ozon_product := self.is_ozon_product_exists(id_on_platform=sku):
+                        product_ids.append(ozon_product.id)
+                if not product_ids:
+                    continue
+
+                if warehouse := self.env["ozon.warehouse"].search(
+                    [("w_id", "=", row["warehouse_id"])]
+                ):
+                    pass
+                else:
+                    warehouse = self.env["ozon.warehouse"].create(
+                        {"name": row["warehouse_name"], "w_id": row["warehouse_id"]}
+                    )
+
+                data.append(
+                    {
+                        "posting_number": posting_number,
+                        "in_process_at": row["in_process_at"],
+                        "trading_scheme": row["trading_scheme"],
+                        "order_id": row["order_id"],
+                        "status": status,
+                        "product_ids": product_ids,
+                        "region": row["region"],
+                        "city": row["city"],
+                        "warehouse_id": warehouse.id,
+                        "cluster_from": row["cluster_from"],
+                        "cluster_to": row["cluster_to"],
+                    }
+                )
+                print(f"{i} - Posting {row['posting_number']} was created")
+
+            self.env["ozon.posting"].create(data)
         os.remove(f_path)
 
     def is_product_fee_exists(self, ozon_product):

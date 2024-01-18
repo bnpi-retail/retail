@@ -1,0 +1,45 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_warehouse_form" model="ir.ui.view">
+            <field name="name">Склад Ozon</field>
+            <field name="model">ozon.warehouse</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="name" />
+                        <field name="w_id" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_warehouse_tree" model="ir.ui.view">
+            <field name="name">Склады Ozon</field>
+            <field name="model">ozon.warehouse</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" />
+                    <field name="w_id" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_warehouse">
+            <field name="name">Склады Ozon</field>
+            <field name="res_model">ozon.warehouse</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Склады Ozon"
+            id="menu_warehouse"
+            parent="menu_postings"
+            action="action_warehouse"
+            sequence="2" />
+
+    </data>
+</odoo>

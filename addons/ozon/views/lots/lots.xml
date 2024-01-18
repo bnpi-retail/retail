@@ -16,6 +16,10 @@
                         <button class="oe_stat_button" type="object" name="get_sales">
                             <field string="История продаж" name="get_sales_count" widget="statinfo" />
                         </button>
+                        <button class="oe_stat_button" type="object" name="get_postings">
+                            <field string="Отправления" name="postings_count"
+                                widget="statinfo" />
+                        </button>
                     </div>
 
                     <separator string="Калькулятор стратегий назначения цен" />
@@ -230,8 +234,10 @@
                         </page>
                         <page id="page_analysis_data" string="Аналитические данные">
                             <group>
-                                <field name="imgs_html_analysis_data_this_year" string="График продаж за текущий год" />
-                                <field name="imgs_html_analysis_data_last_year" string="График продаж за прошлый год" />
+                                <field name="imgs_html_analysis_data_this_year"
+                                    string="График продаж за текущий год" />
+                                <field name="imgs_html_analysis_data_last_year"
+                                    string="График продаж за прошлый год" />
                             </group>
                         </page>
                     </notebook>
