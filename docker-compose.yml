@@ -97,7 +97,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./data/odoo-data:/var/lib/odoo
+      - ./data/postgres:/var/lib/odoo
       - ./config:/etc/odoo:rw
       - ./addons:/mnt/extra-addons:rw
     tty: true
