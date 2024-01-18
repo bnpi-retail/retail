@@ -739,7 +739,6 @@ class Product(models.Model):
 
         if response.status_code != 200:
             raise ValueError(response.status_code)
-        # raise ValueError(response.status_code)
         raise ValueError(response.json())
     
     def create_mass_pricing(self):
