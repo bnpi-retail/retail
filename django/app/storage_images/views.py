@@ -74,7 +74,8 @@ class DrawGraph(APIView):
         files = {'file': ('output.csv', csv_data)}
 
         response = requests.post(endpoint, headers=headers, files=files)
+
         if response.status_code != 200:
             return Response({'message': 'Bad Request'}, status=400)
-        return Response({'message': str(response.status_code)})
+        return Response({'message': f"{response.status_code}--{last_file_url}--{current_file_url}"})
 
