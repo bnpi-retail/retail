@@ -16,6 +16,7 @@ class DrawGraph(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+        product_id = request.data.get('product_id', None)
         current_data = request.data.get('current', {})
         last_data = request.data.get('last', {})
 
@@ -66,7 +67,7 @@ class DrawGraph(APIView):
         csv_data = io.StringIO()
         csv_writer = csv.writer(csv_data)
         csv_writer.writerow(['id', 'url_last_year', 'url_this_year'])
-        csv_writer.writerow([id, last_file_url, current_file_url])
+        csv_writer.writerow([product_id, last_file_url, current_file_url])
         csv_data.seek(0)
 
         endpoint = "http://odoo-web:8069/take_ozon_data"
@@ -78,4 +79,3 @@ class DrawGraph(APIView):
         if response.status_code != 200:
             return Response({'message': 'Bad Request'}, status=400)
         return Response({'message': f"{response.status_code}--{last_file_url}--{current_file_url}"})
-

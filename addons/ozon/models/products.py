@@ -732,23 +732,17 @@ class Product(models.Model):
                     records_last_year["dates"].append(records.date.strftime('%Y-%m-%d'))
                     records_last_year["num"].append(records.qty)
 
-        endpoint = "http://django:8000/api/v1/draw_graph"
+            endpoint = "http://django:8000/api/v1/draw_graph"
+            payload = {"product_id": rec.id,
+                       "current": records_current_year,
+                       "last": records_last_year}
+            api_token = getenv('API_TOKEN_DJANGO')
+            headers = {'Authorization': f'Token {api_token}'}
+            response = requests.post(endpoint, json=payload, headers=headers)
 
-        payload = {
-            "current": records_current_year,
-            "last": records_last_year,
-        }
-        
-        api_token = getenv('API_TOKEN_DJANGO')
-        headers = {
-            'Authorization': f'Token {api_token}',
-        }
-
-        response = requests.post(endpoint, json=payload, headers=headers)
-
-        if response.status_code != 200:
-            raise ValueError(response.status_code)
-        raise ValueError(response.json())
+            if response.status_code != 200:
+                raise ValueError(response.status_code)
+            raise ValueError(response.json())
     
     def create_mass_pricing(self):
         self.ensure_one()
