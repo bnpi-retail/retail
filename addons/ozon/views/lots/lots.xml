@@ -234,6 +234,9 @@
                         </page>
                         <page id="page_analysis_data" string="Аналитические данные">
                             <group>
+                                <field name="imgs_url_last_year"/>
+                                <field name="imgs_url_this_year"/>
+                                    
                                 <field name="imgs_html_analysis_data_this_year"
                                     string="График продаж за текущий год" />
                                 <field name="imgs_html_analysis_data_last_year"
