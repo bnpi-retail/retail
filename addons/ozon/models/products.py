@@ -703,31 +703,31 @@ class Product(models.Model):
         return res
 
     def draw_plot(self):
-        # model_sale = self.env["ozon.sale"]
+        model_sale = self.env["ozon.sale"]
 
-        # time_now = datetime.now()
+        time_now = datetime.now()
 
-        # records_this_year = [{"dates": [], "num": []}]
-        # records_last_year = [{"dates": [], "num": []}]
+        records_this_year = [{"dates": [], "num": []}]
+        records_last_year = [{"dates": [], "num": []}]
 
-        # for rec in self:
-        #     records = model_sale.search([("product", "=", rec.id)])
+        for rec in self:
+            records = model_sale.search([("product", "=", rec.id)])
 
-        #     for record in records:
-        #         record.is_calculate = True
+            for record in records:
+                record.is_calculate = True
 
-        #         if record.date.year == time_now.year:
-        #             if record.date > time_now:
-        #                 records_this_year["dates"] = records.date
-        #                 records_this_year["num"] = records.qty
+                if record.date.year == time_now.year:
+                    if record.date > time_now:
+                        records_this_year["dates"] = records.date
+                        records_this_year["num"] = records.qty
 
-        #             elif record.date.year == time_now.year - 1:
-        #                 records_last_year["dates"] = records.date
-        #                 records_last_year["num"] = records.qty
+                    elif record.date.year == time_now.year - 1:
+                        records_last_year["dates"] = records.date
+                        records_last_year["num"] = records.qty
 
+        raise ValueError(records_this_year)
         endpoint = "https://google.com"
         response = requests.get(endpoint)
-        raise ValueError(response.status_code)
 
     def create_mass_pricing(self):
         self.ensure_one()
