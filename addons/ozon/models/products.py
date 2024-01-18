@@ -729,8 +729,15 @@ class Product(models.Model):
             rec.imgs_html_analysis_data = False
             
             current_year = datetime.now().year
-            imgs_urls = [f"http://81.31.247.40:9090/{rec.id}--{current_year}.png"]
+            previous_year = current_year - 1
+            previous_two_years = current_year - 2
             
+            imgs_urls = [
+                f"http://81.31.247.40:9090/{rec.id}--{current_year}.png",
+                f"http://81.31.247.40:9090/{rec.id}--{previous_year}.png",
+                f"http://81.31.247.40:9090/{rec.id}--{previous_two_years}.png"
+            ]
+
             render_html = []
             for url in imgs_urls:
                 render_html.append(f"<img src='{url}' width='400'/>")
