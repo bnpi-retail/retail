@@ -730,13 +730,14 @@ class Product(models.Model):
             "last": records_last_year,
         }
         
+        api_token = getenv('API_TOKEN_DJANGO')
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'Token {getenv('API_TOKEN_DJANGO')}',
+            'Authorization': f'Token {api_token}',
         }
 
         response = requests.post(endpoint, json=payload, headers=headers)
-        
+
         if response.status_code != 200:
             raise ValueError(response.status_code)
         raise ValueError(response.json())
