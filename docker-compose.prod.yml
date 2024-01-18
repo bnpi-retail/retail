@@ -20,6 +20,7 @@ services:
       - ./nginx/certificate/retail-temporal.bnpi.dev:/etc/letsencrypt/live/retail-temporal.bnpi.dev
       - ./nginx/certificate/retail-extension.bnpi.dev:/etc/letsencrypt/live/retail-extension.bnpi.dev
       - ./nginx/certificate/retail-react.bnpi.dev:/etc/letsencrypt/live/retail-react.bnpi.dev
+      - ./nginx/certificate/retail-cdn.bnpi.dev:/etc/letsencrypt/live/retail-cdn.bnpi.dev
       - /home/sammy/static/images/odoo:/usr/share/nginx/images
 
   ### Django
