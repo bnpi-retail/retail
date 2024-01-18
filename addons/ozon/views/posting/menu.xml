@@ -1,0 +1,8 @@
+<odoo>
+    <data>
+        <menuitem name="Отправления"
+            id="menu_postings"
+            parent="ozon.menu_root"
+            sequence="50" />
+    </data>
+</odoo>

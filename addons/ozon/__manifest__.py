@@ -42,6 +42,8 @@
         "security/tasks/ir.model.access.csv",
         "security/indirect_percent_expenses/ir.model.access.csv",
         "security/supplementary_categories/ir.model.access.csv",
+        "security/posting/ir.model.access.csv",
+        "security/warehouse/ir.model.access.csv",
         ### views
         "views/menu.xml",
         "views/price/menu.xml",
@@ -78,6 +80,9 @@
         "views/stocks/stocks.xml",
         "views/sale/sale.xml",
         "views/tasks/tasks.xml",
+        "views/posting/menu.xml",
+        "views/posting/posting.xml",
+        "views/posting/warehouse.xml",
     ],
     "demo": [
         "demo/demo.xml",
