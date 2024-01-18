@@ -733,9 +733,9 @@ class Product(models.Model):
             previous_two_years = current_year - 2
             
             imgs_urls = [
-                f"http://81.31.247.40:9090/{rec.id}--{current_year}.png",
-                f"http://81.31.247.40:9090/{rec.id}--{previous_year}.png",
-                f"http://81.31.247.40:9090/{rec.id}--{previous_two_years}.png"
+                f"https://retail.bnpi.dev/{rec.id}--{current_year}.png",
+                f"https://retail.bnpi.dev/{rec.id}--{previous_year}.png",
+                f"https://retail.bnpi.dev/{rec.id}--{previous_two_years}.png"
             ]
 
             render_html = []
