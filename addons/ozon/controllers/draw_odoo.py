@@ -38,7 +38,7 @@ class DrawOdooController(http.Controller):
         ])
 
         data_for_graph = {}
-        for records in [records_current_year]:
+        for records in [records_current_year, records_last_year, records_year_before_last]:
             data = {}
             for record in records:
                 if record.product not in data:

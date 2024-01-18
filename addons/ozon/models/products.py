@@ -725,14 +725,18 @@ class Product(models.Model):
 
     def _compute_imgs_analysis_data(self):
         for rec in self:
-            rec.imgs_html_analysis_data = False
-            if rec.imgs_urls:
-                render_html = []
-                imgs_urls_list = ast.literal_eval(rec.imgs_urls)
-                for img in imgs_urls_list:
-                    render_html.append(f"<img src='{img}' width='400'/>")
 
-                rec.imgs_html_analysis_data = "\n".join(render_html)
+            rec.imgs_html_analysis_data = False
+            
+            current_year = datetime.combine(datetime.now(), datetime.min.time())
+            imgs_urls = [f"{rec.id}--{current_year}"]
+
+            render_html = []
+            imgs_urls_list = ast.literal_eval(imgs_urls)
+            for img in imgs_urls_list:
+                render_html.append(f"<img src='{img}' width='400'/>")
+
+            rec.imgs_html_analysis_data = "\n".join(render_html)
 
     def _compute_imgs(self):
         for rec in self:
