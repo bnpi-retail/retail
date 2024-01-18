@@ -729,7 +729,7 @@ class Product(models.Model):
             rec.imgs_html_analysis_data = False
             
             current_year = datetime.combine(datetime.now(), datetime.min.time())
-            imgs_urls = [f"{rec.id}--{current_year}"]
+            imgs_urls = [f"http://81.31.247.40:9090/{rec.id}--{current_year}.png"]
 
             render_html = []
             imgs_urls_list = ast.literal_eval(imgs_urls)
