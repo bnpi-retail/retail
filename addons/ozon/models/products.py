@@ -740,7 +740,7 @@ class Product(models.Model):
 
             render_html = []
             for url in imgs_urls:
-                render_html.append(f"<img src='{url}' width='400'/>")
+                render_html.append(f"<img src='{url}' width='800'/>")
 
                 rec.imgs_html_analysis_data = "\n".join(render_html)
 
