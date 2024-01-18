@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-# import plotly
 import ast
+import requests
 
 from datetime import datetime, time, timedelta
-from lxml import etree
 from operator import itemgetter
+from lxml import etree
 
 from odoo import models, fields, api
 
@@ -67,8 +66,11 @@ class Product(models.Model):
         string="Ценовой индекс",
         readonly=True,
     )
-    imgs_urls_analysis_data = fields.Char(string="Ссылки на изображения для аналитических данных")
-    imgs_html_analysis_data = fields.Html(compute="_compute_imgs_analysis_data")
+    imgs_url_this_year = fields.Char(string="Ссылка на объект аналитический данных за этот")
+    imgs_url_last_year = fields.Char(string="Ссылки на объект аналитических данных за прошлый год")
+    imgs_html_analysis_data_this_year = fields.Html(compute="_compute_imgs_analysis_data_last_year")
+    imgs_html_analysis_data_last_year = fields.Html(compute="_compute_imgs_analysis_data_this_year")
+
     imgs_urls = fields.Char(string="Ссылки на изображения")
     imgs_html = fields.Html(compute="_compute_imgs")
     seller = fields.Many2one("retail.seller", string="Продавец")
@@ -643,7 +645,6 @@ class Product(models.Model):
                 }
             )
             percent_expenses_records.append(per_exp_record.id)
-            # добавить к нему уже имеющуюся запись "Процент комиссии за продажу"
             sale_percent_com_recs = product.percent_expenses.search(
                 [
                     ("product_id", "=", product.id),
@@ -702,11 +703,30 @@ class Product(models.Model):
         return res
 
     def draw_plot(self):
-        model_sale = self.env["ozon.sale"]
-        for rec in self:
-            records = model_sale.search([("product", "=", rec.id)])
-            for record in records:
-                record.is_calculate = True
+        # model_sale = self.env["ozon.sale"]
+
+        # time_now = datetime.now()
+
+        # records_this_year = [{"dates": [], "num": []}]
+        # records_last_year = [{"dates": [], "num": []}]
+
+        # for rec in self:
+        #     records = model_sale.search([("product", "=", rec.id)])
+
+        #     for record in records:
+        #         record.is_calculate = True
+
+        #         if record.date.year == time_now.year:
+        #             if record.date > time_now:
+        #                 records_this_year["dates"] = records.date
+        #                 records_this_year["num"] = records.qty
+
+        #             elif record.date.year == time_now.year - 1:
+        #                 records_last_year["dates"] = records.date
+        #                 records_last_year["num"] = records.qty
+
+        endpoint = "https://google.com"
+        response = requests.get(endpoint)
 
     def create_mass_pricing(self):
         self.ensure_one()
@@ -723,25 +743,21 @@ class Product(models.Model):
             },
         }
 
-    def _compute_imgs_analysis_data(self):
+    def _compute_imgs_analysis_data_last_year(self):
         for rec in self:
+            rec.imgs_html = False
+            if rec.imgs_url_last_year:
+                rec.imgs_html = "\n".join(
+                    f"<img src='{rec.imgs_url_last_year}' width='400'/>"
+                )
 
-            rec.imgs_html_analysis_data = False
-            
-            current_year = datetime.now().year
-            previous_year = current_year - 1
-            previous_two_years = current_year - 2
-            
-            imgs_urls = [
-                f"https://retail-cdn.bnpi.dev/{rec.id}--{current_year}.png",
-                f"https://retail-cdn.bnpi.dev/{rec.id}--{previous_year}.png",
-            ]
-
-            render_html = []
-            for url in imgs_urls:
-                render_html.append(f"<img src='{url}' width='800'/>")
-
-                rec.imgs_html_analysis_data = "\n".join(render_html)
+    def _compute_imgs_analysis_data_this_year(self):
+        for rec in self:
+            rec.imgs_html = False
+            if rec.imgs_url_this_year:
+                rec.imgs_html = "\n".join(
+                    f"<img src='{rec.imgs_url_this_year}' width='400'/>"
+                )
 
     def _compute_imgs(self):
         for rec in self:
