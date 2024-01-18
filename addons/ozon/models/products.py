@@ -717,12 +717,12 @@ class Product(models.Model):
                 record.is_calculate = True
 
                 if record.date.year == time_now.year:
-                    records_this_year["dates"] = records.date
-                    records_this_year["num"] = records.qty
+                    records_this_year["dates"].append(records.date)
+                    records_this_year["num"].append(records.qty)
 
                 elif record.date.year == time_now.year - 1:
-                    records_last_year["dates"] = records.date
-                    records_last_year["num"] = records.qty
+                    records_last_year["dates"].append(records.date)
+                    records_last_year["num"].append(records.qty)
 
         raise ValueError(f"{records_this_year}--{len(records)}")
         endpoint = "https://google.com"
