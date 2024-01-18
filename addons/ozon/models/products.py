@@ -731,12 +731,13 @@ class Product(models.Model):
             current_year = datetime.now().year
             imgs_urls = [f"http://81.31.247.40:9090/{rec.id}--{current_year}.png"]
 
-            render_html = []
-            imgs_urls_list = ast.literal_eval(imgs_urls)
-            for img in imgs_urls_list:
-                render_html.append(f"<img src='{img}' width='400'/>")
+            for url in imgs_urls:
+                render_html = []
+                imgs_urls_list = ast.literal_eval(imgs_urls)
+                for img in imgs_urls_list:
+                    render_html.append(f"<img src='{img}' width='400'/>")
 
-            rec.imgs_html_analysis_data = "\n".join(render_html)
+                rec.imgs_html_analysis_data = "\n".join(render_html)
 
     def _compute_imgs(self):
         for rec in self:
