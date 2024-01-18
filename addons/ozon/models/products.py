@@ -735,7 +735,6 @@ class Product(models.Model):
             imgs_urls = [
                 f"https://retail-cdn.bnpi.dev/{rec.id}--{current_year}.png",
                 f"https://retail-cdn.bnpi.dev/{rec.id}--{previous_year}.png",
-                f"https://retail-cdn.bnpi.dev/{rec.id}--{previous_two_years}.png"
             ]
 
             render_html = []
