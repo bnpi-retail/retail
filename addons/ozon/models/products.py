@@ -707,8 +707,8 @@ class Product(models.Model):
 
         time_now = datetime.now()
 
-        records_this_year = [{"dates": [], "num": []}]
-        records_last_year = [{"dates": [], "num": []}]
+        records_this_year = {"dates": [], "num": []}
+        records_last_year = {"dates": [], "num": []}
 
         for rec in self:
             records = model_sale.search([("product", "=", rec.id)])
