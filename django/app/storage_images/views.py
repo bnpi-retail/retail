@@ -49,6 +49,8 @@ class DrawGraph(APIView):
         dates = data.get('dates', [])
         num = data.get('num', [])
 
+        return dates, num
+    
         if not dates or not num:
             return [], []
 
