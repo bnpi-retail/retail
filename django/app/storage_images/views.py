@@ -31,6 +31,10 @@ class DrawGraph(APIView):
         plt.xlabel('Дата')
         plt.ylabel('Проданных товаров, кол.')
         plt.legend()
+
+        plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+        
         plt.xticks(rotation=45)
 
         if num:
