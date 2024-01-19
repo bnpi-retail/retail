@@ -1,5 +1,5 @@
 from odoo import http
-
+import base64
 
 class OzonUrlsImagesLotsImport(http.Controller):
     @http.route(
@@ -10,11 +10,11 @@ class OzonUrlsImagesLotsImport(http.Controller):
     )
     def import_ozon_urls_images_lots(self, **kwargs):
         model_ozon_import_file = http.request.env["ozon.import_file"]
-        file_storage = kwargs.get("file")
-        f = file_storage.read().decode("utf-8")
+        uploaded_file = http.request.httprequest.files.get('file')
+        file_binary_data = uploaded_file.read()
         values = {
             "data_for_download": "ozon_urls_images_lots",
-            "file": f,
+            "file": base64.b64encode(file_binary_data),
         }
         model_ozon_import_file.create(values)
 

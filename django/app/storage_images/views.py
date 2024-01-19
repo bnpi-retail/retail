@@ -81,11 +81,7 @@ class DrawGraph(APIView):
         csv_data = io.StringIO()
         csv_writer = csv.writer(csv_data)
         csv_writer.writerow(['id', 'url_last_year', 'url_this_year'])
-        csv_writer.writerow([
-            product_id, 
-            last_url,
-            current_url,
-        ])
+        csv_writer.writerow([product_id, last_url, current_url])
         csv_data.seek(0)
 
         session_id = connect_to_odoo_api_with_auth()
