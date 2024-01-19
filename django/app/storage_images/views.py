@@ -67,6 +67,17 @@ class DrawGraph(APIView):
         grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
         grouped_num = weekly_data['num'].tolist()
 
+        df = pd.DataFrame({'date': pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31', freq='D'), 'num': 0})
+
+        # Устанавливаем дату в качестве индекса
+        df.set_index('date', inplace=True)
+
+        # Группируем по неделям и суммируем продажи (в данном случае, так как все значения равны 0, сумма также будет 0)
+        weekly_data = df.resample('W-Mon').sum()
+
+        grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
+        grouped_num = weekly_data['num'].tolist()
+
         return grouped_dates, grouped_num
 
     def post(self, request):
