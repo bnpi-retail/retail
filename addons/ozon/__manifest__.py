@@ -44,6 +44,7 @@
         "security/supplementary_categories/ir.model.access.csv",
         "security/posting/ir.model.access.csv",
         "security/warehouse/ir.model.access.csv",
+        "security/fbo_supply_order/ir.model.access.csv",
         ### views
         "views/menu.xml",
         "views/price/menu.xml",
@@ -83,6 +84,8 @@
         "views/posting/menu.xml",
         "views/posting/posting.xml",
         "views/posting/warehouse.xml",
+        "views/fbo_supply_order/fbo_supply_order.xml",
+        "views/fbo_supply_order/fbo_supply_order_product.xml",
     ],
     "demo": [
         "demo/demo.xml",
