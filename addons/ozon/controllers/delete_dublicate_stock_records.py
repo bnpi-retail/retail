@@ -1,8 +1,7 @@
 import json
-import ast
-
+from itertools import groupby
 from odoo import http
-from odoo.http import Response, request
+from odoo.http import Response
 from datetime import datetime
 
 
@@ -17,8 +16,9 @@ class AnalysysDataLotsController(http.Controller):
         
         target_date = datetime.strptime('01.16.24', '%m.%d.%y')
         records = model_products.search([('timestamp', '=', target_date.strftime('%Y-%m-%d %H:%M:%S'))])
-        grouped_records = records.group_by('product')
-
+        sorted_records = records.sorted(key=lambda r: (r.product.id, r.timestamp), reverse=True)
+        grouped_records = {key: list(group) for key, group in groupby(sorted_records, key=lambda r: r.product.id)}
+        
         response_data = {"response": "success", "message": f"Records for delete: {len(grouped_records)}"}
         response_json = json.dumps(response_data)
         status_code = 200
