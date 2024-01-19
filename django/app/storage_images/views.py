@@ -90,7 +90,7 @@ class DrawGraph(APIView):
         grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
         grouped_num = weekly_data['num'].tolist()
 
-        return grouped_dates, grouped_num
+        return dates, num
 
     def post(self, request):
         product_id = request.data.get('product_id', None)
