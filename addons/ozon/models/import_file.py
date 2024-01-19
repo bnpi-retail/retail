@@ -729,14 +729,10 @@ class ImportFile(models.Model):
                 if not product_ids:
                     continue
 
-                if warehouse := self.env["ozon.warehouse"].search(
-                    [("w_id", "=", row["warehouse_id"])]
-                ):
-                    pass
-                else:
-                    warehouse = self.env["ozon.warehouse"].create(
-                        {"name": row["warehouse_name"], "w_id": row["warehouse_id"]}
-                    )
+                warehouse = self.get_or_create_warehouse(
+                    warehouse_id=row["warehouse_id"],
+                    warehouse_name=row["warehouse_name"],
+                )
 
                 data.append(
                     {
