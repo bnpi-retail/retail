@@ -27,8 +27,8 @@ class DrawGraph(APIView):
         plt.ylabel('Проданных товаров, кол.')
         plt.legend()
         plt.xticks(rotation=45)
-        plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m.%Y'))
+        # plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
+        # plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m.%Y'))
 
         if num:
             plt.yticks(np.arange(min(num), max(num) + 1, step=1))
