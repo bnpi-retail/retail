@@ -28,7 +28,7 @@ class DrawGraph(APIView):
         plt.plot(dates, num, marker='o', label='Текущий год' if is_current else 'Предыдущий год')
 
         if num:
-            rolling_mean = pd.Series(num).rolling(window=7).mean()
+            rolling_mean = pd.Series(num).rolling(window=3).mean()
             plt.plot(dates, rolling_mean, linestyle='--', color='red', label='Средняя скользящая')
 
         plt.title('График продаж')
