@@ -79,7 +79,7 @@ class ImportFile(models.Model):
         if values["data_for_download"] == "ozon_urls_images_lots":
             model_products = self.env["ozon.products"]
 
-            for line in lines:
+            for line in lines[1:]:
                 if not line: continue
                 
                 product_id, url_this_year, url_last_year = line.split(",")
