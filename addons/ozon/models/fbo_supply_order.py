@@ -8,7 +8,8 @@ class OzonFboSupplyOrder(models.Model):
     _description = "Завершённые заявки на поставку на склад Ozon (FBO)"
 
     created_at = fields.Date(string="Дата создания")
-    supply_order_id = fields.Integer(string="Идентификатор")
+    supply_date = fields.Date(string="Дата поставки")
+    supply_order_id = fields.Char(string="Идентификатор")
     total_items_count = fields.Integer(string="Кол-во позиций товаров в заявке")
     total_quantity = fields.Integer(string="Кол-во единиц товаров в заявке")
     warehouse_id = fields.Many2one("ozon.warehouse", string="Склад поставки")
@@ -17,6 +18,12 @@ class OzonFboSupplyOrder(models.Model):
         "fbo_supply_order_id",
         string="Товары в заявке",
     )
+
+    def name_get(self):
+        result = []
+        for record in self:
+            result.append((record.id, f"Поставка {record.supply_order_id} "))
+        return result
 
 
 class OzonFboSupplyOrderProduct(models.Model):

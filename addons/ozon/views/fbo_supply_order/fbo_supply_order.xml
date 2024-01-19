@@ -13,7 +13,12 @@
                         <field name="warehouse_id" />
                         <field name="total_items_count" />
                         <field name="total_quantity" />
-                        <field name="fbo_supply_order_products_ids" />
+                        <field name="fbo_supply_order_products_ids">
+                            <tree>
+                                <field name="product_id" />
+                                <field name="qty" />
+                            </tree>
+                        </field>
                     </group>
                 </form>
             </field>
@@ -26,6 +31,7 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="created_at" />
+                    <field name="supply_date" />
                     <field name="supply_order_id" />
                     <field name="warehouse_id" />
                     <field name="total_items_count" />
