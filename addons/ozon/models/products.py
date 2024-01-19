@@ -729,14 +729,22 @@ class Product(models.Model):
 
             for record in records:
                 if record.date.year == time_now.year:
-                    records_current_year["dates"].append(
-                        records.date.strftime("%Y-%m-%d")
-                    )
-                    records_current_year["num"].append(records.qty)
+                    for record in records_current_year:
+                        records_current_year["dates"] \
+                            .append(record.date.strftime("%Y-%m-%d"))
+
+                    for record in records_current_year:
+                        records_current_year["num"] \
+                            .append(record.qty)
 
                 elif record.date.year == time_now.year - 1:
-                    records_last_year["dates"].append(records.date.strftime("%Y-%m-%d"))
-                    records_last_year["num"].append(records.qty)
+                    for record in records_current_year:
+                        records_current_year["dates"] \
+                            .append(record.date.strftime("%Y-%m-%d"))
+
+                    for record in records_current_year:
+                        records_current_year["num"] \
+                            .append(record.date.qty)
 
             endpoint = "http://django:8000/api/v1/draw_graph"
             payload = {
