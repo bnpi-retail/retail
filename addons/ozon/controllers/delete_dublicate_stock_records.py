@@ -18,8 +18,15 @@ class AnalysysDataLotsController(http.Controller):
         records = model_products.search([('timestamp', '=', target_date.strftime('%Y-%m-%d %H:%M:%S'))])
         sorted_records = records.sorted(key=lambda r: (r.product.id, r.timestamp), reverse=True)
         grouped_records = {key: list(group) for key, group in groupby(sorted_records, key=lambda r: r.product.id)}
-        
-        response_data = {"response": "success", "message": f"Records for delete: {len(grouped_records)}"}
+
+        records_to_keep = model_products
+        for product_id, group in grouped_records.items():
+            latest_record = max(group, key=lambda r: r.timestamp)
+            records_to_keep |= latest_record
+
+        records_to_delete = records - records_to_keep
+
+        response_data = {"response": "success", "message": f"Records for delete: {len(records_to_delete)}"}
         response_json = json.dumps(response_data)
         status_code = 200
 
