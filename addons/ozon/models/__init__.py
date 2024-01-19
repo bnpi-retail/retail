@@ -20,6 +20,7 @@ from . import lots_for_gpt
 from . import tracked_search_queries
 from . import posting
 from . import warehouse
+from . import fbo_supply_order
 
 from .competitors import products_competitors
 from .competitors import price_history_competitors

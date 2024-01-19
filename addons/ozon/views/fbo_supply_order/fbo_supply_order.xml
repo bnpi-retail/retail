@@ -1,0 +1,52 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_fbo_supply_order_form" model="ir.ui.view">
+            <field name="name">Завершённые заявки на поставку на склад Ozon (FBO)</field>
+            <field name="model">ozon.fbo_supply_order</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="created_at" />
+                        <field name="supply_order_id" />
+                        <field name="warehouse_id" />
+                        <field name="total_items_count" />
+                        <field name="total_quantity" />
+                        <field name="fbo_supply_order_products_ids" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_fbo_supply_order_tree" model="ir.ui.view">
+            <field name="name">Завершённые заявки на поставку на склад Ozon (FBO)</field>
+            <field name="model">ozon.fbo_supply_order</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="created_at" />
+                    <field name="supply_order_id" />
+                    <field name="warehouse_id" />
+                    <field name="total_items_count" />
+                    <field name="total_quantity" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_fbo_supply_order">
+            <field name="name">Заявки на поставку</field>
+            <field name="res_model">ozon.fbo_supply_order</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Поставки"
+            id="menu_fbo_supply_order"
+            parent="ozon.menu_root"
+            action="action_fbo_supply_order"
+            sequence="39" />
+
+    </data>
+</odoo>
