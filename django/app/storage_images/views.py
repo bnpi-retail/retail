@@ -27,8 +27,8 @@ class DrawGraph(APIView):
         plt.ylabel('Проданных товаров, кол.')
         plt.legend()
         plt.xticks(rotation=45)
-        # plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-        # plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m.%Y'))
+        plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m.%Y'))
 
         if num:
             plt.yticks(np.arange(min(num), max(num) + 1, step=1))
@@ -46,13 +46,11 @@ class DrawGraph(APIView):
         return f"https://retail-extension.bnpi.dev{file_url}"
 
     def group_by_week(self, data, year):
-        # dates = data.get('dates', [])
-        # num = data.get('num', [])
+        dates = data.get('dates', [])
+        num = data.get('num', [])
 
-        # return dates, num
-    
-        # if not dates or not num:
-        #     return [], []
+        if not dates or not num:
+            return [], []
 
         # df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
 
@@ -68,13 +66,8 @@ class DrawGraph(APIView):
         # grouped_num = weekly_data['num'].tolist()
 
         df = pd.DataFrame({'date': pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31', freq='D'), 'num': 0})
-
-        # Устанавливаем дату в качестве индекса
         df.set_index('date', inplace=True)
-
-        # Группируем по неделям и суммируем продажи (в данном случае, так как все значения равны 0, сумма также будет 0)
         weekly_data = df.resample('W-Mon').sum()
-
         grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
         grouped_num = weekly_data['num'].tolist()
 
