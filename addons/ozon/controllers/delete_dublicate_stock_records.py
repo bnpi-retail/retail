@@ -26,7 +26,7 @@ class AnalysysDataLotsController(http.Controller):
             else:
                 records_to_keep.add(record.product.id)
 
-        response_data = {"response": "success", "message": f"Records for delete: {len(records)}"}
+        response_data = {"response": "success", "message": f"Records for delete: {len(records_to_remove)}"}
         response_json = json.dumps(response_data)
         status_code = 200
 
