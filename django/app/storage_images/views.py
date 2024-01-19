@@ -46,9 +46,19 @@ class DrawGraph(APIView):
         dates = data.get('dates', [])
         num = data.get('num', [])
 
+        # Создаем DataFrame из данных
         df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
-        weekly_data = df.resample('W-Mon', on='date').sum()
+
+        # Устанавливаем индекс как временной ряд
+        df.set_index('date', inplace=True)
+
+        # Группируем по неделям и суммируем продажи
+        weekly_data = df.resample('W-Mon').sum()
+
+        # Переиндексируем, чтобы включить недели без продаж и установить для них значение 0
         weekly_data = weekly_data.asfreq('W-Mon', fill_value=0)
+
+        # Преобразуем обратно в списки
         grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
         grouped_num = weekly_data['num'].tolist()
 
