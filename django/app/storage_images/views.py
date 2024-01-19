@@ -89,15 +89,10 @@ class DrawGraph(APIView):
             sorted_dates, sorted_num = [], []
 
         df = pd.DataFrame({'date': pd.to_datetime(sorted_dates), 'num': sorted_num})
-        df = df.loc[:, ~df.columns.duplicated()]
-
-        df = df.groupby('date').sum()
-
+        df.set_index('date', inplace=True)
         # full_date_range = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
         # df = df.reindex(full_date_range, fill_value=0)
-
-        weekly_data = df.resample('W-Mon', on='date').sum().fillna(0)
-
+        weekly_data = df.resample('W-Mon').sum()
         grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
         grouped_num = weekly_data['num'].tolist()
 
