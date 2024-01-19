@@ -29,7 +29,9 @@ class DrawGraph(APIView):
         plt.xticks(rotation=45)
         plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m.%Y'))
-        plt.yticks(np.arange(min(num), max(num) + 1, step=1))
+        if num:
+            plt.yticks(np.arange(min(num), max(num) + 1, step=1))
+
         plt.tight_layout()
 
         buffer = io.BytesIO()
