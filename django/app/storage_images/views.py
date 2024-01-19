@@ -86,7 +86,7 @@ class DrawGraph(APIView):
         df.set_index('date', inplace=True)
         # full_date_range = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
         # df = df.reindex(full_date_range, fill_value=0)
-        weekly_data = df.resample('W-Mon').sum()
+        weekly_data = df.resample('W-Mon').sum().fillna(0)
         grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
         grouped_num = weekly_data['num'].tolist()
 
