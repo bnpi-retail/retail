@@ -17,14 +17,17 @@ class AnalysysDataLotsController(http.Controller):
         target_date = datetime.strptime('01.16.24', '%m.%d.%y')
         records = model_products.search([('timestamp', '=', target_date.strftime('%Y-%m-%d %H:%M:%S'))])
 
-        records_to_keep = set()
+        records_unique = set()
         records_to_remove = []
 
         for record in records:
-            if record.product.id in records_to_keep:
-                records_to_remove.append(record.id)
+            if record.product.id in records_unique:
+                records_to_remove.append(record)
             else:
-                records_to_keep.add(record.product.id)
+                records_unique.add(record.product.id)
+
+        for record in records_to_remove:
+            record.unlink()
 
         response_data = {"response": "success", "message": f"Records for delete: {len(records_to_remove)}"}
         response_json = json.dumps(response_data)
