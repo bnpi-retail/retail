@@ -21,6 +21,9 @@ class DrawGraph(APIView):
 
     def generate_plot_image(self, product_id, dates, num, is_current=True):
         plt.figure(figsize=(10, 5))
+
+        dates = pd.to_datetime(dates, errors='coerce')
+        
         plt.plot(dates, num, marker='o', label='Текущий год' if is_current else 'Предыдущий год')
 
         if num:
