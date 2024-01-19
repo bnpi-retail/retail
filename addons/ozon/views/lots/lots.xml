@@ -20,6 +20,10 @@
                             <field string="Отправления" name="postings_count"
                                 widget="statinfo" />
                         </button>
+                        <button class="oe_stat_button" type="object" name="get_supply_orders">
+                            <field string="Поставки FBO" name="supply_orders_count"
+                                widget="statinfo" />
+                        </button>
                     </div>
 
                     <separator string="Калькулятор стратегий назначения цен" />
@@ -108,7 +112,6 @@
                                         <field name="ext_comp_min_price" />
                                         <field name="self_marketplaces_min_price" />
                                     </group>
-
                                 </group>
                             </group>
                         </page>

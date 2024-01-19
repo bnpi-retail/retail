@@ -37,6 +37,7 @@ class ImportFile(models.Model):
             ("ozon_prices", "Цены Ozon"),
             ("ozon_urls_images_lots", 'Ссылки графиков "История продаж" для лотов'),
             ("ozon_postings", "Отправления Ozon"),
+            ("ozon_fbo_supply_orders", "Поставки FBO"),
         ],
         string="Данные для загрузки",
     )
@@ -80,8 +81,9 @@ class ImportFile(models.Model):
             model_products = self.env["ozon.products"]
 
             for line in lines[1:]:
-                if not line: continue
-                
+                if not line:
+                    continue
+
                 product_id, url_this_year, url_last_year = line.split(",")
                 record = model_products.search([("id", "=", product_id)])
                 record.imgs_url_last_year = url_last_year
@@ -472,6 +474,8 @@ class ImportFile(models.Model):
                 self.import_prices(content)
             elif values["data_for_download"] == "ozon_postings":
                 self.import_postings(content)
+            elif values["data_for_download"] == "ozon_fbo_supply_orders":
+                self.import_fbo_supply_orders(content)
 
         return super(ImportFile, self).create(values)
 
@@ -688,6 +692,18 @@ class ImportFile(models.Model):
 
         os.remove(f_path)
 
+    def get_or_create_warehouse(self, warehouse_id, warehouse_name):
+        """Returns existing warehouse or create a new one"""
+        if warehouse := self.env["ozon.warehouse"].search(
+            [("w_id", "=", warehouse_id)]
+        ):
+            pass
+        else:
+            warehouse = self.env["ozon.warehouse"].create(
+                {"name": warehouse_name, "w_id": warehouse_id}
+            )
+        return warehouse
+
     def import_postings(self, content):
         f_path = "/mnt/extra-addons/ozon/__pycache__/postings.csv"
         with open(f_path, "w") as f:
@@ -737,9 +753,62 @@ class ImportFile(models.Model):
                         "cluster_to": row["cluster_to"],
                     }
                 )
-                print(f"{i} - Posting {row['posting_number']} was created")
+                print(f"{i} - Posting {row['posting_number']} was imported")
 
             self.env["ozon.posting"].create(data)
+        os.remove(f_path)
+
+    def import_fbo_supply_orders(self, content):
+        f_path = "/mnt/extra-addons/ozon/__pycache__/fbo_supply_orders.csv"
+        with open(f_path, "w") as f:
+            f.write(content)
+
+        with open(f_path) as csvfile:
+            reader = csv.DictReader(csvfile)
+
+            for i, row in enumerate(reader):
+                supply_order_id = row["supply_order_id"]
+                if self.env["ozon.fbo_supply_order"].search(
+                    [("supply_order_id", "=", supply_order_id)]
+                ):
+                    continue
+                warehouse = self.get_or_create_warehouse(
+                    warehouse_id=row["warehouse_id"],
+                    warehouse_name=row["warehouse_name"],
+                )
+                fbo_supply_order_data = {
+                    "created_at": row["created_at"],
+                    "supply_order_id": supply_order_id,
+                    "total_items_count": row["total_items_count"],
+                    "total_quantity": row["total_quantity"],
+                    "warehouse_id": warehouse.id,
+                }
+                if row["supply_date"]:
+                    fbo_supply_order_data["supply_date"] = row["supply_date"]
+
+                fbo_supply_order = self.env["ozon.fbo_supply_order"].create(
+                    fbo_supply_order_data
+                )
+                items = ast.literal_eval(row["items"])
+                fbo_supply_order_product_data = []
+                for item in items:
+                    if ozon_product := self.is_ozon_product_exists(
+                        id_on_platform=item["sku"]
+                    ):
+                        fbo_supply_order_product_data.append(
+                            {
+                                "fbo_supply_order_id": fbo_supply_order.id,
+                                "product_id": ozon_product.id,
+                                "qty": item["qty"],
+                            }
+                        )
+                fbo_supply_order_products = self.env[
+                    "ozon.fbo_supply_order_product"
+                ].create(fbo_supply_order_product_data)
+                fbo_supply_order.write(
+                    {"fbo_supply_order_products_ids": fbo_supply_order_products.ids}
+                )
+                print(f"{i} - Supply order {supply_order_id} was imported")
         os.remove(f_path)
 
     def is_product_fee_exists(self, ozon_product):

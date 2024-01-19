@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ozon_fbo_supply_order,Access Ozon FBO Supply Order,model_ozon_fbo_supply_order,base.group_user,1,1,1,1
+access_ozon_fbo_supply_order_product,Access Ozon FBO Supply Order Product,model_ozon_fbo_supply_order_product,base.group_user,1,1,1,1
