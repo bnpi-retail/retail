@@ -74,10 +74,10 @@ class Product(models.Model):
         string="Ссылки на объект аналитических данных за прошлый год"
     )
     imgs_html_analysis_data_this_year = fields.Html(
-        compute="_compute_imgs_analysis_data_this_year"
+        compute="_compute_imgs_analysis_data_last_year"
     )
     imgs_html_analysis_data_last_year = fields.Html(
-        compute="_compute_imgs_analysis_data_last_year"
+        compute="_compute_imgs_analysis_data_this_year"
     )
 
     imgs_urls = fields.Char(string="Ссылки на изображения")
@@ -768,17 +768,17 @@ class Product(models.Model):
 
     def _compute_imgs_analysis_data_last_year(self):
         for rec in self:
-            rec.imgs_html_analysis_data_this_year = False
+            rec.imgs_html_analysis_data_last_year = False
             if rec.imgs_url_last_year:
-                rec.imgs_html_analysis_data_this_year = (
+                rec.imgs_html_analysis_data_last_year = (
                     f"<img src='{rec.imgs_url_last_year}' width='800'/>"
                 )
 
     def _compute_imgs_analysis_data_this_year(self):
         for rec in self:
-            rec.imgs_html_analysis_data_last_year = False
+            rec.imgs_html_analysis_data_this_year = False
             if rec.imgs_url_this_year:
-                rec.imgs_html_analysis_data_last_year = (
+                rec.imgs_html_analysis_data_this_year = (
                     f"<img src='{rec.imgs_url_this_year}' width='800'/>"
                 )
 
