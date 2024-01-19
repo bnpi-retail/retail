@@ -771,7 +771,7 @@ class Product(models.Model):
             rec.imgs_html_analysis_data_last_year = False
             if rec.imgs_url_last_year:
                 rec.imgs_html_analysis_data_last_year = (
-                    f"<img src='{rec.imgs_url_last_year}' width='400'/>"
+                    f"<img src='{rec.imgs_url_last_year}' width='600'/>"
                 )
 
     def _compute_imgs_analysis_data_this_year(self):
@@ -779,7 +779,7 @@ class Product(models.Model):
             rec.imgs_html_analysis_data_this_year = False
             if rec.imgs_url_this_year:
                 rec.imgs_html_analysis_data_this_year = (
-                    f"<img src='{rec.imgs_url_this_year}' width='400'/>"
+                    f"<img src='{rec.imgs_url_this_year}' width='600'/>"
                 )
 
     def _compute_imgs(self):
