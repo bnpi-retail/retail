@@ -53,6 +53,9 @@ class CompetitorsGetSKUs(http.Controller):
                 'sales': ad['sales'],
                 'price_without_sale': ad['price'],
                 'price': ad['final_price'],
+                'price': ad['final_price'],
+                'comments': ad['comments'],
+                'rating': ad['rating'],
             }
             if ad.get('ozon_card_price'):
                 values['price_with_card'] = ad.get('ozon_card_price')

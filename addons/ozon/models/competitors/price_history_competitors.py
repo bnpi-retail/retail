@@ -18,7 +18,16 @@ class PriceHistoryCompetitors(models.Model):
 
     sales = fields.Integer(string='Продажи')
     balance = fields.Integer(string='Остатки')
-    # product_id = fields.Many2one('ozon.products', string='Лот')
+    revenue = fields.Float(string='Выручка', compute='_compute_revenue')
+
+    rating = fields.Integer(string='Рейтинг')
+    comments = fields.Integer(string='Комментарии')
+    requests = fields.Integer(string='Запросы')
+
+    @api.depends('price_with_card', 'sales')
+    def _compute_revenue(self):
+        for record in self:
+            record.revenue = record.price * record.sales
 
     def name_get(self):
         """

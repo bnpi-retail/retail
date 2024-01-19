@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from . import delete_dublicate_stock_records
 from . import controllers
 from . import import_controllers
 from . import competitors_controllers
