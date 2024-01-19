@@ -90,7 +90,7 @@ class DrawGraph(APIView):
 
         session_id = connect_to_odoo_api_with_auth()
         if session_id is False: return Response({'status': False})
-        endpoint = "http://odoo-web:8069/ozon_urls_images_lots"
+        endpoint = "http://odoo-web:8069/import/ozon_urls_images_lots"
         headers = {"Cookie": f"session_id={session_id}"}
         files = {'file': ('output.csv', csv_data)}
 
