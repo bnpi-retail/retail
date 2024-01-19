@@ -43,14 +43,29 @@ class DrawGraph(APIView):
         file_path = default_storage.save(filename, ContentFile(buffer.read()))
         file_url = default_storage.url(file_path)
 
-        return file_url
+        return f"https://retail-extension.bnpi.dev{file_url}"
 
     def group_by_week(self, data):
         dates = data.get('dates', [])
         num = data.get('num', [])
 
-        return dates, num
+        if not dates or not num:
+            return [], []
 
+        df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
+
+        df.set_index('date', inplace=True)
+
+        current_year = df.index.year.unique()[0]
+
+        full_date_range = pd.date_range(start=f'{current_year}-01-01', end=f'{current_year}-12-31')
+
+        df = df.reindex(full_date_range, fill_value=0)
+
+        grouped_dates = df.index.strftime('%Y-%m-%d').tolist()
+        grouped_num = df['num'].tolist()
+
+        return grouped_dates, grouped_num
 
     def post(self, request):
         product_id = request.data.get('product_id', None)
@@ -71,8 +86,8 @@ class DrawGraph(APIView):
         csv_writer.writerow(['id', 'url_last_year', 'url_this_year'])
         csv_writer.writerow([
             product_id, 
-            f"https://retail-extension.bnpi.dev{last_url}",
-            f"https://retail-extension.bnpi.dev{current_url}"
+            last_url,
+            current_url,
         ])
         csv_data.seek(0)
 
