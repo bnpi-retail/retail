@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
+from matplotlib.ticker import FuncFormatter
 from datetime import datetime
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -35,9 +36,24 @@ class DrawGraph(APIView):
         plt.ylabel('Проданных товаров, кол.')
         plt.legend()
 
+        russian_month_names = {
+            'Jan': 'Янв',
+            'Feb': 'Фев',
+            'Mar': 'Мар',
+            'Apr': 'Апр',
+            'May': 'Май',
+            'Jun': 'Июн',
+            'Jul': 'Июл',
+            'Aug': 'Авг',
+            'Sep': 'Сен',
+            'Oct': 'Окт',
+            'Nov': 'Ноя',
+            'Dec': 'Дек',
+        }
+
         plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
-        
+        plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')]))
+
         plt.xticks(rotation=45)
 
         if num:
@@ -58,9 +74,6 @@ class DrawGraph(APIView):
     def group_by_week(self, data, year):
         dates = data.get('dates', [])
         num = data.get('num', [])
-
-        # if not dates or not num:
-        #     return [], []
 
         df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
 
