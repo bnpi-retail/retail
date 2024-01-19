@@ -29,6 +29,7 @@ class DrawGraph(APIView):
         plt.xticks(rotation=45)
         plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m.%Y'))
+
         if num:
             plt.yticks(np.arange(min(num), max(num) + 1, step=1))
 
@@ -48,19 +49,10 @@ class DrawGraph(APIView):
         dates = data.get('dates', [])
         num = data.get('num', [])
 
-        # Создаем DataFrame из данных
         df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
-
-        # Устанавливаем индекс как временной ряд
         df.set_index('date', inplace=True)
-
-        # Группируем по неделям и суммируем продажи
         weekly_data = df.resample('W-Mon').sum()
-
-        # Переиндексируем, чтобы включить недели без продаж и установить для них значение 0
         weekly_data = weekly_data.asfreq('W-Mon', fill_value=0)
-
-        # Преобразуем обратно в списки
         grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
         grouped_num = weekly_data['num'].tolist()
 
@@ -95,7 +87,7 @@ class DrawGraph(APIView):
         files = {'file': ('output.csv', csv_data)}
 
         # response = requests.post(endpoint, headers=headers, files=files)
-        return Response({'message': f"{product_id}--{last_url}--{current_url}"})
+        return Response({'message': f"{product_id}--{dates}--{num}"})
     
         if response.status_code != 200:
             return Response({'message': 'Bad Request'}, status=400)
