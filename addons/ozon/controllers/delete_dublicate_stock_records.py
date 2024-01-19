@@ -17,13 +17,9 @@ class AnalysysDataLotsController(http.Controller):
         
         target_date = datetime.strptime('01.16.24', '%m.%d.%y')
         records = model_products.search([('timestamp', '=', target_date.strftime('%Y-%m-%d %H:%M:%S'))])
-        
-        # for group in duplicated_records:
-        #     records_to_keep = group[1:]
-        #     records_to_delete = model_products.browse(records_to_keep.ids)
-        #     records_to_delete.unlink()
+        records_to_delete = records_to_delete.sorted(key=lambda r: (r.product.id, r.timestamp), reverse=True).distinct('product')
 
-        response_data = {"response": "success", "message": f"Records for delete: {len(records)}"}
+        response_data = {"response": "success", "message": f"Records for delete: {len(records_to_delete)}"}
         response_json = json.dumps(response_data)
         status_code = 200
 

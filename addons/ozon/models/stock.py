@@ -11,7 +11,7 @@ class ProductStock(models.Model):
     product = fields.Many2one("ozon.products", string="Товар Ozon")
     timestamp = fields.Date(string='Дата', default=fields.Date.today)
     stocks_fbs = fields.Integer(string="Остатки FBS")
-    stocks_reserved_fbs = fields.Integer(string="Зарезервирово остатков FBS")
+    stocks_reserved_fbs = fields.Integer(string="Зарезервировано остатков FBS")
 
     stocks_fbo = fields.Integer(string="Остатки FBO")
     _prod_id = fields.Integer(string="product_id", readonly=True)
