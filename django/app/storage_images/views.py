@@ -57,7 +57,7 @@ class DrawGraph(APIView):
         plt.xticks(rotation=45)
 
         if num:
-            plt.yticks(np.arange(min(num), max(num) + 1, step=1))
+            plt.yticks(np.arange(min(num), max(num) + 1, step=10))
 
         plt.tight_layout()
 
