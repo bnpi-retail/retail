@@ -71,15 +71,6 @@ class DrawGraph(APIView):
 
         return f"https://retail-extension.bnpi.dev{file_url}"
 
-Если вы хотите добавить все дни в заданный период и заполнить нулями значения для дат, которые отсутствуют в ваших данных, то можно воспользоваться следующим образом:
-
-python
-
-import pandas as pd
-
-class YourClassName:
-    # Другие методы и определение класса...
-
     def group_by_week(self, data, year):
         dates = data.get('dates', [])
         num = data.get('num', [])
@@ -113,7 +104,6 @@ class YourClassName:
         grouped_num = weekly_data['num'].tolist()
 
         return grouped_dates, grouped_num
-
 
     def post(self, request):
         product_id = request.data.get('product_id', None)
