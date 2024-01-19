@@ -86,7 +86,7 @@ class DrawGraph(APIView):
         # Используйте resample и сбросьте индекс
         weekly_data = df.resample('W-Mon').sum().reset_index()
 
-        grouped_dates = weekly_data['index'].strftime('%Y-%m-%d').tolist()
+        grouped_dates = weekly_data['index'].apply(lambda x: x.strftime('%Y-%m-%d')).tolist()
         grouped_num = weekly_data['num'].tolist()
 
         return grouped_dates, grouped_num
