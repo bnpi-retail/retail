@@ -78,9 +78,6 @@ class DrawGraph(APIView):
         dates, num = self.group_by_week(last_data, datetime.now().year - 1)
         last_url = self.generate_plot_image(product_id, dates, num, is_current=False)
 
-        session_id = connect_to_odoo_api_with_auth()
-        if session_id is False: return Response({'status': False})
-
         csv_data = io.StringIO()
         csv_writer = csv.writer(csv_data)
         csv_writer.writerow(['id', 'url_last_year', 'url_this_year'])
@@ -91,6 +88,8 @@ class DrawGraph(APIView):
         ])
         csv_data.seek(0)
 
+        session_id = connect_to_odoo_api_with_auth()
+        if session_id is False: return Response({'status': False})
         endpoint = "http://odoo-web:8069/ozon_urls_images_lots"
         headers = {"Cookie": f"session_id={session_id}"}
         files = {'file': ('output.csv', csv_data)}
@@ -98,5 +97,5 @@ class DrawGraph(APIView):
         response = requests.post(endpoint, headers=headers, files=files)
     
         if response.status_code != 200:
-            return Response({'message': 'Bad Request'}, status=400)
+            return Response({'message': response.text}, status=400)
         return Response({'message': f"{product_id}--{current_url}--{last_url}"})
