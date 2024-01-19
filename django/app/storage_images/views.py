@@ -49,30 +49,7 @@ class DrawGraph(APIView):
         dates = data.get('dates', [])
         num = data.get('num', [])
 
-        if not dates or not num:
-            # Обработка случая, когда данные пусты
-            return [], []
-
-        df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
-        df.set_index('date', inplace=True)
-
-        # Проверяем, есть ли данные в DataFrame
-        if df.empty:
-            return [], []
-
-        # Создаем календарь с полным диапазоном дат
-        full_date_range = pd.date_range(start=df.index.min(), end=df.index.max(), freq='W-Mon')
-
-        # Используем reindex для добавления недель без данных
-        df = df.reindex(full_date_range, fill_value=0)
-
-        # Группируем по неделям и суммируем продажи
-        weekly_data = df.resample('W-Mon').sum()
-
-        grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
-        grouped_num = weekly_data['num'].tolist()
-
-        return grouped_dates, grouped_num
+        return dates, num
 
 
     def post(self, request):
