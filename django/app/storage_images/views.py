@@ -75,6 +75,13 @@ class DrawGraph(APIView):
         dates = data.get('dates', [])
         num = data.get('num', [])
 
+        zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
+        all_dates = zero_dates.strftime('%Y-%m-%d').tolist()
+        all_nums = [0] * len(all_dates)
+        
+        dates.extend(all_dates)
+        num.extend(all_nums)
+
         if dates and num:
             sorted_data = sorted(set(zip(dates, num)), key=lambda x: x[0])
             sorted_dates, sorted_num = zip(*sorted_data)
@@ -84,22 +91,13 @@ class DrawGraph(APIView):
         df = pd.DataFrame({'date': pd.to_datetime(sorted_dates), 'num': sorted_num})
         df = df.loc[:, ~df.columns.duplicated()]
 
-        # Группируем данные по дате, чтобы избежать дубликатов
         df = df.groupby('date').sum()
 
-        # Создаем полный временной диапазон для всего года
-        full_date_range = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
+        # full_date_range = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
+        # df = df.reindex(full_date_range, fill_value=0)
 
-        # Реиндексируем DataFrame полным временным диапазоном и заполняем отсутствующие значения нулями
-        df = df.reindex(full_date_range, fill_value=0)
-
-        # Опционально, сбросим индекс, если вы хотите, чтобы 'date' был обычным столбцом
-        df.reset_index(inplace=True)
-
-        # Группируем по неделям и заполняем отсутствующие значения нулями
         weekly_data = df.resample('W-Mon', on='date').sum().fillna(0)
 
-        # Преобразуем индекс и значения в списки для возвращения
         grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
         grouped_num = weekly_data['num'].tolist()
 
