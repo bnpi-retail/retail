@@ -17,7 +17,7 @@ class AnalysysDataLotsController(http.Controller):
         
         target_date = datetime.strptime('01.16.24', '%m.%d.%y')
         records = model_products.search([('timestamp', '=', target_date.strftime('%Y-%m-%d %H:%M:%S'))])
-        records_to_delete = records_to_delete.sorted(key=lambda r: (r.product.id, r.timestamp), reverse=True).distinct('product')
+        records_to_delete = records.sorted(key=lambda r: (r.product.id, r.timestamp), reverse=True).distinct('product')
 
         response_data = {"response": "success", "message": f"Records for delete: {len(records_to_delete)}"}
         response_json = json.dumps(response_data)
