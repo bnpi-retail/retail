@@ -22,13 +22,16 @@ class DrawGraph(APIView):
     def generate_plot_image(self, product_id, dates, num, is_current=True):
         plt.figure(figsize=(10, 5))
         plt.plot(dates, num, marker='o', label='Текущий год' if is_current else 'Предыдущий год')
+
+        if num:
+            rolling_mean = pd.Series(num).rolling(window=7).mean()
+            plt.plot(dates, rolling_mean, linestyle='--', color='red', label='Средняя скользящая')
+
         plt.title('График продаж')
         plt.xlabel('Дата')
         plt.ylabel('Проданных товаров, кол.')
         plt.legend()
         plt.xticks(rotation=45)
-        # plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-        # plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m.%Y'))
 
         if num:
             plt.yticks(np.arange(min(num), max(num) + 1, step=1))
