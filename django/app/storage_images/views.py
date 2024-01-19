@@ -15,21 +15,13 @@ from account.services import connect_to_odoo_api_with_auth
 class DrawGraph(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request):
-        product_id = request.data.get('product_id', None)
-        current_data = request.data.get('current', {})
-        last_data = request.data.get('last', {})
-
-        current_dates = current_data.get('dates', [])
-        current_num = current_data.get('num', [])
-
-        last_dates = last_data.get('dates', [])
-        last_num = last_data.get('num', [])
+    def generate_plot_image(self, product_id, data, is_current=True):
+        dates = data.get('dates', [])
+        num = data.get('num', [])
 
         plt.figure(figsize=(10, 5))
 
-        plt.plot(current_dates, current_num, marker='o', label='Текущий год')
-        plt.plot(last_dates, last_num, marker='o', label='Предыдущий год')
+        plt.plot(dates, num, marker='o', label='Текущий год' if is_current else 'Предыдущий год')
 
         plt.title('График продаж')
         plt.xlabel('Дата')
@@ -43,23 +35,19 @@ class DrawGraph(APIView):
         plt.savefig(buffer, format='png')
         buffer.seek(0)
 
-        current_filename = 'current_graph.png'
-        current_file_path = default_storage.save(current_filename, ContentFile(buffer.read()))
-        current_file_url = default_storage.url(current_file_path)
+        filename = f'current_graph_{product_id}.png' if is_current else f'last_graph_{product_id}.png'
+        file_path = default_storage.save(filename, ContentFile(buffer.read()))
+        file_url = default_storage.url(file_path)
 
-        buffer.seek(0)
-        buffer.truncate()
+        return file_url
 
-        plt.clf()
-        plt.plot(last_dates, last_num, marker='o', label='Предыдущий год')
+    def post(self, request):
+        product_id = request.data.get('product_id', None)
+        current_data = request.data.get('current', {})
+        last_data = request.data.get('last', {})
 
-        buffer = io.BytesIO()
-        plt.savefig(buffer, format='png')
-        buffer.seek(0)
-
-        last_filename = 'last_graph.png'
-        last_file_path = default_storage.save(last_filename, ContentFile(buffer.read()))
-        last_file_url = default_storage.url(last_file_path)
+        current_url = self.generate_plot_image(product_id, current_data, is_current=True)
+        last_url = self.generate_plot_image(product_id, last_data, is_current=False)
 
         session_id = connect_to_odoo_api_with_auth()
         if session_id is False: return Response({'status': False})
@@ -69,8 +57,8 @@ class DrawGraph(APIView):
         csv_writer.writerow(['id', 'url_last_year', 'url_this_year'])
         csv_writer.writerow([
             product_id, 
-            f"https://retail-extension.bnpi.dev{last_file_url}",
-            f"https://retail-extension.bnpi.dev{current_file_url}"
+            f"https://retail-extension.bnpi.dev{last_url}",
+            f"https://retail-extension.bnpi.dev{current_url}"
         ])
         csv_data.seek(0)
 
@@ -79,7 +67,7 @@ class DrawGraph(APIView):
         files = {'file': ('output.csv', csv_data)}
 
         # response = requests.post(endpoint, headers=headers, files=files)
-        return Response({'message': f"{product_id}--{last_file_url}--{current_file_url}"})
+        return Response({'message': f"{product_id}--{last_url}--{current_url}"})
     
         if response.status_code != 200:
             return Response({'message': 'Bad Request'}, status=400)
