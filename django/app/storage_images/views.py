@@ -27,8 +27,8 @@ class DrawGraph(APIView):
         plt.ylabel('Проданных товаров, кол.')
         plt.legend()
         plt.xticks(rotation=45)
-        plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m.%Y'))
+        # plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
+        # plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m.%Y'))
 
         if num:
             plt.yticks(np.arange(min(num), max(num) + 1, step=1))
@@ -46,17 +46,17 @@ class DrawGraph(APIView):
         return f"https://retail-extension.bnpi.dev{file_url}"
 
     def group_by_week(self, data, year):
-        dates = data.get('dates', [])
-        num = data.get('num', [])
+        # dates = data.get('dates', [])
+        # num = data.get('num', [])
 
-        return dates, num
+        # return dates, num
     
-        if not dates or not num:
-            return [], []
+        # if not dates or not num:
+        #     return [], []
 
-        df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
+        # df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
 
-        df.set_index('date', inplace=True)
+        # df.set_index('date', inplace=True)
 
         full_date_range = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
 
@@ -98,7 +98,7 @@ class DrawGraph(APIView):
         files = {'file': ('output.csv', csv_data)}
 
         # response = requests.post(endpoint, headers=headers, files=files)
-        return Response({'message': f"{product_id}--{current_url}--{last_url}--{str(dates)}"})
+        return Response({'message': f"{product_id}--{current_url}--{last_url}"})
     
         if response.status_code != 200:
             return Response({'message': 'Bad Request'}, status=400)
