@@ -771,9 +771,7 @@ class Product(models.Model):
         for rec in self:
             rec.imgs_html_analysis_data_this_year = False
             if rec.imgs_url_this_year:
-                rec.imgs_html_analysis_data_this_year = "\n".join(
-                    f"<img src='{rec.imgs_url_this_year}' width='400'/>"
-                )
+                rec.imgs_html_analysis_data_this_year = f"<img src='{rec.imgs_url_this_year}' width='400'/>"
 
     def _compute_imgs(self):
         for rec in self:
