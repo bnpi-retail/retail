@@ -1,6 +1,5 @@
 import io
 import csv
-import locale
 import requests
 import numpy as np
 import pandas as pd
@@ -36,11 +35,28 @@ class DrawGraph(APIView):
         plt.ylabel('Проданных товаров, кол.')
         plt.legend()
 
-        locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
-        
+        russian_month_names = {
+            'Jan': 'Янв',
+            'Feb': 'Фев',
+            'Mar': 'Мар',
+            'Apr': 'Апр',
+            'May': 'Май',
+            'Jun': 'Июн',
+            'Jul': 'Июл',
+            'Aug': 'Авг',
+            'Sep': 'Сен',
+            'Oct': 'Окт',
+            'Nov': 'Ноя',
+            'Dec': 'Дек',
+        }
+
         plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
-        
+
+        plt.gca().xaxis.set_major_formatter(
+            mdates.FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')])
+        )
+
         plt.xticks(rotation=45)
 
         if num:
