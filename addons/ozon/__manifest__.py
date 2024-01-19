@@ -85,6 +85,7 @@
         "views/posting/posting.xml",
         "views/posting/warehouse.xml",
         "views/fbo_supply_order/fbo_supply_order.xml",
+        "views/fbo_supply_order/fbo_supply_order_product.xml",
     ],
     "demo": [
         "demo/demo.xml",

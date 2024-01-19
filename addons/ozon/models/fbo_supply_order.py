@@ -16,7 +16,7 @@ class OzonFboSupplyOrder(models.Model):
     fbo_supply_order_products_ids = fields.One2many(
         "ozon.fbo_supply_order_product",
         "fbo_supply_order_id",
-        string="Товары в заявке",
+        string="Товары в поставке",
     )
 
     def name_get(self):
@@ -35,3 +35,8 @@ class OzonFboSupplyOrderProduct(models.Model):
     )
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
     qty = fields.Integer(string="Количество товара")
+    created_at = fields.Date(related="fbo_supply_order_id.created_at", store=True)
+    supply_date = fields.Date(related="fbo_supply_order_id.supply_date", store=True)
+    warehouse_id = fields.Many2one(
+        related="fbo_supply_order_id.warehouse_id", store=True
+    )

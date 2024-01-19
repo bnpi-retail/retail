@@ -232,6 +232,10 @@ class Product(models.Model):
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
     posting_ids = fields.Many2many("ozon.posting", string="Отправления Ozon")
     postings_count = fields.Integer(compute="_compute_count_postings")
+    fbo_supply_order_product_ids = fields.One2many(
+        "ozon.fbo_supply_order_product", "product_id", string="Товар Ozon в поставке"
+    )
+    supply_orders_count = fields.Integer(compute="_compute_supply_orders_count")
     sales = fields.One2many(
         "ozon.sale",
         "product",
@@ -725,25 +729,29 @@ class Product(models.Model):
 
             for record in records:
                 if record.date.year == time_now.year:
-                    records_current_year["dates"].append(records.date.strftime('%Y-%m-%d'))
+                    records_current_year["dates"].append(
+                        records.date.strftime("%Y-%m-%d")
+                    )
                     records_current_year["num"].append(records.qty)
 
                 elif record.date.year == time_now.year - 1:
-                    records_last_year["dates"].append(records.date.strftime('%Y-%m-%d'))
+                    records_last_year["dates"].append(records.date.strftime("%Y-%m-%d"))
                     records_last_year["num"].append(records.qty)
 
             endpoint = "http://django:8000/api/v1/draw_graph"
-            payload = {"product_id": rec.id,
-                       "current": records_current_year,
-                       "last": records_last_year}
-            api_token = getenv('API_TOKEN_DJANGO')
-            headers = {'Authorization': f'Token {api_token}'}
+            payload = {
+                "product_id": rec.id,
+                "current": records_current_year,
+                "last": records_last_year,
+            }
+            api_token = getenv("API_TOKEN_DJANGO")
+            headers = {"Authorization": f"Token {api_token}"}
             response = requests.post(endpoint, json=payload, headers=headers)
 
             if response.status_code != 200:
                 raise ValueError(f"{response.status_code}--{response.text}")
             raise ValueError(response.json())
-    
+
     def create_mass_pricing(self):
         self.ensure_one()
         return {
@@ -763,13 +771,17 @@ class Product(models.Model):
         for rec in self:
             rec.imgs_html_analysis_data_last_year = False
             if rec.imgs_url_last_year:
-                rec.imgs_html_analysis_data_last_year = f"<img src='{rec.imgs_url_last_year}' width='400'/>"
+                rec.imgs_html_analysis_data_last_year = (
+                    f"<img src='{rec.imgs_url_last_year}' width='400'/>"
+                )
 
     def _compute_imgs_analysis_data_this_year(self):
         for rec in self:
             rec.imgs_html_analysis_data_this_year = False
             if rec.imgs_url_this_year:
-                rec.imgs_html_analysis_data_this_year = f"<img src='{rec.imgs_url_this_year}' width='400'/>"
+                rec.imgs_html_analysis_data_this_year = (
+                    f"<img src='{rec.imgs_url_this_year}' width='400'/>"
+                )
 
     def _compute_imgs(self):
         for rec in self:
@@ -951,6 +963,23 @@ class Product(models.Model):
             "res_model": "ozon.posting",
             "domain": [
                 ("product_ids", "in", [self.id]),
+            ],
+            "context": {"create": False},
+        }
+
+    def _compute_supply_orders_count(self):
+        for record in self:
+            record.supply_orders_count = len(record.fbo_supply_order_product_ids)
+
+    def get_supply_orders(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Поставки",
+            "view_mode": "tree,form",
+            "res_model": "ozon.fbo_supply_order_product",
+            "domain": [
+                ("product_id", "=", [self.id]),
             ],
             "context": {"create": False},
         }

@@ -9,6 +9,7 @@
                 <form>
                     <group>
                         <field name="created_at" />
+                        <field name="supply_date" />
                         <field name="supply_order_id" />
                         <field name="warehouse_id" />
                         <field name="total_items_count" />
