@@ -20,7 +20,7 @@ class AnalysysDataLotsController(http.Controller):
         records_unique = set()
         records_to_remove = []
 
-        for record in records:
+        for record in records[:1000]:
             if record.product.id in records_unique:
                 records_to_remove.append(record.id)
             else:
