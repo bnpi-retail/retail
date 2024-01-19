@@ -233,7 +233,7 @@ class Product(models.Model):
     posting_ids = fields.Many2many("ozon.posting", string="Отправления Ozon")
     postings_count = fields.Integer(compute="_compute_count_postings")
     fbo_supply_order_product_ids = fields.One2many(
-        "ozon.fbo_supply_order_product", "product_id", string="Товар Ozon в поставке"
+        "ozon.fbo_supply_order_product", "product_id", string="Поставки"
     )
     supply_orders_count = fields.Integer(compute="_compute_supply_orders_count")
     sales = fields.One2many(

@@ -7,7 +7,7 @@ class OzonFboSupplyOrder(models.Model):
     _name = "ozon.fbo_supply_order"
     _description = "Завершённые заявки на поставку на склад Ozon (FBO)"
 
-    created_at = fields.Date(string="Дата создания")
+    created_at = fields.Date(string="Дата создания заявки на поставку")
     supply_date = fields.Date(string="Дата поставки")
     supply_order_id = fields.Char(string="Идентификатор")
     total_items_count = fields.Integer(string="Кол-во позиций товаров в заявке")
