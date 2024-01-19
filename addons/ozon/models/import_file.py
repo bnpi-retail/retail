@@ -83,7 +83,6 @@ class ImportFile(models.Model):
                 if not line: continue
                 
                 product_id, url_this_year, url_last_year = line.split(",")
-                raise ValueError(f"{product_id}, {url_this_year}, {url_last_year}")
                 record = model_products.search([("id", "=", product_id)])
                 record.imgs_url_last_year = url_last_year
                 record.imgs_url_this_year = url_this_year
