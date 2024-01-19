@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-
+from datetime import datetime
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from rest_framework.permissions import IsAuthenticated
@@ -45,7 +45,7 @@ class DrawGraph(APIView):
 
         return f"https://retail-extension.bnpi.dev{file_url}"
 
-    def group_by_week(self, data):
+    def group_by_week(self, data, year):
         dates = data.get('dates', [])
         num = data.get('num', [])
 
@@ -56,9 +56,7 @@ class DrawGraph(APIView):
 
         df.set_index('date', inplace=True)
 
-        current_year = df.index.year.unique()[0]
-
-        full_date_range = pd.date_range(start=f'{current_year}-01-01', end=f'{current_year}-12-31')
+        full_date_range = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
 
         df = df.reindex(full_date_range, fill_value=0)
 
@@ -74,10 +72,10 @@ class DrawGraph(APIView):
         current_data = request.data.get('current', {})
         last_data = request.data.get('last', {})
 
-        dates, num = self.group_by_week(current_data)
+        dates, num = self.group_by_week(current_data, datetime.now().year)
         current_url = self.generate_plot_image(product_id, dates, num, is_current=True)
 
-        dates, num = self.group_by_week(last_data)
+        dates, num = self.group_by_week(last_data, datetime.now().year - 1)
         last_url = self.generate_plot_image(product_id, dates, num, is_current=False)
 
         session_id = connect_to_odoo_api_with_auth()
