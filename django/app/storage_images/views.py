@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
+from matplotlib.ticker import FuncFormatter
 from datetime import datetime
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -51,11 +52,7 @@ class DrawGraph(APIView):
         }
 
         plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
-
-        plt.gca().xaxis.set_major_formatter(
-            mdates.FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')])
-        )
+        plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')]))
 
         plt.xticks(rotation=45)
 
