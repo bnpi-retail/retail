@@ -51,12 +51,21 @@ class DrawGraph(APIView):
 
         df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
         df.set_index('date', inplace=True)
+
+        # Создаем календарь с полным диапазоном дат
+        full_date_range = pd.date_range(start=df.index.min(), end=df.index.max(), freq='W-Mon')
+
+        # Используем reindex для добавления недель без данных
+        df = df.reindex(full_date_range, fill_value=0)
+
+        # Группируем по неделям и суммируем продажи
         weekly_data = df.resample('W-Mon').sum()
-        weekly_data = weekly_data.asfreq('W-Mon', fill_value=0)
+
         grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
         grouped_num = weekly_data['num'].tolist()
 
         return grouped_dates, grouped_num
+
 
     def post(self, request):
         product_id = request.data.get('product_id', None)
