@@ -37,8 +37,14 @@
                     <field name="price_with_card"/>
                     <field name="price"/>
                     <field name="price_without_sale"/>
+                    
                     <field name="sales"/>
                     <field name="balance"/>
+                    <field name="revenue"/>
+
+                    <field name="rating"/>
+                    <field name="comments"/>
+                    <field name="requests"/>
                 </group>
             </form>
         </field>
