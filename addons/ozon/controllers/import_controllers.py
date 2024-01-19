@@ -18,7 +18,7 @@ class OzonTransactionsImport(http.Controller):
         }
         model_ozon_import_file.create(values)
 
-        return "File uploaded and processed successfully."
+        return "Transactions csv file uploaded and processed successfully."
 
 
 class OzonProductsImport(http.Controller):
@@ -38,7 +38,7 @@ class OzonProductsImport(http.Controller):
         }
         model_ozon_import_file.create(values)
 
-        return "File uploaded and processed successfully."
+        return "Products csv file uploaded and processed successfully."
 
 
 class OzonStocksImport(http.Controller):
@@ -58,7 +58,7 @@ class OzonStocksImport(http.Controller):
         }
         model_ozon_import_file.create(values)
 
-        return "File uploaded and processed successfully."
+        return "Stocks csv file uploaded and processed successfully."
 
 
 class OzonPricesImport(http.Controller):
@@ -78,4 +78,44 @@ class OzonPricesImport(http.Controller):
         }
         model_ozon_import_file.create(values)
 
-        return "File uploaded and processed successfully."
+        return "Prices csv file uploaded and processed successfully."
+
+
+class OzonPostingsImport(http.Controller):
+    @http.route(
+        "/import/postings_from_ozon_api_to_file",
+        auth="user",
+        csrf=False,
+        methods=["POST"],
+    )
+    def import_postings_from_ozon_api_to_file(self, **kwargs):
+        model_ozon_import_file = http.request.env["ozon.import_file"]
+        file_storage = kwargs.get("file")
+        f = file_storage.read().decode("utf-8")
+        values = {
+            "data_for_download": "ozon_postings",
+            "file": f,
+        }
+        model_ozon_import_file.create(values)
+
+        return "Postings csv file uploaded and processed successfully."
+
+
+class OzonFboSupplyOrdersImport(http.Controller):
+    @http.route(
+        "/import/fbo_supply_orders_from_ozon_api_to_file",
+        auth="user",
+        csrf=False,
+        methods=["POST"],
+    )
+    def import_fbo_supply_orders_from_ozon_api_to_file(self, **kwargs):
+        model_ozon_import_file = http.request.env["ozon.import_file"]
+        file_storage = kwargs.get("file")
+        f = file_storage.read().decode("utf-8")
+        values = {
+            "data_for_download": "ozon_fbo_supply_orders",
+            "file": f,
+        }
+        model_ozon_import_file.create(values)
+
+        return "FBO supply orders csv file uploaded and processed successfully."
