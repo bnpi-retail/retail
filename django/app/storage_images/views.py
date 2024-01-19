@@ -82,7 +82,7 @@ class DrawGraph(APIView):
             sorted_dates, sorted_num = [], []
 
         df = pd.DataFrame({'date': pd.to_datetime(sorted_dates), 'num': sorted_num})
-        df = df.drop_duplicates(ignore_index=True)
+        df = df.loc[:,~df.columns.duplicated()]
         df.set_index('date', inplace=True)
         full_date_range = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
         df = df.reindex(full_date_range, fill_value=0)
