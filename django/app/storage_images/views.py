@@ -77,7 +77,7 @@ class DrawGraph(APIView):
 
         df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
 
-        df = df.drop_duplicates()
+        df = df.drop_duplicates(ignore_index=True)
 
         df.set_index('date', inplace=True)
 
