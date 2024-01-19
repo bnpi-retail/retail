@@ -24,9 +24,7 @@ class AnalysysDataLotsController(http.Controller):
             latest_record = max(group, key=lambda r: r.timestamp)
             records_to_keep |= latest_record
 
-        records_to_delete = records - records_to_keep
-
-        response_data = {"response": "success", "message": f"Records for delete: {len(records_to_delete)}"}
+        response_data = {"response": "success", "message": f"Records for delete: {len(records_to_keep)}"}
         response_json = json.dumps(response_data)
         status_code = 200
 
