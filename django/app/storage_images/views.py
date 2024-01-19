@@ -1,7 +1,11 @@
 import io
 import csv
 import requests
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+
 
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -15,20 +19,17 @@ from account.services import connect_to_odoo_api_with_auth
 class DrawGraph(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def generate_plot_image(self, product_id, data, is_current=True):
-        dates = data.get('dates', [])
-        num = data.get('num', [])
-
+    def generate_plot_image(self, product_id, dates, num, is_current=True):
         plt.figure(figsize=(10, 5))
-
         plt.plot(dates, num, marker='o', label='Текущий год' if is_current else 'Предыдущий год')
-
         plt.title('График продаж')
         plt.xlabel('Дата')
         plt.ylabel('Проданных товаров, кол.')
         plt.legend()
         plt.xticks(rotation=45)
-
+        plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m.%Y'))
+        plt.yticks(np.arange(min(num), max(num) + 1, step=1))
         plt.tight_layout()
 
         buffer = io.BytesIO()
@@ -41,13 +42,28 @@ class DrawGraph(APIView):
 
         return file_url
 
+    def group_by_week(self, data):
+        dates = data.get('dates', [])
+        num = data.get('num', [])
+
+        df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
+        weekly_data = df.resample('W-Mon', on='date').sum()
+        weekly_data = weekly_data.asfreq('W-Mon', fill_value=0)
+        grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
+        grouped_num = weekly_data['num'].tolist()
+
+        return grouped_dates, grouped_num
+
     def post(self, request):
         product_id = request.data.get('product_id', None)
         current_data = request.data.get('current', {})
         last_data = request.data.get('last', {})
 
-        current_url = self.generate_plot_image(product_id, current_data, is_current=True)
-        last_url = self.generate_plot_image(product_id, last_data, is_current=False)
+        dates, num = self.group_by_week(current_data)
+        current_url = self.generate_plot_image(product_id, dates, num, is_current=True)
+
+        dates, num = self.group_by_week(last_data)
+        last_url = self.generate_plot_image(product_id, dates, num, is_current=False)
 
         session_id = connect_to_odoo_api_with_auth()
         if session_id is False: return Response({'status': False})
