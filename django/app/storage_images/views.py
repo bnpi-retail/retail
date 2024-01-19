@@ -65,12 +65,6 @@ class DrawGraph(APIView):
         grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
         grouped_num = weekly_data['num'].tolist()
 
-        # df = pd.DataFrame({'date': pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31', freq='D'), 'num': 0})
-        # df.set_index('date', inplace=True)
-        # weekly_data = df.resample('W-Mon').sum()
-        # grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
-        # grouped_num = weekly_data['num'].tolist()
-
         return grouped_dates, grouped_num
 
     def post(self, request):
@@ -101,9 +95,8 @@ class DrawGraph(APIView):
         headers = {"Cookie": f"session_id={session_id}"}
         files = {'file': ('output.csv', csv_data)}
 
-        # response = requests.post(endpoint, headers=headers, files=files)
-        return Response({'message': f"{product_id}--{current_url}--{last_url}"})
+        response = requests.post(endpoint, headers=headers, files=files)
     
         if response.status_code != 200:
             return Response({'message': 'Bad Request'}, status=400)
-        return Response({'message': f"{response.status_code}--{product_id}--{last_file_url}--{current_file_url}"})
+        return Response({'message': f"{product_id}--{current_url}--{last_url}"})
