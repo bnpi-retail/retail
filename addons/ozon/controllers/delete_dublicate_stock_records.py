@@ -26,6 +26,9 @@ class AnalysysDataLotsController(http.Controller):
             else:
                 records_unique.add(record.product.id)
 
+        for id in records_to_remove[:1000]:
+            model_stock.search([("id", "=", id)]).unlink()
+                
         response_data = {"response": "success", "message": f"Records for delete: {len(records_to_remove)}, All records: {len(records_unique)}"}
         response_json = json.dumps(response_data)
         status_code = 200
