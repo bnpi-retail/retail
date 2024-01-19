@@ -74,8 +74,12 @@ class DrawGraph(APIView):
     def group_by_week(self, data, year):
         dates = data.get('dates', [])
         num = data.get('num', [])
-        sorted_data = sorted(zip(dates, num), key=lambda x: x[0])
-        sorted_dates, sorted_num = zip(*sorted_data)
+
+        if dates and num:
+            sorted_data = sorted(zip(dates, num), key=lambda x: x[0])
+            sorted_dates, sorted_num = zip(*sorted_data)
+        else:
+            sorted_dates, sorted_num = [], []
 
         # df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
 
