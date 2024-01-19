@@ -75,21 +75,21 @@ class DrawGraph(APIView):
         dates = data.get('dates', [])
         num = data.get('num', [])
 
-        # df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
+        df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
 
-        # df.set_index('date', inplace=True)
+        df.set_index('date', inplace=True)
 
-        # full_date_range = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
+        full_date_range = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
 
-        # df = df.reindex(full_date_range, fill_value=0)
+        df = df.reindex(full_date_range, fill_value=0)
 
-        # # Используйте resample и сбросьте индекс
-        # weekly_data = df.resample('W-Mon').sum().reset_index()
+        # Используйте resample и сбросьте индекс
+        weekly_data = df.resample('W-Mon').sum().reset_index()
 
-        # grouped_dates = weekly_data['index'].apply(lambda x: x.strftime('%Y-%m-%d')).tolist()
-        # grouped_num = weekly_data['num'].tolist()
+        grouped_dates = weekly_data['index'].apply(lambda x: x.strftime('%Y-%m-%d')).tolist()
+        grouped_num = weekly_data['num'].tolist()
 
-        return dates, num
+        return grouped_dates, grouped_num
 
     def post(self, request):
         product_id = request.data.get('product_id', None)
