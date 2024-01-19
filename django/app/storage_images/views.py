@@ -74,6 +74,8 @@ class DrawGraph(APIView):
     def group_by_week(self, data, year):
         dates = data.get('dates', [])
         num = data.get('num', [])
+        sorted_data = sorted(zip(dates, num), key=lambda x: x[0])
+        sorted_dates, sorted_num = zip(*sorted_data)
 
         # df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
 
@@ -90,7 +92,7 @@ class DrawGraph(APIView):
         # grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
         # grouped_num = weekly_data['num'].tolist()
 
-        return dates, num
+        return sorted_dates, sorted_num
 
     def post(self, request):
         product_id = request.data.get('product_id', None)
