@@ -49,8 +49,16 @@ class DrawGraph(APIView):
         dates = data.get('dates', [])
         num = data.get('num', [])
 
+        if not dates or not num:
+            # Обработка случая, когда данные пусты
+            return [], []
+
         df = pd.DataFrame({'date': pd.to_datetime(dates), 'num': num})
         df.set_index('date', inplace=True)
+
+        # Проверяем, есть ли данные в DataFrame
+        if df.empty:
+            return [], []
 
         # Создаем календарь с полным диапазоном дат
         full_date_range = pd.date_range(start=df.index.min(), end=df.index.max(), freq='W-Mon')
