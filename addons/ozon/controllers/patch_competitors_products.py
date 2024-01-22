@@ -35,9 +35,9 @@ class PatchCompetitorsProductsController(http.Controller):
                 #     count_patch += 1
                 #     new = False
 
-            if new == True:
-                product.write({'competitors_with_price_ids': [(4, price_history_competitor_record.id)]})
-                count_patch += 1
+            # if new == True:
+            #     product.write({'competitors_with_price_ids': [(4, price_history_competitor_record.id)]})
+            #     count_patch += 1
 
         response_data = {"response": "success", "message": f"Competitors records: {len(price_history_competitors_records)}, Patches records: {count_patch}"}
         response_json = json.dumps(response_data)
