@@ -3,7 +3,7 @@
 
     <!-- Graph -->
     <record id="view_price_history_competitors_graph" model="ir.ui.view">
-        <field name="name">История цены</field>
+        <field name="name">Мониторинг товаров конкурентов</field>
         <field name="model">ozon.price_history_competitors</field>
         <field name="arch" type="xml">
             <graph string="История цен" type="line">
@@ -15,7 +15,7 @@
 
     <!-- Graph -->
     <record id="view_price_history_competitors_form" model="ir.ui.view">
-        <field name="name">История цены</field>
+        <field name="name">Мониторинг товаров конкурентов</field>
         <field name="model">ozon.price_history_competitors</field>
         <field name="arch" type="xml">
             <graph string="История цен" type="line">
@@ -27,7 +27,7 @@
 
     <!-- Form -->
     <record id="view_price_history_competitors_form_form" model="ir.ui.view">
-        <field name="name">Цены конкурентов</field>
+        <field name="name">Мониторинг товаров конкурентов</field>
         <field name="model">ozon.price_history_competitors</field>
         <field name="arch" type="xml">
             <form>
@@ -52,7 +52,7 @@
 
     <!-- Tree -->
     <record id="view_price_history_competitors_tree" model="ir.ui.view">
-        <field name="name">Цены конкурентов</field>
+        <field name="name">Мониторинг товаров конкурентов</field>
         <field name="model">ozon.price_history_competitors</field>
         <field name="arch" type="xml">
             <tree>
@@ -69,14 +69,14 @@
 
     <!-- Action -->
     <record model="ir.actions.act_window" id="action_name_competitors">
-        <field name="name">Цены конкурентов</field>
+        <field name="name">Мониторинг товаров конкурентов</field>
         <field name="res_model">ozon.price_history_competitors</field>
         <field name="view_mode">tree,form,graph</field>
         <field name="context">{"graph_mode": "line", "measure": "price_with_card"}</field>
     </record>
 
     <!-- Menu -->
-    <menuitem name="Цены конкурентов"
+    <menuitem name="Мониторинг товаров конкурентов"
         id="menu_name_competitors"
         parent="ozon.menu_competitors"
         action="action_name_competitors"
