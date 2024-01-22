@@ -69,6 +69,7 @@
                             <group>
                                 <group>
                                     <field name="id_on_platform" />
+                                    <field name="article" />
                                     <field name="products" />
                                 </group>
                                 <group>
@@ -241,6 +242,8 @@
                                     string="График продаж за текущий год" />
                                 <field name="imgs_html_analysis_data_last_year"
                                     string="График продаж за прошлый год" />
+                                <field name="imgs_html_price_history_this_year"
+                                    string="График истории цен" />
                             </group>
                         </page>
                     </notebook>
@@ -272,7 +275,7 @@
         <record model="ir.actions.act_window" id="action_products">
             <field name="name">Лоты</field>
             <field name="res_model">ozon.products</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">tree,form,search</field>
         </record>
 
         <record model="ir.actions.server" id="action_add_product_to_mass_pricing_queue">
@@ -286,13 +289,13 @@
             </field>
         </record>
 
-        <record model="ir.actions.server" id="action_draw_plot">
-            <field name="name">Рассчитывать PLOT</field>
+        <record model="ir.actions.server" id="action_draw_plot_products">
+            <field name="name">Рассчитать "История продаж"</field>
             <field name="model_id" ref="model_ozon_products" />
             <field name="binding_model_id" ref="model_ozon_products" />
             <field name="state">code</field>
             <field name="code">
-                action = records.draw_plot()
+                action = records.draw_plot_products()
             </field>
         </record>
 
@@ -353,6 +356,17 @@
                     </group>
 
                 </form>
+            </field>
+        </record>
+
+        <!-- Search form -->
+        <record id="view_ozon_products_search" model="ir.ui.view">
+            <field name="name">Лоты</field>
+            <field name="model">ozon.products</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="article"/>
+                </search>
             </field>
         </record>
 

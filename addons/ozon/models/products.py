@@ -38,6 +38,8 @@ class Product(models.Model):
 
     categories = fields.Many2one("ozon.categories", string="Название категории")
     id_on_platform = fields.Char(string="ID на площадке", unique=True)
+    article = fields.Char(string="Артикул", unique=True)
+
     supplementary_categories = fields.One2many(
         "ozon.supplementary_categories",
         "product_id",
@@ -67,11 +69,17 @@ class Product(models.Model):
         string="Ценовой индекс",
         readonly=True,
     )
+    imgs_url_price_history_this_year = fields.Char(
+        string='Ссылка на объект "История цен конкурентов"'
+    )
     imgs_url_this_year = fields.Char(
-        string="Ссылка на объект аналитический данных за этот"
+        string="Ссылка на объект аналитический данных за этот год"
     )
     imgs_url_last_year = fields.Char(
         string="Ссылки на объект аналитических данных за прошлый год"
+    )
+    imgs_html_price_history_this_year = fields.Html(
+        compute="_compute_imgs_price_history_this_year"
     )
     imgs_html_analysis_data_this_year = fields.Html(
         compute="_compute_imgs_analysis_data_this_year"
@@ -486,28 +494,6 @@ class Product(models.Model):
                     f"Группа {i+1}: от {g_min*100}% до {g_max*100}%"
                 )
 
-    # @api.depends('price_history_ids')
-    # def _compute_plotly_chart(self):
-    #     for rec in self:
-    #         data = [{'x': [], 'y': []}]
-    #         for price_history in rec.price_history_ids:
-    #             data[0]['x'].append(price_history.timestamp)
-    #             data[0]['y'].append(price_history.price)
-    #         data = [{'x': [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
-    #                 'y': [2, 3, 4]}]
-    #         layout = {
-    #             'title': {
-    #                 'text': 'График отслеживания цен конкурентов',
-    #                 'x': 0.5,
-    #             },
-    #             'xaxis': {'title': 'Дата'},
-    #             'yaxis': {'title': 'Цена, руб.'},
-    #             'width': 700,
-    #             'height': 400,
-    #         }
-    #         rec.plotly_chart = plotly.offline.plot({'data': data, 'layout': layout},
-    #                                             include_plotlyjs=False,
-    #                                             output_type='div')
     def name_get(self):
         """
         Rename name records
@@ -716,7 +702,7 @@ class Product(models.Model):
 
         return res
 
-    def draw_plot(self):
+    def draw_plot_products(self):
         model_sale = self.env["ozon.sale"]
 
         time_now = datetime.now()
@@ -740,6 +726,7 @@ class Product(models.Model):
 
             endpoint = "http://django:8000/api/v1/draw_graph"
             payload = {
+                "model": "products",
                 "product_id": rec.id,
                 "current": records_current_year,
                 "last": records_last_year,
@@ -780,6 +767,14 @@ class Product(models.Model):
             if rec.imgs_url_this_year:
                 rec.imgs_html_analysis_data_this_year = (
                     f"<img src='{rec.imgs_url_this_year}' width='600'/>"
+                )
+
+    def _compute_imgs_price_history_this_year(self):
+        for rec in self:
+            rec.imgs_html_price_history_this_year = False
+            if rec.imgs_url_price_history_this_year:
+                rec.imgs_html_price_history_this_year = (
+                    f"<img src='{rec.imgs_url_price_history_this_year}' width='600'/>"
                 )
 
     def _compute_imgs(self):

@@ -13,12 +13,23 @@
                         </button>
                 </div>
 
-                <group>
-                    <field name="id_product"/>
-                    <field name="name"/>
-                    <field name="product"/>
-                    <field name="url"/>
-                </group>
+                <separator string="Процентные затраты" />
+                <notebook>
+                    <page id="page_info_competitors_history" string="Информация о товаре конкурента">
+                        <group>
+                            <field name="id_product"/>
+                            <field name="article"/>
+                            <field name="name"/>
+                            <field name="product"/>
+                            <field name="url"/>
+                        </group>
+                    </page>
+                    <page id="page_graph_history" string="График истории цен конкурентов">
+                        <group>
+                            <field name="imgs_html_graph_this_year"/>
+                        </group>
+                    </page>
+                </notebook>
             </form>
         </field>
     </record>
@@ -36,6 +47,27 @@
         </field>
     </record>
 
+    <!-- Actions -->
+    <record model="ir.actions.server" id="action_draw_plot_competitors_products">
+        <field name="name">Рассчитать "История цен конкурентов"</field>
+        <field name="model_id" ref="model_ozon_products_competitors" />
+        <field name="binding_model_id" ref="model_ozon_products_competitors" />
+        <field name="state">code</field>
+        <field name="code">
+            action = records.draw_plot()
+        </field>
+    </record>
+
+    <!-- Search -->
+    <record id="view_ozon_products_competitors_search" model="ir.ui.view">
+        <field name="name">Товары конкурентов</field>
+        <field name="model">ozon.products_competitors</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="article"/>
+            </search>
+        </field>
+    </record>
 
     <!-- Action -->
     <record model="ir.actions.act_window" id="action_products_competitors">

@@ -35,7 +35,8 @@ class ImportFile(models.Model):
             ("ozon_transactions", "Транзакции Ozon"),
             ("ozon_stocks", "Остатки товаров Ozon"),
             ("ozon_prices", "Цены Ozon"),
-            ("ozon_urls_images_lots", 'Ссылки графиков "История продаж" для лотов'),
+            ("ozon_images_products", 'Ссылки на графики "История продаж"'),
+            ("ozon_images_competitors_products", 'Ссылки на графики "История цен конкурентов"'),
             ("ozon_postings", "Отправления Ozon"),
             ("ozon_fbo_supply_orders", "Поставки FBO"),
         ],
@@ -77,18 +78,10 @@ class ImportFile(models.Model):
         content = content.decode("utf-8")
         lines = content.split("\n")
 
-        if values["data_for_download"] == "ozon_urls_images_lots":
-            model_products = self.env["ozon.products"]
-
-            for line in lines[1:]:
-                if not line:
-                    continue
-
-                product_id, url_this_year, url_last_year = line.split(",")
-                record = model_products.search([("id", "=", product_id)])
-                record.imgs_url_last_year = url_last_year
-                record.imgs_url_this_year = url_this_year
-
+        if values["data_for_download"] == "ozon_images_products":
+            self.import_images_products(content)
+        elif values["data_for_download"] == "ozon_images_competitors_products":
+            self.import_images_competitors_products(content)
         elif values["data_for_download"] == "ozon_plugin":
             model_search_queries = self.env["ozon.search_queries"]
             model_products = self.env["ozon.products"]
@@ -178,6 +171,7 @@ class ImportFile(models.Model):
                                         "id_product": str(sku),
                                         "name": str(name),
                                         "url": str(href),
+                                        "article": model_products.search([("id", "=", product_id)]).article,
                                         "product": product_id,
                                     }
                                 )
@@ -330,6 +324,7 @@ class ImportFile(models.Model):
                                 {
                                     "categories": ozon_category.id,
                                     "id_on_platform": row["id_on_platform"],
+                                    "article": retail_product.product_id,
                                     "description": row["description"],
                                     "products": retail_product.id,
                                     "price": row["price"],
@@ -467,7 +462,6 @@ class ImportFile(models.Model):
 
             elif values["data_for_download"] == "ozon_transactions":
                 self.import_transactions(content)
-
             elif values["data_for_download"] == "ozon_stocks":
                 self.import_stocks(content)
             elif values["data_for_download"] == "ozon_prices":
@@ -824,3 +818,31 @@ class ImportFile(models.Model):
             )
 
         # TODO: different products in one transaction
+
+    def import_images_competitors_products(self, content):
+        lines = content.split("\n")
+
+        model_competitors_products = self.env["ozon.products_competitors"]
+
+        for line in lines[1:]:
+            if not line: continue
+
+            product_id, url_this_year = line.split(",")
+            record = model_competitors_products.search([("id", "=", product_id)])
+            record.imgs_url_this_year = url_this_year
+            if record.product:
+                record.product.imgs_url_price_history_this_year = url_this_year
+
+    def import_images_products(self, content):
+        lines = content.split("\n")
+
+        model_products = self.env["ozon.products"]
+
+        for line in lines[1:]:
+            if not line:
+                continue
+
+            product_id, url_this_year, url_last_year = line.split(",")
+            record = model_products.search([("id", "=", product_id)])
+            record.imgs_url_last_year = url_last_year
+            record.imgs_url_this_year = url_this_year

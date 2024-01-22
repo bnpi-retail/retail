@@ -6,14 +6,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-from matplotlib.ticker import FuncFormatter
 from datetime import datetime
+from matplotlib.ticker import FuncFormatter
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from account.services import connect_to_odoo_api_with_auth
 
 
@@ -98,14 +97,13 @@ class DrawGraph(APIView):
 
         return grouped_dates, grouped_num
 
-    def post(self, request):
+    def draw_graph_products(self, request):
         product_id = request.data.get('product_id', None)
-        current_data = request.data.get('current', {})
-        last_data = request.data.get('last', {})
+        current_data = request.data.get('current', None)
+        last_data = request.data.get('last', None)
 
         dates, num = self.group_by_week(current_data, datetime.now().year)
         current_url = self.generate_plot_image(product_id, dates, num, is_current=True)
-
         dates, num = self.group_by_week(last_data, datetime.now().year - 1)
         last_url = self.generate_plot_image(product_id, dates, num, is_current=False)
 
@@ -115,14 +113,41 @@ class DrawGraph(APIView):
         csv_writer.writerow([product_id, current_url, last_url])
         csv_data.seek(0)
 
+        endpoint = "http://odoo-web:8069/import/images/products"
+        files = {'file': ('output.csv', csv_data)}
+        return endpoint, files
+
+    def draw_graph_competitors_products(self, request):
+        product_id = request.data.get('product_id', None)
+        current_data = request.data.get('current', None)
+
+        dates, num = self.group_by_week(current_data, datetime.now().year)
+        current_url = self.generate_plot_image(product_id, dates, num, is_current=True)
+
+        csv_data = io.StringIO()
+        csv_writer = csv.writer(csv_data)
+        csv_writer.writerow(['id', 'url_last_year'])
+        csv_writer.writerow([product_id, current_url])
+        csv_data.seek(0)
+
+        endpoint = "http://odoo-web:8069/import/images/competitors_products"
+        files = {'file': ('output.csv', csv_data)}
+        return endpoint, files
+
+    def post(self, request):
+        model = request.data.get('model', None)
+
+        if model == "products":
+            endpoint, files = self.draw_graph_products(request)
+            
+        elif model == "competitors_products":
+            endpoint, files = self.draw_graph_competitors_products(request)
+
         session_id = connect_to_odoo_api_with_auth()
         if session_id is False: return Response({'status': False})
-        endpoint = "http://odoo-web:8069/import/ozon_urls_images_lots"
         headers = {"Cookie": f"session_id={session_id}"}
-        files = {'file': ('output.csv', csv_data)}
-
         response = requests.post(endpoint, headers=headers, files=files)
     
         if response.status_code != 200:
             return Response({'message': response.text}, status=400)
-        return Response({'message': f"{product_id}--{current_url}--{last_url}"})
+        return Response({'message': f"Success!"})
