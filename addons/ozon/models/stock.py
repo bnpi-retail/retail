@@ -9,12 +9,16 @@ class ProductStock(models.Model):
     _description = "Остатки товаров"
 
     product = fields.Many2one("ozon.products", string="Товар Ozon")
-    timestamp = fields.Date(string='Дата', default=fields.Date.today)
+    timestamp = fields.Date(string="Дата", default=fields.Date.today)
     stocks_fbs = fields.Integer(string="Остатки FBS")
     stocks_reserved_fbs = fields.Integer(string="Зарезервировано остатков FBS")
-
     stocks_fbo = fields.Integer(string="Остатки FBO")
     _prod_id = fields.Integer(string="product_id", readonly=True)
+    fbs_warehouse_product_stock_ids = fields.One2many(
+        "ozon.fbs_warehouse_product_stock",
+        "stock_id",
+        string="Остатки товара на складе FBS",
+    )
 
     def name_get(self):
         """
@@ -27,3 +31,14 @@ class ProductStock(models.Model):
                 (id, f"{record.timestamp},  " f"{record.product.products.name}")
             )
         return result
+
+
+class ProductStock(models.Model):
+    _name = "ozon.fbs_warehouse_product_stock"
+    _description = "Остатки товара на складе FBS"
+
+    timestamp = fields.Date(string="Дата", default=fields.Date.today)
+    stock_id = fields.Many2one("ozon.stock", string="Общие остатки товара")
+    product_id = fields.Many2one("ozon.products", string="Товар Ozon")
+    warehouse_id = fields.Many2one("ozon.warehouse", string="Склад Ozon")
+    qty = fields.Integer(string="Кол-во товара на складе")

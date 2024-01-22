@@ -1,6 +1,7 @@
 import ast
 import base64
 import csv
+from datetime import date
 import os
 import timeit
 
@@ -563,6 +564,7 @@ class ImportFile(models.Model):
         result = self.env["ozon.stock"].search(
             [("product", "=", ozon_product_id)],
             limit=1,
+            order="create_date desc",
         )
         return result if result else False
 
@@ -627,36 +629,47 @@ class ImportFile(models.Model):
         with open(f_path) as csvfile:
             reader = csv.DictReader(csvfile)
             for i, row in enumerate(reader):
-                if ozon_product := self.is_ozon_product_exists(
-                    id_on_platform=row["id_on_platform"]
-                ):
-                    if stock := self.is_stock_exists(ozon_product.id):
-                        stock.write(
-                            {
-                                "stocks_fbs": row["stocks_fbs"],
-                                "stocks_fbo": row["stocks_fbo"],
-                            }
-                        )
-                        print(
-                            f"{i} - Product {row['id_on_platform']} stocks were updated"
-                        )
-                    else:
-                        stock = self.env["ozon.stock"].create(
-                            {
-                                "product": ozon_product.id,
-                                "stocks_fbs": row["stocks_fbs"],
-                                "stocks_fbo": row["stocks_fbo"],
-                                "_prod_id": row["product_id"],
-                            }
-                        )
-                        print(
-                            f"{i} - Product {row['id_on_platform']} stocks were created"
-                        )
-
-                    ozon_product.write(
-                        {"stock": stock.id}, current_product=ozon_product
+                sku = row["id_on_platform"]
+                if ozon_product := self.is_ozon_product_exists(id_on_platform=sku):
+                    stock = self.env["ozon.stock"].create(
+                        {
+                            "product": ozon_product.id,
+                            "stocks_fbs": row["stocks_fbs"],
+                            "stocks_fbo": row["stocks_fbo"],
+                            "_prod_id": row["product_id"],
+                        }
                     )
-
+                    stocks_by_warehouse = ast.literal_eval(row["stocks_fbs_warehouses"])
+                    data = []
+                    for item in stocks_by_warehouse:
+                        warehouse = self.get_or_create_warehouse(
+                            warehouse_id=item["warehouse_id"],
+                            warehouse_name=item["warehouse_name"],
+                        )
+                        qty = item["present"]
+                        data.append(
+                            {
+                                "stock_id": stock.id,
+                                "product_id": ozon_product.id,
+                                "warehouse_id": warehouse.id,
+                                "qty": qty,
+                            }
+                        )
+                    fbs_warehouse_product_stock_ids = (
+                        self.env["ozon.fbs_warehouse_product_stock"].create(data).ids
+                    )
+                    stock.write(
+                        {
+                            "fbs_warehouse_product_stock_ids": fbs_warehouse_product_stock_ids
+                        }
+                    )
+                    ozon_product.write(
+                        {
+                            "stocks_fbs": row["stocks_fbs"],
+                            "stocks_fbo": row["stocks_fbo"],
+                        }
+                    )
+                    print(f"{i} - Product {sku} stock history was created")
         os.remove(f_path)
 
     def import_prices(self, content):
