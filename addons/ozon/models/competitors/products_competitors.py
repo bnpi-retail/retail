@@ -1,4 +1,7 @@
-from datetime import datetime, time, timedelta
+import requests
+
+from os import getenv
+from datetime import datetime, timedelta
 from odoo import models, fields, api
 
 
@@ -7,7 +10,8 @@ class ProductCompetitors(models.Model):
     _description = "Товары конкуренты"
 
     id_product = fields.Char(string="Id товара на Ozon")
-
+    article = fields.Char(string="Артикул", unique=True)
+    
     name = fields.Char(string="Наименование товара")
 
     url = fields.Char(
@@ -25,6 +29,50 @@ class ProductCompetitors(models.Model):
         compute="compute_count_price_competitors"
     )
 
+    imgs_html_graph_this_year = fields.Html(
+        compute="_compute_imgs_analysis_data_this_year"
+    )
+    imgs_url_this_year = fields.Char(
+        string="Ссылка на объект аналитический данных за этот год"
+    )
+    def _compute_imgs_analysis_data_this_year(self):
+        for rec in self:
+            rec.imgs_html_graph_this_year = False
+            if rec.imgs_url_this_year:
+                rec.imgs_html_graph_this_year = (
+                    f"<img src='{rec.imgs_url_this_year}' width='600'/>"
+                )
+
+    def draw_plot(self):
+        model_price_history_competitors = self.env["ozon.price_history_competitors"]
+
+        time_now = datetime.now()
+
+        records_current_year = {"dates": [], "num": []}
+
+        for rec in self:
+            records = model_price_history_competitors.search([("product_competitors", "=", rec.id)])
+
+            for record in records:
+                if record.timestamp.year == time_now.year:
+                    records_current_year["dates"].append(
+                        record.timestamp.strftime("%Y-%m-%d")
+                    )
+                    records_current_year["num"].append(record.price)
+
+            endpoint = "http://django:8000/api/v1/draw_graph"
+            payload = {
+                "model": "competitors_products",
+                "product_id": rec.id,
+                "current": records_current_year,
+            }
+            api_token = getenv("API_TOKEN_DJANGO")
+            headers = {"Authorization": f"Token {api_token}"}
+            response = requests.post(endpoint, json=payload, headers=headers)
+
+            if response.status_code != 200:
+                raise ValueError(f"{response.status_code}--{response.text}")
+            
     @api.depends("price_competitors_count")
     def compute_count_price_competitors(self):
         current_time = datetime.now()
