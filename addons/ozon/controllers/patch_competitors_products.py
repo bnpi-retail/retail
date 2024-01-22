@@ -25,8 +25,8 @@ class PatchCompetitorsProductsController(http.Controller):
             product = model_products.search([("id", "=", product_id)])
 
             new = True
-            for price_history_id in product.competitors_with_price_ids:
-                price_history_record = model_price_history_competitors.browse(price_history_id.id)
+            for price_history_id in product.competitors_with_price_ids.ids:
+                price_history_record = model_price_history_competitors.search([("id", "=", price_history_id)])
                 
                 if price_history_competitor_record.product_competitors.id == price_history_record.product_competitors.id:
                     product.write({'competitors_with_price_ids': [(3, price_history_record)]})
