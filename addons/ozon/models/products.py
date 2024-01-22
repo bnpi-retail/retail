@@ -112,7 +112,7 @@ class Product(models.Model):
     )
 
     competitors_with_price_ids = fields.One2many(
-        "ozon.analysis_competitors_record",
+        "ozon.price_history_competitors",
         "product_id",
         string="Актуальные цены конкурентов",
     )

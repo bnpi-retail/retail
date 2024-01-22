@@ -2,10 +2,9 @@ import json
 
 from odoo import http
 from odoo.http import Response
-from datetime import datetime
 
 
-class AnalysysDataLotsController(http.Controller):
+class PatchCompetitorsProductsController(http.Controller):
     @http.route("/api/v1/patch/competitors_products", 
                 auth="user", 
                 type="http", 
@@ -13,18 +12,33 @@ class AnalysysDataLotsController(http.Controller):
                 methods=["GET"])
     def patch_competitors_products(self, **post):
         model_products = http.request.env["ozon.products"]
-        model_competitors_products = http.request.env["ozon.products_competitors"]
+        model_price_history_competitors = http.request.env["ozon.price_history_competitors"]
         
-        competitors_records = model_competitors_products.search([])
+        price_history_competitors_records = model_price_history_competitors.search([])
         
         count_patch = 0
-        for competitors_record in competitors_records:
-            if competitors_record.product.id:
-                product = model_products.search([("id", "=", competitors_record.product.id)])
-                product.write({'competitors_with_price_ids': [(4, competitors_record.id)]})
+        for price_history_competitor_record in price_history_competitors_records:
+            product_id = price_history_competitor_record.product_competitors.product.id
+
+            if not product_id: continue
+        
+            product = model_products.search([("id", "=", product_id)])
+
+            new = True
+            for price_history_id in product.competitors_with_price_ids:
+                price_history_record = model_price_history_competitors.browse(price_history_id)
+                
+                if price_history_competitor_record.product_competitors.id == price_history_record.product_competitors.id:
+                    product.write({'competitors_with_price_ids': [(3, price_history_id)]})
+                    product.write({'competitors_with_price_ids': [(4, price_history_competitor_record.id)]})
+                    count_patch += 1
+                    new = False
+
+            if new == True:
+                product.write({'competitors_with_price_ids': [(4, price_history_competitor_record.id)]})
                 count_patch += 1
 
-        response_data = {"response": "success", "message": f"Competitors records: {len(competitors_records)}, Patches records: {count_patch}"}
+        response_data = {"response": "success", "message": f"Competitors records: {len(price_history_competitors_records)}, Patches records: {count_patch}"}
         response_json = json.dumps(response_data)
         status_code = 200
 

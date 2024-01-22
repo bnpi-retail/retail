@@ -11,7 +11,6 @@ class AnalysisCompetitorsLine(models.Model):
     price = fields.Float(string='Цена', default=None)
     price_without_sale = fields.Float(string='Цена без скидки', default=None)
     price_with_card = fields.Float(string='Цена по карте Ozon', default=None)
-    product_id = fields.Many2one('ozon.products', string='Лот')
     analysis_id = fields.Many2one('ozon.analysis_competitors', 
                                   string='Анализ конкурента')
     ad = fields.Reference([
@@ -47,26 +46,26 @@ class AnalysisCompetitors(models.Model):
     def create(self, values):
         record = super(AnalysisCompetitors, self).create(values)
 
-        model_products = self.env["ozon.products"]
-        competitors_records = self.env['ozon.analysis_competitors_record'] \
-            .browse(record.competitor_record.ids)
+        # model_products = self.env["ozon.products"]
+        # competitors_records = self.env['ozon.analysis_competitors_record'] \
+        #     .browse(record.competitor_record.ids)
         
-        status = False
-        my_products = []
-        competitors_products_ids = []
-        for competitors_record in competitors_records:
-            if competitors_record.is_my_product is True:
-                status = True
-                my_products.append(competitors_record)
-            else:
-                competitors_products_ids.append(competitors_record.id)
+        # status = False
+        # my_products = []
+        # competitors_products_ids = []
+        # for competitors_record in competitors_records:
+        #     if competitors_record.is_my_product is True:
+        #         status = True
+        #         my_products.append(competitors_record)
+        #     else:
+        #         competitors_products_ids.append(competitors_record.id)
 
-        if status is False:
-            return record
+        # if status is False:
+        #     return record
 
-        for product in my_products:
-            product.ad.write({'competitors_with_price_ids': [(5, 0, 0)]})
-            product.ad.write({'competitors_with_price_ids': competitors_products_ids})
+        # for product in my_products:
+        #     product.ad.write({'competitors_with_price_ids': [(5, 0, 0)]})
+        #     product.ad.write({'competitors_with_price_ids': competitors_products_ids})
 
         return record
     

@@ -227,7 +227,7 @@
                             <group string="Конкуренты">
                                 <field name="competitors_with_price_ids" widget="one2many_list">
                                     <tree limit="10">
-                                        <field name="name" />
+                                        <field name="product_competitors" />
                                         <field name="price_with_card" />
                                         <field name="price" />
                                         <field name="price_without_sale" />
