@@ -15,4 +15,4 @@ stocks.csv
 extension.7z
 node_modules/
 .DS_Store
-django/app/media/
+# django/app/media/
