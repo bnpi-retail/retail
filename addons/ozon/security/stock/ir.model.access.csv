@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_ozon_stock,Access Ozon Stock,model_ozon_stock,base.group_user,1,1,1,1
+access_ozon_fbs_warehouse_product_stock,Access Ozon FBS Warehouse Product Stock,model_ozon_fbs_warehouse_product_stock,base.group_user,1,1,1,1
