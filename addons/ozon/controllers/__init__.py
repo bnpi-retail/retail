@@ -12,3 +12,4 @@ from . import get_all_skus_of_lots
 from . import analysis_data
 from . import draw_odoo
 from . import graph_lots
+from . import patch_competitors_products

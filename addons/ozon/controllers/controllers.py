@@ -18,13 +18,10 @@ class OzonFileSend(http.Controller):
 
         file_name = os.path.basename(file_path)
 
-        # создаем объект BytesIO для хранения данных в памяти
         buffer = BytesIO()
 
-        # записываем данные в объект BytesIO
         buffer.write(csv_data.encode("utf-8"))
 
-        # возвращаем файл как HTTP-ответ
         response = http.Response(
             buffer.getvalue(),
             content_type="text/csv",
