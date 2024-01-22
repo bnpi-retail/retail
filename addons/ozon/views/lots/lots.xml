@@ -24,6 +24,11 @@
                             <field string="Поставки FBO" name="supply_orders_count"
                                 widget="statinfo" />
                         </button>
+                        <button string="Остатки" class="oe_stat_button" type="object"
+                            name="get_stocks">
+                            <field name='stocks_fbs' widget="statinfo" />
+                            <field name='stocks_fbo' widget="statinfo" />
+                        </button>
                     </div>
 
                     <separator string="Калькулятор стратегий назначения цен" />

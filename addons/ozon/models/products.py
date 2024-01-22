@@ -983,6 +983,20 @@ class Product(models.Model):
             "context": {"create": False},
         }
 
+    def get_stocks(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Остатки",
+            "view_mode": "tree,form",
+            # "res_id": self.id,
+            "res_model": "ozon.stock",
+            "domain": [
+                ("product", "=", [self.id]),
+            ],
+            "context": {"create": False},
+        }
+
 
 class ProductCalculator(models.Model):
     _name = "ozon.product_calculator"

@@ -1,6 +1,7 @@
 import ast
 import base64
 import csv
+from datetime import date
 import os
 import timeit
 
@@ -638,6 +639,7 @@ class ImportFile(models.Model):
                     if stock := self.is_stock_exists(ozon_product.id):
                         stock.write(
                             {
+                                "timestamp": date.today(),
                                 "stocks_fbs": row["stocks_fbs"],
                                 "stocks_fbo": row["stocks_fbo"],
                             }

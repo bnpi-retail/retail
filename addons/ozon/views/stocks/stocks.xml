@@ -7,7 +7,7 @@
             <field name="model">ozon.stock</field>
             <field name="arch" type="xml">
                 <form>
-                    <group string="Остатки товароа по схемам торговли">
+                    <group string="Остатки товара">
                         <field name="timestamp" />
                         <field name="product">
                             <tree>
