@@ -467,7 +467,6 @@ class ImportFile(models.Model):
 
             elif values["data_for_download"] == "ozon_transactions":
                 self.import_transactions(content)
-
             elif values["data_for_download"] == "ozon_stocks":
                 self.import_stocks(content)
             elif values["data_for_download"] == "ozon_prices":
@@ -569,6 +568,7 @@ class ImportFile(models.Model):
         result = self.env["ozon.stock"].search(
             [("product", "=", ozon_product_id)],
             limit=1,
+            order="create_date desc",
         )
         return result if result else False
 
@@ -633,9 +633,8 @@ class ImportFile(models.Model):
         with open(f_path) as csvfile:
             reader = csv.DictReader(csvfile)
             for i, row in enumerate(reader):
-                if ozon_product := self.is_ozon_product_exists(
-                    id_on_platform=row["id_on_platform"]
-                ):
+                sku = row["id_on_platform"]
+                if ozon_product := self.is_ozon_product_exists(id_on_platform=sku):
                     if stock := self.is_stock_exists(ozon_product.id):
                         stock.write(
                             {
@@ -643,9 +642,7 @@ class ImportFile(models.Model):
                                 "stocks_fbo": row["stocks_fbo"],
                             }
                         )
-                        print(
-                            f"{i} - Product {row['id_on_platform']} stocks were updated"
-                        )
+                        print(f"{i} - Product {sku} stocks were updated")
                     else:
                         stock = self.env["ozon.stock"].create(
                             {
@@ -655,13 +652,33 @@ class ImportFile(models.Model):
                                 "_prod_id": row["product_id"],
                             }
                         )
-                        print(
-                            f"{i} - Product {row['id_on_platform']} stocks were created"
-                        )
+                        print(f"{i} - Product {sku} stocks were created")
 
-                    ozon_product.write(
-                        {"stock": stock.id}, current_product=ozon_product
+                    stocks_by_warehouse = ast.literal_eval(row["stocks_fbs_warehouses"])
+                    data = []
+                    for item in stocks_by_warehouse:
+                        warehouse = self.get_or_create_warehouse(
+                            warehouse_id=item["warehouse_id"],
+                            warehouse_name=item["warehouse_name"],
+                        )
+                        qty = item["present"]
+                        data.append(
+                            {
+                                "stock_id": stock.id,
+                                "product_id": ozon_product.id,
+                                "warehouse_id": warehouse.id,
+                                "qty": qty,
+                            }
+                        )
+                    fbs_warehouse_product_stock_ids = (
+                        self.env["ozon.fbs_warehouse_product_stock"].create(data).ids
                     )
+                    stock.write(
+                        {
+                            "fbs_warehouse_product_stock_ids": fbs_warehouse_product_stock_ids
+                        }
+                    )
+                    ozon_product.write({"stock": stock.id})
 
         os.remove(f_path)
 
