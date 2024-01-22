@@ -14,3 +14,4 @@ transactions.csv
 stocks.csv
 extension.7z
 node_modules/
+django/app/media/
