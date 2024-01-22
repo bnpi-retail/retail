@@ -636,26 +636,14 @@ class ImportFile(models.Model):
             for i, row in enumerate(reader):
                 sku = row["id_on_platform"]
                 if ozon_product := self.is_ozon_product_exists(id_on_platform=sku):
-                    if stock := self.is_stock_exists(ozon_product.id):
-                        stock.write(
-                            {
-                                "timestamp": date.today(),
-                                "stocks_fbs": row["stocks_fbs"],
-                                "stocks_fbo": row["stocks_fbo"],
-                            }
-                        )
-                        print(f"{i} - Product {sku} stocks were updated")
-                    else:
-                        stock = self.env["ozon.stock"].create(
-                            {
-                                "product": ozon_product.id,
-                                "stocks_fbs": row["stocks_fbs"],
-                                "stocks_fbo": row["stocks_fbo"],
-                                "_prod_id": row["product_id"],
-                            }
-                        )
-                        print(f"{i} - Product {sku} stocks were created")
-
+                    stock = self.env["ozon.stock"].create(
+                        {
+                            "product": ozon_product.id,
+                            "stocks_fbs": row["stocks_fbs"],
+                            "stocks_fbo": row["stocks_fbo"],
+                            "_prod_id": row["product_id"],
+                        }
+                    )
                     stocks_by_warehouse = ast.literal_eval(row["stocks_fbs_warehouses"])
                     data = []
                     for item in stocks_by_warehouse:
@@ -681,7 +669,7 @@ class ImportFile(models.Model):
                         }
                     )
                     ozon_product.write({"stock": stock.id})
-
+                    print(f"{i} - Product {sku} stock history was created")
         os.remove(f_path)
 
     def import_prices(self, content):

@@ -20,7 +20,6 @@
                         </field>
                         <field name="stocks_fbo" />
                         <field name="stocks_fbs" />
-                        <field name="stocks_reserved_fbs" />
                         <field name="fbs_warehouse_product_stock_ids">
                             <tree>
                                 <field name="timestamp" />
