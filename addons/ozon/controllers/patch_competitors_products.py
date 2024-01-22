@@ -25,9 +25,11 @@ class PatchCompetitorsProductsController(http.Controller):
             product = model_products.search([("id", "=", product_id)])
 
             new = True
-            for price_history in product.competitors_with_price_ids:
-                if price_history_competitor_record.product_competitors.id == price_history.product_competitors.id:
-                    product.write({'competitors_with_price_ids': [(3, price_history)]})
+            for price_history_id in product.competitors_with_price_ids:
+                price_history_record = model_price_history_competitors.browse(price_history_id.id)
+                
+                if price_history_competitor_record.product_competitors.id == price_history_record.product_competitors.id:
+                    product.write({'competitors_with_price_ids': [(3, price_history_record)]})
                     product.write({'competitors_with_price_ids': [(4, price_history_competitor_record.id)]})
                     count_patch += 1
                     new = False
