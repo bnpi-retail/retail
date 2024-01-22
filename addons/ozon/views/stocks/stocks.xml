@@ -18,10 +18,16 @@
                                 </field>
                             </tree>
                         </field>
+                        <field name="stocks_fbo" />
                         <field name="stocks_fbs" />
                         <field name="stocks_reserved_fbs" />
-
-                        <field name="stocks_fbo" />
+                        <field name="fbs_warehouse_product_stock_ids">
+                            <tree>
+                                <field name="timestamp" />
+                                <field name="warehouse_id" />
+                                <field name="qty" />
+                            </tree>
+                        </field>
                     </group>
                 </form>
             </field>
@@ -41,7 +47,7 @@
                     </field>
                     <field name="stocks_fbs" />
                     <field name="stocks_reserved_fbs" />
-                    
+
                     <field name="stocks_fbo" />
                 </tree>
             </field>
