@@ -668,7 +668,12 @@ class ImportFile(models.Model):
                             "fbs_warehouse_product_stock_ids": fbs_warehouse_product_stock_ids
                         }
                     )
-                    ozon_product.write({"stock": stock.id})
+                    ozon_product.write(
+                        {
+                            "stocks_fbs": row["stocks_fbs"],
+                            "stocks_fbo": row["stocks_fbo"],
+                        }
+                    )
                     print(f"{i} - Product {sku} stock history was created")
         os.remove(f_path)
 

@@ -120,9 +120,10 @@ class Product(models.Model):
     price_our_history_ids = fields.One2many(
         "ozon.price_history", "product_id", string="История цен"
     )
-    stock = fields.Many2one("ozon.stock", string="Остатки товаров")
-    stocks_fbs = fields.Integer(related="stock.stocks_fbs", store=True)
-    stocks_fbo = fields.Integer(related="stock.stocks_fbo", store=True)
+    stock_ids = fields.One2many("ozon.stock", "product", string="История остатков")
+    stock_history_count = fields.Integer(compute="_compute_stock_history_count")
+    stocks_fbs = fields.Integer(string="Остатки FBS", readonly=True)
+    stocks_fbo = fields.Integer(string="Остатки FBO", readonly=True)
     is_selling = fields.Boolean(
         string="В продаже", compute="_get_is_selling", store=True, readonly=True
     )
@@ -983,11 +984,15 @@ class Product(models.Model):
             "context": {"create": False},
         }
 
+    def _compute_stock_history_count(self):
+        for rec in self:
+            rec.stock_history_count = len(rec.stock_ids)
+
     def get_stocks(self):
         self.ensure_one()
         return {
             "type": "ir.actions.act_window",
-            "name": "Остатки",
+            "name": "История остатков",
             "view_mode": "tree,form",
             # "res_id": self.id,
             "res_model": "ozon.stock",
