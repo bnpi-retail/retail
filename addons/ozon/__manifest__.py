@@ -46,6 +46,7 @@
         "security/warehouse/ir.model.access.csv",
         "security/fbo_supply_order/ir.model.access.csv",
         "security/action/ir.model.access.csv",
+        "security/indicator/ir.model.access.csv",
         ### views
         "views/menu.xml",
         "views/price/menu.xml",

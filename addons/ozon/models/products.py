@@ -295,6 +295,7 @@ class Product(models.Model):
     action_candidate_ids = fields.One2many(
         "ozon.action_candidate", "product_id", string="Кандидат в акциях"
     )
+    ozon_products_indicator_ids = fields.One2many('ozon.products.indicator', inverse_name='ozon_product_id')
 
     @api.depends("sales")
     def compute_count_sales(self):

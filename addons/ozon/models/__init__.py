@@ -22,6 +22,7 @@ from . import posting
 from . import warehouse
 from . import fbo_supply_order
 from . import action
+from . import indicator
 
 from .competitors import products_competitors
 from .competitors import price_history_competitors

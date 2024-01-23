@@ -31,6 +31,9 @@
                         </button>
                     </div>
 
+                    <field name="ozon_products_indicator_ids" widget="many2many_tags"
+                           attrs="{'invisible': [('ozon_products_indicator_ids', '!=', [])]}"/>
+
                     <separator string="Калькулятор стратегий назначения цен" />
 
                     <group>
