@@ -119,3 +119,23 @@ class OzonFboSupplyOrdersImport(http.Controller):
         model_ozon_import_file.create(values)
 
         return "FBO supply orders csv file uploaded and processed successfully."
+
+
+class OzonActionsImport(http.Controller):
+    @http.route(
+        "/import/ozon_actions",
+        auth="user",
+        csrf=False,
+        methods=["POST"],
+    )
+    def import_ozon_actions(self, **kwargs):
+        model_ozon_import_file = http.request.env["ozon.import_file"]
+        file_storage = kwargs.get("file")
+        f = file_storage.read().decode("utf-8")
+        values = {
+            "data_for_download": "ozon_actions",
+            "file": f,
+        }
+        model_ozon_import_file.create(values)
+
+        return "Actions csv file uploaded and processed successfully."
