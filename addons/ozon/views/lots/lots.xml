@@ -256,6 +256,12 @@
                                 <field name="action_candidate_ids">
                                     <tree>
                                         <field name="action_id" />
+                                        <field name="action_start" />
+                                        <field name="action_end" />
+                                        <field name="action_status" widget="badge"
+                                            decoration-success="action_status=='started'"
+                                            decoration-muted="action_status=='not_started'"
+                                            decoration-info="action_status=='ended'" />
                                         <field name="max_action_price" />
                                     </tree>
                                 </field>

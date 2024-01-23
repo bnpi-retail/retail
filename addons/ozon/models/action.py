@@ -58,3 +58,6 @@ class ActionCandidate(models.Model):
     max_action_price = fields.Float(
         string="Максимально возможная цена товара по акции", readonly=True
     )
+    action_start = fields.Datetime(related="action_id.datetime_start")
+    action_end = fields.Datetime(related="action_id.datetime_end")
+    action_status = fields.Selection(related="action_id.status")
