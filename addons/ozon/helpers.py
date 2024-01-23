@@ -56,3 +56,7 @@ def remove_duplicates_from_list(words_list) -> list:
 
 def mean(lst: list) -> float:
     return round(sum(lst) / len(lst), 2)
+
+
+def convert_ozon_datetime_str_to_odoo_datetime_str(ozon_datetime_str: str):
+    return ozon_datetime_str.replace("T", " ").replace("Z", "")

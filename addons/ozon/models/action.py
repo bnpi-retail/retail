@@ -49,6 +49,8 @@ class ActionCandidate(models.Model):
     _name = "ozon.action_candidate"
     _description = "Кандидат для участия в акции"
 
-    action_id = fields.Many2one("ozon.action", string="Акция Ozon")
-    product_id = fields.Many2one("ozon.products", string="Товар Ozon")
-    max_action_price = fields.Float(string="Максимально возможная цена товара по акции")
+    action_id = fields.Many2one("ozon.action", string="Акция Ozon", readonly=True)
+    product_id = fields.Many2one("ozon.products", string="Товар Ozon", readonly=True)
+    max_action_price = fields.Float(
+        string="Максимально возможная цена товара по акции", readonly=True
+    )

@@ -251,6 +251,16 @@
                                     string="График истории цен" />
                             </group>
                         </page>
+                        <page id="page_ozon_actions" string="Акции">
+                            <group>
+                                <field name="action_candidate_ids">
+                                    <tree>
+                                        <field name="action_id" />
+                                        <field name="max_action_price" />
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
                     </notebook>
                 </form>
             </field>
@@ -370,7 +380,7 @@
             <field name="model">ozon.products</field>
             <field name="arch" type="xml">
                 <search>
-                    <field name="article"/>
+                    <field name="article" />
                 </search>
             </field>
         </record>

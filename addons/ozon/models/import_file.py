@@ -2,6 +2,7 @@ import ast
 import base64
 import csv
 from datetime import date
+import json
 import os
 import timeit
 
@@ -17,6 +18,8 @@ from ..ozon_api import (
     FBS_FIX_COMMISSIONS,
     FBS_PERCENT_COMMISSIONS,
 )
+
+from ..helpers import convert_ozon_datetime_str_to_odoo_datetime_str
 
 
 class ImportFile(models.Model):
@@ -878,26 +881,33 @@ class ImportFile(models.Model):
             reader = csv.DictReader(csvfile)
             for i, row in enumerate(reader):
                 a_id = row["action_id"]
+                potential_prod_count = row["potential_products_count"]
                 if self.env["ozon.action"].search([("a_id", "=", a_id)]):
                     continue
-
+                datetime_start = convert_ozon_datetime_str_to_odoo_datetime_str(
+                    row["date_start"]
+                )
+                datetime_end = convert_ozon_datetime_str_to_odoo_datetime_str(
+                    row["date_end"]
+                )
                 action = self.env["ozon.action"].create(
                     {
                         "a_id": a_id,
                         "name": row["name"],
                         "with_targeting": row["with_targeting"],
-                        "datetime_start": row["date_start"],
-                        "datetime_end": row["date_end"],
+                        "datetime_start": datetime_start,
+                        "datetime_end": datetime_end,
                         "description": row["description"],
                         "action_type": row["action_type"],
                         "discount_type": row["discount_type"],
                         "discount_value": row["discount_value"],
-                        "potential_products_count": row["potential_products_count"],
+                        "potential_products_count": potential_prod_count,
                     }
                 )
-                candidates = ast.literal_eval(row["action_candidates"])
+
+                candidates = json.loads(row["action_candidates"])
                 candidates_data = []
-                for can in candidates:
+                for idx, can in enumerate(candidates):
                     sku = can["sku"]
                     if ozon_product := self.is_ozon_product_exists(id_on_platform=sku):
                         candidates_data.append(
@@ -907,11 +917,14 @@ class ImportFile(models.Model):
                                 "max_action_price": can["max_action_price"],
                             }
                         )
-                        print(f"Product {sku} was added as an action {a_id} candidate")
+                        print(
+                            f"{idx}/{potential_prod_count} - Product {sku} was added as an action {a_id} candidate"
+                        )
                 action_candidate_ids = (
                     self.env["ozon.action_candidate"].create(candidates_data).ids
                 )
                 action.write({"action_candidate_ids": action_candidate_ids})
 
                 print(f"{i} - Action {a_id} was imported")
+
         os.remove(f_path)
