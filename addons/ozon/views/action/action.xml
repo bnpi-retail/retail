@@ -12,7 +12,11 @@
                         <field name="with_targeting" />
                         <field name="datetime_start" />
                         <field name="datetime_end" />
-                        <field name="status" />
+                        <field name="status" widget="badge"
+                            decoration-success="status=='started'"
+                            decoration-muted="status=='not_started'"
+                            decoration-info="status=='ended'"
+                        />
                         <field name="description" />
                         <field name="action_type" />
                         <field name="discount_type" />
@@ -40,7 +44,10 @@
                     <field name="with_targeting" />
                     <field name="datetime_start" />
                     <field name="datetime_end" />
-                    <field name="status" />
+                    <field name="status" widget="badge"
+                        decoration-success="status=='started'"
+                        decoration-muted="status=='not_started'"
+                        decoration-info="status=='ended'" />
                     <field name="potential_products_count" />
                 </tree>
             </field>

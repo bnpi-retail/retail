@@ -10,8 +10,12 @@ class Action(models.Model):
     a_id = fields.Integer(string="Идентификатор", readonly=True)
     name = fields.Char(string="Название", readonly=True)
     with_targeting = fields.Boolean(string="C целевой аудиторией", readonly=True)
-    datetime_start = fields.Datetime(string="Дата и время начала", readonly=True)
-    datetime_end = fields.Datetime(string="Дата и время окончания", readonly=True)
+    datetime_start = fields.Datetime(
+        string="Дата и время начала",
+    )
+    datetime_end = fields.Datetime(
+        string="Дата и время окончания",
+    )
     status = fields.Selection(
         [
             ("not_started", "Не началась"),
