@@ -30,7 +30,8 @@ class ProductCompetitors(models.Model):
     )
 
     imgs_html_graph_this_year = fields.Html(
-        compute="_compute_imgs_analysis_data_this_year"
+        compute="_compute_imgs_analysis_data_this_year",
+        string="График истории цен"
     )
     imgs_url_this_year = fields.Char(
         string="Ссылка на объект аналитический данных за этот год"
