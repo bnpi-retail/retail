@@ -263,6 +263,7 @@
                                             decoration-muted="action_status=='not_started'"
                                             decoration-info="action_status=='ended'" />
                                         <field name="max_action_price" />
+                                        <field name="is_participating" />
                                     </tree>
                                 </field>
                             </group>
