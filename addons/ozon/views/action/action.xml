@@ -1,0 +1,64 @@
+<odoo>
+    <data>
+        <!-- Form -->
+        <record id="view_action_form" model="ir.ui.view">
+            <field name="name">Акции</field>
+            <field name="model">ozon.action</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="a_id" />
+                        <field name="name" />
+                        <field name="with_targeting" />
+                        <field name="datetime_start" />
+                        <field name="datetime_end" />
+                        <field name="status" />
+                        <field name="description" />
+                        <field name="action_type" />
+                        <field name="discount_type" />
+                        <field name="discount_value" />
+                        <field name="potential_products_count" />
+                        <field name="action_candidate_ids">
+                            <tree>
+                                <field name="product_id" />
+                                <field name="max_action_price" />
+                            </tree>
+                        </field>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_action_tree" model="ir.ui.view">
+            <field name="name">Акции</field>
+            <field name="model">ozon.action</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="a_id" />
+                    <field name="name" />
+                    <field name="with_targeting" />
+                    <field name="datetime_start" />
+                    <field name="datetime_end" />
+                    <field name="status" />
+                    <field name="potential_products_count" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_ozon_action">
+            <field name="name">Акции</field>
+            <field name="res_model">ozon.action</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Акции"
+            id="menu_action"
+            parent="ozon.menu_root"
+            action="action_ozon_action"
+            sequence="39" />
+
+    </data>
+</odoo>
