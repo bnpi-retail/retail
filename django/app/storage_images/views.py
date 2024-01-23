@@ -129,7 +129,7 @@ class DrawGraph(APIView):
         dates, num = self.group_by_week(current_data, datetime.now().year, mean=True)
         ylabel = 'Средняя цена, руб.'
         name_images = 'График истории цены'
-        current_url = self.generate_plot_image(product_id, dates, num, step=1000, ylabel=ylabel, name_images=name_images, is_current=True)
+        current_url = self.generate_plot_image(product_id, dates, num, step=100, ylabel=ylabel, name_images=name_images, is_current=True)
 
         csv_data = io.StringIO()
         csv_writer = csv.writer(csv_data)
