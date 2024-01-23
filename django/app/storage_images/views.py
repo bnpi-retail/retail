@@ -19,7 +19,7 @@ from account.services import connect_to_odoo_api_with_auth
 class DrawGraph(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def generate_plot_image(self, product_id, dates, num, step, is_current=True):
+    def generate_plot_image(self, product_id, dates, num, step, name_images, ylabel, is_current=True):
         plt.figure(figsize=(10, 5))
 
         dates = pd.to_datetime(dates, errors='coerce')
@@ -30,9 +30,9 @@ class DrawGraph(APIView):
             rolling_mean = pd.Series(num).rolling(window=3).mean()
             plt.plot(dates, rolling_mean, linestyle='--', color='red', label='Средняя скользящая')
 
-        plt.title('График продаж')
-        plt.xlabel('Дата')
-        plt.ylabel('Проданных товаров, кол.')
+        plt.title(name_images)
+        # plt.xlabel('Месяц')
+        plt.ylabel(ylabel)
         plt.legend()
 
         russian_month_names = {
@@ -70,7 +70,7 @@ class DrawGraph(APIView):
 
         return f"https://retail-extension.bnpi.dev{file_url}"
 
-    def group_by_week(self, data, year):
+    def group_by_week(self, data, year, mean):
         dates = data.get('dates', [])
         num = data.get('num', [])
 
@@ -91,7 +91,10 @@ class DrawGraph(APIView):
         df.set_index('date', inplace=True)
         # full_date_range = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
         # df = df.reindex(full_date_range, fill_value=0)
-        weekly_data = df.resample('W-Mon').sum()
+        if mean == True:
+            weekly_data = df.resample('W-Mon').mean()
+        else:
+            weekly_data = df.resample('W-Mon').sum()
         grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
         grouped_num = weekly_data['num'].tolist()
 
@@ -102,10 +105,12 @@ class DrawGraph(APIView):
         current_data = request.data.get('current', None)
         last_data = request.data.get('last', None)
 
-        dates, num = self.group_by_week(current_data, datetime.now().year)
-        current_url = self.generate_plot_image(product_id, dates, num, step=10, is_current=True)
-        dates, num = self.group_by_week(last_data, datetime.now().year - 1)
-        last_url = self.generate_plot_image(product_id, dates, num, step=10, is_current=False)
+        dates, num = self.group_by_week(current_data, datetime.now().year, mean=False)
+        ylabel = 'Проданных товаров, кол.'
+        name_images = 'График продаж'
+        current_url = self.generate_plot_image(product_id, dates, num, step=10, ylabel=ylabel, name_images=name_images, is_current=True)
+        dates, num = self.group_by_week(last_data, datetime.now().year - 1, mean=False)
+        last_url = self.generate_plot_image(product_id, dates, num, step=10, ylabel=ylabel, name_images=name_images, is_current=False)
 
         csv_data = io.StringIO()
         csv_writer = csv.writer(csv_data)
@@ -121,8 +126,10 @@ class DrawGraph(APIView):
         product_id = request.data.get('product_id', None)
         current_data = request.data.get('current', None)
 
-        dates, num = self.group_by_week(current_data, datetime.now().year)
-        current_url = self.generate_plot_image(product_id, dates, num, step=1000, is_current=True)
+        dates, num = self.group_by_week(current_data, datetime.now().year, mean=False)
+        ylabel = 'Средняя цена, руб.'
+        name_images = 'График истории цены'
+        current_url = self.generate_plot_image(product_id, dates, num, step=1000, ylabel=ylabel, name_images=name_images, is_current=True)
 
         csv_data = io.StringIO()
         csv_writer = csv.writer(csv_data)
