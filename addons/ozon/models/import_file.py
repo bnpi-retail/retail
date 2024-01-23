@@ -898,9 +898,8 @@ class ImportFile(models.Model):
                 candidates = ast.literal_eval(row["action_candidates"])
                 candidates_data = []
                 for can in candidates:
-                    if ozon_product := self.is_ozon_product_exists(
-                        id_on_platform=can["sku"]
-                    ):
+                    sku = can["sku"]
+                    if ozon_product := self.is_ozon_product_exists(id_on_platform=sku):
                         candidates_data.append(
                             {
                                 "action_id": action.id,
@@ -908,6 +907,7 @@ class ImportFile(models.Model):
                                 "max_action_price": can["max_action_price"],
                             }
                         )
+                        print(f"Product {sku} was added as an action {a_id} candidate")
                 action_candidate_ids = (
                     self.env["ozon.action_candidate"].create(candidates_data).ids
                 )
