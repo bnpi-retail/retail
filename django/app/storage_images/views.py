@@ -122,7 +122,7 @@ class DrawGraph(APIView):
         current_data = request.data.get('current', None)
 
         dates, num = self.group_by_week(current_data, datetime.now().year)
-        current_url = self.generate_plot_image(product_id, dates, num, step=100, is_current=True)
+        current_url = self.generate_plot_image(product_id, dates, num, step=1000, is_current=True)
 
         csv_data = io.StringIO()
         csv_writer = csv.writer(csv_data)
