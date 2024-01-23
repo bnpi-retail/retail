@@ -19,7 +19,7 @@ from account.services import connect_to_odoo_api_with_auth
 class DrawGraph(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def generate_plot_image(self, product_id, dates, num, is_current=True):
+    def generate_plot_image(self, product_id, dates, num, step, is_current=True):
         plt.figure(figsize=(10, 5))
 
         dates = pd.to_datetime(dates, errors='coerce')
@@ -56,7 +56,7 @@ class DrawGraph(APIView):
         plt.xticks(rotation=45)
 
         if num:
-            plt.yticks(np.arange(min(num), max(num) + 1, step=10))
+            plt.yticks(np.arange(min(num), max(num) + step, step=step))
 
         plt.tight_layout()
 
@@ -103,9 +103,9 @@ class DrawGraph(APIView):
         last_data = request.data.get('last', None)
 
         dates, num = self.group_by_week(current_data, datetime.now().year)
-        current_url = self.generate_plot_image(product_id, dates, num, is_current=True)
+        current_url = self.generate_plot_image(product_id, dates, num, step=10, is_current=True)
         dates, num = self.group_by_week(last_data, datetime.now().year - 1)
-        last_url = self.generate_plot_image(product_id, dates, num, is_current=False)
+        last_url = self.generate_plot_image(product_id, dates, num, step=10, is_current=False)
 
         csv_data = io.StringIO()
         csv_writer = csv.writer(csv_data)
@@ -122,7 +122,7 @@ class DrawGraph(APIView):
         current_data = request.data.get('current', None)
 
         dates, num = self.group_by_week(current_data, datetime.now().year)
-        current_url = self.generate_plot_image(product_id, dates, num, is_current=True)
+        current_url = self.generate_plot_image(product_id, dates, num, step=100, is_current=True)
 
         csv_data = io.StringIO()
         csv_writer = csv.writer(csv_data)

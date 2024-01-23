@@ -95,7 +95,7 @@ class PatchArticle(http.Controller):
         model_products = http.request.env["ozon.products"]
         
         count_products = 0
-        products = model_products.search([], limit=1000)
+        products = model_products.search([])
         for product in products:
             if product.article: continue
 
