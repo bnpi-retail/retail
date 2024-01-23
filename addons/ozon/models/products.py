@@ -292,6 +292,9 @@ class Product(models.Model):
     )
     get_sales_count = fields.Integer(compute="compute_count_sales")
     price_history_count = fields.Integer(compute="compute_count_price_history")
+    action_candidate_ids = fields.One2many(
+        "ozon.action_candidate", "product_id", string="Кандидат в акциях"
+    )
 
     @api.depends("sales")
     def compute_count_sales(self):
