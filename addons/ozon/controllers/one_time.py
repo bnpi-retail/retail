@@ -97,7 +97,7 @@ class PatchArticle(http.Controller):
         count_products = 0
         products = model_products.search([])
         for product in products:
-            if not product.article: continue
+            if product.article: continue
 
             product.article = product.products.product_id
             count_products += 1
@@ -107,7 +107,7 @@ class PatchArticle(http.Controller):
         count_competitors_products = 0
         products_competitors = model_products_competitors.search([])
         for competitors_product in products_competitors:
-            if not competitors_product.article: continue
+            if competitors_product.article: continue
 
             competitors_product.article = competitors_product.product.products.product_id
             count_competitors_products += 1
