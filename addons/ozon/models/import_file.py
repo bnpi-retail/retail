@@ -37,9 +37,13 @@ class ImportFile(models.Model):
             ("ozon_stocks", "Остатки товаров Ozon"),
             ("ozon_prices", "Цены Ozon"),
             ("ozon_images_products", 'Ссылки на графики "История продаж"'),
-            ("ozon_images_competitors_products", 'Ссылки на графики "История цен конкурентов"'),
+            (
+                "ozon_images_competitors_products",
+                'Ссылки на графики "История цен конкурентов"',
+            ),
             ("ozon_postings", "Отправления Ozon"),
             ("ozon_fbo_supply_orders", "Поставки FBO"),
+            ("ozon_actions", "Акции Ozon"),
         ],
         string="Данные для загрузки",
     )
@@ -172,7 +176,9 @@ class ImportFile(models.Model):
                                         "id_product": str(sku),
                                         "name": str(name),
                                         "url": str(href),
-                                        "article": model_products.search([("id", "=", product_id)]).article,
+                                        "article": model_products.search(
+                                            [("id", "=", product_id)]
+                                        ).article,
                                         "product": product_id,
                                     }
                                 )
@@ -471,6 +477,8 @@ class ImportFile(models.Model):
                 self.import_postings(content)
             elif values["data_for_download"] == "ozon_fbo_supply_orders":
                 self.import_fbo_supply_orders(content)
+            elif values["data_for_download"] == "ozon_actions":
+                self.import_actions(content)
 
         return super(ImportFile, self).create(values)
 
@@ -838,7 +846,8 @@ class ImportFile(models.Model):
         model_competitors_products = self.env["ozon.products_competitors"]
 
         for line in lines[1:]:
-            if not line: continue
+            if not line:
+                continue
 
             product_id, url_this_year = line.split(",")
             record = model_competitors_products.search([("id", "=", product_id)])
@@ -859,3 +868,50 @@ class ImportFile(models.Model):
             record = model_products.search([("id", "=", product_id)])
             record.imgs_url_last_year = url_last_year
             record.imgs_url_this_year = url_this_year
+
+    def import_actions(self, content):
+        f_path = "/mnt/extra-addons/ozon/__pycache__/actions.csv"
+        with open(f_path, "w") as f:
+            f.write(content)
+
+        with open(f_path) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for i, row in enumerate(reader):
+                a_id = row["action_id"]
+                if self.env["ozon.action"].search([("a_id", "=", a_id)]):
+                    continue
+
+                action = self.env["ozon.action"].create(
+                    {
+                        "a_id": a_id,
+                        "name": row["name"],
+                        "with_targeting": row["with_targeting"],
+                        "datetime_start": row["date_start"],
+                        "datetime_end": row["date_end"],
+                        "description": row["description"],
+                        "action_type": row["action_type"],
+                        "discount_type": row["discount_type"],
+                        "discount_value": row["discount_value"],
+                        "potential_products_count": row["potential_products_count"],
+                    }
+                )
+                candidates = ast.literal_eval(row["action_candidates"])
+                candidates_data = []
+                for can in candidates:
+                    if ozon_product := self.is_ozon_product_exists(
+                        id_on_platform=can["sku"]
+                    ):
+                        candidates_data.append(
+                            {
+                                "action_id": action.id,
+                                "product_id": ozon_product.id,
+                                "max_action_price": can["max_action_price"],
+                            }
+                        )
+                action_candidate_ids = (
+                    self.env["ozon.action_candidate"].create(candidates_data).ids
+                )
+                action.write({"action_candidate_ids": action_candidate_ids})
+
+                print(f"{i} - Action {a_id} was imported")
+        os.remove(f_path)
