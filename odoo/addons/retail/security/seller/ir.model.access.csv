@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_retail_seller_user,Access Retail Seller for Users,model_retail_seller,base.group_user,1,1,1,1
+access_retail_seller_public,Access Retail Seller for Public,model_retail_seller,base.group_public,1,1,1,1

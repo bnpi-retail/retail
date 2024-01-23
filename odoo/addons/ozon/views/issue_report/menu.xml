@@ -1,0 +1,8 @@
+<odoo>
+  <data>
+    <menuitem name="Запросы" 
+      id="ozon.menu_issue"
+      parent="ozon.menu_root"
+      sequence="38"/>
+  </data>
+</odoo>
