@@ -70,7 +70,6 @@ class Product(models.Model):
         readonly=True,
     )
 
-
     imgs_urls = fields.Char(string="Ссылки на изображения")
     imgs_html = fields.Html(compute="_compute_imgs")
     seller = fields.Many2one("retail.seller", string="Продавец")
@@ -118,9 +117,9 @@ class Product(models.Model):
     is_selling = fields.Boolean(
         string="В продаже", compute="_get_is_selling", store=True, readonly=True
     )
-    is_alive = fields.Boolean(
-        string="Живой товар",
-        readonly=True,
+    is_alive = fields.Boolean(string="Живой товар", readonly=True)
+    is_participating_in_actions = fields.Boolean(
+        string="Участвует в акциях", readonly=True
     )
 
     fix_expenses = fields.One2many(
@@ -925,7 +924,7 @@ class Product(models.Model):
 
 
 class ProductGraphExtension(models.Model):
-    _inherit = 'ozon.products'
+    _inherit = "ozon.products"
 
     def action_draw_graphs(self):
         self.draw_sale()
@@ -935,13 +934,14 @@ class ProductGraphExtension(models.Model):
         self.draw_analysis_data()
 
     ### История цен (модель: ozon.price_history)
-    img_url_price_history = fields.Char(string='Ссылка на объект')
+    img_url_price_history = fields.Char(string="Ссылка на объект")
     img_html_price_history = fields.Html(compute="_compute_img_price_history")
-    
+
     def _compute_img_price_history(self):
         for rec in self:
             rec.img_html_price_history = False
-            if not rec.img_url_price_history: continue 
+            if not rec.img_url_price_history:
+                continue
 
             rec.img_html_price_history = (
                 f"<img src='{rec.img_url_price_history}' width='600'/>"
@@ -957,11 +957,13 @@ class ProductGraphExtension(models.Model):
                 "product_id": rec.id,
             }
 
-            records = model_price_history.search([
-                ("product", "=", rec.id),
-                ("timestamp", ">=", f"{year}-01-01"),
-                ("timestamp", "<=", f"{year}-12-31"),
-            ])
+            records = model_price_history.search(
+                [
+                    ("product", "=", rec.id),
+                    ("timestamp", ">=", f"{year}-01-01"),
+                    ("timestamp", "<=", f"{year}-12-31"),
+                ]
+            )
             graph_data = {"dates": [], "num": []}
             for record in records:
                 graph_data["dates"].append(record.timestamp.strftime("%Y-%m-%d"))
@@ -971,37 +973,40 @@ class ProductGraphExtension(models.Model):
             self._send_request(payload)
 
     ### История продаж по неделям (модель: ozon.sale)
-    img_url_sale_two_weeks = fields.Char(string='Ссылка на объект')
+    img_url_sale_two_weeks = fields.Char(string="Ссылка на объект")
     img_html_sale_two_weeks = fields.Html(compute="_compute_img_sale_two_weeks")
-    
+
     def _compute_img_sale_two_weeks(self):
         for rec in self:
             rec.img_html_sale_two_weeks = False
-            if not rec.img_url_sale_two_weeks: continue 
+            if not rec.img_url_sale_two_weeks:
+                continue
 
             rec.img_html_sale_two_weeks = (
                 f"<img src='{rec.img_url_sale_two_weeks}' width='600'/>"
             )
 
-    img_url_sale_six_weeks = fields.Char(string='Ссылка на объект')
+    img_url_sale_six_weeks = fields.Char(string="Ссылка на объект")
     img_html_sale_six_weeks = fields.Html(compute="_compute_img_sale_six_weeks")
-    
+
     def _compute_img_sale_six_weeks(self):
         for rec in self:
             rec.img_html_sale_six_weeks = False
-            if not rec.img_url_sale_six_weeks: continue 
+            if not rec.img_url_sale_six_weeks:
+                continue
 
             rec.img_html_sale_six_weeks = (
                 f"<img src='{rec.img_url_sale_six_weeks}' width='600'/>"
             )
 
-    img_url_sale_twelve_weeks = fields.Char(string='Ссылка на объект')
+    img_url_sale_twelve_weeks = fields.Char(string="Ссылка на объект")
     img_html_sale_twelve_weeks = fields.Html(compute="_compute_img_sale_twelve_weeks")
-    
+
     def _compute_img_sale_twelve_weeks(self):
         for rec in self:
             rec.img_html_sale_twelve_weeks = False
-            if not rec.img_url_sale_twelve_weeks: continue 
+            if not rec.img_url_sale_twelve_weeks:
+                continue
 
             rec.img_html_sale_twelve_weeks = (
                 f"<img src='{rec.img_url_sale_twelve_weeks}' width='600'/>"
@@ -1009,7 +1014,7 @@ class ProductGraphExtension(models.Model):
 
     def draw_sale_per_weeks(self):
         model_sale = self.env["ozon.sale"]
-        
+
         current_date = datetime.now()
         two_week_ago = current_date - timedelta(weeks=2)
         six_week_ago = current_date - timedelta(weeks=6)
@@ -1021,33 +1026,39 @@ class ProductGraphExtension(models.Model):
                 "product_id": rec.id,
             }
 
-            records = model_sale.search([
-                ("product", "=", rec.id),
-                ("date", ">=", two_week_ago.strftime("%Y-%m-%d")),
-                ("date", "<=", current_date.strftime("%Y-%m-%d")),
-            ])
+            records = model_sale.search(
+                [
+                    ("product", "=", rec.id),
+                    ("date", ">=", two_week_ago.strftime("%Y-%m-%d")),
+                    ("date", "<=", current_date.strftime("%Y-%m-%d")),
+                ]
+            )
             graph_data = {"dates": [], "num": []}
             for record in records:
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.qty)
             payload["two_weeks"] = graph_data
 
-            records = model_sale.search([
-                ("product", "=", rec.id),
-                ("date", ">=", six_week_ago.strftime("%Y-%m-%d")),
-                ("date", "<=", current_date.strftime("%Y-%m-%d")),
-            ])
+            records = model_sale.search(
+                [
+                    ("product", "=", rec.id),
+                    ("date", ">=", six_week_ago.strftime("%Y-%m-%d")),
+                    ("date", "<=", current_date.strftime("%Y-%m-%d")),
+                ]
+            )
             graph_data = {"dates": [], "num": []}
             for record in records:
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.qty)
             payload["six_week"] = graph_data
 
-            records = model_sale.search([
-                ("product", "=", rec.id),
-                ("date", ">=", twelve_week_ago.strftime("%Y-%m-%d")),
-                ("date", "<=", current_date.strftime("%Y-%m-%d")),
-            ])
+            records = model_sale.search(
+                [
+                    ("product", "=", rec.id),
+                    ("date", ">=", twelve_week_ago.strftime("%Y-%m-%d")),
+                    ("date", "<=", current_date.strftime("%Y-%m-%d")),
+                ]
+            )
             graph_data = {"dates": [], "num": []}
             for record in records:
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
@@ -1063,7 +1074,8 @@ class ProductGraphExtension(models.Model):
     def _compute_img_sale_this_year(self):
         for rec in self:
             rec.img_html_sale_this_year = False
-            if not rec.img_url_sale_this_year: continue
+            if not rec.img_url_sale_this_year:
+                continue
 
             rec.img_html_sale_this_year = (
                 f"<img src='{rec.img_url_sale_this_year}' width='600'/>"
@@ -1075,7 +1087,8 @@ class ProductGraphExtension(models.Model):
     def _compute_img_sale_last_year(self):
         for rec in self:
             rec.img_html_sale_last_year = False
-            if not rec.img_url_sale_last_year: continue
+            if not rec.img_url_sale_last_year:
+                continue
 
             rec.img_html_sale_last_year = (
                 f"<img src='{rec.img_url_sale_last_year}' width='600'/>"
@@ -1092,11 +1105,13 @@ class ProductGraphExtension(models.Model):
                 "product_id": rec.id,
             }
 
-            records = model_sale.search([
-                ("product", "=", rec.id),
-                ("date", ">=", f"{year}-01-01"),
-                ("date", "<=", f"{year}-12-31"),
-            ])
+            records = model_sale.search(
+                [
+                    ("product", "=", rec.id),
+                    ("date", ">=", f"{year}-01-01"),
+                    ("date", "<=", f"{year}-12-31"),
+                ]
+            )
 
             graph_data = {"dates": [], "num": []}
             for record in records:
@@ -1104,12 +1119,14 @@ class ProductGraphExtension(models.Model):
                 graph_data["num"].append(record.qty)
             payload["current"] = graph_data
 
-            records = model_sale.search([
-                ("product", "=", rec.id),
-                ("date", ">=", f"{last_year}-01-01"),
-                ("date", "<=", f"{last_year}-12-31"),
-            ])
-            
+            records = model_sale.search(
+                [
+                    ("product", "=", rec.id),
+                    ("date", ">=", f"{last_year}-01-01"),
+                    ("date", "<=", f"{last_year}-12-31"),
+                ]
+            )
+
             graph_data = {"dates": [], "num": []}
             for record in records:
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
@@ -1119,17 +1136,16 @@ class ProductGraphExtension(models.Model):
             self._send_request(payload)
 
     ### История остатков (модель: ozon.stock)
-    img_url_stock = fields.Char(string='Ссылка на объект')
+    img_url_stock = fields.Char(string="Ссылка на объект")
     img_html_stock = fields.Html(compute="_compute_img_stock")
-    
+
     def _compute_img_stock(self):
         for rec in self:
             rec.img_html_stock = False
-            if not rec.img_url_stock: continue 
+            if not rec.img_url_stock:
+                continue
 
-            rec.img_html_stock = (
-                f"<img src='{rec.img_url_stock}' width='600'/>"
-            )
+            rec.img_html_stock = f"<img src='{rec.img_url_stock}' width='600'/>"
 
     def draw_stock(self):
         model_stock = self.env["ozon.stock"]
@@ -1141,11 +1157,13 @@ class ProductGraphExtension(models.Model):
                 "product_id": rec.id,
             }
 
-            records = model_stock.search([
-                ("product", "=", rec.id),
-                ("timestamp", ">=", f"{year}-01-01"),
-                ("timestamp", "<=", f"{year}-12-31"),
-            ])
+            records = model_stock.search(
+                [
+                    ("product", "=", rec.id),
+                    ("timestamp", ">=", f"{year}-01-01"),
+                    ("timestamp", "<=", f"{year}-12-31"),
+                ]
+            )
 
             graph_data = {"dates": [], "num": []}
             for record in records:
@@ -1156,13 +1174,14 @@ class ProductGraphExtension(models.Model):
             self._send_request(payload)
 
     ### График интереса (модель: ozon.analysis_data)
-    img_url_analysis_data = fields.Char(string='Ссылка на объект')
+    img_url_analysis_data = fields.Char(string="Ссылка на объект")
     img_html_analysis_data = fields.Html(compute="_compute_img_analysis_data")
-    
+
     def _compute_img_analysis_data(self):
         for rec in self:
             rec.img_html_analysis_data = False
-            if not rec.img_url_analysis_data: continue 
+            if not rec.img_url_analysis_data:
+                continue
 
             rec.img_html_analysis_data = (
                 f"<img src='{rec.img_url_analysis_data}' width='600'/>"
@@ -1171,14 +1190,16 @@ class ProductGraphExtension(models.Model):
     def draw_analysis_data(self):
         model_analysis_data = self.env["ozon.analysis_data"]
         year = self._get_year()
-        
+
         for rec in self:
-            records = model_analysis_data.search([
-                ("product", "=", rec.id),
-                ("timestamp_from", ">=", f"{year}-01-01"),
-                ("timestamp_to", "<=", f"{year}-12-31" ),
-            ])
-            
+            records = model_analysis_data.search(
+                [
+                    ("product", "=", rec.id),
+                    ("timestamp_from", ">=", f"{year}-01-01"),
+                    ("timestamp_to", "<=", f"{year}-12-31"),
+                ]
+            )
+
             payload = {
                 "model": "analysis_data",
                 "product_id": rec.id,
@@ -1208,13 +1229,15 @@ class ProductGraphExtension(models.Model):
 
     def _get_year(self):
         return datetime.now().year
-    
+
     def _get_records(self, model, record, year, timestamp_field):
-        return model.search([
-            ("product", "=", record.id),
-            (timestamp_field, ">=", f"{year}-01-01"),
-            (timestamp_field, "<=", f"{year}-12-31"),
-        ])
+        return model.search(
+            [
+                ("product", "=", record.id),
+                (timestamp_field, ">=", f"{year}-01-01"),
+                (timestamp_field, "<=", f"{year}-12-31"),
+            ]
+        )
 
     def _send_request(self, payload):
         endpoint = "http://django:8000/api/v1/draw_graph"
@@ -1224,6 +1247,7 @@ class ProductGraphExtension(models.Model):
 
         if response.status_code != 200:
             raise ValueError(f"{response.status_code}--{response.text}")
+
 
 class ProductCalculator(models.Model):
     _name = "ozon.product_calculator"
