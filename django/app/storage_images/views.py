@@ -374,7 +374,7 @@ class DrawGraph(APIView):
         file_path = default_storage.save(filename, ContentFile(buffer.read()))
         file_url = default_storage.url(file_path)
 
-        return f"http://0.0.0.0:8000{file_url}"
+        # return f"http://0.0.0.0:8000{file_url}"
         return f"https://retail-extension.bnpi.dev{file_url}"
 
     
