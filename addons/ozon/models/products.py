@@ -504,7 +504,12 @@ class Product(models.Model):
         if existing_record:
             return existing_record
 
-        return super(Product, self).create(values)
+        records = super(Product, self).create(values)
+        for record in records:
+            self._check_fix_expenses(record)
+            self._check_competitors_with_price_ids_qty(record)
+
+        return records
 
     def get_total_cost_price(self):
         ret_product = self.env["retail.products"].search(
@@ -545,33 +550,92 @@ class Product(models.Model):
         if values.get('not_enough_competitors'):
             self._not_enough_competitors_write(self)
         if values.get('competitors_with_price_ids'):
-            self._check_indicators(self)
+            self._check_competitors_with_price_ids_qty(self)
+        if values.get('fix_expenses') or values.get('fix_expenses') == 0:
+            self._check_fix_expenses(self)
 
         return res
 
-    @staticmethod
-    def _check_competitors_with_price_ids_qty(record):
+    def _check_fix_expenses(self, record):
+        if record.fix_expenses == 0:
+            found = 0
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == 'cost_not_calculated':
+                    found = 1
+                    break
+            if not found:
+                self.env['ozon.products.indicator'].create({
+                    'ozon_product_id': record.id,
+                    'source': 'robot',
+                    'type': 'cost_not_calculated',
+                    'expiration_date': False,
+                    'user_id': False,
+                    'name': f"Себестоимость не подсчитана"
+                })
+        else:
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == 'cost_not_calculated':
+                    indicator.end_date = datetime.now().date()
+                    indicator.active = False
+
+    def _check_competitors_with_price_ids_qty(self, record):
         if len(record.competitors_with_price_ids) >= 3:
             for indicator in record.ozon_products_indicator_ids:
                 if (
                         indicator.type == 'no_competitor_manager' or
                         indicator.type == 'no_competitor_robot'
                 ):
+                    indicator.end_date = datetime.now().date()
                     indicator.active = False
+        elif len(record.competitors_with_price_ids) < 3:
+            found = 0
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == 'no_competitor_robot':
+                    found = 1
+                    break
+            if not found:
+                self.env['ozon.products.indicator'].create({
+                    'ozon_product_id': record.id,
+                    'source': 'robot',
+                    'type': 'no_competitor_robot',
+                    'expiration_date': False,
+                    'user_id': False,
+                    'name': f"Менее трех конкурентов(Робот)"
+                })
 
     def _automated_daily_action_by_cron(self):
         products = self.env['ozon.products'].search([])
         for record in products:
+            # проверяет не устарел ли индикатор и архивирует если да
             for indicator in record.ozon_products_indicator_ids:
                 if indicator.type == 'no_competitor_manager':
                     if indicator.expiration_date <= datetime.now().date():
+                        indicator.end_date = datetime.now().date()
                         indicator.active = False
+            # проверяет есть ли 3 конкурента и если нет вешает индикатор
+            self._check_competitors_with_price_ids_qty(record)
+            logging.getLogger().warning(record.fix_expenses)
+
+            have_no_competitor_manager_indicator = 0
+            have_no_competitor_robot_indicator = 0
+            # добавить лот в список для отчетов
+            lots_with_indicators = []
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == 'no_competitor_manager':
+                    have_no_competitor_manager_indicator = 1
+                if indicator.type == 'no_competitor_robot':
+                    have_no_competitor_robot_indicator = 1
+
+            if not have_no_competitor_manager_indicator and not have_no_competitor_robot_indicator:
+                lots_with_indicators.append(record)
+
 
     def _not_enough_competitors_write(self, record):
         if record.not_enough_competitors and not record.commentary_not_enough_competitors:
             raise UserError('Напишите комментарий')
         for indicator in record.ozon_products_indicator_ids:
             if indicator.type == 'no_competitor_manager':
+                indicator.end_date = datetime.now().date()
                 indicator.active = False
 
         user_id = self.env.uid
