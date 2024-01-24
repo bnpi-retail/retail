@@ -150,7 +150,7 @@ class DrawGraph(APIView):
 
         year = datetime.now().year
         zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
-        grouped_dates, grouped_num = self.data_group(data_current, zero_dates, sum_group=True)
+        grouped_dates, grouped_num = self.data_group(data_current, zero_dates, mean=True)
         url = self.generate_url_image(
             label='Текущий год',
             product_id=product_id,
@@ -171,7 +171,7 @@ class DrawGraph(APIView):
 
         year = datetime.now().year
         zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
-        grouped_dates, grouped_num = self.data_group(data_current, zero_dates, sum_group=True)
+        grouped_dates, grouped_num = self.data_group(data_current, zero_dates, mean=True)
         url = self.generate_url_image(
             label='График истории цен',
             product_id=product_id,
