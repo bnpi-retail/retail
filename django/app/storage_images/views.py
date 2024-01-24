@@ -69,8 +69,8 @@ class DrawGraph(APIView):
             ylabel='Проданный товар, кол.',
         )
 
-        year = datetime.now().year
-        zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
+        last_year = datetime.now().year - 1
+        zero_dates = pd.date_range(start=f'{last_year}-01-01', end=f'{last_year}-12-31')
         grouped_dates, grouped_num = self.data_group(data_last, zero_dates, sum_group=True)
         last_url = self.generate_url_image(
             label='Прошлый год',
