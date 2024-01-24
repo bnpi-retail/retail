@@ -1051,7 +1051,7 @@ class ProductGraphExtension(models.Model):
             graph_data = {"dates": [], "num": []}
             for record in records:
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
-                graph_data["num"].append(record.hits_tocart)
+                graph_data["num"].append(record.qty)
             payload["twelve_week"] = graph_data
 
             self._send_request(payload)
