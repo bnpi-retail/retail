@@ -32,7 +32,18 @@ class Action(models.Model):
         string="Кол-во участников", readonly=True
     )
     action_candidate_ids = fields.One2many(
-        "ozon.action_candidate", "action_id", string="Товары, которые могут участвовать"
+        "ozon.action_candidate",
+        "action_id",
+        domain=[("is_participating", "=", False)],
+        string="Товары, которые могут участвовать",
+    )
+    action_participants_ids = fields.One2many(
+        "ozon.action_candidate",
+        "action_id",
+        related="action_candidate_ids",
+        store=True,
+        domain=[("is_participating", "=", True)],
+        string="Товары, которые участвуют",
     )
 
     def _compute_status(self):

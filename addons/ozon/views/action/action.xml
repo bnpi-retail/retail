@@ -24,14 +24,27 @@
                         <field name="discount_value" />
                         <field name="potential_products_count" />
                         <field name="participating_products_count" />
-                        <field name="action_candidate_ids">
-                            <tree>
-                                <field name="product_id" />
-                                <field name="is_participating" />
-                                <field name="max_action_price" />
-                            </tree>
-                        </field>
                     </group>
+                    <notebook>
+                        <page id="page_action_candidates" string="Кандидаты">
+                            <field name="action_candidate_ids">
+                                <tree>
+                                    <field name="product_id" />
+                                    <field name="is_participating" />
+                                    <field name="max_action_price" />
+                                </tree>
+                            </field>
+                        </page>
+                        <page id="page_action_participants" string="Участники">
+                            <field name="action_participants_ids">
+                                <tree>
+                                    <field name="product_id" />
+                                    <field name="is_participating" />
+                                    <field name="max_action_price" />
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                 </form>
             </field>
         </record>
