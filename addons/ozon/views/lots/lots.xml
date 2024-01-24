@@ -243,12 +243,28 @@
                         </page>
                         <page id="page_analysis_data" string="Аналитические данные">
                             <group>
-                                <field name="imgs_html_analysis_data_this_year"
+
+                                <field name="img_html_sale_this_year"
                                     string="График продаж за текущий год" />
-                                <field name="imgs_html_analysis_data_last_year"
+                                <field name="img_html_sale_last_year"
                                     string="График продаж за прошлый год" />
-                                <field name="imgs_html_price_history_this_year"
+
+                                <field name="img_html_price_history"
                                     string="График истории цен" />
+
+                                <field name="img_html_sale_two_weeks"
+                                    string="График истории цен за 2 последних недели" />
+                                <field name="img_html_sale_six_weeks"
+                                    string="График истории цен за 6 последних недели" />
+                                <field name="img_html_sale_twelve_weeks"
+                                    string="График истории цен за 12 последних недели" />
+
+                                <field name="img_html_stock"
+                                    string="График остатков за текущий год" />
+
+                                <field name="img_html_analysis_data"
+                                    string="График интереса за текущий год" />
+
                             </group>
                         </page>
                     </notebook>
@@ -295,12 +311,12 @@
         </record>
 
         <record model="ir.actions.server" id="action_draw_plot_products">
-            <field name="name">Рассчитать "История продаж"</field>
+            <field name="name">Рассчитать "Аналитические данные"</field>
             <field name="model_id" ref="model_ozon_products" />
             <field name="binding_model_id" ref="model_ozon_products" />
             <field name="state">code</field>
             <field name="code">
-                action = records.draw_plot_products()
+                records.action_draw_graphs()
             </field>
         </record>
 
