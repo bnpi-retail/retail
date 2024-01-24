@@ -1,4 +1,6 @@
 import ast
+import logging
+
 import requests
 
 from os import getenv
@@ -7,6 +9,7 @@ from operator import itemgetter
 from lxml import etree
 
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 
 from .indirect_percent_expenses import STRING_FIELDNAMES
 from ..ozon_api import (
@@ -124,6 +127,8 @@ class Product(models.Model):
         "product_id",
         string="Актуальные цены конкурентов",
     )
+    not_enough_competitors = fields.Boolean()
+    commentary_not_enough_competitors = fields.Char()
 
     price_our_history_ids = fields.One2many(
         "ozon.price_history", "product_id", string="История цен"
@@ -553,7 +558,31 @@ class Product(models.Model):
                 "fix_expenses"
             ]
 
-        return super(Product, self).write(values)
+        res = super(Product, self).write(values)
+        if values.get('not_enough_competitors'):
+            self._not_enough_competitors_write(self)
+
+        return res
+
+    def _not_enough_competitors_write(self, record):
+        if record.not_enough_competitors and not record.commentary_not_enough_competitors:
+            raise UserError('Напишите комментарий')
+        for indicator in record.ozon_products_indicator_ids:
+            if indicator.type == 'no_competitor_manager':
+                indicator.unlink()
+        user_id = self.env.uid
+        user_name = self.env['res.users'].browse(user_id).name
+        exp_date = datetime.now() + timedelta(days=30)
+        self.env['ozon.products.indicator'].create({
+            'ozon_product_id': record.id,
+            'source': 'manager',
+            'type': 'no_competitor_manager',
+            'expiration_date': exp_date,
+            'user_id': user_id if user_id else False,
+            'name': f"Менее трех конкурентов({user_name}) до {exp_date.date()}"
+        })
+
+        return record
 
     @api.depends("stocks_fbs", "stocks_fbo")
     def _get_is_selling(self):
