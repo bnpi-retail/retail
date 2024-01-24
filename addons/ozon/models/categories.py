@@ -10,6 +10,8 @@ class Categories(models.Model):
     name_categories = fields.Char(string='Название категории')
     insurance = fields.Float(string='Страховой коэффициент, %')
 
+    category_manager = fields.Many2one('res.users')
+
     def name_get(self):
         """
         Rename name records 

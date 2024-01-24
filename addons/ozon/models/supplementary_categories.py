@@ -9,3 +9,5 @@ class Categories(models.Model):
 
     name = fields.Char(string="Название")
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
+
+    category_manager = fields.Many2one('res.users')
