@@ -56,6 +56,18 @@ class Action(models.Model):
             else:
                 rec.status = "started"
 
+    def get_action_add_products_to_action(self):
+        """Возвращает action с tree view ozon.action_candidate для данной акции"""
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Добавить товары в акцию",
+            "view_mode": "tree",
+            "res_model": "ozon.action_candidate",
+            "domain": [("action_id", "=", self.id), ("is_participating", "=", False)],
+            "context": {"create": False},
+        }
+
 
 class ActionCandidate(models.Model):
     _name = "ozon.action_candidate"
@@ -64,6 +76,7 @@ class ActionCandidate(models.Model):
     action_id = fields.Many2one("ozon.action", string="Акция Ozon", readonly=True)
     product_id = fields.Many2one("ozon.products", string="Товар Ozon", readonly=True)
     is_participating = fields.Boolean(string="Участвует")
+    price = fields.Float(related="product_id.price", readonly=True)
     max_action_price = fields.Float(
         string="Максимально возможная цена товара по акции", readonly=True
     )
@@ -71,3 +84,12 @@ class ActionCandidate(models.Model):
     action_start = fields.Datetime(related="action_id.datetime_start")
     action_end = fields.Datetime(related="action_id.datetime_end")
     action_status = fields.Selection(related="action_id.status")
+
+    def participate_in_action(self):
+        # взять лоты
+        # если лот уже участвует в какой-то акции, то пропускать
+        # отправить эти товары в акцию (call ozon api)
+        # измен
+        #
+        print(self.ids)
+        pass

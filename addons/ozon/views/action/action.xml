@@ -31,6 +31,7 @@
                                 <tree>
                                     <field name="product_id" />
                                     <field name="is_participating" />
+                                    <field name="price" />
                                     <field name="max_action_price" />
                                 </tree>
                             </field>
@@ -40,6 +41,7 @@
                                 <tree>
                                     <field name="product_id" />
                                     <field name="is_participating" />
+                                    <field name="price" />
                                     <field name="max_action_price" />
                                 </tree>
                             </field>
@@ -77,6 +79,18 @@
             <field name="res_model">ozon.action</field>
             <field name="view_mode">tree,form</field>
         </record>
+
+        <record model="ir.actions.server" id="action_add_products_to_action">
+            <field name="name">Добавить товары в акцию</field>
+            <field name="model_id" ref="model_ozon_action" />
+            <field name="binding_model_id" ref="model_ozon_action" />
+            <field name="binding_view_types">form</field>
+            <field name="state">code</field>
+            <field name="code">
+                action = records.get_action_add_products_to_action()
+            </field>
+        </record>
+
 
         <!-- Menu -->
         <menuitem name="Акции"
