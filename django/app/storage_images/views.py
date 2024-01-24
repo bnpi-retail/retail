@@ -312,7 +312,7 @@ class DrawGraph(APIView):
             plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.%Y'))
             plt.xticks([dates[0], dates[-1]])
 
-        plt.xticks(rotation=45)
+        # plt.xticks(rotation=45)
 
         if num:
             plt.yticks(np.arange(min(num), max(num) + step, step=step))
