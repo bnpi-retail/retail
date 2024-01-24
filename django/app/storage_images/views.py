@@ -158,7 +158,7 @@ class DrawGraph(APIView):
             num=grouped_num,
             step=100,
             name_images='График истории цен конкурента за текущий год',
-            ylabel='Месяцы',
+            ylabel='Средняя цена за неделю, руб.',
         )
 
         data = [product_id, url]
