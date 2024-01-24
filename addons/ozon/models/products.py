@@ -544,15 +544,36 @@ class Product(models.Model):
         res = super(Product, self).write(values)
         if values.get('not_enough_competitors'):
             self._not_enough_competitors_write(self)
+        if values.get('competitors_with_price_ids'):
+            self._check_indicators(self)
 
         return res
+
+    @staticmethod
+    def _check_competitors_with_price_ids_qty(record):
+        if len(record.competitors_with_price_ids) >= 3:
+            for indicator in record.ozon_products_indicator_ids:
+                if (
+                        indicator.type == 'no_competitor_manager' or
+                        indicator.type == 'no_competitor_robot'
+                ):
+                    indicator.active = False
+
+    def _automated_daily_action_by_cron(self):
+        products = self.env['ozon.products'].search([])
+        for record in products:
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == 'no_competitor_manager':
+                    if indicator.expiration_date <= datetime.now().date():
+                        indicator.active = False
 
     def _not_enough_competitors_write(self, record):
         if record.not_enough_competitors and not record.commentary_not_enough_competitors:
             raise UserError('Напишите комментарий')
         for indicator in record.ozon_products_indicator_ids:
             if indicator.type == 'no_competitor_manager':
-                indicator.unlink()
+                indicator.active = False
+
         user_id = self.env.uid
         user_name = self.env['res.users'].browse(user_id).name
         exp_date = datetime.now() + timedelta(days=30)
@@ -560,7 +581,7 @@ class Product(models.Model):
             'ozon_product_id': record.id,
             'source': 'manager',
             'type': 'no_competitor_manager',
-            'expiration_date': exp_date,
+            'expiration_date': exp_date.date(),
             'user_id': user_id if user_id else False,
             'name': f"Менее трех конкурентов({user_name}) до {exp_date.date()}"
         })
@@ -967,11 +988,11 @@ class ProductGraphExtension(models.Model):
     ### История цен (модель: ozon.price_history)
     img_url_price_history = fields.Char(string='Ссылка на объект')
     img_html_price_history = fields.Html(compute="_compute_img_price_history")
-    
+
     def _compute_img_price_history(self):
         for rec in self:
             rec.img_html_price_history = False
-            if not rec.img_url_price_history: continue 
+            if not rec.img_url_price_history: continue
 
             rec.img_html_price_history = (
                 f"<img src='{rec.img_url_price_history}' width='600'/>"
@@ -1003,11 +1024,11 @@ class ProductGraphExtension(models.Model):
     ### История продаж по неделям (модель: ozon.sale)
     img_url_sale_two_weeks = fields.Char(string='Ссылка на объект')
     img_html_sale_two_weeks = fields.Html(compute="_compute_img_sale_two_weeks")
-    
+
     def _compute_img_sale_two_weeks(self):
         for rec in self:
             rec.img_html_sale_two_weeks = False
-            if not rec.img_url_sale_two_weeks: continue 
+            if not rec.img_url_sale_two_weeks: continue
 
             rec.img_html_sale_two_weeks = (
                 f"<img src='{rec.img_url_sale_two_weeks}' width='600'/>"
@@ -1015,11 +1036,11 @@ class ProductGraphExtension(models.Model):
 
     img_url_sale_six_weeks = fields.Char(string='Ссылка на объект')
     img_html_sale_six_weeks = fields.Html(compute="_compute_img_sale_six_weeks")
-    
+
     def _compute_img_sale_six_weeks(self):
         for rec in self:
             rec.img_html_sale_six_weeks = False
-            if not rec.img_url_sale_six_weeks: continue 
+            if not rec.img_url_sale_six_weeks: continue
 
             rec.img_html_sale_six_weeks = (
                 f"<img src='{rec.img_url_sale_six_weeks}' width='600'/>"
@@ -1027,11 +1048,11 @@ class ProductGraphExtension(models.Model):
 
     img_url_sale_twelve_weeks = fields.Char(string='Ссылка на объект')
     img_html_sale_twelve_weeks = fields.Html(compute="_compute_img_sale_twelve_weeks")
-    
+
     def _compute_img_sale_twelve_weeks(self):
         for rec in self:
             rec.img_html_sale_twelve_weeks = False
-            if not rec.img_url_sale_twelve_weeks: continue 
+            if not rec.img_url_sale_twelve_weeks: continue
 
             rec.img_html_sale_twelve_weeks = (
                 f"<img src='{rec.img_url_sale_twelve_weeks}' width='600'/>"
@@ -1039,7 +1060,7 @@ class ProductGraphExtension(models.Model):
 
     def draw_sale_per_weeks(self):
         model_sale = self.env["ozon.sale"]
-        
+
         current_date = datetime.now()
         two_week_ago = current_date - timedelta(weeks=2)
         six_week_ago = current_date - timedelta(weeks=6)
@@ -1139,7 +1160,7 @@ class ProductGraphExtension(models.Model):
                 ("date", ">=", f"{last_year}-01-01"),
                 ("date", "<=", f"{last_year}-12-31"),
             ])
-            
+
             graph_data = {"dates": [], "num": []}
             for record in records:
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
@@ -1151,11 +1172,11 @@ class ProductGraphExtension(models.Model):
     ### История остатков (модель: ozon.stock)
     img_url_stock = fields.Char(string='Ссылка на объект')
     img_html_stock = fields.Html(compute="_compute_img_stock")
-    
+
     def _compute_img_stock(self):
         for rec in self:
             rec.img_html_stock = False
-            if not rec.img_url_stock: continue 
+            if not rec.img_url_stock: continue
 
             rec.img_html_stock = (
                 f"<img src='{rec.img_url_stock}' width='600'/>"
@@ -1188,11 +1209,11 @@ class ProductGraphExtension(models.Model):
     ### График интереса (модель: ozon.analysis_data)
     img_url_analysis_data = fields.Char(string='Ссылка на объект')
     img_html_analysis_data = fields.Html(compute="_compute_img_analysis_data")
-    
+
     def _compute_img_analysis_data(self):
         for rec in self:
             rec.img_html_analysis_data = False
-            if not rec.img_url_analysis_data: continue 
+            if not rec.img_url_analysis_data: continue
 
             rec.img_html_analysis_data = (
                 f"<img src='{rec.img_url_analysis_data}' width='600'/>"
@@ -1201,14 +1222,14 @@ class ProductGraphExtension(models.Model):
     def draw_analysis_data(self):
         model_analysis_data = self.env["ozon.analysis_data"]
         year = self._get_year()
-        
+
         for rec in self:
             records = model_analysis_data.search([
                 ("product", "=", rec.id),
                 ("timestamp_from", ">=", f"{year}-01-01"),
                 ("timestamp_to", "<=", f"{year}-12-31" ),
             ])
-            
+
             payload = {
                 "model": "analysis_data",
                 "product_id": rec.id,
@@ -1238,7 +1259,7 @@ class ProductGraphExtension(models.Model):
 
     def _get_year(self):
         return datetime.now().year
-    
+
     def _get_records(self, model, record, year, timestamp_field):
         return model.search([
             ("product", "=", record.id),

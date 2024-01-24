@@ -89,6 +89,7 @@
         "views/fbo_supply_order/fbo_supply_order.xml",
         "views/fbo_supply_order/fbo_supply_order_product.xml",
         "views/action/action.xml",
+        "crone/ir_cron_data.xml",
     ],
     "demo": [
         "demo/demo.xml",
