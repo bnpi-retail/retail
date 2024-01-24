@@ -3,6 +3,7 @@ import base64
 import csv
 from datetime import date
 from multiprocessing import Value
+import json
 import os
 import timeit
 
@@ -18,6 +19,8 @@ from ..ozon_api import (
     FBS_FIX_COMMISSIONS,
     FBS_PERCENT_COMMISSIONS,
 )
+
+from ..helpers import convert_ozon_datetime_str_to_odoo_datetime_str
 
 
 class ImportFile(models.Model):
@@ -41,6 +44,7 @@ class ImportFile(models.Model):
             ("ozon_images", 'Ссылки на графики'),
             ("ozon_postings", "Отправления Ozon"),
             ("ozon_fbo_supply_orders", "Поставки FBO"),
+            ("ozon_actions", "Акции Ozon"),
         ],
         string="Данные для загрузки",
     )
@@ -188,7 +192,9 @@ class ImportFile(models.Model):
                                         "id_product": str(sku),
                                         "name": str(name),
                                         "url": str(href),
-                                        "article": model_products.search([("id", "=", product_id)]).article,
+                                        "article": model_products.search(
+                                            [("id", "=", product_id)]
+                                        ).article,
                                         "product": product_id,
                                     }
                                 )
@@ -487,6 +493,8 @@ class ImportFile(models.Model):
                 self.import_postings(content)
             elif values["data_for_download"] == "ozon_fbo_supply_orders":
                 self.import_fbo_supply_orders(content)
+            elif values["data_for_download"] == "ozon_actions":
+                self.import_actions(content)
 
         return super(ImportFile, self).create(values)
 
@@ -886,6 +894,7 @@ class ImportFile(models.Model):
             if not line: continue
 
             product_id, url_this_year = line.split(",")
+
             record = model_competitors_products.search([("id", "=", product_id)])
             record.imgs_url_this_year = url_this_year
 
@@ -900,6 +909,7 @@ class ImportFile(models.Model):
             product_id, url = line.split(",")
 
             record = model_products.search([("id", "=", product_id)])
+
             record.img_url_price_history = url
 
     def import_images_stock(self, content):
@@ -927,3 +937,83 @@ class ImportFile(models.Model):
 
             record = model_products.search([("id", "=", product_id)])
             record.img_url_analysis_data = url
+
+    def import_actions(self, content):
+        f_path = "/mnt/extra-addons/ozon/__pycache__/actions.csv"
+        with open(f_path, "w") as f:
+            f.write(content)
+
+        with open(f_path) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for i, row in enumerate(reader):
+                a_id = row["action_id"]
+                is_participating = ast.literal_eval(row["is_participating"])
+                potential_prod_count = row["potential_products_count"]
+                participating_products_count = row["participating_products_count"]
+                if action := self.env["ozon.action"].search([("a_id", "=", a_id)]):
+                    action.write(
+                        {
+                            "is_participating": is_participating,
+                            "participating_products_count": participating_products_count,
+                        }
+                    )
+                else:
+                    datetime_start = convert_ozon_datetime_str_to_odoo_datetime_str(
+                        row["date_start"]
+                    )
+                    datetime_end = convert_ozon_datetime_str_to_odoo_datetime_str(
+                        row["date_end"]
+                    )
+                    action = self.env["ozon.action"].create(
+                        {
+                            "a_id": a_id,
+                            "name": row["name"],
+                            "with_targeting": row["with_targeting"],
+                            "datetime_start": datetime_start,
+                            "datetime_end": datetime_end,
+                            "description": row["description"],
+                            "action_type": row["action_type"],
+                            "discount_type": row["discount_type"],
+                            "discount_value": row["discount_value"],
+                            "potential_products_count": potential_prod_count,
+                            "is_participating": is_participating,
+                            "participating_products_count": participating_products_count,
+                        }
+                    )
+
+                    candidates = json.loads(row["action_candidates"])
+                    candidates_data = []
+                    for idx, can in enumerate(candidates):
+                        len_candidates = len(candidates)
+                        sku = can["sku"]
+                        if ozon_product := self.is_ozon_product_exists(
+                            id_on_platform=sku
+                        ):
+                            candidates_data.append(
+                                {
+                                    "action_id": action.id,
+                                    "product_id": ozon_product.id,
+                                    "max_action_price": can["max_action_price"],
+                                }
+                            )
+                            print(
+                                f"{idx}/{len_candidates} - Product {sku} was added as an action {a_id} candidate"
+                            )
+                    action_candidate_ids = (
+                        self.env["ozon.action_candidate"].create(candidates_data).ids
+                    )
+                    action.write({"action_candidate_ids": action_candidate_ids})
+
+                if is_participating:
+                    participants = json.loads(row["action_participants"])
+                    for par in participants:
+                        sku = str(par["sku"])
+                        action_candidate = action.action_candidate_ids.filtered(
+                            lambda r: r.product_id_on_platform == sku
+                        )
+                        if action_candidate:
+                            action_candidate.is_participating = True
+
+                print(f"{i} - Action {a_id} was imported")
+
+        os.remove(f_path)
