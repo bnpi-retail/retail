@@ -360,7 +360,7 @@ class DrawGraph(APIView):
         plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
         plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')]))
 
-        plt.xticks(rotation=45)
+        # plt.xticks(rotation=45)
 
         if num_hits_view:
             plt.yticks(np.arange(min(min(num_hits_view), min(num_hits_tocart)), max(max(num_hits_view), max(num_hits_tocart)) + 1000, step=1000))
@@ -375,8 +375,7 @@ class DrawGraph(APIView):
         file_path = default_storage.save(filename, ContentFile(buffer.read()))
         file_url = default_storage.url(file_path)
 
-        # return f"http://0.0.0.0:8000{file_url}"
-        return f"https://retail-extension.bnpi.dev{file_url}"
+        return f"{getenv('DJANGO_DOMAIN')}{file_url}"
 
     
     # def group_by_week(self, data_graph, year, mean=False, sum_group=False):
