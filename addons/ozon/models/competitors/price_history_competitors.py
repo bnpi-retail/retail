@@ -24,7 +24,6 @@ class PriceHistoryCompetitors(models.Model):
 
     rating = fields.Integer(string='Рейтинг')
     comments = fields.Integer(string='Комментарии')
-    requests = fields.Integer(string='Запросы')
 
     @api.depends('price_with_card', 'sales')
     def _compute_revenue(self):

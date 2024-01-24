@@ -44,7 +44,6 @@
 
                     <field name="rating"/>
                     <field name="comments"/>
-                    <field name="requests"/>
                 </group>
             </form>
         </field>
