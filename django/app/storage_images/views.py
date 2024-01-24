@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
+from os import getenv
 from datetime import datetime, timedelta
 from matplotlib.ticker import FuncFormatter
 from django.core.files.base import ContentFile
@@ -69,7 +70,7 @@ class DrawGraph(APIView):
             ylabel='Проданный товар, кол.',
         )
 
-        last_year = datetime.now().year - 1
+        last_year = year - 1
         zero_dates = pd.date_range(start=f'{last_year}-01-01', end=f'{last_year}-12-31')
         grouped_dates, grouped_num = self.data_group(data_last, zero_dates, sum_group=True)
         last_url = self.generate_url_image(
@@ -307,8 +308,9 @@ class DrawGraph(APIView):
             plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')]))
 
         if day_xaxis == True:
-            plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=2))
+            plt.gca().xaxis.set_major_locator(mdates.DayLocator())
             plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.%Y'))
+            plt.xticks([dates[0], dates[-1]])
 
         plt.xticks(rotation=45)
 
@@ -325,8 +327,7 @@ class DrawGraph(APIView):
         file_path = default_storage.save(filename, ContentFile(buffer.read()))
         file_url = default_storage.url(file_path)
 
-        # return f"http://0.0.0.0:8000{file_url}"
-        return f"https://retail-extension.bnpi.dev{file_url}"
+        return f"{getenv('DJANGO_DOMAIN')}{file_url}"
 
     def generate_url_analysis_data(self, product_id, dates_hits_view, num_hits_view, dates_hits_tocart, num_hits_tocart):
         plt.figure(figsize=(10, 5))
