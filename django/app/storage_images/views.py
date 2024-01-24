@@ -325,7 +325,7 @@ class DrawGraph(APIView):
         file_path = default_storage.save(filename, ContentFile(buffer.read()))
         file_url = default_storage.url(file_path)
 
-        return f"http://0.0.0.0:8000{file_url}"
+        # return f"http://0.0.0.0:8000{file_url}"
         return f"https://retail-extension.bnpi.dev{file_url}"
 
     def generate_url_analysis_data(self, product_id, dates_hits_view, num_hits_view, dates_hits_tocart, num_hits_tocart):
