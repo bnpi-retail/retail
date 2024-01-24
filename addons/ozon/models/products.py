@@ -1050,7 +1050,7 @@ class ProductGraphExtension(models.Model):
             ])
             graph_data = {"dates": [], "num": []}
             for record in records:
-                graph_data["dates"].append(record.timestamp_from.strftime("%Y-%m-%d"))
+                graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.hits_tocart)
             payload["twelve_week"] = graph_data
 
