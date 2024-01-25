@@ -3,7 +3,7 @@
 
         <!-- Form -->
         <record id="view_action_products_form" model="ir.ui.view">
-            <field name="name">Лоты</field>
+            <field name="name">Продукты</field>
             <field name="model">ozon.products</field>
             <field name="priority">1</field>
             <field name="arch" type="xml">
@@ -292,7 +292,7 @@
 
         <!-- Tree -->
         <record id="view_action_products_tree" model="ir.ui.view">
-            <field name="name">Лоты</field>
+            <field name="name">Продукты</field>
             <field name="model">ozon.products</field>
             <field name="arch" type="xml">
                 <tree>
@@ -312,7 +312,7 @@
 
         <!-- Actions -->
         <record model="ir.actions.act_window" id="action_products">
-            <field name="name">Лоты</field>
+            <field name="name">Продукты</field>
             <field name="res_model">ozon.products</field>
             <field name="view_mode">tree,form,search</field>
         </record>
@@ -400,7 +400,7 @@
 
         <!-- Search form -->
         <record id="view_ozon_products_search" model="ir.ui.view">
-            <field name="name">Лоты</field>
+            <field name="name">Продукты</field>
             <field name="model">ozon.products</field>
             <field name="arch" type="xml">
                 <search>
@@ -421,7 +421,7 @@
         </record>
 
         <!-- Menu -->
-        <menuitem name="Лоты"
+        <menuitem name="Продукты"
             id="menu_products"
             parent="main_menu_products"
             action="action_products"
