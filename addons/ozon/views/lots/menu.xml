@@ -3,6 +3,6 @@
     <menuitem name="Продукты"
       id="main_menu_products"
       parent="ozon.menu_root"
-      sequence="20" />
+      sequence="9" />
   </data>
 </odoo>

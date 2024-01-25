@@ -1,5 +1,5 @@
 <odoo>
   <data>
-    <menuitem name="Ozon" id="ozon.menu_root" />
+    <menuitem name="Ozon" id="ozon.menu_root" sequence="1" />
   </data>
 </odoo>
