@@ -802,7 +802,6 @@ class ImportFile(models.Model):
 
         with open(f_path) as csvfile:
             reader = csv.DictReader(csvfile)
-
             for i, row in enumerate(reader):
                 supply_order_id = row["supply_order_id"]
                 if self.env["ozon.fbo_supply_order"].search(
@@ -829,9 +828,7 @@ class ImportFile(models.Model):
                 items = ast.literal_eval(row["items"])
                 fbo_supply_order_product_data = []
                 for item in items:
-                    if ozon_product := self.is_ozon_product_exists(
-                        id_on_platform=item["sku"]
-                    ):
+                    if ozon_product := self.is_ozon_product_exists_by_sku(item["sku"]):
                         fbo_supply_order_product_data.append(
                             {
                                 "fbo_supply_order_id": fbo_supply_order.id,
