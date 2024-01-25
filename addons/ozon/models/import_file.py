@@ -765,7 +765,7 @@ class ImportFile(models.Model):
                 skus = ast.literal_eval(row["skus"])
                 product_ids = []
                 for sku in skus:
-                    if ozon_product := self.is_ozon_product_exists(id_on_platform=sku):
+                    if ozon_product := self.is_ozon_product_exists_by_sku(sku):
                         product_ids.append(ozon_product.id)
                 if not product_ids:
                     continue
