@@ -11,6 +11,8 @@ from lxml import etree
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 
+logger = logging.getLogger()
+
 from .indirect_percent_expenses import STRING_FIELDNAMES
 from ..ozon_api import (
     MIN_FIX_EXPENSES_FBS,
@@ -284,6 +286,14 @@ class Product(models.Model):
         "ozon.action_candidate", "product_id", string="Кандидат в акциях"
     )
     ozon_products_indicator_ids = fields.One2many('ozon.products.indicator', inverse_name='ozon_product_id')
+    retail_product_total_cost_price = fields.Float(compute='_compute_total_cost_price', store=True)
+
+    @api.depends('products.total_cost_price')
+    def _compute_total_cost_price(self):
+        for record in self:
+            total_cost_prise = record.products.total_cost_price
+            record.retail_product_total_cost_price = total_cost_prise
+            record._check_cost_price(record)
 
     @api.depends("sales")
     def compute_count_sales(self):
@@ -506,7 +516,7 @@ class Product(models.Model):
 
         records = super(Product, self).create(values)
         for record in records:
-            self._check_fix_expenses(record)
+            self._check_cost_price(record)
             self._check_competitors_with_price_ids_qty(record)
 
         return records
@@ -551,13 +561,17 @@ class Product(models.Model):
             self._not_enough_competitors_write(self)
         if values.get('competitors_with_price_ids'):
             self._check_competitors_with_price_ids_qty(self)
-        if values.get('fix_expenses') or values.get('fix_expenses') == 0:
-            self._check_fix_expenses(self)
 
         return res
 
-    def _check_fix_expenses(self, record):
-        if record.fix_expenses == 0:
+    def _check_cost_price(self, record):
+        cost_price = 0
+        if record.fix_expenses:
+            cost_price_record = [x for x in record.fix_expenses if x.name == 'Себестоимость товара']
+            if len(cost_price_record) == 1:
+                cost_price = cost_price_record[0].price
+        logging.getLogger().warning(f"{record} {cost_price}")
+        if cost_price == 0:
             found = 0
             for indicator in record.ozon_products_indicator_ids:
                 if indicator.type == 'cost_not_calculated':
@@ -614,7 +628,6 @@ class Product(models.Model):
                         indicator.active = False
             # проверяет есть ли 3 конкурента и если нет вешает индикатор
             self._check_competitors_with_price_ids_qty(record)
-            logging.getLogger().warning(record.fix_expenses)
 
             have_no_competitor_manager_indicator = 0
             have_no_competitor_robot_indicator = 0

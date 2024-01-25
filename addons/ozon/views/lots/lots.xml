@@ -32,10 +32,11 @@
                     </div>
 
                     <group>
-                    <field name="ozon_products_indicator_ids" widget="many2many_tags" string="Индикаторы"
-                           readonly="1"
-                           attrs="{'invisible': [('ozon_products_indicator_ids', '=', [])]}"
-                    />
+                        <field name="ozon_products_indicator_ids" widget="many2many_tags" string="Индикаторы"
+                               readonly="1"
+                               attrs="{'invisible': [('ozon_products_indicator_ids', '=', [])]}"
+                        />
+                        <field name="retail_product_total_cost_price" invisible="1"/>
                     </group>
 
                     <separator string="Калькулятор стратегий назначения цен" />
@@ -307,6 +308,7 @@
             <field name="model">ozon.products</field>
             <field name="arch" type="xml">
                 <tree>
+                    <field name="retail_product_total_cost_price" invisible="1"/>
                     <field name="products" />
                     <field name="price" />
                     <field name="is_selling" />
