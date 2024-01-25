@@ -505,40 +505,52 @@ class Product(models.Model):
 
         return super(Product, self).create(values)
 
-    def get_total_cost_price(self):
-        ret_product = self.env["retail.products"].search(
-            [("id", "=", self.products.id)]
-        )
-        return ret_product.total_cost_price
-
     def create_update_fix_exp_cost_price(self, total_cost_price):
         self.ensure_one()
-        if fix_exp_rec_cost_price := self.env["ozon.fix_expenses"].search(
-            [("product_id", "=", self.id), ("name", "=", "Себестоимость товара")],
-            limit=1,
-            order="create_date desc",
-        ):
-            fix_exp_rec_cost_price.price = total_cost_price
+        fix_exp_id = None
+        fix_expenses = self.fix_expenses.read(["name"])
+        for i in fix_expenses:
+            if i["name"] == "Себестоимость товара":
+                fix_exp_id = i["id"]
+                break
+        # if fix_exp_rec_cost_price := self.env["ozon.fix_expenses"].search(
+        #     [("product_id", "=", self.id), ("name", "=", "Себестоимость товара")],
+        #     limit=1,
+        #     order="create_date desc",
+        # ):
+        #     fix_exp_rec_cost_price.price = total_cost_price
+        if fix_exp_id:
+            self.percent_expenses = [(1, fix_exp_id, {"price": total_cost_price})]
         else:
-            fix_exp_rec_cost_price = self.env["ozon.fix_expenses"].create(
-                {
-                    "name": "Себестоимость товара",
-                    "price": total_cost_price,
-                    "discription": "Общая себестоимость товара",
-                    "product_id": self.id,
-                }
+            fix_exp_id = (
+                self.env["ozon.fix_expenses"]
+                .create(
+                    {
+                        "name": "Себестоимость товара",
+                        "price": total_cost_price,
+                        "discription": "Общая себестоимость товара",
+                        "product_id": self.id,
+                    }
+                )
+                .id
             )
-        return fix_exp_rec_cost_price
+        return fix_exp_id
 
-    def write(self, values, current_product=None):
+    def write(self, values, **kwargs):
         if isinstance(values, dict) and values.get("fix_expenses"):
-            total_cost_price = current_product.get_total_cost_price()
-            fix_exp_rec_cost_price = current_product.create_update_fix_exp_cost_price(
+            total_cost_price = self.products.total_cost_price
+            fix_exp_rec_cost_price_id = self.create_update_fix_exp_cost_price(
                 total_cost_price
             )
-            values["fix_expenses"] = [fix_exp_rec_cost_price.id] + values[
+            values["fix_expenses"] = [fix_exp_rec_cost_price_id] + values[
                 "fix_expenses"
             ]
+
+            per_exp_recs = kwargs.get("percent_expenses")
+            names = [rec.name for rec in per_exp_recs]
+            for per_exp in self.percent_expenses:
+                if per_exp.name not in names:
+                    values["percent_expenses"].append(per_exp.id)
 
         return super(Product, self).write(values)
 
@@ -660,16 +672,6 @@ class Product(models.Model):
             print(
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
-
-    def _update_percent_expenses(self, percent_expenses_ids):
-        per_exp_recs = self.env["ozon.cost"].browse(percent_expenses_ids)
-        names = [rec.name for rec in per_exp_recs]
-        new_percent_expenses_ids = percent_expenses_ids
-        for per_exp in self.percent_expenses:
-            if per_exp.name not in names:
-                new_percent_expenses_ids.append(per_exp.id)
-
-        self.percent_expenses = [(6, 0, new_percent_expenses_ids)]
 
     def get_view(self, view_id=None, view_type="form", **options):
         res = super(Product, self).get_view(view_id=view_id, view_type=view_type)
