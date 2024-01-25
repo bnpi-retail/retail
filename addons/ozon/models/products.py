@@ -1,5 +1,6 @@
 import ast
 import logging
+from collections import defaultdict
 
 import requests
 
@@ -609,6 +610,7 @@ class Product(models.Model):
 
     def _automated_daily_action_by_cron(self):
         products = self.env['ozon.products'].search([])
+        lots_with_indicators = defaultdict(list)
         for record in products:
             # проверяет не устарел ли индикатор и архивирует если да
             for indicator in record.ozon_products_indicator_ids:
@@ -621,17 +623,31 @@ class Product(models.Model):
 
             have_no_competitor_manager_indicator = 0
             have_no_competitor_robot_indicator = 0
-            # добавить лот в список для отчетов
-            lots_with_indicators = []
+            # добавить лот в словарь разбив по менеджерам, для отчетов если соответствует
             for indicator in record.ozon_products_indicator_ids:
                 if indicator.type == 'no_competitor_manager':
                     have_no_competitor_manager_indicator = 1
                 if indicator.type == 'no_competitor_robot':
                     have_no_competitor_robot_indicator = 1
+            if have_no_competitor_manager_indicator and have_no_competitor_robot_indicator:
+                pass
+            else:
+                lots_with_indicators[record.categories.category_manager.id].append(record.id)
 
-            if not have_no_competitor_manager_indicator and not have_no_competitor_robot_indicator:
-                lots_with_indicators.append(record)
+        self._create_manager_indicator_report(lots_with_indicators)
 
+    def _create_manager_indicator_report(self, lots_with_indicators):
+        reports = self.env['ozon.report'].search([('type', '=', 'indicators')])
+        for report in reports:
+            report.active = False
+        for manager_id, lots in lots_with_indicators.items():
+            if manager_id:
+                report = self.env['ozon.report'].create({
+                    'type': 'indicators',
+                    'res_users_id': manager_id,
+                    'ozon_products_ids': lots,
+                    'lots_quantity': len(lots)
+                })
 
     def _not_enough_competitors_write(self, record):
         if record.not_enough_competitors and not record.commentary_not_enough_competitors:

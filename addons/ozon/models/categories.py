@@ -126,6 +126,7 @@ class ActionGraphs(models.Model):
     def _get_year(self) -> str:
         return datetime.now().year
 
+
 class NameGetCustom(models.Model):
     _inherit = 'ozon.categories'
 

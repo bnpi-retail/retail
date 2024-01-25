@@ -9,14 +9,19 @@
                     <sheet>
                         <group>
                             <group>
-                                <field name="create_date" readonly="1"/>
-                                <field name="res_users_id" readonly="1"/>
-                                <field name="lots_quantity" readonly="1"/>
+                                <field name="create_date" string="Дата создания" readonly="1"/>
+                                <field name="res_users_id" string="Ответственный менеджер" readonly="1"/>
+                                <field name="lots_quantity" string="Количество лотов" readonly="1"/>
                             </group>
                             <notebook>
                                 <page string="Лоты">
                                     <field name="ozon_products_ids">
                                         <tree string="Лоты">
+                                            <field name="article"/>
+                                            <field name="products"/>
+                                            <field name="ozon_products_indicator_ids" widget="many2many_tags"
+                                                   string="Индикаторы"
+                                            />
                                             <field name="categories"/>
                                         </tree>
                                     </field>
@@ -32,10 +37,10 @@
             <field name="name">ozon_report.tree</field>
             <field name="model">ozon.report</field>
             <field name="arch" type="xml">
-                <tree string="product_labeling" create="0">
-                    <field name="create_date"/>
-                    <field name="res_users_id"/>
-                    <field name="lots_quantity"/>
+                <tree string="Отчеты" create="0">
+                    <field name="create_date" string="Дата создания" readonly="1"/>
+                    <field name="res_users_id" string="Ответственный менеджер" readonly="1"/>
+                    <field name="lots_quantity" string="Количество лотов" readonly="1"/>
                 </tree>
             </field>
         </record>
@@ -68,7 +73,7 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="ozon.menu_reports" name="Отчеты" parent="ozon.menu_root" sequence="40"/>
+        <menuitem id="ozon.menu_reports" name="Отчеты" parent="ozon.menu_root" sequence="38"/>
         <menuitem id="menu_indicators_reports" name="Отчеты по индикаторам" parent="ozon.menu_reports"
                   action="action_open_ozon_report" sequence="1"/>
 
