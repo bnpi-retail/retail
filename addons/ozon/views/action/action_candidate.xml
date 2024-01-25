@@ -1,0 +1,30 @@
+<odoo>
+    <data>
+
+        <!-- Tree -->
+        <record id="view_action_candidate_tree" model="ir.ui.view">
+            <field name="name">Кандидаты в акции</field>
+            <field name="model">ozon.action_candidate</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="product_id" />
+                    <field name="is_participating" />
+                    <field name="price" />
+                    <field name="max_action_price" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Actions -->
+        <record model="ir.actions.server" id="action_participate_in_action">
+            <field name="name">Участвовать в акции</field>
+            <field name="model_id" ref="model_ozon_action_candidate" />
+            <field name="binding_model_id" ref="model_ozon_action_candidate" />
+            <field name="binding_view_types">tree,form</field>
+            <field name="state">code</field>
+            <field name="code">
+                action = records.participate_in_action()
+            </field>
+        </record>
+    </data>
+</odoo>
