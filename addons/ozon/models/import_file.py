@@ -305,7 +305,7 @@ class ImportFile(models.Model):
                                 }
                             )
                             retail_product = self.is_retail_product_exists(
-                                product_id=row["product_id"]
+                                product_id=row["offer_id"]
                             )
                             retail_product.write(
                                 {
@@ -729,7 +729,7 @@ class ImportFile(models.Model):
                             "price_index": row["price_index"],
                         }
                     )
-                print(f"{i} - Product {row['id_on_platform']} prices were updated")
+                    print(f"{i} - Product {row['id_on_platform']} prices were updated")
 
         os.remove(f_path)
 
