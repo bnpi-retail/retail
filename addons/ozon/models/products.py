@@ -452,15 +452,16 @@ class Product(models.Model):
     def _compute_sales_per_day_last_30_days_group(self):
         coefs = self.read(fields=["sales_per_day_last_30_days"])
         coefs = sorted(coefs, key=itemgetter("sales_per_day_last_30_days"))
-        g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
-        for i, g in enumerate([g1, g2, g3, g4, g5]):
-            g_min = round(g[0]["sales_per_day_last_30_days"], 2)
-            g_max = round(g[-1]["sales_per_day_last_30_days"], 2)
-            for item in g:
-                prod = self.env["ozon.products"].search([("id", "=", item["id"])])
-                prod.sales_per_day_last_30_days_group = (
-                    f"Группа {i+1}: от {g_min} до {g_max}"
-                )
+        if coefs:
+            g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
+            for i, g in enumerate([g1, g2, g3, g4, g5]):
+                g_min = round(g[0]["sales_per_day_last_30_days"], 2)
+                g_max = round(g[-1]["sales_per_day_last_30_days"], 2)
+                for item in g:
+                    prod = self.env["ozon.products"].search([("id", "=", item["id"])])
+                    prod.sales_per_day_last_30_days_group = (
+                        f"Группа {i+1}: от {g_min} до {g_max}"
+                    )
 
     @api.onchange("profit_delta", "profit_ideal")
     @api.depends("profit_delta", "profit_ideal")
@@ -476,15 +477,16 @@ class Product(models.Model):
     def _compute_coef_profitability_group(self):
         coefs = self.read(fields=["coef_profitability"])
         coefs = sorted(coefs, key=itemgetter("coef_profitability"))
-        g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
-        for i, g in enumerate([g1, g2, g3, g4, g5]):
-            g_min = round(g[0]["coef_profitability"], 2)
-            g_max = round(g[-1]["coef_profitability"], 2)
-            for item in g:
-                prod = self.env["ozon.products"].search([("id", "=", item["id"])])
-                prod.coef_profitability_group = (
-                    f"Группа {i+1}: от {g_min*100}% до {g_max*100}%"
-                )
+        if coefs:
+            g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
+            for i, g in enumerate([g1, g2, g3, g4, g5]):
+                g_min = round(g[0]["coef_profitability"], 2)
+                g_max = round(g[-1]["coef_profitability"], 2)
+                for item in g:
+                    prod = self.env["ozon.products"].search([("id", "=", item["id"])])
+                    prod.coef_profitability_group = (
+                        f"Группа {i+1}: от {g_min*100}% до {g_max*100}%"
+                    )
 
     def name_get(self):
         """

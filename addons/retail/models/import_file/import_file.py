@@ -171,6 +171,7 @@ class ImportFile(models.Model):
         cost_act_prod_ids_data = []
         for offer in root.findall("offer"):
             artikul = offer.find("artikul").text
+            print(artikul)
             if retail_product := self.is_retail_product_exists(product_id=artikul):
                 cp = float(offer.find("CostPrice").text)
                 prod_data = {"product_id": retail_product.id, "cost": cp}
