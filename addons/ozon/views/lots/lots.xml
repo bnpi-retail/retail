@@ -321,8 +321,6 @@
                         decoration-danger="price_index=='NON_PROFIT'" />
                     <field name="trading_scheme" />
                     <field name="coef_profitability" />
-
-
                 </tree>
             </field>
         </record>
@@ -339,14 +337,16 @@
                                 <div class="oe_kanban_global_click">
                                     <div class="oe_kanban_details">
                                         <field name="img_html"/>
-                                        <div style="display: block;">
-                                            Артикул: <field name="article"/>
-                                        </div>
-                                        <div style="display: block;">
-                                            <field name="products"/>
-                                        </div>
                                     </div>
                                 </div>
+
+                                <div style="display: block;">
+                                    Артикул: <field name="article"/>
+                                </div>
+                                <div style="display: block;">
+                                    <field name="products"/>
+                                </div>
+
                             </div>
                         </t>
                     </templates>
