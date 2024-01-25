@@ -463,9 +463,12 @@ class Product(models.Model):
     @api.depends("profit_delta", "profit_ideal")
     def _compute_coef_profitability(self):
         for product in self:
-            product.coef_profitability = round(
-                product.profit_delta / product.profit_ideal, 2
-            )
+            if product.profit_ideal:
+                product.coef_profitability = round(
+                    product.profit_delta / product.profit_ideal, 2
+                )
+            else:
+                product.coef_profitability = 0
 
     def _compute_coef_profitability_group(self):
         coefs = self.read(fields=["coef_profitability"])
