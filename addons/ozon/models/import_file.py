@@ -1,15 +1,13 @@
 import ast
 import base64
 import csv
-from datetime import date
-from multiprocessing import Value
+import magic
 import json
 import os
 import timeit
 
-import magic
-
-
+from datetime import date
+from multiprocessing import Value
 from odoo import models, fields, api, exceptions
 
 from ..ozon_api import (
@@ -41,7 +39,8 @@ class ImportFile(models.Model):
             ("ozon_transactions", "Транзакции Ozon"),
             ("ozon_stocks", "Остатки товаров Ozon"),
             ("ozon_prices", "Цены Ozon"),
-            ("ozon_images", "Ссылки на графики"),
+            ("ozon_images", 'Ссылки на графики'),
+            ("ozon_successful_products_competitors", 'Успешные товары конкурентов'),
             ("ozon_postings", "Отправления Ozon"),
             ("ozon_fbo_supply_orders", "Поставки FBO"),
             ("ozon_actions", "Акции Ozon"),
@@ -102,6 +101,9 @@ class ImportFile(models.Model):
 
             elif values["model"] == "analysis_data":
                 self.import_images_analysis_data(content)
+
+        elif values["data_for_download"] == "ozon_successful_products_competitors":
+            self.import_successful_products_competitors(content)
 
         elif values["data_for_download"] == "ozon_plugin":
             model_search_queries = self.env["ozon.search_queries"]
@@ -1024,3 +1026,17 @@ class ImportFile(models.Model):
                 print(f"{i} - Action {a_id} was imported")
 
         os.remove(f_path)
+
+    def import_successful_products_competitors(self, content):
+        lines = content.split("\n")
+
+        for line in lines[1:]:
+            if not line: continue
+
+            sku, name = line.split(",")
+
+            model_successful_products_competitors = self.env["ozon.successful_product_competitors"]
+            model_successful_products_competitors.create({
+                "sku": sku,
+                "name": name,
+            })

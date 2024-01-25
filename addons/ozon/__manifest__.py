@@ -34,6 +34,7 @@
         "security/competitors/search_query_queue/ir.model.access.csv",
         "security/competitors/analysis_competitors/ir.model.access.csv",
         "security/competitors/analysis_competitors_record/ir.model.access.csv",
+        "security/competitors/successful_product_competitors/ir.model.access.csv",
         "security/search_queries/search_queries/ir.model.access.csv",
         "security/transaction/ir.model.access.csv",
         "security/stock/ir.model.access.csv",
@@ -46,6 +47,8 @@
         "security/warehouse/ir.model.access.csv",
         "security/fbo_supply_order/ir.model.access.csv",
         "security/action/ir.model.access.csv",
+        "security/indicator/ir.model.access.csv",
+        "security/reports/ir.model.access.csv",
         ### views
         "views/menu.xml",
         "views/price/menu.xml",
@@ -74,6 +77,7 @@
         "views/competitors/search_query_queue.xml",
         "views/competitors/price_competitors.xml",
         "views/competitors/analysis_competitors.xml",
+        "views/competitors/successful_products_competitors.xml",
         "views/indirect_percent_expenses/indirect_percent_expenses.xml",
         "views/actions/assign_an_insurance_coefficient.xml",
         "views/issue_report/menu.xml",
@@ -89,6 +93,8 @@
         "views/fbo_supply_order/fbo_supply_order_product.xml",
         "views/action/action.xml",
         "views/action/action_candidate.xml",
+        "crone/ir_cron_data.xml",
+        "views/reports/ozon_reports_views.xml",
     ],
     "demo": [
         "demo/demo.xml",

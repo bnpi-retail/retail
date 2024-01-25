@@ -1,5 +1,32 @@
 <odoo>
     <data>
+
+        <!-- Form -->
+        <record id="view_categories_form" model="ir.ui.view">
+            <field name="name">Основная категория</field>
+            <field name="model">ozon.categories</field>
+            <field name="arch" type="xml">
+                <form>
+                    <notebook>
+                        <page string="Основная информация">
+                            <group>
+                                <field name="name_categories" />
+                                <field name="category_manager"/>
+                            </group>
+                        </page>
+
+                        <page string="Аналитические данные">
+                            <group>
+                                <field name="img_html_sale_this_year"/>
+                                <field name="img_html_sale_last_year"/>
+                                <field name="img_html_analysis_data_this_year"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+
         <!-- Tree -->
         <record id="view_main_categories_tree" model="ir.ui.view">
             <field name="name">Основные категории</field>
@@ -16,6 +43,16 @@
             <field name="name">Основные категории</field>
             <field name="res_model">ozon.categories</field>
             <field name="view_mode">tree,form</field>
+        </record>
+
+        <record model="ir.actions.server" id="action_draw_graphs_for_categores">
+            <field name="name">Рассчитать "Аналитические данные"</field>
+            <field name="model_id" ref="model_ozon_categories" />
+            <field name="binding_model_id" ref="model_ozon_categories" />
+            <field name="state">code</field>
+            <field name="code">
+                records.action_draw_graphs()
+            </field>
         </record>
 
         <!-- Menu -->

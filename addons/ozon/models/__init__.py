@@ -22,12 +22,15 @@ from . import posting
 from . import warehouse
 from . import fbo_supply_order
 from . import action
+from . import indicator
 
 from .competitors import products_competitors
 from .competitors import price_history_competitors
 from .competitors import analysis_competitors
 from .competitors import search_query_queue
+from .competitors import successful_product_competitors
 from .pricing import pricing
 from .pricing import mass_pricing
 from .search_queries import search_queries
 from .analysis_data import analysis_data
+from .reports import ozon_report
