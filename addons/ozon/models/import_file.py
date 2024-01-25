@@ -295,6 +295,12 @@ class ImportFile(models.Model):
                                     "trading_scheme": row["trading_scheme"],
                                     "price": row["price"],
                                     "old_price": row["old_price"],
+                                    "ext_comp_min_price": row["ext_comp_min_price"],
+                                    "ozon_comp_min_price": row["ozon_comp_min_price"],
+                                    "self_marketplaces_min_price": row[
+                                        "self_marketplaces_min_price"
+                                    ],
+                                    "price_index": row["price_index"],
                                     "imgs_urls": row["img_urls"],
                                 }
                             )
@@ -356,6 +362,12 @@ class ImportFile(models.Model):
                                     "products": retail_product.id,
                                     "price": row["price"],
                                     "old_price": row["old_price"],
+                                    "ext_comp_min_price": row["ext_comp_min_price"],
+                                    "ozon_comp_min_price": row["ozon_comp_min_price"],
+                                    "self_marketplaces_min_price": row[
+                                        "self_marketplaces_min_price"
+                                    ],
+                                    "price_index": row["price_index"],
                                     "imgs_urls": row["img_urls"],
                                     "seller": seller.id,
                                     "trading_scheme": row["trading_scheme"],
