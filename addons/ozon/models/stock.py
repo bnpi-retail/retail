@@ -13,7 +13,6 @@ class ProductStock(models.Model):
     stocks_fbs = fields.Integer(string="Остатки FBS")
     stocks_reserved_fbs = fields.Integer(string="Зарезервировано остатков FBS")
     stocks_fbo = fields.Integer(string="Остатки FBO")
-    _prod_id = fields.Integer(string="product_id", readonly=True)
     fbs_warehouse_product_stock_ids = fields.One2many(
         "ozon.fbs_warehouse_product_stock",
         "stock_id",

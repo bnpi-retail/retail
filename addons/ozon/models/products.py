@@ -43,8 +43,11 @@ class Product(models.Model):
     )
 
     categories = fields.Many2one("ozon.categories", string="Название категории")
-    id_on_platform = fields.Char(string="ID на площадке", unique=True)
-    article = fields.Char(string="Артикул", unique=True)
+    id_on_platform = fields.Char(string="Product ID", readonly=True)
+    sku = fields.Char(string="SKU", readonly=True)
+    fbo_sku = fields.Char(string="FBO SKU", readonly=True)
+    fbs_sku = fields.Char(string="FBS SKU", readonly=True)
+    article = fields.Char(string="Артикул", readonly=True)
 
     supplementary_categories = fields.One2many(
         "ozon.supplementary_categories",
@@ -87,7 +90,7 @@ class Product(models.Model):
         "ozon.search_queries", "product_id", string="Ключевые слова"
     )
     trading_scheme = fields.Selection(
-        [("FBS", "FBS"), ("FBO", "FBO"), ("FBS, FBO", "FBS, FBO"), ("", "")],
+        [("FBS", "FBS"), ("FBO", "FBO"), ("FBS, FBO", "FBS, FBO"), ("undefined", " ")],
         string="Схема торговли",
     )
 
@@ -120,8 +123,8 @@ class Product(models.Model):
     )
     stock_ids = fields.One2many("ozon.stock", "product", string="История остатков")
     stock_history_count = fields.Integer(compute="_compute_stock_history_count")
-    stocks_fbs = fields.Integer(string="Остатки FBS", readonly=True)
-    stocks_fbo = fields.Integer(string="Остатки FBO", readonly=True)
+    stocks_fbs = fields.Integer(string="FBS остатки", readonly=True)
+    stocks_fbo = fields.Integer(string="FBO остатки", readonly=True)
     is_selling = fields.Boolean(
         string="В продаже", compute="_get_is_selling", store=True, readonly=True
     )
@@ -466,36 +469,41 @@ class Product(models.Model):
     def _compute_sales_per_day_last_30_days_group(self):
         coefs = self.read(fields=["sales_per_day_last_30_days"])
         coefs = sorted(coefs, key=itemgetter("sales_per_day_last_30_days"))
-        g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
-        for i, g in enumerate([g1, g2, g3, g4, g5]):
-            g_min = round(g[0]["sales_per_day_last_30_days"], 2)
-            g_max = round(g[-1]["sales_per_day_last_30_days"], 2)
-            for item in g:
-                prod = self.env["ozon.products"].search([("id", "=", item["id"])])
-                prod.sales_per_day_last_30_days_group = (
-                    f"Группа {i+1}: от {g_min} до {g_max}"
-                )
+        if coefs:
+            g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
+            for i, g in enumerate([g1, g2, g3, g4, g5]):
+                g_min = round(g[0]["sales_per_day_last_30_days"], 2)
+                g_max = round(g[-1]["sales_per_day_last_30_days"], 2)
+                for item in g:
+                    prod = self.env["ozon.products"].search([("id", "=", item["id"])])
+                    prod.sales_per_day_last_30_days_group = (
+                        f"Группа {i+1}: от {g_min} до {g_max}"
+                    )
 
     @api.onchange("profit_delta", "profit_ideal")
     @api.depends("profit_delta", "profit_ideal")
     def _compute_coef_profitability(self):
         for product in self:
-            product.coef_profitability = round(
-                product.profit_delta / product.profit_ideal, 2
-            )
+            if product.profit_ideal:
+                product.coef_profitability = round(
+                    product.profit_delta / product.profit_ideal, 2
+                )
+            else:
+                product.coef_profitability = 0
 
     def _compute_coef_profitability_group(self):
         coefs = self.read(fields=["coef_profitability"])
         coefs = sorted(coefs, key=itemgetter("coef_profitability"))
-        g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
-        for i, g in enumerate([g1, g2, g3, g4, g5]):
-            g_min = round(g[0]["coef_profitability"], 2)
-            g_max = round(g[-1]["coef_profitability"], 2)
-            for item in g:
-                prod = self.env["ozon.products"].search([("id", "=", item["id"])])
-                prod.coef_profitability_group = (
-                    f"Группа {i+1}: от {g_min*100}% до {g_max*100}%"
-                )
+        if coefs:
+            g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
+            for i, g in enumerate([g1, g2, g3, g4, g5]):
+                g_min = round(g[0]["coef_profitability"], 2)
+                g_max = round(g[-1]["coef_profitability"], 2)
+                for item in g:
+                    prod = self.env["ozon.products"].search([("id", "=", item["id"])])
+                    prod.coef_profitability_group = (
+                        f"Группа {i+1}: от {g_min*100}% до {g_max*100}%"
+                    )
 
     @api.model
     def create(self, values):
@@ -512,40 +520,52 @@ class Product(models.Model):
 
         return records
 
-    def get_total_cost_price(self):
-        ret_product = self.env["retail.products"].search(
-            [("id", "=", self.products.id)]
-        )
-        return ret_product.total_cost_price
-
     def create_update_fix_exp_cost_price(self, total_cost_price):
         self.ensure_one()
-        if fix_exp_rec_cost_price := self.env["ozon.fix_expenses"].search(
-            [("product_id", "=", self.id), ("name", "=", "Себестоимость товара")],
-            limit=1,
-            order="create_date desc",
-        ):
-            fix_exp_rec_cost_price.price = total_cost_price
+        fix_exp_id = None
+        fix_expenses = self.fix_expenses.read(["name"])
+        for i in fix_expenses:
+            if i["name"] == "Себестоимость товара":
+                fix_exp_id = i["id"]
+                break
+        # if fix_exp_rec_cost_price := self.env["ozon.fix_expenses"].search(
+        #     [("product_id", "=", self.id), ("name", "=", "Себестоимость товара")],
+        #     limit=1,
+        #     order="create_date desc",
+        # ):
+        #     fix_exp_rec_cost_price.price = total_cost_price
+        if fix_exp_id:
+            self.percent_expenses = [(1, fix_exp_id, {"price": total_cost_price})]
         else:
-            fix_exp_rec_cost_price = self.env["ozon.fix_expenses"].create(
-                {
-                    "name": "Себестоимость товара",
-                    "price": total_cost_price,
-                    "discription": "Общая себестоимость товара",
-                    "product_id": self.id,
-                }
+            fix_exp_id = (
+                self.env["ozon.fix_expenses"]
+                .create(
+                    {
+                        "name": "Себестоимость товара",
+                        "price": total_cost_price,
+                        "discription": "Общая себестоимость товара",
+                        "product_id": self.id,
+                    }
+                )
+                .id
             )
-        return fix_exp_rec_cost_price
+        return fix_exp_id
 
-    def write(self, values, current_product=None):
+    def write(self, values, **kwargs):
         if isinstance(values, dict) and values.get("fix_expenses"):
-            total_cost_price = current_product.get_total_cost_price()
-            fix_exp_rec_cost_price = current_product.create_update_fix_exp_cost_price(
+            total_cost_price = self.products.total_cost_price
+            fix_exp_rec_cost_price_id = self.create_update_fix_exp_cost_price(
                 total_cost_price
             )
-            values["fix_expenses"] = [fix_exp_rec_cost_price.id] + values[
+            values["fix_expenses"] = [fix_exp_rec_cost_price_id] + values[
                 "fix_expenses"
             ]
+
+            per_exp_recs = kwargs.get("percent_expenses")
+            names = [rec.name for rec in per_exp_recs]
+            for per_exp in self.percent_expenses:
+                if per_exp.name not in names:
+                    values["percent_expenses"].append(per_exp.id)
 
         res = super(Product, self).write(values)
         if values.get('not_enough_competitors'):
@@ -671,6 +691,7 @@ class Product(models.Model):
 
         return record
 
+
     @api.depends("stocks_fbs", "stocks_fbo")
     def _get_is_selling(self):
         for record in self:
@@ -789,16 +810,6 @@ class Product(models.Model):
             print(
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
-
-    def _update_percent_expenses(self, percent_expenses_ids):
-        per_exp_recs = self.env["ozon.cost"].browse(percent_expenses_ids)
-        names = [rec.name for rec in per_exp_recs]
-        new_percent_expenses_ids = percent_expenses_ids
-        for per_exp in self.percent_expenses:
-            if per_exp.name not in names:
-                new_percent_expenses_ids.append(per_exp.id)
-
-        self.percent_expenses = [(6, 0, new_percent_expenses_ids)]
 
     def get_view(self, view_id=None, view_type="form", **options):
         res = super(Product, self).get_view(view_id=view_id, view_type=view_type)
