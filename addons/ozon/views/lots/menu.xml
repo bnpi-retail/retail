@@ -1,8 +1,8 @@
 <odoo>
   <data>
-    <menuitem name="Лоты" 
+    <menuitem name="Продукты"
       id="main_menu_products"
       parent="ozon.menu_root"
-      sequence="20"/>
+      sequence="20" />
   </data>
 </odoo>
