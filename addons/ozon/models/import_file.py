@@ -292,6 +292,9 @@ class ImportFile(models.Model):
                         ):
                             ozon_product.write(
                                 {
+                                    "sku": row["sku"],
+                                    "fbo_sku": row["fbo_sku"],
+                                    "fbs_sku": row["fbs_sku"],
                                     "trading_scheme": row["trading_scheme"],
                                     "price": row["price"],
                                     "old_price": row["old_price"],
