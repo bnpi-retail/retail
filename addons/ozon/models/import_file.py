@@ -41,7 +41,7 @@ class ImportFile(models.Model):
             ("ozon_transactions", "Транзакции Ozon"),
             ("ozon_stocks", "Остатки товаров Ozon"),
             ("ozon_prices", "Цены Ozon"),
-            ("ozon_images", 'Ссылки на графики'),
+            ("ozon_images", "Ссылки на графики"),
             ("ozon_postings", "Отправления Ozon"),
             ("ozon_fbo_supply_orders", "Поставки FBO"),
             ("ozon_actions", "Акции Ozon"),
@@ -292,6 +292,7 @@ class ImportFile(models.Model):
                         ):
                             ozon_product.write(
                                 {
+                                    "trading_scheme": row["trading_scheme"],
                                     "price": row["price"],
                                     "old_price": row["old_price"],
                                     "imgs_urls": row["img_urls"],
@@ -335,7 +336,7 @@ class ImportFile(models.Model):
                                     "name": row["name"],
                                     "description": row["description"],
                                     "keywords": row["keywords"],
-                                    "product_id": row["product_id"],
+                                    "product_id": row["offer_id"],
                                     "length": float(row["length"]),
                                     "width": float(row["width"]),
                                     "height": float(row["height"]),
@@ -862,10 +863,11 @@ class ImportFile(models.Model):
         model_products = self.env["ozon.products"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             product_id, url_this_year, url_last_year = line.split(",")
-            
+
             record = model_products.search([("id", "=", product_id)])
             record.img_url_sale_this_year = url_this_year
             record.img_url_sale_last_year = url_last_year
@@ -876,7 +878,8 @@ class ImportFile(models.Model):
         model_competitors_products = self.env["ozon.products"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             product_id, url_two_weeks, url_six_weeks, url_twelve_weeks = line.split(",")
 
@@ -884,14 +887,15 @@ class ImportFile(models.Model):
             record.img_url_sale_two_weeks = url_two_weeks
             record.img_url_sale_six_weeks = url_six_weeks
             record.img_url_sale_twelve_weeks = url_twelve_weeks
-            
+
     def import_images_competitors_products(self, content):
         lines = content.split("\n")
 
         model_competitors_products = self.env["ozon.products_competitors"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             product_id, url_this_year = line.split(",")
 
@@ -904,7 +908,8 @@ class ImportFile(models.Model):
         model_products = self.env["ozon.products"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             product_id, url = line.split(",")
 
@@ -918,7 +923,8 @@ class ImportFile(models.Model):
         model_products = self.env["ozon.products"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             product_id, url = line.split(",")
 
@@ -931,7 +937,8 @@ class ImportFile(models.Model):
         model_products = self.env["ozon.products"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             product_id, url = line.split(",")
 
