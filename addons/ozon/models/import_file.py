@@ -509,11 +509,9 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
-    def get_ozon_product_by_id_on_platform(self, id_on_platform: str):
+    def is_ozon_product_exists_by_sku(self, sku: str):
         result = self.env["ozon.products"].search(
-            [
-                ("id_on_platform", "=", id_on_platform),
-            ],
+            ["|", "|", ("sku", "=", sku), ("fbo_sku", "=", sku), ("fbs_sku", "=", sku)],
             limit=1,
         )
         return result if result else False
@@ -609,15 +607,12 @@ class ImportFile(models.Model):
                 ):
                     continue
                 ozon_products = []
-                prod_ids_list = ast.literal_eval(row["product_ids_on_platform"])
-                for prod_id in prod_ids_list:
-                    ozon_product = self.get_ozon_product_by_id_on_platform(
-                        id_on_platform=prod_id
-                    )
-                    if ozon_product:
+                skus = ast.literal_eval(row["product_skus"])
+                for sku in skus:
+                    if ozon_product := self.is_ozon_product_exists_by_sku(sku):
                         ozon_products.append(ozon_product.id)
 
-                if len(prod_ids_list) != len(ozon_products):
+                if len(skus) != len(ozon_products):
                     continue
 
                 ozon_services = []
@@ -858,7 +853,7 @@ class ImportFile(models.Model):
                 {"product": product, "date": date, "qty": qty, "revenue": revenue}
             )
 
-        # TODO: different products in one transaction
+        # TODO: if different products in one transaction
 
     def import_images_sale(self, content):
         lines = content.split("\n")
