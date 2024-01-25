@@ -37,11 +37,11 @@ class Product(models.Model):
     )
 
     categories = fields.Many2one("ozon.categories", string="Название категории")
-    id_on_platform = fields.Char(string="Product ID", unique=True)
+    id_on_platform = fields.Char(string="Product ID", readonly=True)
     sku = fields.Char(string="SKU", readonly=True)
     fbo_sku = fields.Char(string="FBO SKU", readonly=True)
     fbs_sku = fields.Char(string="FBS SKU", readonly=True)
-    article = fields.Char(string="Артикул", unique=True)
+    article = fields.Char(string="Артикул", readonly=True)
 
     supplementary_categories = fields.One2many(
         "ozon.supplementary_categories",
@@ -115,8 +115,8 @@ class Product(models.Model):
     )
     stock_ids = fields.One2many("ozon.stock", "product", string="История остатков")
     stock_history_count = fields.Integer(compute="_compute_stock_history_count")
-    stocks_fbs = fields.Integer(string="Остатки FBS", readonly=True)
-    stocks_fbo = fields.Integer(string="Остатки FBO", readonly=True)
+    stocks_fbs = fields.Integer(string="FBS остатки", readonly=True)
+    stocks_fbo = fields.Integer(string="FBO остатки", readonly=True)
     is_selling = fields.Boolean(
         string="В продаже", compute="_get_is_selling", store=True, readonly=True
     )

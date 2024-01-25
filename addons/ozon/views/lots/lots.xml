@@ -73,20 +73,27 @@
                         <page id="page_lot_price_profit_main_info" string="Цена и прибыль">
                             <group>
                                 <group>
-                                    <field name="id_on_platform" />
-                                    <field name="article" />
-                                    <field name="products" />
+                                    <group>
+                                        <field name="products" />
+                                        <field name="id_on_platform" />
+                                        <field name="article" />
+                                    </group>
+                                    <group>
+                                        <field name="sku" />
+                                        <field name="fbo_sku" />
+                                        <field name="fbs_sku" />
+                                    </group>
                                 </group>
                                 <group>
+                                    <group>
+                                        <field name="trading_scheme" readonly="true" />
+                                        <field name="stocks_fbo" />
+                                        <field name="stocks_fbs" />
+                                    </group>
                                     <group>
                                         <field name="is_selling" />
                                         <field name="is_alive" />
                                         <field name="is_participating_in_actions" />
-                                    </group>
-                                    <group>
-                                        <field name="trading_scheme" readonly="true" />
-                                        <field name="stocks_fbs" />
-                                        <field name="stocks_fbo" />
                                     </group>
                                 </group>
                             </group>
