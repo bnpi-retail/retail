@@ -37,7 +37,10 @@ class Product(models.Model):
     )
 
     categories = fields.Many2one("ozon.categories", string="Название категории")
-    id_on_platform = fields.Char(string="ID на площадке", unique=True)
+    id_on_platform = fields.Char(string="Product ID", unique=True)
+    sku = fields.Char(string="SKU", readonly=True)
+    fbo_sku = fields.Char(string="FBO SKU", readonly=True)
+    fbs_sku = fields.Char(string="FBS SKU", readonly=True)
     article = fields.Char(string="Артикул", unique=True)
 
     supplementary_categories = fields.One2many(

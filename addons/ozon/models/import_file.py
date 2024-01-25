@@ -346,8 +346,11 @@ class ImportFile(models.Model):
 
                             ozon_product = self.env["ozon.products"].create(
                                 {
-                                    "categories": ozon_category.id,
                                     "id_on_platform": row["id_on_platform"],
+                                    "sku": row["sku"],
+                                    "fbo_sku": row["fbo_sku"],
+                                    "fbs_sku": row["fbs_sku"],
+                                    "categories": ozon_category.id,
                                     "article": retail_product.product_id,
                                     "description": row["description"],
                                     "products": retail_product.id,
