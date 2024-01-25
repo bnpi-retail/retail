@@ -285,7 +285,7 @@ class ImportFile(models.Model):
                 with open(f_path) as csvfile:
                     price_history_data_list = []
                     reader = csv.DictReader(csvfile)
-                    for row in reader:
+                    for i, row in enumerate(reader):
                         row_id_on_platform = row["id_on_platform"]
                         row_price = row["price"]
                         row_old_price = row["old_price"]
@@ -393,7 +393,7 @@ class ImportFile(models.Model):
                         # s2 = timeit.default_timer()
                         all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
 
-                        if product_fee := self.is_product_fee_exists(ozon_product):
+                        if product_fee := ozon_product.product_fee:
                             are_fees_the_same = True
                             for key, new_value in all_fees.items():
                                 if product_fee[key] != float(new_value):
@@ -433,12 +433,15 @@ class ImportFile(models.Model):
                             )
                         # s4 = timeit.default_timer()
 
-                        prev_price_history_record = self.is_ozon_price_history_exists(
-                            ozon_product_id
+                        price_history_records = (
+                            ozon_product.price_our_history_ids.sorted(
+                                key=lambda r: r.create_date, reverse=True
+                            )
                         )
+
                         # s41 = timeit.default_timer()
-                        if prev_price_history_record:
-                            previous_price = prev_price_history_record.price
+                        if price_history_records:
+                            previous_price = price_history_records[0].price
                         else:
                             previous_price = 0
 
@@ -579,16 +582,6 @@ class ImportFile(models.Model):
                 ("category.name_categories", "=", category_name),
                 ("name", "=", commission_name),
             ],
-            limit=1,
-        )
-        return result if result else False
-
-    def is_ozon_price_history_exists(self, product_id):
-        result = self.env["ozon.price_history"].search(
-            [
-                ("product", "=", product_id),
-            ],
-            order="create_date desc",
             limit=1,
         )
         return result if result else False
@@ -853,13 +846,6 @@ class ImportFile(models.Model):
                 )
                 print(f"{i} - Supply order {supply_order_id} was imported")
         os.remove(f_path)
-
-    def is_product_fee_exists(self, ozon_product):
-        result = self.env["ozon.product_fee"].search(
-            [("product", "=", ozon_product.id)],
-            limit=1,
-        )
-        return result if result else False
 
     def create_sale_from_transaction(self, products: list, date: str, revenue: float):
         # if all products are the same
