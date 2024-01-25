@@ -1424,6 +1424,16 @@ class ProductGraphExtension(models.Model):
         if response.status_code != 200:
             raise ValueError(f"{response.status_code}--{response.text}")
 
+    def action_open_lot_full_screen(self):
+        return {
+            'name': 'Лот',
+            'type': 'ir.actions.act_window',
+            'res_model': "ozon.products",
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'current',
+        }
+
 
 class ProductCalculator(models.Model):
     _name = "ozon.product_calculator"

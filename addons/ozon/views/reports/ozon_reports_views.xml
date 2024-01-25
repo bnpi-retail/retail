@@ -17,6 +17,9 @@
                                 <page string="Лоты">
                                     <field name="ozon_products_ids">
                                         <tree string="Лоты">
+                                            <button name="action_open_lot_full_screen" type="object"
+                                                    string="Перейти"
+                                                    class="oe_highlight"/>
                                             <field name="article"/>
                                             <field name="products"/>
                                             <field name="ozon_products_indicator_ids" widget="many2many_tags"
