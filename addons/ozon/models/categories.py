@@ -107,6 +107,8 @@ class ActionGraphs(models.Model):
                     ("timestamp_to", "<=", f"{year}-12-31"),
                 ])
 
+                if not analysis_data_records: continue
+
                 graph_data = {"dates": [], "num": []}
 
                 for analysis_data_record in analysis_data_records:
