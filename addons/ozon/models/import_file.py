@@ -996,12 +996,10 @@ class ImportFile(models.Model):
 
                     candidates = json.loads(row["action_candidates"])
                     candidates_data = []
+                    len_candidates = len(candidates)
                     for idx, can in enumerate(candidates):
-                        len_candidates = len(candidates)
-                        sku = can["sku"]
-                        if ozon_product := self.is_ozon_product_exists(
-                            id_on_platform=sku
-                        ):
+                        id_on_platform = can["id"]
+                        if ozon_product := self.is_ozon_product_exists(id_on_platform):
                             candidates_data.append(
                                 {
                                     "action_id": action.id,
@@ -1010,8 +1008,9 @@ class ImportFile(models.Model):
                                 }
                             )
                             print(
-                                f"{idx}/{len_candidates} - Product {sku} was added as an action {a_id} candidate"
+                                f"{idx}/{len_candidates} - Product {id_on_platform} was added as action {a_id} candidate"
                             )
+
                     action_candidate_ids = (
                         self.env["ozon.action_candidate"].create(candidates_data).ids
                     )
@@ -1020,9 +1019,9 @@ class ImportFile(models.Model):
                 if is_participating:
                     participants = json.loads(row["action_participants"])
                     for par in participants:
-                        sku = str(par["sku"])
+                        id_on_platform = str(par["id_on_platform"])
                         action_candidate = action.action_candidate_ids.filtered(
-                            lambda r: r.product_id_on_platform == sku
+                            lambda r: r.product_id_on_platform == id_on_platform
                         )
                         if action_candidate:
                             action_candidate.is_participating = True
