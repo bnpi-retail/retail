@@ -70,7 +70,6 @@ class Product(models.Model):
         readonly=True,
     )
 
-
     imgs_urls = fields.Char(string="Ссылки на изображения")
     imgs_html = fields.Html(compute="_compute_imgs")
     seller = fields.Many2one("retail.seller", string="Продавец")
@@ -480,15 +479,6 @@ class Product(models.Model):
                 prod.coef_profitability_group = (
                     f"Группа {i+1}: от {g_min*100}% до {g_max*100}%"
                 )
-
-    def name_get(self):
-        """
-        Rename name records
-        """
-        result = []
-        for record in self:
-            result.append((record.id, record.products.name))
-        return result
 
     @api.model
     def create(self, values):
@@ -924,6 +914,47 @@ class Product(models.Model):
         }
 
 
+class ProductNameGetExtension(models.Model):
+    _inherit = 'ozon.products'
+
+    def name_get(self):
+        """
+        Rename name records
+        """
+        result = []
+        for record in self:
+            result.append((record.id, f"{record.article}, {record.products.name}"))
+        return result
+
+
+class ProductQuikSearchExtension(models.Model):
+    _inherit = 'ozon.products'
+
+    def _name_search(self, name='', args=None, operator='ilike', limit=10, name_get_uid=None):
+        args = list(args or [])
+        if name:
+            args += ['|', ('article', operator, name), ('products', operator, name)]
+        return self._search(args, limit=limit, access_rights_uid=name_get_uid)
+
+
+class ProductKanbanExtension(models.Model):
+    _inherit = 'ozon.products'
+
+    img_html = fields.Html(compute="_compute_img") 
+
+    def _compute_img(self):
+        for rec in self:
+            rec.img_html = False
+            if rec.imgs_urls:
+                render_html = []
+                imgs_urls_list = ast.literal_eval(rec.imgs_urls)
+                for img in imgs_urls_list:
+                    render_html.append(f"<img src='{img}' width='150'/>")
+                    break
+
+                rec.img_html = "\n".join(render_html)
+
+
 class ProductGraphExtension(models.Model):
     _inherit = 'ozon.products'
 
@@ -1225,6 +1256,7 @@ class ProductGraphExtension(models.Model):
         if response.status_code != 200:
             raise ValueError(f"{response.status_code}--{response.text}")
 
+
 class ProductCalculator(models.Model):
     _name = "ozon.product_calculator"
     _description = "Калькулятор лота"
@@ -1233,3 +1265,4 @@ class ProductCalculator(models.Model):
     name = fields.Char(string="Параметр")
     value = fields.Float(string="Текущее значение")
     new_value = fields.Float(string="Новое значение")
+    

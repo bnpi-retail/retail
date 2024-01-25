@@ -295,6 +295,7 @@
             <field name="model">ozon.products</field>
             <field name="arch" type="xml">
                 <tree>
+                    <field name="article"/>
                     <field name="products" />
                     <field name="price" />
                     <field name="is_selling" />
@@ -305,7 +306,50 @@
                         decoration-danger="price_index=='NON_PROFIT'" />
                     <field name="trading_scheme" />
                     <field name="coef_profitability" />
+
+
                 </tree>
+            </field>
+        </record>
+        
+        <!-- Kanban -->
+        <record id="view_product_kanban_custom" model="ir.ui.view">
+            <field name="name">Лоты</field>
+            <field name="model">ozon.products</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_content">
+                                <div class="oe_kanban_global_click">
+                                    <div class="oe_kanban_details">
+                                        <field name="img_html"/>
+                                        <div style="display: block;">
+                                            Артикул: <field name="article"/>
+                                        </div>
+                                        <div style="display: block;">
+                                            <field name="products"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Search form -->
+        <record id="view_ozon_products_search" model="ir.ui.view">
+            <field name="name">Лоты</field>
+            <field name="model">ozon.products</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="article" />
+                    <searchpanel>
+                        <field name="categories"/>
+                    </searchpanel>
+                </search>
             </field>
         </record>
 
@@ -313,7 +357,7 @@
         <record model="ir.actions.act_window" id="action_products">
             <field name="name">Лоты</field>
             <field name="res_model">ozon.products</field>
-            <field name="view_mode">tree,form,search</field>
+            <field name="view_mode">kanban,tree,form,search</field>
         </record>
 
         <record model="ir.actions.server" id="action_add_product_to_mass_pricing_queue">
@@ -336,18 +380,6 @@
                 records.action_draw_graphs()
             </field>
         </record>
-
-        <!-- <record model="ir.actions.act_window" id="action_products_create_mass_pricing_">
-            <field name="name">Добавить в очередь на изменение цен</field>
-            <field name="res_model">ozon.mass_pricing</field>
-            <field name="binding_model_id" ref="model_ozon_products" />
-            <field name="binding_view_types">form</field>
-            <field name="target">new</field>
-            <field name="view_mode">form</field>
-            <field name="context">{
-                "default_product": active_id,
-                }</field>
-        </record> -->
 
         <!-- Action to call profitability_norm wizard. This action calls wizard model form view -->
         <record id="wizard_action_profitability_norm" model="ir.actions.act_window">
@@ -385,7 +417,6 @@
                             <field name="profit_delta" />
                             <field name="coef_profitability" widget="percentage"
                                 style="max-width: 58px;" readonly="true" />
-
                         </group>
                         <field name="total_fbs_fix_expenses_max" invisible="true" />
                         <field name="total_fbo_fix_expenses_max" invisible="true" />
@@ -394,17 +425,6 @@
                     </group>
 
                 </form>
-            </field>
-        </record>
-
-        <!-- Search form -->
-        <record id="view_ozon_products_search" model="ir.ui.view">
-            <field name="name">Лоты</field>
-            <field name="model">ozon.products</field>
-            <field name="arch" type="xml">
-                <search>
-                    <field name="article" />
-                </search>
             </field>
         </record>
 
