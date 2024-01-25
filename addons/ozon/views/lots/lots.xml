@@ -81,6 +81,7 @@
                                     <group>
                                         <field name="is_selling" />
                                         <field name="is_alive" />
+                                        <field name="is_participating_in_actions" />
                                     </group>
                                     <group>
                                         <field name="trading_scheme" readonly="true" />

@@ -90,6 +90,7 @@
         "views/fbo_supply_order/fbo_supply_order.xml",
         "views/fbo_supply_order/fbo_supply_order_product.xml",
         "views/action/action.xml",
+        "views/action/action_candidate.xml",
     ],
     "demo": [
         "demo/demo.xml",

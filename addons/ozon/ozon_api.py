@@ -149,3 +149,32 @@ def get_product_id_by_sku(sku_list: list) -> list:
     product_info_list = get_product_info_list_by_sku(sku_list)
     product_ids = [i["id"] for i in product_info_list]
     return product_ids
+
+
+def add_products_to_action(action_id, prod_list: list):
+    """prod_list:
+    [
+        {
+            "action_price": int,
+            "product_id": int
+        },
+        ...
+    ]
+    """
+    response = requests.post(
+        "https://api-seller.ozon.ru/v1/actions/products/activate",
+        headers=headers,
+        data=json.dumps({"action_id": action_id, "products": prod_list}),
+    ).json()
+
+    return response["result"]
+
+
+def delete_products_from_action(action_id, product_ids: list):
+    response = requests.post(
+        "https://api-seller.ozon.ru/v1/actions/products/deactivate",
+        headers=headers,
+        data=json.dumps({"action_id": action_id, "product_ids": product_ids}),
+    ).json()
+
+    return response["result"]
