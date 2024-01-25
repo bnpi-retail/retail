@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ozon_report_view_form" model="ir.ui.view">
+            <field name="name">ozon_report.form</field>
+            <field name="model">ozon.report</field>
+            <field name="arch" type="xml">
+                <form string="Report">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="create_date" readonly="1"/>
+                                <field name="res_users_id" readonly="1"/>
+                                <field name="lots_quantity" readonly="1"/>
+                            </group>
+                            <notebook>
+                                <page string="Лоты">
+                                    <field name="ozon_products_ids">
+                                        <tree string="Лоты">
+                                            <field name="categories"/>
+                                        </tree>
+                                    </field>
+                                </page>
+                            </notebook>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="ozon_report_view_tree" model="ir.ui.view">
+            <field name="name">ozon_report.tree</field>
+            <field name="model">ozon.report</field>
+            <field name="arch" type="xml">
+                <tree string="product_labeling" create="0">
+                    <field name="create_date"/>
+                    <field name="res_users_id"/>
+                    <field name="lots_quantity"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--        <record id="product_labeling_labeled_product_search" model="ir.ui.view">-->
+        <!--            <field name="name">product_labeling.labeled_product.search</field>-->
+        <!--            <field name="model">ozon.report</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <search>-->
+        <!--                    <field name="name"/>-->
+        <!--                    <field name="pl_product_id"/>-->
+        <!--                    <field name="state"/>-->
+        <!--                    <field name="quantity"/>-->
+        <!--                    <field name="parent_id"/>-->
+        <!--                    <field name="child_ids"/>-->
+        <!--                    <field name="mark"/>-->
+        <!--                    <field name="pl_warehouse_id"/>-->
+        <!--                    <filter string="Archived" name="active" domain="[('active', '=',False)]"/>-->
+        <!--                    <filter string="Разделенные товары" name="divined" domain="[('state', '=','Товар был разделен')]"/>-->
+        <!--                    <filter string="Проданные товары" name="sold" domain="[('state', '=','Продан')]"/>-->
+        <!--                    <filter string="В наличии" name="current"-->
+        <!--                            domain="[('state', '!=','Продан'),('state', '!=','Товар был разделен')]"/>-->
+        <!--                </search>-->
+        <!--            </field>-->
+        <!--        </record>-->
+
+        <record id="action_open_ozon_report" model="ir.actions.act_window">
+            <field name="name">Reports</field>
+            <field name="res_model">ozon.report</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="ozon.menu_reports" name="Отчеты" parent="ozon.menu_root" sequence="40"/>
+        <menuitem id="menu_indicators_reports" name="Отчеты по индикаторам" parent="ozon.menu_reports"
+                  action="action_open_ozon_report" sequence="1"/>
+
+    </data>
+</odoo>

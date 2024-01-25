@@ -48,6 +48,7 @@
         "security/fbo_supply_order/ir.model.access.csv",
         "security/action/ir.model.access.csv",
         "security/indicator/ir.model.access.csv",
+        "security/reports/ir.model.access.csv",
         ### views
         "views/menu.xml",
         "views/price/menu.xml",
@@ -93,6 +94,7 @@
         "views/action/action.xml",
         "views/action/action_candidate.xml",
         "crone/ir_cron_data.xml",
+        "views/reports/ozon_reports_views.xml",
     ],
     "demo": [
         "demo/demo.xml",

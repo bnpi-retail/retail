@@ -33,3 +33,4 @@ from .pricing import pricing
 from .pricing import mass_pricing
 from .search_queries import search_queries
 from .analysis_data import analysis_data
+from .reports import ozon_report
