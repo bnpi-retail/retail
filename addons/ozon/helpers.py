@@ -6,6 +6,11 @@ def split_list(l, n):
     return (l[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] for i in range(n))
 
 
+def split_list_into_chunks_of_size_n(l, n):
+    for i in range(0, len(l), n):
+        yield l[i : i + n]
+
+
 def split_keywords(keywords_string: str) -> list:
     words = []
     l = keywords_string.split(";")
