@@ -92,16 +92,16 @@ class ActionGraphs(models.Model):
 
         data_for_send = {}
 
-        for categorie_record in self:
+        for categorie_record in self[0]:
             data_categorie = data_for_send[categorie_record.id] = {}
 
             products_records = model_products.search([
                 ("categories", "=", categorie_record.id),
-                # ("is_alive", "=", True),
-                # ("is_selling", "=", True),
+                ("is_alive", "=", True),
+                ("is_selling", "=", True),
             ])
 
-            for product_record in products_records:
+            for product_record in products_records[:10]:
 
                 analysis_data_records = model_analysis_data.search([
                     ("product", "=", product_record.id),
@@ -109,7 +109,9 @@ class ActionGraphs(models.Model):
                     ("timestamp_to", "<=", f"{year}-12-31"),
                 ])
 
-                graph_data = {"dates": [], "num": []}
+                if not analysis_data_records: continue
+
+                graph_data = {"dates": [], "hits_view": [], "hits_tocart": []}
 
                 for analysis_data_record in analysis_data_records:
                     start_date = analysis_data_record.timestamp_from
@@ -117,16 +119,20 @@ class ActionGraphs(models.Model):
                     average_date = start_date + (end_date - start_date) / 2
 
                     graph_data["dates"].append(average_date.strftime("%Y-%m-%d"))
-                    graph_data["num"].append(analysis_data_record.hits_view)
+                    graph_data["hits_view"].append(analysis_data_record.hits_view)
+                    graph_data["hits_tocart"].append(analysis_data_record.hits_tocart)
 
                 data_categorie[product_record.id] = graph_data
 
-        raise ValueError(data_for_send)
+            payload = {
+                "model": "categorie_analysis_data",
+                "categorie_id": categorie_record.id,
+                "data": data_for_send,
+            }
 
     def _get_year(self) -> str:
         return datetime.now().year
-
-
+    
 class NameGetCustom(models.Model):
     _inherit = 'ozon.categories'
 
