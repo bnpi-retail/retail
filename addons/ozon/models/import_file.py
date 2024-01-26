@@ -683,6 +683,7 @@ class ImportFile(models.Model):
                     stock = self.env["ozon.stock"].create(
                         {
                             "product": ozon_product.id,
+                            "id_on_platform": id_on_platform,
                             "stocks_fbs": row["stocks_fbs"],
                             "stocks_fbo": row["stocks_fbo"],
                         }
