@@ -87,6 +87,11 @@ class ActionCandidate(models.Model):
     action_start = fields.Datetime(related="action_id.datetime_start")
     action_end = fields.Datetime(related="action_id.datetime_end")
     action_status = fields.Selection(related="action_id.status")
+    action_candidate_movement_ids = fields.One2many(
+        "ozon.action_candidate_movement",
+        "action_candidate_id",
+        string="Добавление/удаление из акции",
+    )
 
     def participate_in_action(self):
         """Участвовать в акции."""
@@ -106,6 +111,12 @@ class ActionCandidate(models.Model):
                 lambda r: int(r.product_id_on_platform) in added_prod_ids
             )
             added_candidates.is_participating = True
+            candidate_movement_data = []
+            for can in added_candidates:
+                candidate_movement_data.append(
+                    {"action_candidate_id": can["id"], "operation": "added"}
+                )
+            self.env["ozon.action_candidate_movement"].create(candidate_movement_data)
         if rejected_products := response.get("rejected"):
             raise exceptions.ValidationError(
                 f"Товары не были добавлены в акцию.\nОшибка:\n{rejected_products}"
@@ -120,6 +131,12 @@ class ActionCandidate(models.Model):
                 lambda r: int(r.product_id_on_platform) in removed_prod_ids
             )
             removed_candidates.is_participating = False
+            candidate_movement_data = []
+            for can in removed_candidates:
+                candidate_movement_data.append(
+                    {"action_candidate_id": can["id"], "operation": "removed"}
+                )
+            self.env["ozon.action_candidate_movement"].create(candidate_movement_data)
         if rejected_products := response.get("rejected"):
             raise exceptions.ValidationError(
                 f"Товары не были удалены из акции.\nОшибка:\n{rejected_products}"

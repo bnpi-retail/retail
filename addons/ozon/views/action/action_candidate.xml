@@ -11,6 +11,12 @@
                         <field name="is_participating" />
                         <field name="price" />
                         <field name="max_action_price" />
+                        <field name="action_candidate_movement_ids">
+                            <tree default_order="timestamp desc">
+                                <field name="timestamp" />
+                                <field name="operation" />
+                            </tree>
+                        </field>
                     </group>
                 </form>
             </field>
