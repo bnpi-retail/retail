@@ -110,7 +110,7 @@ class ActionGraphs(models.Model):
 
             for sale_record in sale_records:
                 graph_data["dates"].append(sale_record.date.strftime("%Y-%m-%d"))
-                graph_data["num"].append(sale_record.qty)
+                graph_data["values"].append(sale_record.qty)
 
             data_categorie[product_record.id] = graph_data
     
@@ -153,7 +153,7 @@ class ActionGraphs(models.Model):
 
             for sale_record in sale_records:
                 graph_data["dates"].append(sale_record.date.strftime("%Y-%m-%d"))
-                graph_data["num"].append(sale_record.qty)
+                graph_data["values"].append(sale_record.qty)
 
             data_categorie[product_record.id] = graph_data
 
