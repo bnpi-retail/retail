@@ -843,8 +843,10 @@ class ImportFile(models.Model):
                 )
                 items = ast.literal_eval(row["items"])
                 fbo_supply_order_product_data = []
+                skus = []
                 for item in items:
-                    if ozon_product := self.is_ozon_product_exists_by_sku(item["sku"]):
+                    sku = item["sku"]
+                    if ozon_product := self.is_ozon_product_exists_by_sku(sku):
                         fbo_supply_order_product_data.append(
                             {
                                 "fbo_supply_order_id": fbo_supply_order.id,
@@ -852,11 +854,15 @@ class ImportFile(models.Model):
                                 "qty": item["qty"],
                             }
                         )
+                        skus.append(sku)
                 fbo_supply_order_products = self.env[
                     "ozon.fbo_supply_order_product"
                 ].create(fbo_supply_order_product_data)
                 fbo_supply_order.write(
-                    {"fbo_supply_order_products_ids": fbo_supply_order_products.ids}
+                    {
+                        "fbo_supply_order_products_ids": fbo_supply_order_products.ids,
+                        "skus": skus,
+                    }
                 )
                 print(f"{i} - Supply order {supply_order_id} was imported")
         os.remove(f_path)
