@@ -95,6 +95,7 @@
         "views/action/action_candidate.xml",
         "crone/ir_cron_data.xml",
         "views/reports/ozon_reports_views.xml",
+        "views/indicators/indicator_views.xml",
     ],
     "demo": [
         "demo/demo.xml",
