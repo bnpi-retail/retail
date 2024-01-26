@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_ozon_action,Access Ozon Action,model_ozon_action,base.group_user,1,1,1,1
 access_ozon_action_candidate,Access Ozon Action Candidate,model_ozon_action_candidate,base.group_user,1,1,1,1
+access_ozon_action_candidate_movement,Access Ozon Action Candidate Movement,model_ozon_action_candidate_movement,base.group_user,1,1,1,1

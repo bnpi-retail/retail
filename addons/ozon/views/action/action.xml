@@ -82,7 +82,7 @@
         </record>
 
         <record model="ir.actions.server" id="action_add_products_to_action">
-            <field name="name">Добавить товары в акцию</field>
+            <field name="name">Добавить/убрать товары из акции</field>
             <field name="model_id" ref="model_ozon_action" />
             <field name="binding_model_id" ref="model_ozon_action" />
             <field name="binding_view_types">form</field>
