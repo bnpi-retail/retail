@@ -459,6 +459,7 @@ class ImportFile(models.Model):
                         # s42 = timeit.default_timer()
                         price_history_data = {
                             "product": ozon_product_id,
+                            "id_on_platform": row_id_on_platform,
                             "provider": ozon_product.seller.id,
                             "price": float(row_price),
                             "previous_price": previous_price,
