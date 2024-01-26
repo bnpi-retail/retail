@@ -575,8 +575,37 @@ class Product(models.Model):
             self._not_enough_competitors_write(self)
         if values.get('competitors_with_price_ids'):
             self._check_competitors_with_price_ids_qty(self)
+        if values.get('ozon_products_indicator_ids'):
+            self._update_indicator_summary(self)
 
         return res
+
+    def _update_indicator_summary(self, record):
+        self_indicators = record.ozon_products_indicator_ids
+        if self_indicators:
+            indicator_types = defaultdict()
+            for indicator in self_indicators:
+                indicator_types[indicator.type] = indicator
+            summary_types = defaultdict()
+            for summary in record.ozon_products_indicators_summary_ids:
+                summary_types[summary.type] = summary
+
+            indicator = indicator_types.get('cost_not_calculated')
+            if indicator:
+                days = (datetime.now() - indicator.create_date).days
+                summary = summary_types.get('cost_not_calculated')
+                if summary:
+                    summary.name = f"Себестоимость не подсчитана дней: {days}."
+                else:
+                    self.env['ozon.products.indicator.summary'].create({
+                        'name': f"Себестоимость не подсчитана дней: {days}.",
+                        'type': 'cost_not_calculated',
+                        'ozon_product_id': record.id
+                    })
+            else:
+                summary = summary_types.get('cost_not_calculated')
+                if summary:
+                    record.ozon_products_indicators_summary_ids = [(2, summary.id, 0)]
 
     def _check_cost_price(self, record):
         cost_price = 0
@@ -643,6 +672,8 @@ class Product(models.Model):
                         indicator.active = False
             # проверяет есть ли 3 конкурента и если нет вешает индикатор
             self._check_competitors_with_price_ids_qty(record)
+            # обновить выводы по индикаторам
+            self._update_indicator_summary(record)
 
             have_no_competitor_manager_indicator = 0
             have_no_competitor_robot_indicator = 0
