@@ -102,7 +102,16 @@ class ImportFile(models.Model):
             elif values["model"] == "analysis_data":
                 self.import_images_analysis_data(content)
 
-        elif values["data_for_download"] == "ozon_successful_products_competitors":
+            elif values["model"] == "categorie_analysis_data":
+                self.import_images_categorie_analysis_data(content)
+
+            elif values["model"] == "categorie_sale_this_year":
+                self.import_images_categorie_categorie_sale_this_year(content)
+
+            elif values["model"] == "categorie_sale_last_year":
+                self.import_images_categorie_categorie_sale_last_year(content)
+
+        if values["data_for_download"] == "ozon_successful_products_competitors":
             self.import_successful_products_competitors(content)
 
         elif values["data_for_download"] == "ozon_plugin":
@@ -947,6 +956,46 @@ class ImportFile(models.Model):
 
             record = model_products.search([("id", "=", product_id)])
             record.img_url_analysis_data = url
+
+    def import_images_categorie_analysis_data(self, content):
+        lines = content.split("\n")
+
+        model_categories = self.env["ozon.categories"]
+
+        for line in lines:
+            if not line: continue
+
+            model, categories_id, url = line.split(",")
+
+            record = model_categories.search([("id", "=", categories_id)])
+            record.img_url_analysis_data_this_year = url
+
+    def import_images_categorie_categorie_sale_this_year(self, content):
+        lines = content.split("\n")
+
+        model_categories = self.env["ozon.categories"]
+
+        for line in lines:
+            if not line: continue
+
+            model, categories_id, url = line.split(",")
+
+            record = model_categories.search([("id", "=", categories_id)])
+            record.img_url_sale_this_year = url
+
+    def import_images_categorie_categorie_sale_last_year(self, content):
+        lines = content.split("\n")
+
+        model_categories = self.env["ozon.categories"]
+
+        for line in lines:
+            if not line: continue
+
+            model, categories_id, url = line.split(",")
+
+            record = model_categories.search([("id", "=", categories_id)])
+            record.img_url_sale_last_year = url
+
 
     def import_actions(self, content):
         f_path = "/mnt/extra-addons/ozon/__pycache__/actions.csv"

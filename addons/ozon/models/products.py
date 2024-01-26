@@ -1344,13 +1344,11 @@ class ProductGraphExtension(models.Model):
                 "product_id": rec.id,
             }
 
-            records = model_stock.search(
-                [
-                    ("product", "=", rec.id),
-                    ("timestamp", ">=", f"{year}-01-01"),
-                    ("timestamp", "<=", f"{year}-12-31"),
-                ]
-            )
+            records = model_stock.search([
+                ("product", "=", rec.id),
+                ("timestamp", ">=", f"{year}-01-01"),
+                ("timestamp", "<=", f"{year}-12-31"),
+            ])
 
             graph_data = {"dates": [], "num": []}
             for record in records:
@@ -1379,13 +1377,11 @@ class ProductGraphExtension(models.Model):
         year = self._get_year()
 
         for rec in self:
-            records = model_analysis_data.search(
-                [
-                    ("product", "=", rec.id),
-                    ("timestamp_from", ">=", f"{year}-01-01"),
-                    ("timestamp_to", "<=", f"{year}-12-31"),
-                ]
-            )
+            records = model_analysis_data.search([
+                ("product", "=", rec.id),
+                ("timestamp_from", ">=", f"{year}-01-01"),
+                ("timestamp_to", "<=", f"{year}-12-31"),
+            ])
 
             payload = {
                 "model": "analysis_data",
@@ -1418,13 +1414,11 @@ class ProductGraphExtension(models.Model):
         return datetime.now().year
 
     def _get_records(self, model, record, year, timestamp_field):
-        return model.search(
-            [
-                ("product", "=", record.id),
-                (timestamp_field, ">=", f"{year}-01-01"),
-                (timestamp_field, "<=", f"{year}-12-31"),
-            ]
-        )
+        return model.search([
+            ("product", "=", record.id),
+            (timestamp_field, ">=", f"{year}-01-01"),
+            (timestamp_field, "<=", f"{year}-12-31"),
+        ])
 
     def _send_request(self, payload):
         endpoint = "http://django:8000/api/v1/draw_graph"
