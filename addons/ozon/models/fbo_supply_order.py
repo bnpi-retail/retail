@@ -13,6 +13,7 @@ class OzonFboSupplyOrder(models.Model):
     total_items_count = fields.Integer(string="Кол-во позиций товаров в заявке")
     total_quantity = fields.Integer(string="Кол-во единиц товаров в заявке")
     warehouse_id = fields.Many2one("ozon.warehouse", string="Склад поставки")
+    skus = fields.Char(string="Список SKU товаров", readonly=True)
     fbo_supply_order_products_ids = fields.One2many(
         "ozon.fbo_supply_order_product",
         "fbo_supply_order_id",

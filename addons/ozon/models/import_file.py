@@ -39,8 +39,8 @@ class ImportFile(models.Model):
             ("ozon_transactions", "Транзакции Ozon"),
             ("ozon_stocks", "Остатки товаров Ozon"),
             ("ozon_prices", "Цены Ozon"),
-            ("ozon_images", 'Ссылки на графики'),
-            ("ozon_successful_products_competitors", 'Успешные товары конкурентов'),
+            ("ozon_images", "Ссылки на графики"),
+            ("ozon_successful_products_competitors", "Успешные товары конкурентов"),
             ("ozon_postings", "Отправления Ozon"),
             ("ozon_fbo_supply_orders", "Поставки FBO"),
             ("ozon_actions", "Акции Ozon"),
@@ -459,6 +459,7 @@ class ImportFile(models.Model):
                         # s42 = timeit.default_timer()
                         price_history_data = {
                             "product": ozon_product_id,
+                            "id_on_platform": row_id_on_platform,
                             "provider": ozon_product.seller.id,
                             "price": float(row_price),
                             "previous_price": previous_price,
@@ -653,6 +654,7 @@ class ImportFile(models.Model):
                     "order_date": row["order_date"],
                     "name": row["name"],
                     "amount": row["amount"],
+                    "skus": skus,
                     "products": ozon_products,
                     "services": ozon_services,
                     "posting_number": row["posting_number"],
@@ -682,6 +684,7 @@ class ImportFile(models.Model):
                     stock = self.env["ozon.stock"].create(
                         {
                             "product": ozon_product.id,
+                            "id_on_platform": id_on_platform,
                             "stocks_fbs": row["stocks_fbs"],
                             "stocks_fbo": row["stocks_fbo"],
                         }
@@ -796,6 +799,7 @@ class ImportFile(models.Model):
                         "order_id": row["order_id"],
                         "status": status,
                         "product_ids": product_ids,
+                        "skus": skus,
                         "region": row["region"],
                         "city": row["city"],
                         "warehouse_id": warehouse.id,
@@ -840,8 +844,10 @@ class ImportFile(models.Model):
                 )
                 items = ast.literal_eval(row["items"])
                 fbo_supply_order_product_data = []
+                skus = []
                 for item in items:
-                    if ozon_product := self.is_ozon_product_exists_by_sku(item["sku"]):
+                    sku = item["sku"]
+                    if ozon_product := self.is_ozon_product_exists_by_sku(sku):
                         fbo_supply_order_product_data.append(
                             {
                                 "fbo_supply_order_id": fbo_supply_order.id,
@@ -849,11 +855,15 @@ class ImportFile(models.Model):
                                 "qty": item["qty"],
                             }
                         )
+                        skus.append(sku)
                 fbo_supply_order_products = self.env[
                     "ozon.fbo_supply_order_product"
                 ].create(fbo_supply_order_product_data)
                 fbo_supply_order.write(
-                    {"fbo_supply_order_products_ids": fbo_supply_order_products.ids}
+                    {
+                        "fbo_supply_order_products_ids": fbo_supply_order_products.ids,
+                        "skus": skus,
+                    }
                 )
                 print(f"{i} - Supply order {supply_order_id} was imported")
         os.remove(f_path)
@@ -963,7 +973,8 @@ class ImportFile(models.Model):
         model_categories = self.env["ozon.categories"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             model, categories_id, url = line.split(",")
 
@@ -976,7 +987,8 @@ class ImportFile(models.Model):
         model_categories = self.env["ozon.categories"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             model, categories_id, url = line.split(",")
 
@@ -989,13 +1001,13 @@ class ImportFile(models.Model):
         model_categories = self.env["ozon.categories"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             model, categories_id, url = line.split(",")
 
             record = model_categories.search([("id", "=", categories_id)])
             record.img_url_sale_last_year = url
-
 
     def import_actions(self, content):
         f_path = "/mnt/extra-addons/ozon/__pycache__/actions.csv"
@@ -1043,6 +1055,7 @@ class ImportFile(models.Model):
                     candidates = json.loads(row["action_candidates"])
                     candidates_data = []
                     len_candidates = len(candidates)
+                    ids_on_platform = []
                     for idx, can in enumerate(candidates):
                         id_on_platform = can["id"]
                         if ozon_product := self.is_ozon_product_exists(id_on_platform):
@@ -1050,9 +1063,11 @@ class ImportFile(models.Model):
                                 {
                                     "action_id": action.id,
                                     "product_id": ozon_product.id,
+                                    "id_on_platform": id_on_platform,
                                     "max_action_price": can["max_action_price"],
                                 }
                             )
+                            ids_on_platform.append(id_on_platform)
                             print(
                                 f"{idx}/{len_candidates} - Product {id_on_platform} was added as action {a_id} candidate"
                             )
@@ -1060,7 +1075,12 @@ class ImportFile(models.Model):
                     action_candidate_ids = (
                         self.env["ozon.action_candidate"].create(candidates_data).ids
                     )
-                    action.write({"action_candidate_ids": action_candidate_ids})
+                    action.write(
+                        {
+                            "action_candidate_ids": action_candidate_ids,
+                            "ids_on_platform": ids_on_platform,
+                        }
+                    )
 
                 if is_participating:
                     participants = json.loads(row["action_participants"])
@@ -1080,12 +1100,17 @@ class ImportFile(models.Model):
         lines = content.split("\n")
 
         for line in lines[1:]:
-            if not line: continue
+            if not line:
+                continue
 
             sku, name = line.split(",")
 
-            model_successful_products_competitors = self.env["ozon.successful_product_competitors"]
-            model_successful_products_competitors.create({
-                "sku": sku,
-                "name": name,
-            })
+            model_successful_products_competitors = self.env[
+                "ozon.successful_product_competitors"
+            ]
+            model_successful_products_competitors.create(
+                {
+                    "sku": sku,
+                    "name": name,
+                }
+            )

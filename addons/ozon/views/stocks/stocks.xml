@@ -18,6 +18,7 @@
                                 </field>
                             </tree>
                         </field>
+                        <field name="id_on_platform" />
                         <field name="stocks_fbo" />
                         <field name="stocks_fbs" />
                         <field name="fbs_warehouse_product_stock_ids">
@@ -44,6 +45,7 @@
                             <field name="id_on_platform" />
                         </tree>
                     </field>
+                    <field name="id_on_platform" />
                     <field name="stocks_fbs" />
                     <field name="stocks_reserved_fbs" />
 

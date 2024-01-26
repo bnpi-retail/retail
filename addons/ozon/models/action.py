@@ -50,6 +50,7 @@ class Action(models.Model):
         domain=[("is_participating", "=", True)],
         string="Товары, которые участвуют",
     )
+    ids_on_platform = fields.Text(string="Список Product ID товаров")
 
     def _compute_status(self):
         now = fields.Datetime.now()
@@ -80,6 +81,7 @@ class ActionCandidate(models.Model):
 
     action_id = fields.Many2one("ozon.action", string="Акция Ozon", readonly=True)
     product_id = fields.Many2one("ozon.products", string="Товар Ozon", readonly=True)
+    id_on_platform = fields.Char(string="Product ID", readonly=True)
     is_participating = fields.Boolean(string="Участвует")
     price = fields.Float(related="product_id.price", readonly=True)
     max_action_price = fields.Float(
