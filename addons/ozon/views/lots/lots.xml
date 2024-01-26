@@ -34,8 +34,15 @@
                     <group>
                         <field name="ozon_products_indicators_summary_ids" string="Индикаторы"
                                readonly="1"
-                               attrs="{'invisible': [('ozon_products_indicators_summary_ids', '=', [])]}"
-                        />
+                               attrs="{'invisible': [('ozon_products_indicators_summary_ids', '=', [])]}">
+                            <tree
+                                    decoration-danger="type in ('cost_not_calculated', 'no_competitor_robot')"
+                                    decoration-primary="type=='no_competitor_manager'"
+                            >
+                                <field name="name"/>
+                                <field name="type" optional="Hide"/>
+                            </tree>
+                        </field>
                         <field name="retail_product_total_cost_price" invisible="1"/>
                     </group>
 
