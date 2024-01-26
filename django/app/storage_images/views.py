@@ -15,14 +15,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from account.services import connect_to_odoo_api_with_auth
+from .services import DrawGraphCategoriesInterest , DrawGraphCategoriesThisYear , DrawGraphCategoriesLastYear
 
 
 class DrawGraph(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+        payload_file, payload = False, False
         model = request.data.get('model', None)
-
+        
         if model == "sale":
             payload_file, payload = self.draw_graph_sale(request, model)
 
@@ -40,6 +42,32 @@ class DrawGraph(APIView):
 
         elif model == "analysis_data":
             payload_file, payload = self.draw_graph_analysis_data(request, model)
+
+        elif model == "categorie_analysis_data":
+            graph = DrawGraphCategoriesInterest()
+            data = request.data.get('data', None)
+            categorie_id = request.data.get('categorie_id', None)
+
+            if data is not None:
+                payload_file, payload = graph.draw_graph(data, model, categorie_id)
+
+        elif model == "categorie_sale_this_year":
+            graph = DrawGraphCategoriesThisYear()
+            data = request.data.get('data', None)
+            categorie_id = request.data.get('categorie_id', None)
+
+            if data is not None:
+                payload_file, payload = graph.draw_graph(data, model, categorie_id)
+
+        elif model == "categorie_sale_last_year":
+            graph = DrawGraphCategoriesLastYear()
+            data = request.data.get('data', None)
+            categorie_id = request.data.get('categorie_id', None)
+            
+            if data is not None:
+                payload_file, payload = graph.draw_graph(data, model, categorie_id)
+
+        if payload_file is False: return Response({'status': 'payload file is empty'})
 
         session_id = connect_to_odoo_api_with_auth()
         if session_id is False: return Response({'status': False})
@@ -232,7 +260,7 @@ class DrawGraph(APIView):
         data = [product_id, url]
         csv_file = self.get_csv_file(data)
         return {'file': ('output.csv', csv_file)}, {'model': model}
-    
+
 
     def get_csv_file(self, data: list):
         csv_data = io.StringIO()
@@ -314,7 +342,10 @@ class DrawGraph(APIView):
 
         # plt.xticks(rotation=45)
 
+        max_ticks = 10
+        step = (max(num) - min(num)) / (max_ticks - 1)
         if num:
+            if step == 0: step = 100
             plt.yticks(np.arange(min(num), max(num) + step, step=step))
 
         plt.tight_layout()
@@ -327,19 +358,29 @@ class DrawGraph(APIView):
         file_path = default_storage.save(filename, ContentFile(buffer.read()))
         file_url = default_storage.url(file_path)
 
+        plt.close()
+
         return f"{getenv('DJANGO_DOMAIN')}{file_url}"
 
     def generate_url_analysis_data(self, product_id, dates_hits_view, num_hits_view, dates_hits_tocart, num_hits_tocart):
-        plt.figure(figsize=(10, 5))
+        fig, ax1 = plt.subplots(figsize=(10, 5))
 
         dates_hits_view = pd.to_datetime(dates_hits_view, errors='coerce')
         dates_hits_tocart = pd.to_datetime(dates_hits_tocart, errors='coerce')
         
-        plt.plot(dates_hits_view, num_hits_view, marker='o', label="График показа товаров")
-        plt.plot(dates_hits_tocart, num_hits_tocart, marker='o', label="График добавления в корзину")
+        ax1.plot(dates_hits_view, num_hits_view, marker='o', label="График показа товаров")
+        ax1.set_ylabel('Показы, кол.')
+        ax1.tick_params('y')
+        
+        ax2 = ax1.twinx()
+        ax2.plot(dates_hits_tocart, num_hits_tocart, marker='o', label="График добавления в корзину", color='orange')
+        ax2.set_ylabel('Добавление в корзину, кол')
+        ax2.tick_params('y')
+
+        ax1.legend(loc='upper left')
+        ax2.legend(loc='upper right')
 
         plt.title("График интереса")
-        plt.ylabel("Количество")
         plt.legend()
 
         russian_month_names = {
@@ -360,8 +401,6 @@ class DrawGraph(APIView):
         plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
         plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')]))
 
-        # plt.xticks(rotation=45)
-
         if num_hits_view:
             plt.yticks(np.arange(min(min(num_hits_view), min(num_hits_tocart)), max(max(num_hits_view), max(num_hits_tocart)) + 1000, step=1000))
 
@@ -375,116 +414,11 @@ class DrawGraph(APIView):
         file_path = default_storage.save(filename, ContentFile(buffer.read()))
         file_url = default_storage.url(file_path)
 
+        plt.close()
+
         return f"{getenv('DJANGO_DOMAIN')}{file_url}"
 
-    
-    # def group_by_week(self, data_graph, year, mean=False, sum_group=False):
-    #     dates = data_graph.get('dates', None)
-    #     num = data_graph.get('num', None)
 
-    #     zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
-    #     all_dates = zero_dates.strftime('%Y-%m-%d').tolist()
-    #     all_nums = [0] * len(all_dates)
-        
-    #     dates.extend(all_dates)
-    #     num.extend(all_nums)
-
-    #     sorted_dates, sorted_num = [], []
-    #     if dates and num:
-    #         sorted_data = sorted(set(zip(dates, num)), key=lambda x: x[0])
-    #         sorted_dates, sorted_num = zip(*sorted_data)
-
-    #     df = pd.DataFrame({'date': pd.to_datetime(sorted_dates), 'num': sorted_num})
-    #     df.set_index('date', inplace=True)
-
-    #     if mean == True:
-    #         weekly_data = df.resample('W-Mon').mean()
-    #     if sum_group == True:
-    #         weekly_data = df.resample('W-Mon').sum()
-
-    #     grouped_dates = weekly_data.index.strftime('%Y-%m-%d').tolist()
-    #     grouped_num = weekly_data['num'].tolist()
-
-    #     return grouped_dates, grouped_num
     
 
 
-    # def generate_plot_image(self, product_id, dates, num, step, name_images, ylabel, is_current=True):
-    #     plt.figure(figsize=(10, 5))
-
-    #     dates = pd.to_datetime(dates, errors='coerce')
-        
-    #     plt.plot(dates, num, marker='o', label='Текущий год' if is_current else 'Предыдущий год')
-
-    #     if num:
-    #         rolling_mean = pd.Series(num).rolling(window=3).mean()
-    #         plt.plot(dates, rolling_mean, linestyle='--', color='red', label='Средняя скользящая')
-
-    #     plt.title(name_images)
-    #     plt.ylabel(ylabel)
-    #     plt.legend()
-
-    #     russian_month_names = {
-    #         'Jan': 'Янв',
-    #         'Feb': 'Фев',
-    #         'Mar': 'Мар',
-    #         'Apr': 'Апр',
-    #         'May': 'Май',
-    #         'Jun': 'Июн',
-    #         'Jul': 'Июл',
-    #         'Aug': 'Авг',
-    #         'Sep': 'Сен',
-    #         'Oct': 'Окт',
-    #         'Nov': 'Ноя',
-    #         'Dec': 'Дек',
-    #     }
-
-    #     plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-    #     plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')]))
-
-    #     plt.xticks(rotation=45)
-
-    #     if num:
-    #         plt.yticks(np.arange(min(num), max(num) + step, step=step))
-
-    #     plt.tight_layout()
-
-    #     buffer = io.BytesIO()
-    #     plt.savefig(buffer, format='png')
-    #     buffer.seek(0)
-
-    #     filename = f'current_graph_{product_id}.png' if is_current else f'last_graph_{product_id}.png'
-    #     file_path = default_storage.save(filename, ContentFile(buffer.read()))
-    #     file_url = default_storage.url(file_path)
-
-    #     return f"http://0.0.0.0:8000{file_url}"
-    #     return f"https://retail-extension.bnpi.dev{file_url}"
-    
-    # def draw_graph_products(self, request):
-    #     product_id = request.data.get('product_id', None)
-    #     current_data = request.data.get('current', None)
-    #     last_data = request.data.get('last', None)
-
-    #     dates, num = self.group_by_week(current_data, datetime.now().year, mean=False)
-    #     current_url = self.generate_plot_image(
-    #         product_id=product_id, dates=dates, num=num, step=10, 
-    #         ylabel='Проданных товаров, кол.', name_images='График продаж', 
-    #         is_current=True
-    #     )
-
-    #     dates, num = self.group_by_week(last_data, datetime.now().year - 1, mean=False)
-    #     last_url = self.generate_plot_image(
-    #         product_id=product_id, dates=dates, num=num, step=10,
-    #         ylabel='Проданных товаров, кол.',  name_images='График продаж', 
-    #         is_current=False
-    #     )
-
-    #     return self.get_payload(data=[product_id, current_url, last_url])
-
-    # def draw_graph_competitors_products(self, request):
-    #     dates, num = self.group_by_week(current_data, datetime.now().year, mean=True)
-    #     current_url = self.generate_plot_image(
-    #         product_id=product_id, dates=dates, num=num, step=100, 
-    #         ylabel='Средняя цена, руб.', name_images='График истории цены', 
-    #         is_current=True
-    #     )

@@ -1,6 +1,7 @@
-from datetime import datetime
-from multiprocessing import Value
+import requests
 
+from os import getenv
+from datetime import datetime
 from odoo import models, fields, api
 
 
@@ -73,63 +74,161 @@ class ActionGraphs(models.Model):
     _inherit = 'ozon.categories'
 
     def action_draw_graphs(self):
-        self.draw_sale_this_year()
-        self.draw_sale_last_year()
-        self.draw_graph_interest()
+        products_records = self.draw_sale_this_year()
+        products_records += self.draw_sale_last_year()
+        products_records += self.draw_graph_interest()
+        self.draw_graphs_products(products_records)
 
     def draw_sale_this_year(self):
-        pass
-
-    def draw_sale_last_year(self):
-        pass
-
-    def draw_graph_interest(self):
-        model_products = self.env["ozon.products"]
-        model_analysis_data = self.env["ozon.analysis_data"]
         year = self._get_year()
 
         data_for_send = {}
 
-        for categorie_record in self[0]:
-            data_categorie = data_for_send[categorie_record.id] = {}
+        categorie_record = self[0]
 
-            products_records = model_products.search([
-                ("categories", "=", categorie_record.id),
-                ("is_alive", "=", True),
-                ("is_selling", "=", True),
+        data_categorie = {}
+
+        products_records = self.env["ozon.products"].search([
+            ("categories", "=", categorie_record.id),
+            ("is_alive", "=", True),
+            ("is_selling", "=", True),
+        ])
+
+        for product_record in products_records:
+
+            sale_records = self.env["ozon.sale"].search([
+                    ("product", "=", product_record.id),
+                    ("date", ">=", f"{year}-01-01"),
+                    ("date", "<=", f"{year}-12-31"),
             ])
 
-            for product_record in products_records[:10]:
+            if not sale_records: continue
 
-                analysis_data_records = model_analysis_data.search([
+            graph_data = {"dates": [], "values": []}
+
+            for sale_record in sale_records:
+                graph_data["dates"].append(sale_record.date.strftime("%Y-%m-%d"))
+                graph_data["num"].append(sale_record.qty)
+
+            data_categorie[product_record.id] = graph_data
+
+        payload = {
+            "model": "categorie_sale_this_year",
+            "categorie_id": categorie_record.id,
+            "data": data_for_send,
+        }
+        
+        self._send_request(payload)
+
+        return products_records
+    
+    def draw_sale_last_year(self):
+        year = self._get_year() - 1
+
+        data_for_send = {}
+
+        categorie_record = self[0]
+
+        data_categorie = {}
+
+        products_records = self.env["ozon.products"].search([
+            ("categories", "=", categorie_record.id),
+            ("is_alive", "=", True),
+            ("is_selling", "=", True),
+        ])
+
+        for product_record in products_records:
+
+            sale_records = self.env["ozon.sale"].search([
                     ("product", "=", product_record.id),
-                    ("timestamp_from", ">=", f"{year}-01-01"),
-                    ("timestamp_to", "<=", f"{year}-12-31"),
-                ])
+                    ("date", ">=", f"{year}-01-01"),
+                    ("date", "<=", f"{year}-12-31"),
+            ])
 
-                if not analysis_data_records: continue
+            if not sale_records: continue
 
-                graph_data = {"dates": [], "hits_view": [], "hits_tocart": []}
+            graph_data = {"dates": [], "values": []}
 
-                for analysis_data_record in analysis_data_records:
-                    start_date = analysis_data_record.timestamp_from
-                    end_date = analysis_data_record.timestamp_to
-                    average_date = start_date + (end_date - start_date) / 2
+            for sale_record in sale_records:
+                graph_data["dates"].append(sale_record.date.strftime("%Y-%m-%d"))
+                graph_data["num"].append(sale_record.qty)
 
-                    graph_data["dates"].append(average_date.strftime("%Y-%m-%d"))
-                    graph_data["hits_view"].append(analysis_data_record.hits_view)
-                    graph_data["hits_tocart"].append(analysis_data_record.hits_tocart)
+            data_categorie[product_record.id] = graph_data
 
-                data_categorie[product_record.id] = graph_data
+        payload = {
+            "model": "categorie_sale_last_year",
+            "categorie_id": categorie_record.id,
+            "data": data_for_send,
+        }
+        
+        self._send_request(payload)
+        
+        return products_records
+    
+    def draw_graph_interest(self):
+        year = self._get_year()
 
-            payload = {
-                "model": "categorie_analysis_data",
-                "categorie_id": categorie_record.id,
-                "data": data_for_send,
-            }
-            
+        data_for_send = {}
+
+        categorie_record = self[0]
+
+        data_categorie = {}
+
+        products_records = self.env["ozon.products"].search([
+            ("categories", "=", categorie_record.id),
+            ("is_alive", "=", True),
+            ("is_selling", "=", True),
+        ])
+
+        for product_record in products_records:
+
+            analysis_data_records = self.env["ozon.analysis_data"].search([
+                ("product", "=", product_record.id),
+                ("timestamp_from", ">=", f"{year}-01-01"),
+                ("timestamp_to", "<=", f"{year}-12-31"),
+            ])
+
+            if not analysis_data_records: continue
+
+            graph_data = {"dates": [], "hits_view": [], "hits_tocart": []}
+
+            for analysis_data_record in analysis_data_records:
+                start_date = analysis_data_record.timestamp_from
+                end_date = analysis_data_record.timestamp_to
+                average_date = start_date + (end_date - start_date) / 2
+
+                graph_data["dates"].append(average_date.strftime("%Y-%m-%d"))
+                graph_data["hits_view"].append(analysis_data_record.hits_view)
+                graph_data["hits_tocart"].append(analysis_data_record.hits_tocart)
+
+            data_categorie[product_record.id] = graph_data
+
+        payload = {
+            "model": "categorie_analysis_data",
+            "categorie_id": categorie_record.id,
+            "data": data_for_send,
+        }
+        
+        self._send_request(payload)
+
+        return products_records
+    
+    def draw_graphs_products(self, product_record):
+        product_record.action_draw_graphs()
+
+
+    def _send_request(self, payload):
+        endpoint = "http://django:8000/api/v1/draw_graph"
+        api_token = getenv("API_TOKEN_DJANGO")
+        headers = {"Authorization": f"Token {api_token}"}
+        response = requests.post(endpoint, json=payload, headers=headers)
+
+        if response.status_code != 200:
+            raise ValueError(f"{response.status_code}--{response.text}")
+
     def _get_year(self) -> str:
         return datetime.now().year
+    
     
 class NameGetCustom(models.Model):
     _inherit = 'ozon.categories'
