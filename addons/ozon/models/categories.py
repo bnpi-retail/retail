@@ -114,6 +114,8 @@ class ActionGraphs(models.Model):
 
             data_categorie[product_record.id] = graph_data
 
+        raise ValueError(data_for_send)
+    
         payload = {
             "model": "categorie_sale_this_year",
             "categorie_id": categorie_record.id,
