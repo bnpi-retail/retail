@@ -92,8 +92,8 @@ class ActionGraphs(models.Model):
 
         products_records = self.env["ozon.products"].search([
             ("categories", "=", categorie_record.id),
-            ("is_alive", "=", True),
-            ("is_selling", "=", True),
+            # ("is_alive", "=", True),
+            # ("is_selling", "=", True),
         ])
 
         for product_record in products_records:
@@ -113,8 +113,6 @@ class ActionGraphs(models.Model):
                 graph_data["num"].append(sale_record.qty)
 
             data_categorie[product_record.id] = graph_data
-
-        raise ValueError(data_for_send)
     
         payload = {
             "model": "categorie_sale_this_year",
@@ -137,8 +135,8 @@ class ActionGraphs(models.Model):
 
         products_records = self.env["ozon.products"].search([
             ("categories", "=", categorie_record.id),
-            ("is_alive", "=", True),
-            ("is_selling", "=", True),
+            # ("is_alive", "=", True),
+            # ("is_selling", "=", True),
         ])
 
         for product_record in products_records:
@@ -180,8 +178,8 @@ class ActionGraphs(models.Model):
 
         products_records = self.env["ozon.products"].search([
             ("categories", "=", categorie_record.id),
-            ("is_alive", "=", True),
-            ("is_selling", "=", True),
+            # ("is_alive", "=", True),
+            # ("is_selling", "=", True),
         ])
 
         for product_record in products_records:
