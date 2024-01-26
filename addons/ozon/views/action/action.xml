@@ -24,6 +24,7 @@
                         <field name="discount_value" />
                         <field name="potential_products_count" />
                         <field name="participating_products_count" />
+                        <field name="ids_on_platform" />
                     </group>
                     <notebook>
                         <page id="page_action_candidates" string="Кандидаты">

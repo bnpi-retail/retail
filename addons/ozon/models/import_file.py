@@ -1054,6 +1054,7 @@ class ImportFile(models.Model):
                     candidates = json.loads(row["action_candidates"])
                     candidates_data = []
                     len_candidates = len(candidates)
+                    ids_on_platform = []
                     for idx, can in enumerate(candidates):
                         id_on_platform = can["id"]
                         if ozon_product := self.is_ozon_product_exists(id_on_platform):
@@ -1061,9 +1062,11 @@ class ImportFile(models.Model):
                                 {
                                     "action_id": action.id,
                                     "product_id": ozon_product.id,
+                                    "id_on_platform": id_on_platform,
                                     "max_action_price": can["max_action_price"],
                                 }
                             )
+                            ids_on_platform.append(id_on_platform)
                             print(
                                 f"{idx}/{len_candidates} - Product {id_on_platform} was added as action {a_id} candidate"
                             )
@@ -1071,7 +1074,12 @@ class ImportFile(models.Model):
                     action_candidate_ids = (
                         self.env["ozon.action_candidate"].create(candidates_data).ids
                     )
-                    action.write({"action_candidate_ids": action_candidate_ids})
+                    action.write(
+                        {
+                            "action_candidate_ids": action_candidate_ids,
+                            "ids_on_platform": ids_on_platform,
+                        }
+                    )
 
                 if is_participating:
                     participants = json.loads(row["action_participants"])
