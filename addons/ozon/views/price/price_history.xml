@@ -7,8 +7,8 @@
             <field name="model">ozon.price_history</field>
             <field name="arch" type="xml">
                 <graph string="История цен" type="line">
-                    <field name="price" type="measure"/>
-                    <field interval="day" name="timestamp" type="datetime"/>
+                    <field name="price" type="measure" />
+                    <field interval="day" name="timestamp" type="datetime" />
                 </graph>
             </field>
         </record>
@@ -23,6 +23,7 @@
                     <group>
                         <field name="timestamp" />
                         <field name="product" />
+                        <field name="id_on_platform" />
                         <field name="provider" />
                     </group>
                     <group string='Цены'>

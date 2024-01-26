@@ -25,6 +25,7 @@ class Transactions(models.Model):
         string="Итого, р.",
         readonly=True,
     )
+    skus = fields.Char(string="Список SKU товаров", readonly=True)
     products = fields.Many2many(
         "ozon.products",
         string="Лоты",
