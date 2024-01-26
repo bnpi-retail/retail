@@ -64,7 +64,7 @@ class Action(models.Model):
         return {
             "type": "ir.actions.act_window",
             "name": "Добавить товары в акцию",
-            "view_mode": "tree",
+            "view_mode": "tree,form",
             "res_model": "ozon.action_candidate",
             "domain": [("action_id", "=", self.id)],
             "context": {"create": False},
@@ -78,7 +78,7 @@ class ActionCandidate(models.Model):
     action_id = fields.Many2one("ozon.action", string="Акция Ozon", readonly=True)
     product_id = fields.Many2one("ozon.products", string="Товар Ozon", readonly=True)
     id_on_platform = fields.Char(string="Product ID", readonly=True)
-    is_participating = fields.Boolean(string="Участвует")
+    is_participating = fields.Boolean(string="Участвует", readonly=True)
     price = fields.Float(related="product_id.price", readonly=True)
     max_action_price = fields.Float(
         string="Максимально возможная цена товара по акции", readonly=True
@@ -105,7 +105,6 @@ class ActionCandidate(models.Model):
             added_candidates = self.filtered(
                 lambda r: int(r.product_id_on_platform) in added_prod_ids
             )
-            print(added_candidates)
             added_candidates.is_participating = True
         if rejected_products := response.get("rejected"):
             raise exceptions.ValidationError(
@@ -115,7 +114,6 @@ class ActionCandidate(models.Model):
     def remove_from_action(self):
         a_id = self[0].action_id.a_id
         prod_ids = self.mapped("product_id_on_platform")
-
         response = delete_products_from_action(action_id=a_id, product_ids=prod_ids)
         if removed_prod_ids := response.get("product_ids"):
             removed_candidates = self.filtered(
@@ -126,3 +124,17 @@ class ActionCandidate(models.Model):
             raise exceptions.ValidationError(
                 f"Товары не были удалены из акции.\nОшибка:\n{rejected_products}"
             )
+
+
+class ActionCandidateMovement(models.Model):
+    _name = "ozon.action_candidate_movement"
+    _description = "История участия/удаления товара из акции"
+
+    timestamp = fields.Datetime(string="Дата", default=fields.Datetime.now)
+    action_candidate_id = fields.Many2one(
+        "ozon.action_candidate", string="Кандидат в акцию"
+    )
+    operation = fields.Selection(
+        [("added", "Добавлен в акцию"), ("removed", "Удалён из акции")],
+        string="Операция",
+    )

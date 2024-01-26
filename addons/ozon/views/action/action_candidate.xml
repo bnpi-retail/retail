@@ -1,5 +1,20 @@
 <odoo>
     <data>
+        <!-- Form -->
+        <record id="view_action_candidate_form" model="ir.ui.view">
+            <field name="name">Кандидат в акцию</field>
+            <field name="model">ozon.action_candidate</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="product_id" />
+                        <field name="is_participating" />
+                        <field name="price" />
+                        <field name="max_action_price" />
+                    </group>
+                </form>
+            </field>
+        </record>
 
         <!-- Tree -->
         <record id="view_action_candidate_tree" model="ir.ui.view">
