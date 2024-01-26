@@ -289,6 +289,9 @@ class Product(models.Model):
         "ozon.action_candidate", "product_id", string="Кандидат в акциях"
     )
     ozon_products_indicator_ids = fields.One2many('ozon.products.indicator', inverse_name='ozon_product_id')
+    ozon_products_indicators_summary_ids = fields.One2many(
+        'ozon.products.indicator.summary', inverse_name='ozon_product_id')
+
     retail_product_total_cost_price = fields.Float(compute='_compute_total_cost_price', store=True)
 
     @api.depends('products.total_cost_price')

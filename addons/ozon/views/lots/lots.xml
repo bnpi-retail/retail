@@ -32,9 +32,9 @@
                     </div>
 
                     <group>
-                        <field name="ozon_products_indicator_ids" widget="many2many_tags" string="Индикаторы"
+                        <field name="ozon_products_indicators_summary_ids" string="Индикаторы"
                                readonly="1"
-                               attrs="{'invisible': [('ozon_products_indicator_ids', '=', [])]}"
+                               attrs="{'invisible': [('ozon_products_indicators_summary_ids', '=', [])]}"
                         />
                         <field name="retail_product_total_cost_price" invisible="1"/>
                     </group>
