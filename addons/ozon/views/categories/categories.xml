@@ -11,6 +11,7 @@
                         <page string="Основная информация">
                             <group>
                                 <field name="name_categories" />
+                                <field name="category_manager"/>
                             </group>
                         </page>
 

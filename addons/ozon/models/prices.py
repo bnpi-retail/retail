@@ -22,10 +22,7 @@ class FixExpenses(models.Model):
     price_history_id = fields.Many2one("ozon.price_history", string="История цен")
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
 
-    def create_from_ozon_product_fee(self, product_id):
-        product_fee = self.env["ozon.product_fee"].search(
-            [("product", "=", product_id)]
-        )
+    def create_from_ozon_product_fee(self, product_fee):
         field_names = [
             field
             for field in product_fee.fields_get_keys()
@@ -58,7 +55,7 @@ class FixExpenses(models.Model):
 
         recs = self.create(data)
 
-        return recs.ids
+        return recs
 
 
 class Costs(models.Model):
@@ -71,10 +68,7 @@ class Costs(models.Model):
     price_history_id = fields.Many2one("ozon.price_history", string="История цен")
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
 
-    def create_from_ozon_product_fee(self, product_id, price):
-        product_fee = self.env["ozon.product_fee"].search(
-            [("product", "=", product_id)]
-        )
+    def create_from_ozon_product_fee(self, product_fee, price):
         field_names = [
             field
             for field in product_fee.fields_get_keys()
@@ -98,7 +92,7 @@ class Costs(models.Model):
 
         recs = self.create(data)
 
-        return recs.ids
+        return recs
 
 
 class PriceHistory(models.Model):
@@ -257,7 +251,7 @@ class PriceHistory(models.Model):
 
         record = super(PriceHistory, self).create(values)
         product = record.product
-        product.write({"price_our_history_ids": [(4, record.id)]}, product)
+        product.write({"price_our_history_ids": [(4, record.id)]})
         return record
 
     def name_get(self):

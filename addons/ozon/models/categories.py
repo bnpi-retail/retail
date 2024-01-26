@@ -12,6 +12,8 @@ class Categories(models.Model):
     name_categories = fields.Char(string='Наименование категории')
     insurance = fields.Float(string='Страховой коэффициент, %')
 
+    category_manager = fields.Many2one('res.users')
+
 
 class GraphSaleThisYear(models.Model):
     _inherit = 'ozon.categories'

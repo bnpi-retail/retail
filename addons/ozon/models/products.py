@@ -1,4 +1,7 @@
 import ast
+import logging
+from collections import defaultdict
+
 import requests
 
 from os import getenv
@@ -7,6 +10,9 @@ from operator import itemgetter
 from lxml import etree
 
 from odoo import models, fields, api
+from odoo.exceptions import UserError
+
+logger = logging.getLogger()
 
 from .indirect_percent_expenses import STRING_FIELDNAMES
 from ..ozon_api import (
@@ -37,8 +43,11 @@ class Product(models.Model):
     )
 
     categories = fields.Many2one("ozon.categories", string="Название категории")
-    id_on_platform = fields.Char(string="ID на площадке", unique=True)
-    article = fields.Char(string="Артикул", unique=True)
+    id_on_platform = fields.Char(string="Product ID", readonly=True)
+    sku = fields.Char(string="SKU", readonly=True)
+    fbo_sku = fields.Char(string="FBO SKU", readonly=True)
+    fbs_sku = fields.Char(string="FBS SKU", readonly=True)
+    article = fields.Char(string="Артикул", readonly=True)
 
     supplementary_categories = fields.One2many(
         "ozon.supplementary_categories",
@@ -81,7 +90,7 @@ class Product(models.Model):
         "ozon.search_queries", "product_id", string="Ключевые слова"
     )
     trading_scheme = fields.Selection(
-        [("FBS", "FBS"), ("FBO", "FBO"), ("FBS, FBO", "FBS, FBO"), ("", "")],
+        [("FBS", "FBS"), ("FBO", "FBO"), ("FBS, FBO", "FBS, FBO"), ("undefined", " ")],
         string="Схема торговли",
     )
 
@@ -106,14 +115,16 @@ class Product(models.Model):
         "product_id",
         string="Актуальные цены конкурентов",
     )
+    not_enough_competitors = fields.Boolean()
+    commentary_not_enough_competitors = fields.Char()
 
     price_our_history_ids = fields.One2many(
         "ozon.price_history", "product_id", string="История цен"
     )
     stock_ids = fields.One2many("ozon.stock", "product", string="История остатков")
     stock_history_count = fields.Integer(compute="_compute_stock_history_count")
-    stocks_fbs = fields.Integer(string="Остатки FBS", readonly=True)
-    stocks_fbo = fields.Integer(string="Остатки FBO", readonly=True)
+    stocks_fbs = fields.Integer(string="FBS остатки", readonly=True)
+    stocks_fbo = fields.Integer(string="FBO остатки", readonly=True)
     is_selling = fields.Boolean(
         string="В продаже", compute="_get_is_selling", store=True, readonly=True
     )
@@ -277,6 +288,15 @@ class Product(models.Model):
     action_candidate_ids = fields.One2many(
         "ozon.action_candidate", "product_id", string="Кандидат в акциях"
     )
+    ozon_products_indicator_ids = fields.One2many('ozon.products.indicator', inverse_name='ozon_product_id')
+    retail_product_total_cost_price = fields.Float(compute='_compute_total_cost_price', store=True)
+
+    @api.depends('products.total_cost_price')
+    def _compute_total_cost_price(self):
+        for record in self:
+            total_cost_prise = record.products.total_cost_price
+            record.retail_product_total_cost_price = total_cost_prise
+            record._check_cost_price(record)
 
     @api.depends("sales")
     def compute_count_sales(self):
@@ -449,36 +469,41 @@ class Product(models.Model):
     def _compute_sales_per_day_last_30_days_group(self):
         coefs = self.read(fields=["sales_per_day_last_30_days"])
         coefs = sorted(coefs, key=itemgetter("sales_per_day_last_30_days"))
-        g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
-        for i, g in enumerate([g1, g2, g3, g4, g5]):
-            g_min = round(g[0]["sales_per_day_last_30_days"], 2)
-            g_max = round(g[-1]["sales_per_day_last_30_days"], 2)
-            for item in g:
-                prod = self.env["ozon.products"].search([("id", "=", item["id"])])
-                prod.sales_per_day_last_30_days_group = (
-                    f"Группа {i+1}: от {g_min} до {g_max}"
-                )
+        if coefs:
+            g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
+            for i, g in enumerate([g1, g2, g3, g4, g5]):
+                g_min = round(g[0]["sales_per_day_last_30_days"], 2)
+                g_max = round(g[-1]["sales_per_day_last_30_days"], 2)
+                for item in g:
+                    prod = self.env["ozon.products"].search([("id", "=", item["id"])])
+                    prod.sales_per_day_last_30_days_group = (
+                        f"Группа {i+1}: от {g_min} до {g_max}"
+                    )
 
     @api.onchange("profit_delta", "profit_ideal")
     @api.depends("profit_delta", "profit_ideal")
     def _compute_coef_profitability(self):
         for product in self:
-            product.coef_profitability = round(
-                product.profit_delta / product.profit_ideal, 2
-            )
+            if product.profit_ideal:
+                product.coef_profitability = round(
+                    product.profit_delta / product.profit_ideal, 2
+                )
+            else:
+                product.coef_profitability = 0
 
     def _compute_coef_profitability_group(self):
         coefs = self.read(fields=["coef_profitability"])
         coefs = sorted(coefs, key=itemgetter("coef_profitability"))
-        g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
-        for i, g in enumerate([g1, g2, g3, g4, g5]):
-            g_min = round(g[0]["coef_profitability"], 2)
-            g_max = round(g[-1]["coef_profitability"], 2)
-            for item in g:
-                prod = self.env["ozon.products"].search([("id", "=", item["id"])])
-                prod.coef_profitability_group = (
-                    f"Группа {i+1}: от {g_min*100}% до {g_max*100}%"
-                )
+        if coefs:
+            g1, g2, g3, g4, g5 = list(split_list(coefs, 5))
+            for i, g in enumerate([g1, g2, g3, g4, g5]):
+                g_min = round(g[0]["coef_profitability"], 2)
+                g_max = round(g[-1]["coef_profitability"], 2)
+                for item in g:
+                    prod = self.env["ozon.products"].search([("id", "=", item["id"])])
+                    prod.coef_profitability_group = (
+                        f"Группа {i+1}: от {g_min*100}% до {g_max*100}%"
+                    )
 
     @api.model
     def create(self, values):
@@ -488,44 +513,184 @@ class Product(models.Model):
         if existing_record:
             return existing_record
 
-        return super(Product, self).create(values)
+        records = super(Product, self).create(values)
+        for record in records:
+            self._check_cost_price(record)
+            self._check_competitors_with_price_ids_qty(record)
 
-    def get_total_cost_price(self):
-        ret_product = self.env["retail.products"].search(
-            [("id", "=", self.products.id)]
-        )
-        return ret_product.total_cost_price
+        return records
 
     def create_update_fix_exp_cost_price(self, total_cost_price):
         self.ensure_one()
-        if fix_exp_rec_cost_price := self.env["ozon.fix_expenses"].search(
-            [("product_id", "=", self.id), ("name", "=", "Себестоимость товара")],
-            limit=1,
-            order="create_date desc",
-        ):
-            fix_exp_rec_cost_price.price = total_cost_price
+        fix_exp_id = None
+        fix_expenses = self.fix_expenses.read(["name"])
+        for i in fix_expenses:
+            if i["name"] == "Себестоимость товара":
+                fix_exp_id = i["id"]
+                break
+        # if fix_exp_rec_cost_price := self.env["ozon.fix_expenses"].search(
+        #     [("product_id", "=", self.id), ("name", "=", "Себестоимость товара")],
+        #     limit=1,
+        #     order="create_date desc",
+        # ):
+        #     fix_exp_rec_cost_price.price = total_cost_price
+        if fix_exp_id:
+            self.percent_expenses = [(1, fix_exp_id, {"price": total_cost_price})]
         else:
-            fix_exp_rec_cost_price = self.env["ozon.fix_expenses"].create(
-                {
-                    "name": "Себестоимость товара",
-                    "price": total_cost_price,
-                    "discription": "Общая себестоимость товара",
-                    "product_id": self.id,
-                }
+            fix_exp_id = (
+                self.env["ozon.fix_expenses"]
+                .create(
+                    {
+                        "name": "Себестоимость товара",
+                        "price": total_cost_price,
+                        "discription": "Общая себестоимость товара",
+                        "product_id": self.id,
+                    }
+                )
+                .id
             )
-        return fix_exp_rec_cost_price
+        return fix_exp_id
 
-    def write(self, values, current_product=None):
+    def write(self, values, **kwargs):
         if isinstance(values, dict) and values.get("fix_expenses"):
-            total_cost_price = current_product.get_total_cost_price()
-            fix_exp_rec_cost_price = current_product.create_update_fix_exp_cost_price(
+            total_cost_price = self.products.total_cost_price
+            fix_exp_rec_cost_price_id = self.create_update_fix_exp_cost_price(
                 total_cost_price
             )
-            values["fix_expenses"] = [fix_exp_rec_cost_price.id] + values[
+            values["fix_expenses"] = [fix_exp_rec_cost_price_id] + values[
                 "fix_expenses"
             ]
 
-        return super(Product, self).write(values)
+            per_exp_recs = kwargs.get("percent_expenses")
+            names = [rec.name for rec in per_exp_recs]
+            for per_exp in self.percent_expenses:
+                if per_exp.name not in names:
+                    values["percent_expenses"].append(per_exp.id)
+
+        res = super(Product, self).write(values)
+        if values.get('not_enough_competitors'):
+            self._not_enough_competitors_write(self)
+        if values.get('competitors_with_price_ids'):
+            self._check_competitors_with_price_ids_qty(self)
+
+        return res
+
+    def _check_cost_price(self, record):
+        cost_price = 0
+        if record.fix_expenses:
+            cost_price_record = [x for x in record.fix_expenses if x.name == 'Себестоимость товара']
+            if len(cost_price_record) == 1:
+                cost_price = cost_price_record[0].price
+        logging.getLogger().warning(f"{record} {cost_price}")
+        if cost_price == 0:
+            found = 0
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == 'cost_not_calculated':
+                    found = 1
+                    break
+            if not found:
+                self.env['ozon.products.indicator'].create({
+                    'ozon_product_id': record.id,
+                    'source': 'robot',
+                    'type': 'cost_not_calculated',
+                    'expiration_date': False,
+                    'user_id': False,
+                    'name': f"Себестоимость не подсчитана"
+                })
+        else:
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == 'cost_not_calculated':
+                    indicator.end_date = datetime.now().date()
+                    indicator.active = False
+
+    def _check_competitors_with_price_ids_qty(self, record):
+        if len(record.competitors_with_price_ids) >= 3:
+            for indicator in record.ozon_products_indicator_ids:
+                if (
+                        indicator.type == 'no_competitor_manager' or
+                        indicator.type == 'no_competitor_robot'
+                ):
+                    indicator.end_date = datetime.now().date()
+                    indicator.active = False
+        elif len(record.competitors_with_price_ids) < 3:
+            found = 0
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == 'no_competitor_robot':
+                    found = 1
+                    break
+            if not found:
+                self.env['ozon.products.indicator'].create({
+                    'ozon_product_id': record.id,
+                    'source': 'robot',
+                    'type': 'no_competitor_robot',
+                    'expiration_date': False,
+                    'user_id': False,
+                    'name': f"Менее трех конкурентов(Робот)"
+                })
+
+    def _automated_daily_action_by_cron(self):
+        products = self.env['ozon.products'].search([])
+        lots_with_indicators = defaultdict(list)
+        for record in products:
+            # проверяет не устарел ли индикатор и архивирует если да
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == 'no_competitor_manager':
+                    if indicator.expiration_date <= datetime.now().date():
+                        indicator.end_date = datetime.now().date()
+                        indicator.active = False
+            # проверяет есть ли 3 конкурента и если нет вешает индикатор
+            self._check_competitors_with_price_ids_qty(record)
+
+            have_no_competitor_manager_indicator = 0
+            have_no_competitor_robot_indicator = 0
+            # добавить лот в словарь разбив по менеджерам, для отчетов если соответствует
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == 'no_competitor_manager':
+                    have_no_competitor_manager_indicator = 1
+                if indicator.type == 'no_competitor_robot':
+                    have_no_competitor_robot_indicator = 1
+            if have_no_competitor_manager_indicator and have_no_competitor_robot_indicator:
+                pass
+            else:
+                lots_with_indicators[record.categories.category_manager.id].append(record.id)
+
+        self._create_manager_indicator_report(lots_with_indicators)
+
+    def _create_manager_indicator_report(self, lots_with_indicators):
+        reports = self.env['ozon.report'].search([('type', '=', 'indicators')])
+        for report in reports:
+            report.active = False
+        for manager_id, lots in lots_with_indicators.items():
+            if manager_id:
+                report = self.env['ozon.report'].create({
+                    'type': 'indicators',
+                    'res_users_id': manager_id,
+                    'ozon_products_ids': lots,
+                    'lots_quantity': len(lots)
+                })
+
+    def _not_enough_competitors_write(self, record):
+        if record.not_enough_competitors and not record.commentary_not_enough_competitors:
+            raise UserError('Напишите комментарий')
+        for indicator in record.ozon_products_indicator_ids:
+            if indicator.type == 'no_competitor_manager':
+                indicator.end_date = datetime.now().date()
+                indicator.active = False
+
+        user_id = self.env.uid
+        user_name = self.env['res.users'].browse(user_id).name
+        exp_date = datetime.now() + timedelta(days=30)
+        self.env['ozon.products.indicator'].create({
+            'ozon_product_id': record.id,
+            'source': 'manager',
+            'type': 'no_competitor_manager',
+            'expiration_date': exp_date.date(),
+            'user_id': user_id if user_id else False,
+            'name': f"Менее трех конкурентов({user_name}) до {exp_date.date()}"
+        })
+
+        return record
+
 
     @api.depends("stocks_fbs", "stocks_fbo")
     def _get_is_selling(self):
@@ -645,16 +810,6 @@ class Product(models.Model):
             print(
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
-
-    def _update_percent_expenses(self, percent_expenses_ids):
-        per_exp_recs = self.env["ozon.cost"].browse(percent_expenses_ids)
-        names = [rec.name for rec in per_exp_recs]
-        new_percent_expenses_ids = percent_expenses_ids
-        for per_exp in self.percent_expenses:
-            if per_exp.name not in names:
-                new_percent_expenses_ids.append(per_exp.id)
-
-        self.percent_expenses = [(6, 0, new_percent_expenses_ids)]
 
     def get_view(self, view_id=None, view_type="form", **options):
         res = super(Product, self).get_view(view_id=view_id, view_type=view_type)
@@ -940,7 +1095,7 @@ class ProductQuikSearchExtension(models.Model):
 class ProductKanbanExtension(models.Model):
     _inherit = 'ozon.products'
 
-    img_html = fields.Html(compute="_compute_img") 
+    img_html = fields.Html(compute="_compute_img")
 
     def _compute_img(self):
         for rec in self:
@@ -1274,6 +1429,16 @@ class ProductGraphExtension(models.Model):
         if response.status_code != 200:
             raise ValueError(f"{response.status_code}--{response.text}")
 
+    def action_open_lot_full_screen(self):
+        return {
+            'name': 'Лот',
+            'type': 'ir.actions.act_window',
+            'res_model': "ozon.products",
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'current',
+        }
+
 
 class ProductCalculator(models.Model):
     _name = "ozon.product_calculator"
@@ -1283,4 +1448,3 @@ class ProductCalculator(models.Model):
     name = fields.Char(string="Параметр")
     value = fields.Float(string="Текущее значение")
     new_value = fields.Float(string="Новое значение")
-    

@@ -3,7 +3,7 @@
 
         <!-- Form -->
         <record id="view_action_products_form" model="ir.ui.view">
-            <field name="name">Лоты</field>
+            <field name="name">Продукты</field>
             <field name="model">ozon.products</field>
             <field name="priority">1</field>
             <field name="arch" type="xml">
@@ -30,6 +30,14 @@
                                 widget="statinfo" />
                         </button>
                     </div>
+
+                    <group>
+                        <field name="ozon_products_indicator_ids" widget="many2many_tags" string="Индикаторы"
+                               readonly="1"
+                               attrs="{'invisible': [('ozon_products_indicator_ids', '=', [])]}"
+                        />
+                        <field name="retail_product_total_cost_price" invisible="1"/>
+                    </group>
 
                     <separator string="Калькулятор стратегий назначения цен" />
 
@@ -73,20 +81,27 @@
                         <page id="page_lot_price_profit_main_info" string="Цена и прибыль">
                             <group>
                                 <group>
-                                    <field name="id_on_platform" />
-                                    <field name="article" />
-                                    <field name="products" />
+                                    <group>
+                                        <field name="products" />
+                                        <field name="id_on_platform" />
+                                        <field name="article" />
+                                    </group>
+                                    <group>
+                                        <field name="sku" />
+                                        <field name="fbo_sku" />
+                                        <field name="fbs_sku" />
+                                    </group>
                                 </group>
                                 <group>
+                                    <group>
+                                        <field name="trading_scheme" readonly="true" />
+                                        <field name="stocks_fbo" />
+                                        <field name="stocks_fbs" />
+                                    </group>
                                     <group>
                                         <field name="is_selling" />
                                         <field name="is_alive" />
                                         <field name="is_participating_in_actions" />
-                                    </group>
-                                    <group>
-                                        <field name="trading_scheme" readonly="true" />
-                                        <field name="stocks_fbs" />
-                                        <field name="stocks_fbo" />
                                     </group>
                                 </group>
                             </group>
@@ -240,6 +255,11 @@
                                         <field name="price_without_sale" />
                                     </tree>
                                 </field>
+                                <field name="not_enough_competitors" string="Конкурентов меньше трёх"/>
+                                <field name="commentary_not_enough_competitors" string="Комментарий"
+                                       attrs="{'invisible': [('not_enough_competitors', '=', False)]}"
+                                       placeholder="Подтвердите письменно, что конкурентов недостаточно"
+                                />
                             </group>
                         </page>
                         <page id="page_analysis_data" string="Аналитические данные">
@@ -292,10 +312,11 @@
 
         <!-- Tree -->
         <record id="view_action_products_tree" model="ir.ui.view">
-            <field name="name">Лоты</field>
+            <field name="name">Продукты</field>
             <field name="model">ozon.products</field>
             <field name="arch" type="xml">
                 <tree>
+                    <field name="retail_product_total_cost_price" invisible="1"/>
                     <field name="article"/>
                     <field name="products" />
                     <field name="price" />
@@ -310,7 +331,7 @@
                 </tree>
             </field>
         </record>
-        
+
         <!-- Kanban -->
         <record id="view_product_kanban_custom" model="ir.ui.view">
             <field name="name">Лоты</field>
@@ -356,7 +377,7 @@
 
         <!-- Actions -->
         <record model="ir.actions.act_window" id="action_products">
-            <field name="name">Лоты</field>
+            <field name="name">Продукты</field>
             <field name="res_model">ozon.products</field>
             <field name="view_mode">kanban,tree,form,search</field>
         </record>
@@ -441,7 +462,7 @@
         </record>
 
         <!-- Menu -->
-        <menuitem name="Лоты"
+        <menuitem name="Продукты"
             id="menu_products"
             parent="main_menu_products"
             action="action_products"
