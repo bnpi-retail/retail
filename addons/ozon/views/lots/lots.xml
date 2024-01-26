@@ -8,7 +8,6 @@
             <field name="priority">1</field>
             <field name="arch" type="xml">
                 <form>
-
                     <div name="button_box" position="inside">
                         <button class="oe_stat_button" type="object" name="history_price">
                             <field string="История цен" name="price_history_count" widget="statinfo" />
@@ -25,35 +24,37 @@
                                 widget="statinfo" />
                         </button>
                         <button class="oe_stat_button" type="object"
-                            name="get_stocks">
+                                name="get_stocks">
                             <field string="История остатков" name="stock_history_count"
-                                widget="statinfo" />
+                                   widget="statinfo"/>
                         </button>
                     </div>
 
-                    <group>
-                        <field name="ozon_products_indicators_summary_ids" string="Индикаторы"
-                               readonly="1"
-                               attrs="{'invisible': [('ozon_products_indicators_summary_ids', '=', [])]}">
-                            <tree
-                                    decoration-danger="type in ('cost_not_calculated', 'no_competitor_robot')"
-                                    decoration-primary="type=='no_competitor_manager'"
-                            >
-                                <field name="name"/>
-                                <field name="type" optional="Hide"/>
-                            </tree>
-                        </field>
-                        <field name="retail_product_total_cost_price" invisible="1"/>
-                    </group>
+                    <field name="ozon_products_indicators_summary_ids"
+                           readonly="1"
+                           attrs="{'invisible': [('ozon_products_indicators_summary_ids', '=', [])]}">
+                        <tree
+                                decoration-danger="type in (
+                                'cost_not_calculated',
+                                'no_competitor_robot',
+                                )"
+                                decoration-warning="type=='no_competitor_manager'"
+                        >
+                            <field name="name" string="Индикаторы"/>
+                            <field name="type" optional="Hide"/>
+                        </tree>
+                    </field>
+                    <field name="ozon_products_indicator_ids"/>
+                    <field name="retail_product_total_cost_price" invisible="1"/>
 
-                    <separator string="Калькулятор стратегий назначения цен" />
+                    <separator string="Калькулятор стратегий назначения цен"/>
 
                     <group>
                         <group>
                             <field name="pricing_strategy_ids">
                                 <tree editable="bottom" edit="True">
-                                    <field name="name" />
-                                    <field name="value" widget="percentage" />
+                                    <field name="name"/>
+                                    <field name="value" widget="percentage"/>
                                 </tree>
                             </field>
                         </group>

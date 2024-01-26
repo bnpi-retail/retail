@@ -6,7 +6,7 @@ class IndicatorSummary(models.Model):
     _description = 'Вывод по индикаторам для продукта(лота)'
 
     active = fields.Boolean(default=True)
-    name = fields.Char(size=100)
+    name = fields.Char()
     ozon_product_id = fields.Many2one('ozon.products')
     type = fields.Selection([
         ('no_competitor_robot', 'Менее трех конкурентов(Робот)'),

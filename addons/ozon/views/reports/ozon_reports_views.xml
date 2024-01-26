@@ -22,7 +22,7 @@
                                                     class="oe_highlight"/>
                                             <field name="article"/>
                                             <field name="products"/>
-                                            <field name="ozon_products_indicator_ids" widget="many2many_tags"
+                                            <field name="ozon_products_indicators_summary_ids" widget="many2many_tags"
                                                    string="Индикаторы"
                                             />
                                             <field name="categories"/>
