@@ -647,6 +647,36 @@ class Product(models.Model):
                     if summary:
                         record.ozon_products_indicators_summary_ids = [(2, summary.id, 0)]
 
+            # остатки
+            in_stock_indicator = indicator_types.get('in_stock')
+            out_of_stock_indicator = indicator_types.get('out_of_stock')
+            in_stock_summary = summary_types.get('in_stock')
+            out_of_stock_summary = summary_types.get('out_of_stock')
+            if in_stock_indicator:
+                days = (datetime.now() - in_stock_indicator.create_date).days
+                if out_of_stock_summary:
+                    record.ozon_products_indicators_summary_ids = [(2, out_of_stock_summary.id, 0)]
+                if in_stock_summary:
+                    in_stock_summary.name = f"Товар в продаже дней: {days}."
+                else:
+                    self.env['ozon.products.indicator.summary'].create({
+                        'name': f"Товар в продаже дней: {days}.",
+                        'type': 'in_stock',
+                        'ozon_product_id': record.id
+                    })
+            elif out_of_stock_indicator:
+                days = (datetime.now() - out_of_stock_indicator.create_date).days
+                if in_stock_summary:
+                    record.ozon_products_indicators_summary_ids = [(2, in_stock_summary.id, 0)]
+                if out_of_stock_summary:
+                    out_of_stock_summary.name = f"Товар отсутствует дней: {days}."
+                else:
+                    self.env['ozon.products.indicator.summary'].create({
+                        'name': f"Товар отсутствует дней: {days}.",
+                        'type': 'out_of_stock',
+                        'ozon_product_id': record.id
+                    })
+
     def _check_cost_price(self, record):
         cost_price = 0
         if record.fix_expenses:
@@ -666,7 +696,6 @@ class Product(models.Model):
                     'type': 'cost_not_calculated',
                     'expiration_date': False,
                     'user_id': False,
-                    'name': f"Себестоимость не подсчитана"
                 })
         else:
             for indicator in record.ozon_products_indicator_ids:
@@ -675,7 +704,7 @@ class Product(models.Model):
                     indicator.active = False
 
         # обновить выводы по индикаторам
-        self._update_indicator_summary(self)
+        self._update_indicator_summary(record)
 
     def _check_competitors_with_price_ids_qty(self, record):
         if len(record.competitors_with_price_ids) >= 3:
@@ -699,13 +728,53 @@ class Product(models.Model):
                     'type': 'no_competitor_robot',
                     'expiration_date': False,
                     'user_id': False,
-                    'name': f"Менее трех конкурентов(Робот)"
                 })
 
         # обновить выводы по индикаторам
-        self._update_indicator_summary(self)
+        self._update_indicator_summary(record)
+
+    def _update_in_out_stock_indicators(self, record):
+        if record.is_selling:
+            found = 0
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == 'out_of_stock':
+                    indicator.end_date = datetime.now().date()
+                    indicator.active = False
+                if indicator.type == 'in_stock':
+                    found = 1
+            if not found:
+                self.env['ozon.products.indicator'].create({
+                    'ozon_product_id': record.id,
+                    'source': 'robot',
+                    'type': 'in_stock',
+                    'expiration_date': False,
+                    'user_id': False,
+                })
+        else:
+            found = 0
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == 'in_stock':
+                    indicator.end_date = datetime.now().date()
+                    indicator.active = False
+                if indicator.type == 'out_of_stock':
+                    found = 1
+            if not found:
+                self.env['ozon.products.indicator'].create({
+                    'ozon_product_id': record.id,
+                    'source': 'robot',
+                    'type': 'out_of_stock',
+                    'expiration_date': False,
+                    'user_id': False,
+                })
+        # обновить выводы по индикаторам
+        self._update_indicator_summary(record)
 
     def _automated_daily_action_by_cron(self):
+        types_for_report = [
+            'no_competitor_robot',
+            'cost_not_calculated',
+            'out_of_stock',
+        ]
         products = self.env['ozon.products'].search([])
         lots_with_indicators = defaultdict(list)
         for record in products:
@@ -718,18 +787,14 @@ class Product(models.Model):
             # проверяет есть ли 3 конкурента и если нет вешает индикатор
             self._check_competitors_with_price_ids_qty(record)
 
-            have_no_competitor_manager_indicator = 0
-            have_no_competitor_robot_indicator = 0
-            # добавить лот в словарь разбив по менеджерам, для отчетов если соответствует
-            for indicator in record.ozon_products_indicator_ids:
-                if indicator.type == 'no_competitor_manager':
-                    have_no_competitor_manager_indicator = 1
-                if indicator.type == 'no_competitor_robot':
-                    have_no_competitor_robot_indicator = 1
-            if have_no_competitor_manager_indicator and have_no_competitor_robot_indicator:
-                pass
-            else:
-                lots_with_indicators[record.categories.category_manager.id].append(record.id)
+            summary_types = defaultdict()
+            for summary in record.ozon_products_indicators_summary_ids:
+                summary_types[summary.type] = summary
+
+            for type_ in summary_types:
+                if type_ in types_for_report:
+                    lots_with_indicators[record.categories.category_manager.id].append(record.id)
+                    break
 
         self._create_manager_indicator_report(lots_with_indicators)
 
@@ -763,11 +828,10 @@ class Product(models.Model):
             'type': 'no_competitor_manager',
             'expiration_date': exp_date.date(),
             'user_id': user_id if user_id else False,
-            'name': f"Менее трех конкурентов({user_name}) до {exp_date.date()}"
         })
 
         # обновить выводы по индикаторам
-        self._update_indicator_summary(self)
+        self._update_indicator_summary(record)
 
     @api.depends("stocks_fbs", "stocks_fbo")
     def _get_is_selling(self):
@@ -776,6 +840,7 @@ class Product(models.Model):
                 record.is_selling = True
             else:
                 record.is_selling = False
+            self._update_in_out_stock_indicators(record)
 
     def _compute_is_alive(self):
         for record in self:

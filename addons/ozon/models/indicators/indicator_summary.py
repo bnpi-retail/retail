@@ -12,5 +12,7 @@ class IndicatorSummary(models.Model):
         ('no_competitor_robot', 'Менее трех конкурентов(Робот)'),
         ('no_competitor_manager', 'Менее трех конкурентов(Менеджер)'),
         ('cost_not_calculated', 'Себестоимость не подсчитана'),
+        ('out_of_stock', 'Товара нет в наличии'),
+        ('in_stock', 'Товар в наличии'),
     ])
 
