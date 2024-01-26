@@ -798,6 +798,7 @@ class ImportFile(models.Model):
                         "order_id": row["order_id"],
                         "status": status,
                         "product_ids": product_ids,
+                        "skus": skus,
                         "region": row["region"],
                         "city": row["city"],
                         "warehouse_id": warehouse.id,
