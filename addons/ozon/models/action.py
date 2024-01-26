@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import models, fields, api, exceptions
 
-from ..ozon_api import (
-    get_product_info_list_by_sku,
-    add_products_to_action,
-    delete_products_from_action,
-)
+from ..ozon_api import add_products_to_action, delete_products_from_action
 from ..helpers import split_list_into_chunks_of_size_n
 
 
@@ -94,48 +90,39 @@ class ActionCandidate(models.Model):
 
     def participate_in_action(self):
         """Участвовать в акции."""
+        a_id = self[0].action_id.a_id
+        data = []
+        for rec in self:
+            data.append(
+                {
+                    "product_id": rec.product_id_on_platform,
+                    "action_price": rec.max_action_price,
+                }
+            )
 
-        # a_id = self[0].action_id.a_id
+        response = add_products_to_action(action_id=a_id, prod_list=data)
+        if added_prod_ids := response.get("product_ids"):
+            added_candidates = self.filtered(
+                lambda r: int(r.product_id_on_platform) in added_prod_ids
+            )
+            print(added_candidates)
+            added_candidates.is_participating = True
+        if rejected_products := response.get("rejected"):
+            raise exceptions.ValidationError(
+                f"Товары не были добавлены в акцию.\nОшибка:\n{rejected_products}"
+            )
 
-        # info = self.read(["product_id_on_platform", "max_action_price"])
-        # sku_action_price = {
-        #     i["product_id_on_platform"]: i["max_action_price"] for i in info
-        # }
+    def remove_from_action(self):
+        a_id = self[0].action_id.a_id
+        prod_ids = self.mapped("product_id_on_platform")
 
-        # skus = self.mapped("product_id_on_platform")
-        # skus_chunks = split_list_into_chunks_of_size_n(skus, 1000)
-        # prod_info_list = []
-        # for chunk in skus_chunks:
-        #     prod_info_list.extend(get_product_info_list_by_sku(sku_list=chunk))
-
-        # data = []
-        # prod_id_sku = {}
-        # for i in prod_info_list:
-        #     product_id = i["id"]
-        #     if i["sku"] != 0:
-        #         prod_id_sku[product_id] = [sku]
-        #         sku = i["sku"]
-        #     else:
-        #         prod_id_sku[product_id] = [i["fbs_sku"], i["fbo_sku"]]
-        #         sku = i["fbs_sku"]
-
-        #     action_price = sku_action_price[str(sku)]
-        #     data.append({"product_id": product_id, "action_price": action_price})
-
-        # response = add_products_to_action(action_id=a_id, prod_list=data)
-
-        # added_skus = []
-        # if added_prod_ids := response.get("product_ids"):
-        #     for pid in added_prod_ids:
-        #         for sku in prod_id_sku[pid]:
-        #             added_skus.append(sku)
-
-        # print(added_skus)
-
-        # added_candidates = self.filtered(
-        #     lambda r: int(r.product_id_on_platform) in [248853871, 160865253]
-        # )
-        # added_candidates.is_participating = True
-        # print(self)
-
-        self.is_participating = True
+        response = delete_products_from_action(action_id=a_id, product_ids=prod_ids)
+        if removed_prod_ids := response.get("product_ids"):
+            removed_candidates = self.filtered(
+                lambda r: int(r.product_id_on_platform) in removed_prod_ids
+            )
+            removed_candidates.is_participating = False
+        if rejected_products := response.get("rejected"):
+            raise exceptions.ValidationError(
+                f"Товары не были удалены из акции.\nОшибка:\n{rejected_products}"
+            )

@@ -26,5 +26,15 @@
                 action = records.participate_in_action()
             </field>
         </record>
+        <record model="ir.actions.server" id="action_remove_from_action">
+            <field name="name">Убрать из акции</field>
+            <field name="model_id" ref="model_ozon_action_candidate" />
+            <field name="binding_model_id" ref="model_ozon_action_candidate" />
+            <field name="binding_view_types">tree,form</field>
+            <field name="state">code</field>
+            <field name="code">
+                action = records.remove_from_action()
+            </field>
+        </record>
     </data>
 </odoo>
