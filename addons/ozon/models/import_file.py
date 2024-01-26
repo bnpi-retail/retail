@@ -39,8 +39,8 @@ class ImportFile(models.Model):
             ("ozon_transactions", "Транзакции Ozon"),
             ("ozon_stocks", "Остатки товаров Ozon"),
             ("ozon_prices", "Цены Ozon"),
-            ("ozon_images", 'Ссылки на графики'),
-            ("ozon_successful_products_competitors", 'Успешные товары конкурентов'),
+            ("ozon_images", "Ссылки на графики"),
+            ("ozon_successful_products_competitors", "Успешные товары конкурентов"),
             ("ozon_postings", "Отправления Ozon"),
             ("ozon_fbo_supply_orders", "Поставки FBO"),
             ("ozon_actions", "Акции Ozon"),
@@ -653,6 +653,7 @@ class ImportFile(models.Model):
                     "order_date": row["order_date"],
                     "name": row["name"],
                     "amount": row["amount"],
+                    "skus": skus,
                     "products": ozon_products,
                     "services": ozon_services,
                     "posting_number": row["posting_number"],
@@ -963,7 +964,8 @@ class ImportFile(models.Model):
         model_categories = self.env["ozon.categories"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             model, categories_id, url = line.split(",")
 
@@ -976,7 +978,8 @@ class ImportFile(models.Model):
         model_categories = self.env["ozon.categories"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             model, categories_id, url = line.split(",")
 
@@ -989,13 +992,13 @@ class ImportFile(models.Model):
         model_categories = self.env["ozon.categories"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             model, categories_id, url = line.split(",")
 
             record = model_categories.search([("id", "=", categories_id)])
             record.img_url_sale_last_year = url
-
 
     def import_actions(self, content):
         f_path = "/mnt/extra-addons/ozon/__pycache__/actions.csv"
@@ -1080,12 +1083,17 @@ class ImportFile(models.Model):
         lines = content.split("\n")
 
         for line in lines[1:]:
-            if not line: continue
+            if not line:
+                continue
 
             sku, name = line.split(",")
 
-            model_successful_products_competitors = self.env["ozon.successful_product_competitors"]
-            model_successful_products_competitors.create({
-                "sku": sku,
-                "name": name,
-            })
+            model_successful_products_competitors = self.env[
+                "ozon.successful_product_competitors"
+            ]
+            model_successful_products_competitors.create(
+                {
+                    "sku": sku,
+                    "name": name,
+                }
+            )
