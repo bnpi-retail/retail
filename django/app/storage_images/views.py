@@ -338,9 +338,9 @@ class DrawGraph(APIView):
         # plt.xticks(rotation=45)
 
         max_ticks = 10
-        # step = (max(num) - min(num)) / (max_ticks - 1)
+        step = round((max(num) - min(num)) / (max_ticks - 1))
         if num:
-            if step == 0: step = 100
+            if step == 0: step = 10
             plt.yticks(np.arange(min(num), max(num) + step, step=step))
 
         plt.tight_layout()
@@ -412,8 +412,3 @@ class DrawGraph(APIView):
         plt.close()
 
         return f"{getenv('DJANGO_DOMAIN')}{file_url}"
-
-
-    
-
-

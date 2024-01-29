@@ -985,7 +985,7 @@ class ImportFile(models.Model):
         average_data = average_data.replace("|", ",")
     
         record = model_categories.search([("id", "=", categories_id)])
-        record.img_data_sale_this_year = url
+        record.img_url_sale_this_year = url
         record.img_data_sale_this_year = average_data
 
     def import_images_categorie_categorie_sale_last_year(self, content):

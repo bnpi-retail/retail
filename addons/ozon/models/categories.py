@@ -124,8 +124,6 @@ class ActionGraphs(models.Model):
             "data": data_for_send,
         }
         
-        # categorie_record.img_data_sale_this_year = data_for_send
-
         self._send_request(payload)
 
         return products_records
@@ -167,8 +165,6 @@ class ActionGraphs(models.Model):
             "data": data_for_send,
         }
         
-        # categorie_record.img_data_sale_last_year = data_for_send
-        print(data_for_send)
 
         self._send_request(payload)
         
@@ -215,8 +211,6 @@ class ActionGraphs(models.Model):
             "categorie_id": categorie_record.id,
             "data": data_for_send,
         }
-        
-        # categorie_record.img_data_analysis_data_this_year = data_for_send
         
         self._send_request(payload)
 

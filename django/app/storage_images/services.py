@@ -69,6 +69,76 @@ class DataFunction:
         return csv_data
 
 
+class AnalysisData(DataFunction):
+    def __init__(self, dict: dict) -> None:
+        self.data = dict["data"]
+        if dict["data_average"] is not None:
+            self.data_average = json.loads(dict["data_average"].replace("'", "\""))
+        else:
+            self.data_average = None
+        self.title = "График интереса"
+        self.ylabel = "Проданный товар, кол."
+        self.label_moving_average = "Средняя скользящая"
+        self.label_category_average = "Средняя по категории"
+
+    def generate_url_analysis_data(self, product_id, dates_hits_view, num_hits_view, dates_hits_tocart, num_hits_tocart):
+        fig, ax1 = plt.subplots(figsize=(10, 5))
+
+        dates_hits_view = pd.to_datetime(dates_hits_view, errors='coerce')
+        dates_hits_tocart = pd.to_datetime(dates_hits_tocart, errors='coerce')
+        
+        ax1.plot(dates_hits_view, num_hits_view, marker='o', label="График показа товаров")
+        ax1.set_ylabel('Показы, кол.')
+        ax1.tick_params('y')
+        
+        ax2 = ax1.twinx()
+        ax2.plot(dates_hits_tocart, num_hits_tocart, marker='o', label="График добавления в корзину", color='orange')
+        ax2.set_ylabel('Добавление в корзину, кол')
+        ax2.tick_params('y')
+
+        ax1.legend(loc='upper left')
+        ax2.legend(loc='upper right')
+
+        plt.title("График интереса")
+        plt.legend()
+
+        russian_month_names = {
+            'Jan': 'Янв',
+            'Feb': 'Фев',
+            'Mar': 'Мар',
+            'Apr': 'Апр',
+            'May': 'Май',
+            'Jun': 'Июн',
+            'Jul': 'Июл',
+            'Aug': 'Авг',
+            'Sep': 'Сен',
+            'Oct': 'Окт',
+            'Nov': 'Ноя',
+            'Dec': 'Дек',
+        }
+
+        plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
+        plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')]))
+
+        if num_hits_view:
+            plt.yticks(np.arange(min(min(num_hits_view), min(num_hits_tocart)), max(max(num_hits_view), max(num_hits_tocart)) + 1000, step=1000))
+
+        plt.tight_layout()
+
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
+
+        filename = f'graph_{product_id}.png'
+        file_path = default_storage.save(filename, ContentFile(buffer.read()))
+        file_url = default_storage.url(file_path)
+
+        plt.close()
+
+        return f"{getenv('DJANGO_DOMAIN')}{file_url}"
+
+
+
 class DrawGraphSale(DataFunction):
     def __init__(self, dict: dict) -> None:
         self.year = dict["year"]
@@ -170,7 +240,11 @@ class DrawGraphSale(DataFunction):
             # step = (max_value - min_value) / (max_ticks - 1) if (max_ticks - 1) != 0 else 1
 
         # plt.yticks(np.arange(0, 1000, step=100), bottom=0)
-        plt.yticks(np.arange(0, 1000, step=100), bottom=0)
+        max_ticks = 10
+        step = round((max(values) - min(values)) / (max_ticks - 1))
+        if values:
+            if step == 0: step = 10
+            plt.yticks(np.arange(min(values), max(values) + step, step=step))
 
         plt.tight_layout()
 
@@ -249,13 +323,10 @@ class DrawGraphCategoriesThisYear(DataFunction):
         plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
         plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')]))
 
-        max_ticks = 5
-        max_value = max(values)
-        min_value = min(values)
-        raw_step = (max_value - min_value) / (max_ticks - 1)
-        step = round(raw_step / 10) * 10
+        max_ticks = 10
+        step = round((max(values) - min(values)) / (max_ticks - 1))
         if values:
-            if step == 0: step = 100
+            if step == 0: step = 10
             plt.yticks(np.arange(min(values), max(values) + step, step=step))
 
         plt.tight_layout()
@@ -336,11 +407,8 @@ class DrawGraphCategoriesLastYear(DataFunction):
         plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
         plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')]))
 
-        max_ticks = 5
-        max_value = max(values)
-        min_value = min(values)
-        raw_step = (max_value - min_value) / (max_ticks - 1)
-        step = round(raw_step / 10) * 10
+        max_ticks = 10
+        step = round((max(values) - min(values)) / (max_ticks - 1))
         if values:
             if step == 0: step = 10
             plt.yticks(np.arange(min(values), max(values) + step, step=step))
@@ -410,7 +478,7 @@ class DrawGraphCategoriesInterest(DataFunction):
         ax2.tick_params('y')
         ax2.set_yticks(range(0, max(data_tocart["values"]) + 1, 10))
 
-        plt.title("Суммарный график интереса за текущий год")
+        plt.title("График интереса за текущий год")
 
         russian_month_names = {
             'Jan': 'Янв',
