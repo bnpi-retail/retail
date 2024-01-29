@@ -31,7 +31,7 @@ const Contact = () => {
               setData(data);
 
             } catch (error) {
-              console.log(`${textData} Error: ${error}`);
+              console.log(`Error: ${error}`);
             }
           } else {
             console.error(`Ошибка запроса: ${response.status}`);
