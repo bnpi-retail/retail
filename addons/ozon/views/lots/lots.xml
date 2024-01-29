@@ -328,16 +328,20 @@
                 <tree>
                     <field name="retail_product_total_cost_price" invisible="1"/>
                     <field name="article"/>
-                    <field name="products" />
-                    <field name="price" />
-                    <field name="is_selling" />
-                    <field name="is_alive" />
+                    <field name="products"/>
+                    <field name="price"/>
+                    <field name="is_selling"/>
+                    <field name="is_alive"/>
                     <field name="price_index" widget="badge"
-                        decoration-success="price_index=='PROFIT'"
-                        decoration-warning="price_index=='AVG_PROFIT'"
-                        decoration-danger="price_index=='NON_PROFIT'" />
-                    <field name="trading_scheme" />
-                    <field name="coef_profitability" />
+                           decoration-success="price_index=='PROFIT'"
+                           decoration-warning="price_index=='AVG_PROFIT'"
+                           decoration-danger="price_index=='NON_PROFIT'"/>
+                    <field name="trading_scheme"/>
+                    <field name="coef_profitability"/>
+                    <field name="abc_group" string="ABC Группа"
+                           decoration-success="abc_group=='A'"
+                           decoration-danger="abc_group=='C'"
+                    />
                 </tree>
             </field>
         </record>
