@@ -6,46 +6,56 @@
             <field name="model">ozon.abc_analysis</field>
             <field name="arch" type="xml">
                 <form string="">
-                    <sheet>
-                        <group>
-                            <group>
-                                <field name="period_from" string="Период с" class="oe_inline" widget="date"/>
-                                <field name="ozon_categories_id" string="Категория" class="oe_inline"/>
-                                <button name="action_do_abc_analysis" type="object"
-                                        attrs="{'invisible':[('done','=',True)]}"
-                                        string="Провести анализ"
-                                        class="oe_highlight"/>
-                            </group>
-                            <group>
-                                <field name="period_to" string="по" class="oe_inline" widjet="date"/>
-                            </group>
-                            <field name="ozon_products_ids" attrs="{'invisible':[('ozon_products_ids','=',[])]}"/>
-                        </group>
-                    </sheet>
-                </form>
-            </field>
-        </record>
-
-        <record id="ozon_abc_analysis_view_tree" model="ir.ui.view">
-            <field name="name">ozon_abc_analysis.tree</field>
-            <field name="model">ozon.abc_analysis</field>
-            <field name="arch" type="xml">
-                <tree string="ABC анализ">
-                    <field name="ozon_categories_id" string="Категория"/>
-                    <field name="period_from" string="Начало периода"/>
-                    <field name="period_to" string="Конец периода"/>
+                <sheet>
+                <group>
+                <group>
+                    <field name="period_from" string="Период с" class="oe_inline" widget="date"/>
+                    <field name="ozon_categories_id" string="Категория" class="oe_inline"/>
+                    <button name="action_do_abc_analysis" type="object"
+                            string="ABC Анализ"
+                            class="oe_highlight"/>
+                </group>
+                <group>
+                    <field name="period_to" string="по" class="oe_inline" widjet="date"/>
+                </group>
+                <field name="ozon_products_ids" attrs="{'invisible':[('ozon_products_ids','=',[])]}">
+                    <tree default_order="revenue_share_temp desc"
+                          decoration-success="abc_group=='A'"
+                          decoration-danger="abc_group=='C'"
+                    >
+                    <field name="article"/>
+                    <field name="products"/>
+                    <field name="revenue_share_temp" string="Доля продукта в выручке, %"/>
+                    <field name="revenue_cumulative_share_temp" string="Накопительный вклад, %"/>
+                    <field name="abc_group" string="Группа"/>
                 </tree>
             </field>
+        </group>
+    </sheet>
+</form>
+        </field>
         </record>
 
-        <record id="action_open_ozon_abc_analysis" model="ir.actions.act_window">
-            <field name="name">ABC Анализ</field>
-            <field name="res_model">ozon.abc_analysis</field>
-            <field name="view_mode">tree,form</field>
-        </record>
+<record id="ozon_abc_analysis_view_tree" model="ir.ui.view">
+<field name="name">ozon_abc_analysis.tree</field>
+<field name="model">ozon.abc_analysis</field>
+<field name="arch" type="xml">
+    <tree string="ABC анализ">
+        <field name="ozon_categories_id" string="Категория"/>
+        <field name="period_from" string="Начало периода"/>
+        <field name="period_to" string="Конец периода"/>
+    </tree>
+</field>
+</record>
 
-        <menuitem id="menu_ozon_abc_analysis" name="ABC Анализ" parent="menu_categories"
-                  action="action_open_ozon_abc_analysis" sequence="35"/>
+<record id="action_open_ozon_abc_analysis" model="ir.actions.act_window">
+<field name="name">ABC Анализ</field>
+<field name="res_model">ozon.abc_analysis</field>
+<field name="view_mode">tree,form</field>
+</record>
 
-    </data>
-</odoo>
+<menuitem id="menu_ozon_abc_analysis" name="ABC Анализ внутри категории" parent="menu_categories"
+          action="action_open_ozon_abc_analysis" sequence="35"/>
+
+        </data>
+        </odoo>

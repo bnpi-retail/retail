@@ -16,7 +16,6 @@ class AbcAnalysis(models.Model):
     ozon_categories_id = fields.Many2one('ozon.categories')
     period_from = fields.Date()
     period_to = fields.Date()
-    done = fields.Boolean()
 
     ozon_products_ids = fields.Many2many("ozon.products")
 
@@ -28,8 +27,8 @@ class AbcAnalysis(models.Model):
         now = datetime.now().date()
         if not self.period_from or self.period_from > now:
             raise UserError('Выберите правильную дату начала периода.')
-        if not self.period_to or self.period_to > now:
-            raise UserError('Выберите правильную дату окончания периода.')
+        if not self.period_to:
+            raise UserError('Выберите дату окончания периода.')
         if self.period_from > self.period_to:
             raise UserError('Выберите правильный период.')
 
@@ -52,7 +51,7 @@ class AbcAnalysis(models.Model):
         # compute percentage
         products_percentage = [(product, [(revenue * 100) / total_period_revenue]) for product, revenue in
                                products_revenues.items()]
-        products_percentage.sort(key=lambda x: x[1])
+        products_percentage.sort(key=lambda x: x[1][0], reverse=True)
 
         # compute cumulative percentage
         prev_percent = 0
@@ -62,6 +61,7 @@ class AbcAnalysis(models.Model):
             product[1].append(prev_percent)
 
         # set groups
+        product_ids = []
         for product in products_percentage:
             if product[1][1] <= 80:
                 product[1].append('A')
@@ -69,7 +69,13 @@ class AbcAnalysis(models.Model):
                 product[1].append('B')
             else:
                 product[1].append('C')
+            product_ids.append(product[0].id)
 
         # write data
+        self.ozon_products_ids = product_ids
+        for product in products_percentage:
+            product[0].revenue_share_temp = product[1][0]
+            product[0].revenue_cumulative_share_temp = product[1][1]
+            product[0].abc_group = product[1][2]
 
 

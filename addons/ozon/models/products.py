@@ -286,6 +286,7 @@ class Product(models.Model):
     action_candidate_ids = fields.One2many(
         "ozon.action_candidate", "product_id", string="Кандидат в акциях"
     )
+    # indicators
     ozon_products_indicator_ids = fields.One2many(
         "ozon.products.indicator", inverse_name="ozon_product_id"
     )
@@ -296,6 +297,10 @@ class Product(models.Model):
     retail_product_total_cost_price = fields.Float(
         compute="_compute_total_cost_price", store=True
     )
+    # ABC analysis
+    revenue_share_temp = fields.Float()
+    revenue_cumulative_share_temp = fields.Float()
+    abc_group = fields.Char(size=3)
 
     @api.depends("products.total_cost_price")
     def _compute_total_cost_price(self):
