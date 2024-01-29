@@ -422,7 +422,11 @@ class ImportFile(models.Model):
                         else:
                             are_fees_the_same = False
                             product_fee = self.env["ozon.product_fee"].create(
-                                {"product": ozon_product_id, **all_fees}
+                                {
+                                    "product": ozon_product_id,
+                                    "product_id_on_platform": row_id_on_platform,
+                                    **all_fees,
+                                }
                             )
                             ozon_product.write({"product_fee": product_fee.id})
 
@@ -916,7 +920,8 @@ class ImportFile(models.Model):
         model_competitors_products = self.env["ozon.products"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             product_id, url_two_weeks, url_six_weeks, url_twelve_weeks = line.split(",")
 

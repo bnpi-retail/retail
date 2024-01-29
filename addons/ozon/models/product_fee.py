@@ -8,6 +8,7 @@ class ProductFee(models.Model):
     _description = "Комиссии товара Ozon"
 
     product = fields.Many2one("ozon.products", string="Товар Ozon")
+    product_id_on_platform = fields.Char(string="Product ID")
 
     acquiring = fields.Float(string="Максимальная комиссия за эквайринг")
     fbo_fulfillment_amount = fields.Float(string="Комиссия за сборку заказа (FBO)")
