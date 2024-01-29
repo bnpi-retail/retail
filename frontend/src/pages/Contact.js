@@ -31,7 +31,6 @@ const Contact = () => {
               setData(data);
 
             } catch (error) {
-              const textData = await response.text();
               console.log(`${textData} Error: ${error}`);
             }
           } else {
