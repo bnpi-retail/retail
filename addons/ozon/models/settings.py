@@ -10,7 +10,7 @@ class Settings(models.Model):
     name = fields.Selection(
         [
             ("OZON_API_KEY", "Ozon API-ключ"),
-            ("MP_STATS_API_KEY", "MPStats API-ключ"),
+            ("MP_STATS_TOKEN", "MPStats токен"),
         ],
         string="Ключ",
     )
