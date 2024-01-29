@@ -33,7 +33,7 @@ class ProductStock(models.Model):
         return result
 
 
-class ProductStock(models.Model):
+class FbsWarehouseProductStock(models.Model):
     _name = "ozon.fbs_warehouse_product_stock"
     _description = "Остатки товара на складе FBS"
 
