@@ -613,10 +613,12 @@ class Product(models.Model):
                 days = (datetime.now() - indicator_no_competitor_r.create_date).days
                 summary = summary_types.get('no_competitor_robot')
                 if summary:
-                    summary.name = f"Продукт имеет менее 3х конкурентов в течение дней: {days}."
+                    summary.name = f"Продукт имеет менее 3х конкурентов в течение дней: {days}. " \
+                                   f"Цена не может быть рассчитана."
                 else:
                     self.env['ozon.products.indicator.summary'].create({
-                        'name': f"Продукт имеет менее 3х конкурентов в течение дней: {days}.",
+                        'name': f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
+                                f"Цена не может быть рассчитана.",
                         'type': 'no_competitor_robot',
                         'ozon_product_id': record.id
                     })
@@ -627,12 +629,15 @@ class Product(models.Model):
                 summary_m = summary_types.get('no_competitor_manager')
                 if summary_m:
                     summary_m.name = (f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
-                                      f"товаров- конкурентов. "
+                                      f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
+                                      f"что снизит точность прогнозирования правильной ценовой стратегии."
                                       f"Этот индикатор будет действовать до {expiration_date}")
                 else:
                     self.env['ozon.products.indicator.summary'].create({
                         'name': f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
-                                f"товаров- конкурентов. Этот индикатор будет действовать до {expiration_date}",
+                                f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
+                                f"что снизит точность прогнозирования правильной ценовой стратегии."
+                                f"Этот индикатор будет действовать до {expiration_date}",
                         'type': 'no_competitor_manager',
                         'ozon_product_id': record.id
                     })
