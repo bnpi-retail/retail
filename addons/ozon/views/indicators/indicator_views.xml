@@ -9,15 +9,21 @@
                     <sheet>
                         <group>
                             <group>
-                                <field name="type" string="Тип" readonly="1"/>
+                                <field name="type" string="Тип индикатора" readonly="1"/>
                                 <field name="ozon_product_id" string="Продукт(Лот)" readonly="1"/>
                                 <field name="source" string="Источник" readonly="1"/>
-                                <field name="user_id" string="Пользователь" readonly="1"/>
+                                <field name="user_id" string="Пользователь" readonly="1"
+                                       attrs="{'invisible':[('user_id','=',False)]}"
+                                />
                             </group>
                             <group>
-                                <field name="create_date" string="Дата создания" readonly="1"/>
-                                <field name="expiration_date" string="Дата истечения" readonly="1"/>
-                                <field name="end_date" string="Дата завершения" readonly="1"/>
+                                <field name="create_date" string="Дата создания индикатора" readonly="1"/>
+                                <field name="expiration_date" string="Индикатор будет снят" readonly="1"
+                                       attrs="{'invisible':[('type','!=','no_competitor_manager')]}"
+                                />
+                                <field name="end_date" string="Индикатор был снят" readonly="1"
+                                       attrs="{'invisible':[('end_date','=',False)]}"
+                                />
                             </group>
                         </group>
                     </sheet>
@@ -30,13 +36,13 @@
             <field name="model">ozon.products.indicator</field>
             <field name="arch" type="xml">
                 <tree string="Отчеты" create="0">
-                    <field name="type" string="Тип"/>
+                    <field name="type" string="Тип индикатора"/>
                     <field name="ozon_product_id" string="Продукт(Лот)"/>
                     <field name="source" string="Источник"/>
                     <field name="user_id" string="Пользователь"/>
-                    <field name="create_date" string="Дата создания"/>
-                    <field name="expiration_date" string="Дата истечения"/>
-                    <field name="end_date" string="Дата завершения"/>
+                    <field name="create_date" string="Дата создания индикатора"/>
+<!--                    <field name="expiration_date" string="Индикатор будет снят"/>-->
+                    <field name="end_date" string="Индикатор был снят"/>
                 </tree>
             </field>
         </record>
@@ -59,7 +65,7 @@
         </record>
 
         <record id="action_open_ozon_products_indicator" model="ir.actions.act_window">
-            <field name="name">Indicators</field>
+            <field name="name">Индикаторы</field>
             <field name="res_model">ozon.products.indicator</field>
             <field name="view_mode">tree,form</field>
         </record>
