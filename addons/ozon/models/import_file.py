@@ -413,16 +413,29 @@ class ImportFile(models.Model):
                         all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
 
                         if product_fee := ozon_product.product_fee:
+                            # TODO: удалить, когда во всех комиссиях запишется product_id_on_platform
+                            product_fee.write(
+                                {"product_id_on_platform": row_id_on_platform}
+                            )
                             are_fees_the_same = True
                             for key, new_value in all_fees.items():
                                 if product_fee[key] != float(new_value):
                                     are_fees_the_same = False
-                                    product_fee.write({**all_fees})
+                                    product_fee.write(
+                                        {
+                                            "product_id_on_platform": row_id_on_platform,
+                                            **all_fees,
+                                        }
+                                    )
                                     break
                         else:
                             are_fees_the_same = False
                             product_fee = self.env["ozon.product_fee"].create(
-                                {"product": ozon_product_id, **all_fees}
+                                {
+                                    "product": ozon_product_id,
+                                    "product_id_on_platform": row_id_on_platform,
+                                    **all_fees,
+                                }
                             )
                             ozon_product.write({"product_fee": product_fee.id})
 
@@ -916,7 +929,8 @@ class ImportFile(models.Model):
         model_competitors_products = self.env["ozon.products"]
 
         for line in lines:
-            if not line: continue
+            if not line:
+                continue
 
             product_id, url_two_weeks, url_six_weeks, url_twelve_weeks = line.split(",")
 
