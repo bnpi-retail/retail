@@ -509,13 +509,17 @@ class ImportFile(models.Model):
                         if result:
                             continue
 
-                        if ozon_category := self.is_ozon_category_exists_by_name(
-                            row["category_name"]
+                        row_c_id = row["description_category_id"]
+                        row_category_name = row["category_name"]
+                        if ozon_category := self.is_ozon_category_exists_by_id(
+                            row_c_id
                         ):
-                            pass
+                            ozon_category.write(
+                                {"c_id": row_c_id, "name_categories": row_category_name}
+                            )
                         else:
                             ozon_category = self.env["ozon.categories"].create(
-                                {"name_categories": row["category_name"]}
+                                {"c_id": row_c_id, "name_categories": row_category_name}
                             )
 
                         self.env["ozon.ozon_fee"].create(
