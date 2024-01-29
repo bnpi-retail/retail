@@ -413,6 +413,10 @@ class ImportFile(models.Model):
                         all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
 
                         if product_fee := ozon_product.product_fee:
+                            # TODO: удалить, когда во всех комиссиях запишется product_id_on_platform
+                            product_fee.write(
+                                {"product_id_on_platform": row_id_on_platform}
+                            )
                             are_fees_the_same = True
                             for key, new_value in all_fees.items():
                                 if product_fee[key] != float(new_value):
