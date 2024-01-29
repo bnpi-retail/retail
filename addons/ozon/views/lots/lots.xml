@@ -315,6 +315,14 @@
                                 </field>
                             </group>
                         </page>
+                        <page string="ABC Анализ">
+                            <group>
+                                <field name="revenue_share_temp" string="Доля продукта в выручке, %" readonly="1"/>
+                                <field name="revenue_cumulative_share_temp" string="Накопительный вклад, %"
+                                       readonly="1"/>
+                                <field name="abc_group" string="Группа" readonly="1"/>
+                            </group>
+                        </page>
                     </notebook>
                 </form>
             </field>
