@@ -304,6 +304,7 @@ class ImportFile(models.Model):
                         row_description = row["description"]
                         row_keywords = row["keywords"]
                         row_categories = row["categories"]
+                        row_c_id = row["description_category_id"]
 
                         # s0 = timeit.default_timer()
                         if ozon_product := self.is_ozon_product_exists(
@@ -333,15 +334,21 @@ class ImportFile(models.Model):
                                     "keywords": row_keywords,
                                 }
                             )
+                            ozon_product.categories.write(
+                                {"name_categories": row_categories, "c_id": row_c_id}
+                            )
 
                         else:
-                            if ozon_category := self.is_ozon_category_exists(
-                                row_categories
+                            if ozon_category := self.is_ozon_category_exists_by_id(
+                                row_c_id
                             ):
                                 pass
                             else:
                                 ozon_category = self.env["ozon.categories"].create(
-                                    {"name_categories": row_categories}
+                                    {
+                                        "name_categories": row_categories,
+                                        "c_id": row_c_id,
+                                    }
                                 )
                             if seller := self.is_retail_seller_exists(
                                 row["seller_name"]
@@ -502,7 +509,7 @@ class ImportFile(models.Model):
                         if result:
                             continue
 
-                        if ozon_category := self.is_ozon_category_exists(
+                        if ozon_category := self.is_ozon_category_exists_by_name(
                             row["category_name"]
                         ):
                             pass
@@ -553,11 +560,15 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
-    def is_ozon_category_exists(self, category_name):
+    def is_ozon_category_exists_by_name(self, category_name):
         result = self.env["ozon.categories"].search(
             [("name_categories", "=", category_name)],
             limit=1,
         )
+        return result if result else False
+
+    def is_ozon_category_exists_by_id(self, category_id):
+        result = self.env["ozon.categories"].search([("c_id", "=", category_id)])
         return result if result else False
 
     def is_retail_product_exists(self, product_id):
@@ -984,7 +995,7 @@ class ImportFile(models.Model):
 
         model, categories_id, url, average_data = content.split(",")
         average_data = average_data.replace("|", ",")
-    
+
         record = model_categories.search([("id", "=", categories_id)])
         record.img_data_sale_this_year = url
         record.img_data_sale_this_year = average_data
