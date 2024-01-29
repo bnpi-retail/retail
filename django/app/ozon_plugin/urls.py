@@ -8,6 +8,7 @@ urlpatterns = [
     path('check_auth/', views.CheckAuth.as_view()),
     path('download-extension/', views.DownloadExtension.as_view(), name='download-extension'),
     path('upload/', views.FileUploadView.as_view(), name='upload_file'),
+    path('start_parsing', views.StartParsing.as_view(), name='start_parsing'),
 
     # Session
     path('ads_users/', views.AdsUsers.as_view(), name='ads_users'),
