@@ -1,7 +1,7 @@
 from odoo import models, fields
 
 
-class AbcAnalysis(models.TransientModel):
+class AbcAnalysis(models.Model):
     _name = "ozon.abc_analysis"
     _description = "ABC Анализ"
 
