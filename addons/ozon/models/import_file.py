@@ -417,7 +417,12 @@ class ImportFile(models.Model):
                             for key, new_value in all_fees.items():
                                 if product_fee[key] != float(new_value):
                                     are_fees_the_same = False
-                                    product_fee.write({**all_fees})
+                                    product_fee.write(
+                                        {
+                                            "product_id_on_platform": row_id_on_platform,
+                                            **all_fees,
+                                        }
+                                    )
                                     break
                         else:
                             are_fees_the_same = False

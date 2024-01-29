@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
                 <form>
                     <group>
+                        <field name="product_id_on_platform" />
                         <field name="product">
                             <tree>
                                 <field name="products">
@@ -56,6 +57,7 @@
                             </field>
                         </tree>
                     </field>
+                    <field name="product_id_on_platform" />
                 </tree>
             </field>
         </record>
