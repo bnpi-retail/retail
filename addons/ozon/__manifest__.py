@@ -93,9 +93,11 @@
         "views/fbo_supply_order/fbo_supply_order_product.xml",
         "views/action/action.xml",
         "views/action/action_candidate.xml",
-        "crone/ir_cron_data.xml",
         "views/reports/ozon_reports_views.xml",
         "views/indicators/indicator_views.xml",
+        "views/categories/abs_analysis_views.xml",
+        # cron
+        "crone/ir_cron_data.xml",
     ],
     "demo": [
         "demo/demo.xml",
