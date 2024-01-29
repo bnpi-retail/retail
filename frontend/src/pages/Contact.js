@@ -15,7 +15,8 @@ const Contact = () => {
       try {
 
         if (apiToken) {
-          const response = await fetch('http://localhost:8000/ads_users/', {
+          // const response = await fetch('http://localhost:8000/ads_users/', {
+          const response = await fetch('https://retail-extension.bnpi.dev/ads_users', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -56,8 +57,8 @@ const Contact = () => {
       try {
 
         if (apiToken) {
-          const response = await fetch('http://localhost:8000/ads_users/save_all', {
-          // const response = await fetch('https://retail-extension.bnpi.dev/ads_users/save_all', {
+          // const response = await fetch('http://localhost:8000/ads_users/save_all', {
+          const response = await fetch('https://retail-extension.bnpi.dev/ads_users/save_all', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
