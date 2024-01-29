@@ -25,8 +25,14 @@ const Contact = () => {
           });
   
           if (response.ok) {
-            const data = await response.json();
-            setData(data);
+            let data
+            try {
+              data = await response.json();
+              setData(data);
+
+            } catch (error) {
+              console.log(`Error: ${error}`);
+            }
           } else {
             console.error(`Ошибка запроса: ${response.status}`);
           }
