@@ -10,15 +10,16 @@
                         <group>
                             <group>
                                 <field name="period_from" string="Период с" class="oe_inline" widget="date"/>
-                                <field name="ozon_categories_ids" string="Категория" class="oe_inline"/>
+                                <field name="ozon_categories_id" string="Категория" class="oe_inline"/>
                                 <button name="action_do_abc_analysis" type="object"
+                                        attrs="{'invisible':[('done','=',True)]}"
                                         string="Провести анализ"
                                         class="oe_highlight"/>
                             </group>
                             <group>
                                 <field name="period_to" string="по" class="oe_inline" widjet="date"/>
                             </group>
-                            <field name="ozon_products_ids"  attrs="{'invisible':[('ozon_products_ids','=',[])]}"/>
+                            <field name="ozon_products_ids" attrs="{'invisible':[('ozon_products_ids','=',[])]}"/>
                         </group>
                     </sheet>
                 </form>
@@ -30,7 +31,7 @@
             <field name="model">ozon.abc_analysis</field>
             <field name="arch" type="xml">
                 <tree string="ABC анализ">
-                    <field name="ozon_categories_ids" string="Категория"/>
+                    <field name="ozon_categories_id" string="Категория"/>
                     <field name="period_from" string="Начало периода"/>
                     <field name="period_to" string="Конец периода"/>
                 </tree>
