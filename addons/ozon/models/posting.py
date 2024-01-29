@@ -19,6 +19,7 @@ class Posting(models.Model):
         [("delivered", "Доставлено"), ("cancelled", "Отменено")], string="Статус"
     )
     product_ids = fields.Many2many("ozon.products", string="Товары Ozon")
+    skus = fields.Char(string="Список SKU товаров", readonly=True)
     region = fields.Char(string="Регион доставки")
     city = fields.Char(string="Город доставки")
     warehouse_id = fields.Many2one("ozon.warehouse", string="Склад Ozon")

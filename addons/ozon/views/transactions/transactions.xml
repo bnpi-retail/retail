@@ -12,6 +12,7 @@
                         <field name="order_date" />
                         <field name="name" />
                         <field name="amount" />
+                        <field name="skus" />
                         <field name="products">
                             <tree>
                                 <field name="products">

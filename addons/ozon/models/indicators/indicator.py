@@ -1,6 +1,4 @@
-import logging
-
-from odoo import models, fields, api
+from odoo import models, fields
 
 
 class Indicator(models.Model):
@@ -8,13 +6,14 @@ class Indicator(models.Model):
     _description = 'Indicator'
 
     active = fields.Boolean(default=True)
-    name = fields.Char(size=100)
     ozon_product_id = fields.Many2one('ozon.products')
     source = fields.Selection([('manager', 'Manager'), ('robot', 'Robot')])
     type = fields.Selection([
         ('no_competitor_robot', 'Менее трех конкурентов(Робот)'),
         ('no_competitor_manager', 'Менее трех конкурентов(Менеджер)'),
         ('cost_not_calculated', 'Себестоимость не подсчитана'),
+        ('out_of_stock', 'Товара нет в наличии'),
+        ('in_stock', 'Товар в наличии'),
     ])
     end_date = fields.Date()
     expiration_date = fields.Date()

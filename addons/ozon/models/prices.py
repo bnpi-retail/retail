@@ -100,6 +100,7 @@ class PriceHistory(models.Model):
     _description = "История цен"
 
     product = fields.Many2one("ozon.products", string="Товар")
+    id_on_platform = fields.Char(string="Product ID", readonly=True)
     provider = fields.Many2one("retail.seller", string="Продавец")
     price = fields.Float(string="Установленная цена", readonly=True)
     competitors = fields.One2many(

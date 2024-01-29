@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import models, fields, api, exceptions
 
-from ..ozon_api import (
-    get_product_info_list_by_sku,
-    add_products_to_action,
-    delete_products_from_action,
-)
+from ..ozon_api import add_products_to_action, delete_products_from_action
 from ..helpers import split_list_into_chunks_of_size_n
 
 
@@ -50,6 +46,7 @@ class Action(models.Model):
         domain=[("is_participating", "=", True)],
         string="Товары, которые участвуют",
     )
+    ids_on_platform = fields.Text(string="Список Product ID товаров")
 
     def _compute_status(self):
         now = fields.Datetime.now()
@@ -67,7 +64,7 @@ class Action(models.Model):
         return {
             "type": "ir.actions.act_window",
             "name": "Добавить товары в акцию",
-            "view_mode": "tree",
+            "view_mode": "tree,form",
             "res_model": "ozon.action_candidate",
             "domain": [("action_id", "=", self.id)],
             "context": {"create": False},
@@ -80,7 +77,8 @@ class ActionCandidate(models.Model):
 
     action_id = fields.Many2one("ozon.action", string="Акция Ozon", readonly=True)
     product_id = fields.Many2one("ozon.products", string="Товар Ozon", readonly=True)
-    is_participating = fields.Boolean(string="Участвует")
+    id_on_platform = fields.Char(string="Product ID", readonly=True)
+    is_participating = fields.Boolean(string="Участвует", readonly=True)
     price = fields.Float(related="product_id.price", readonly=True)
     max_action_price = fields.Float(
         string="Максимально возможная цена товара по акции", readonly=True
@@ -89,51 +87,71 @@ class ActionCandidate(models.Model):
     action_start = fields.Datetime(related="action_id.datetime_start")
     action_end = fields.Datetime(related="action_id.datetime_end")
     action_status = fields.Selection(related="action_id.status")
+    action_candidate_movement_ids = fields.One2many(
+        "ozon.action_candidate_movement",
+        "action_candidate_id",
+        string="Добавление/удаление из акции",
+    )
 
     def participate_in_action(self):
         """Участвовать в акции."""
+        a_id = self[0].action_id.a_id
+        data = []
+        for rec in self:
+            data.append(
+                {
+                    "product_id": rec.product_id_on_platform,
+                    "action_price": rec.max_action_price,
+                }
+            )
 
-        # a_id = self[0].action_id.a_id
+        response = add_products_to_action(action_id=a_id, prod_list=data)
+        if added_prod_ids := response.get("product_ids"):
+            added_candidates = self.filtered(
+                lambda r: int(r.product_id_on_platform) in added_prod_ids
+            )
+            added_candidates.is_participating = True
+            candidate_movement_data = []
+            for can in added_candidates:
+                candidate_movement_data.append(
+                    {"action_candidate_id": can["id"], "operation": "added"}
+                )
+            self.env["ozon.action_candidate_movement"].create(candidate_movement_data)
+        if rejected_products := response.get("rejected"):
+            raise exceptions.ValidationError(
+                f"Товары не были добавлены в акцию.\nОшибка:\n{rejected_products}"
+            )
 
-        # info = self.read(["product_id_on_platform", "max_action_price"])
-        # sku_action_price = {
-        #     i["product_id_on_platform"]: i["max_action_price"] for i in info
-        # }
+    def remove_from_action(self):
+        a_id = self[0].action_id.a_id
+        prod_ids = self.mapped("product_id_on_platform")
+        response = delete_products_from_action(action_id=a_id, product_ids=prod_ids)
+        if removed_prod_ids := response.get("product_ids"):
+            removed_candidates = self.filtered(
+                lambda r: int(r.product_id_on_platform) in removed_prod_ids
+            )
+            removed_candidates.is_participating = False
+            candidate_movement_data = []
+            for can in removed_candidates:
+                candidate_movement_data.append(
+                    {"action_candidate_id": can["id"], "operation": "removed"}
+                )
+            self.env["ozon.action_candidate_movement"].create(candidate_movement_data)
+        if rejected_products := response.get("rejected"):
+            raise exceptions.ValidationError(
+                f"Товары не были удалены из акции.\nОшибка:\n{rejected_products}"
+            )
 
-        # skus = self.mapped("product_id_on_platform")
-        # skus_chunks = split_list_into_chunks_of_size_n(skus, 1000)
-        # prod_info_list = []
-        # for chunk in skus_chunks:
-        #     prod_info_list.extend(get_product_info_list_by_sku(sku_list=chunk))
 
-        # data = []
-        # prod_id_sku = {}
-        # for i in prod_info_list:
-        #     product_id = i["id"]
-        #     if i["sku"] != 0:
-        #         prod_id_sku[product_id] = [sku]
-        #         sku = i["sku"]
-        #     else:
-        #         prod_id_sku[product_id] = [i["fbs_sku"], i["fbo_sku"]]
-        #         sku = i["fbs_sku"]
+class ActionCandidateMovement(models.Model):
+    _name = "ozon.action_candidate_movement"
+    _description = "История участия/удаления товара из акции"
 
-        #     action_price = sku_action_price[str(sku)]
-        #     data.append({"product_id": product_id, "action_price": action_price})
-
-        # response = add_products_to_action(action_id=a_id, prod_list=data)
-
-        # added_skus = []
-        # if added_prod_ids := response.get("product_ids"):
-        #     for pid in added_prod_ids:
-        #         for sku in prod_id_sku[pid]:
-        #             added_skus.append(sku)
-
-        # print(added_skus)
-
-        # added_candidates = self.filtered(
-        #     lambda r: int(r.product_id_on_platform) in [248853871, 160865253]
-        # )
-        # added_candidates.is_participating = True
-        # print(self)
-
-        self.is_participating = True
+    timestamp = fields.Datetime(string="Дата", default=fields.Datetime.now)
+    action_candidate_id = fields.Many2one(
+        "ozon.action_candidate", string="Кандидат в акцию"
+    )
+    operation = fields.Selection(
+        [("added", "Добавлен в акцию"), ("removed", "Удалён из акции")],
+        string="Операция",
+    )

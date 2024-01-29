@@ -14,6 +14,7 @@
                         <field name="warehouse_id" />
                         <field name="total_items_count" />
                         <field name="total_quantity" />
+                        <field name="skus" />
                         <field name="fbo_supply_order_products_ids">
                             <tree>
                                 <field name="product_id" />
