@@ -406,7 +406,8 @@ class ImportFile(models.Model):
                         # s1 = timeit.default_timer()
                         ozon_product.populate_search_queries(row_keywords)
                         ozon_product.populate_supplementary_categories(
-                            row["full_categories"]
+                            row["full_categories"],
+                            row["full_categories_id"],
                         )
                         # s2 = timeit.default_timer()
                         all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
