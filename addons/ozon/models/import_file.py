@@ -900,8 +900,7 @@ class ImportFile(models.Model):
         model_competitors_products = self.env["ozon.products"]
 
         for line in lines:
-            if not line:
-                continue
+            if not line: continue
 
             product_id, url_two_weeks, url_six_weeks, url_twelve_weeks = line.split(",")
 

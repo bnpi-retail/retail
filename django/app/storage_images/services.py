@@ -131,7 +131,7 @@ class DrawGraphSale(DataFunction):
 
         dates = pd.to_datetime(dates, errors='coerce')
         
-        plt.plot(dates, values, marker='o', label="Текущий год")
+        plt.plot(dates, values, marker='o', label="График продаж")
 
         if values:
             rolling_mean = pd.Series(values).rolling(window=3).mean()
@@ -169,7 +169,8 @@ class DrawGraphSale(DataFunction):
 
             # step = (max_value - min_value) / (max_ticks - 1) if (max_ticks - 1) != 0 else 1
 
-        plt.yticks(np.arange(0, 1000, step=100))
+        # plt.yticks(np.arange(0, 1000, step=100), bottom=0)
+        plt.yticks(np.arange(0, 1000, step=100), bottom=0)
 
         plt.tight_layout()
 
