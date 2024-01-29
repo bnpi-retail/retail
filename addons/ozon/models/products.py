@@ -597,15 +597,16 @@ class Product(models.Model):
                 days = (datetime.now() - indicator_cost_price.create_date).days
                 summary = summary_types.get("cost_not_calculated")
                 if summary:
-                    summary.name = f"Себестоимость не подсчитана дней: {days}."
+                    summary.name = f"Себестоимость не подсчитана дней: {days}. " \
+                                   f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта."
                 else:
-                    self.env["ozon.products.indicator.summary"].create(
-                        {
-                            "name": f"Себестоимость не подсчитана дней: {days}.",
-                            "type": "cost_not_calculated",
-                            "ozon_product_id": record.id,
-                        }
-                    )
+                    self.env['ozon.products.indicator.summary'].create({
+                        'name': f"Себестоимость не подсчитана дней: {days}. "
+                                f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта.",
+                        'type': 'cost_not_calculated',
+                        'ozon_product_id': record.id
+                    })
+
             else:
                 summary = summary_types.get("cost_not_calculated")
                 if summary:
@@ -618,17 +619,17 @@ class Product(models.Model):
                 days = (datetime.now() - indicator_no_competitor_r.create_date).days
                 summary = summary_types.get("no_competitor_robot")
                 if summary:
-                    summary.name = (
-                        f"Продукт имеет менее 3х конкурентов в течение дней: {days}."
-                    )
+
+                    summary.name = f"Продукт имеет менее 3х конкурентов в течение дней: {days}. " \
+                                   f"Цена не может быть рассчитана. Добавьте товары конкурентов."
                 else:
-                    self.env["ozon.products.indicator.summary"].create(
-                        {
-                            "name": f"Продукт имеет менее 3х конкурентов в течение дней: {days}.",
-                            "type": "no_competitor_robot",
-                            "ozon_product_id": record.id,
-                        }
-                    )
+                    self.env['ozon.products.indicator.summary'].create({
+                        'name': f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
+                                f"Цена не может быть рассчитана. Добавьте товары конкурентов.",
+                        'type': 'no_competitor_robot',
+                        'ozon_product_id': record.id
+                    })
+
             elif indicator_no_competitor_r and indicator_no_competitor_m:
                 manager = indicator_no_competitor_m.user_id
                 expiration_date = indicator_no_competitor_m.expiration_date.strftime(
@@ -637,20 +638,20 @@ class Product(models.Model):
                 create_date = indicator_no_competitor_m.create_date.strftime("%d.%m.%Y")
                 summary_m = summary_types.get("no_competitor_manager")
                 if summary_m:
-                    summary_m.name = (
-                        f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
-                        f"товаров- конкурентов. "
-                        f"Этот индикатор будет действовать до {expiration_date}"
-                    )
+                    summary_m.name = (f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
+                                      f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
+                                      f"что снизит точность прогнозирования правильной ценовой стратегии."
+                                      f"Этот индикатор будет действовать до {expiration_date}")
                 else:
-                    self.env["ozon.products.indicator.summary"].create(
-                        {
-                            "name": f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
-                            f"товаров- конкурентов. Этот индикатор будет действовать до {expiration_date}",
-                            "type": "no_competitor_manager",
-                            "ozon_product_id": record.id,
-                        }
-                    )
+                    self.env['ozon.products.indicator.summary'].create({
+                        'name': f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
+                                f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
+                                f"что снизит точность прогнозирования правильной ценовой стратегии."
+                                f"Этот индикатор будет действовать до {expiration_date}",
+                        'type': 'no_competitor_manager',
+                        'ozon_product_id': record.id
+                    })
+
                 # delete robot's summary
                 summary_r = summary_types.get("no_competitor_robot")
                 if summary_r:

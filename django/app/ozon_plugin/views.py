@@ -124,6 +124,16 @@ class FileUploadView(View):
                 destination.write(chunk)
 
 
+class StartParsing(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        token = request.auth
+        api_key = token.key
+        cache.set(api_key, None)
+        return Response("Success!")
+    
+    
 class AdsUsers(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -131,17 +141,26 @@ class AdsUsers(APIView):
         token = request.auth
         api_key = token.key
         data = cache.get(api_key)
-        cache.set(api_key, None)
+        # cache.set(api_key, None)
         return Response(data)
 
     def post(self, request, *args, **kwargs):
         token = request.auth
         api_key = token.key
         ad = request.data
+        sku = ad.get("sku")
 
         data = cache.get(api_key)
         if data is None: data = []
-        data.append(ad)
+
+        new = True
+        for ad_in_data in data:
+            if sku == ad_in_data.get("sku"):
+                new = False
+
+        if new is True:
+            data.append(ad)
+
         cache.set(api_key, data, 20000)
 
         return Response({'message': 'Объявление успешно сохранено'})

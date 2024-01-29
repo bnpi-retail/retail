@@ -15,7 +15,8 @@ const Contact = () => {
       try {
 
         if (apiToken) {
-          const response = await fetch('http://localhost:8000/ads_users/', {
+          // const response = await fetch('http://localhost:8000/ads_users/', {
+          const response = await fetch('https://retail-extension.bnpi.dev/ads_users', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -24,8 +25,14 @@ const Contact = () => {
           });
   
           if (response.ok) {
-            const data = await response.json();
-            setData(data);
+            let data
+            try {
+              data = await response.json();
+              setData(data);
+
+            } catch (error) {
+              console.log(`Error: ${error}`);
+            }
           } else {
             console.error(`Ошибка запроса: ${response.status}`);
           }
@@ -56,8 +63,8 @@ const Contact = () => {
       try {
 
         if (apiToken) {
-          const response = await fetch('http://localhost:8000/ads_users/save_all', {
-          // const response = await fetch('https://retail-extension.bnpi.dev/ads_users/save_all', {
+          // const response = await fetch('http://localhost:8000/ads_users/save_all', {
+          const response = await fetch('https://retail-extension.bnpi.dev/ads_users/save_all', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
