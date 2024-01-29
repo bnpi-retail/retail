@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from account.services import connect_to_odoo_api_with_auth
-from .services import DrawGraphCategoriesInterest , DrawGraphCategoriesThisYear , DrawGraphCategoriesLastYear
+from .services import DrawGraphCategoriesInterest , DrawGraphCategoriesThisYear , DrawGraphCategoriesLastYear, DrawGraphSale
 
 
 class DrawGraph(APIView):
@@ -82,35 +82,25 @@ class DrawGraph(APIView):
 
     def draw_graph_sale(self, request, model):
         product_id = request.data.get('product_id', None)
-        data_current = request.data.get('current', None)
-        data_last = request.data.get('last', None)
         
-        year = datetime.now().year
-        zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
-        grouped_dates, grouped_num = self.data_group(data_current, zero_dates, sum_group=True)
-        current_url = self.generate_url_image(
-            label='Текущий год',
-            product_id=product_id,
-            dates=grouped_dates,
-            num=grouped_num,
-            step=10,
-            name_images='График продаж за текущий год',
-            ylabel='Проданный товар, кол.',
-        )
+        dict = {
+            "data": request.data.get('current', None),
+            "data_average":request.data.get('average_graph_this_year', None),
+            "year": datetime.now().year,
+        }
 
-        last_year = year - 1
-        zero_dates = pd.date_range(start=f'{last_year}-01-01', end=f'{last_year}-12-31')
-        grouped_dates, grouped_num = self.data_group(data_last, zero_dates, sum_group=True)
-        last_url = self.generate_url_image(
-            label='Прошлый год',
-            product_id=product_id,
-            dates=grouped_dates,
-            num=grouped_num,
-            step=10,
-            name_images='График продаж за прошлый год',
-            ylabel='Проданный товар, кол.',
-        )
+        graph = DrawGraphSale(dict)
+        current_url = graph()
 
+        dict = {
+            "data": request.data.get('last', None),
+            "data_average":request.data.get('average_graph_last_year', None),
+            "year": datetime.now().year - 1,
+        }
+
+        graph = DrawGraphSale(dict)
+        last_url = graph()
+        
         data = [product_id, current_url, last_url]
         csv_file = self.get_csv_file(data)
         return {'file': ('output.csv', csv_file)}, {'model': model}
@@ -240,7 +230,9 @@ class DrawGraph(APIView):
         product_id = request.data.get('product_id', None)
         hits_view = request.data.get('hits_view', None)
         hits_tocart = request.data.get('hits_tocart', None)
-
+        average_hits_view = request.data.get('average_hits_view', None)
+        average_to_cart = request.data.get('average_to_cart', None)
+        
         year = datetime.now().year
         zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
 
@@ -301,7 +293,7 @@ class DrawGraph(APIView):
 
         return grouped_dates, grouped_num
     
-    def generate_url_image(self, label, product_id, dates, num, step, name_images, ylabel, month_xaxis=True, day_xaxis=False):
+    def generate_url_image(self, label, product_id, dates, num, step, name_images, ylabel, month_xaxis=True, day_xaxis=False, average_graph=None):
         plt.figure(figsize=(10, 5))
 
         dates = pd.to_datetime(dates, errors='coerce')
@@ -311,6 +303,9 @@ class DrawGraph(APIView):
         if num:
             rolling_mean = pd.Series(num).rolling(window=3).mean()
             plt.plot(dates, rolling_mean, linestyle='--', color='red', label='Средняя скользящая')
+
+        if average_graph is not None:
+            pass
 
         plt.title(name_images)
         plt.ylabel(ylabel)
@@ -343,7 +338,7 @@ class DrawGraph(APIView):
         # plt.xticks(rotation=45)
 
         max_ticks = 10
-        step = (max(num) - min(num)) / (max_ticks - 1)
+        # step = (max(num) - min(num)) / (max_ticks - 1)
         if num:
             if step == 0: step = 100
             plt.yticks(np.arange(min(num), max(num) + step, step=step))

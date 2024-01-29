@@ -5,23 +5,24 @@ import { Image, Button } from '@mantine/core';
 const Contact = () => {
   const [data, setData] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [isButtonVisible, setButtonVisibility] = useState(true);
+  const [hasFetchedData, setHasFetchedData] = useState(false);
   const searchParams = new URLSearchParams(window.location.search);
   const apiToken = searchParams.get('apiToken');
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchDataWithDelay = async () => {
       try {
 
         if (apiToken) {
-          // const response = await fetch('http://localhost:8000/ads_users/', {
-          const response = await fetch('https://retail-extension.bnpi.dev/ads_users', {
+          const response = await fetch('http://localhost:8000/ads_users/', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Token ${apiToken}`,
             },
           });
-
+  
           if (response.ok) {
             const data = await response.json();
             setData(data);
@@ -33,8 +34,8 @@ const Contact = () => {
         console.error('Произошла ошибка:', error);
       }
     };
-
-    fetchData();
+  
+    fetchDataWithDelay();
   }, []);
 
   const handleCheckboxChange = (item) => {
@@ -55,8 +56,8 @@ const Contact = () => {
       try {
 
         if (apiToken) {
-          // const response = await fetch('http://localhost:8000/ads_users/save_all', {
-          const response = await fetch('https://retail-extension.bnpi.dev/ads_users/save_all', {
+          const response = await fetch('http://localhost:8000/ads_users/save_all', {
+          // const response = await fetch('https://retail-extension.bnpi.dev/ads_users/save_all', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -66,7 +67,7 @@ const Contact = () => {
           });
 
           if (response.ok) {
-            alert('Данные успешно сохранены!');
+            alert('Данные отправлены, Вы можете закрыть это окно!');
           } else {
             alert(`Ошибка запроса: ${response.status}`);
           }
@@ -82,6 +83,7 @@ const Contact = () => {
   const proccess = () => {
     handleDeleteSelected();
     handleSaveButtonClick();
+    setButtonVisibility(false);
   };
 
   return (
@@ -116,7 +118,14 @@ const Contact = () => {
           </li>
         ))}
       </ul>
-      <Button style={{ marginTop: '20px' }} onClick={proccess}>
+      <Button 
+        style={{ 
+          marginTop: '20px',
+          display: isButtonVisible ? 'block' : 'none',
+          margin: 'auto',
+        }} 
+        onClick={proccess}
+      >
         {selectedItems.length > 0 ? 'Удалить выбранные и продолжить' : 'Продолжить'}
       </Button>
     </div>

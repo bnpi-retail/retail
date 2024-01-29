@@ -51,7 +51,7 @@
             <field name="binding_model_id" ref="model_ozon_categories" />
             <field name="state">code</field>
             <field name="code">
-                records.action_draw_graphs()
+                records.action_draw_graphs_by_categories()
             </field>
         </record>
 

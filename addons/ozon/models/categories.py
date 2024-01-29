@@ -1,5 +1,6 @@
 import requests
 
+from time import sleep
 from os import getenv
 from datetime import datetime
 from odoo import models, fields, api
@@ -18,6 +19,7 @@ class Categories(models.Model):
 class GraphSaleThisYear(models.Model):
     _inherit = 'ozon.categories'
 
+    img_data_sale_this_year = fields.Text(string="Json data filed")
     img_url_sale_this_year = fields.Char(string="Ссылка на объект")
     img_html_sale_this_year = fields.Html(
         compute="_compute_img_sale_this_year",
@@ -37,6 +39,7 @@ class GraphSaleThisYear(models.Model):
 class GraphSaleLastYear(models.Model):
     _inherit = 'ozon.categories'
 
+    img_data_sale_last_year = fields.Text(string="Json data filed")
     img_url_sale_last_year = fields.Char(string="Ссылка на объект")
     img_html_sale_last_year = fields.Html(
         compute="_compute_img_sale_last_year",
@@ -55,6 +58,9 @@ class GraphSaleLastYear(models.Model):
 
 class GraphInterest(models.Model):
     _inherit = 'ozon.categories'
+
+    img_data_analysis_data_this_year_hits = fields.Text(string="Json data filed")
+    img_data_analysis_data_this_year_to_cart = fields.Text(string="Json data filed")
 
     img_url_analysis_data_this_year = fields.Char(string="Ссылка на объект")
     img_html_analysis_data_this_year = fields.Html(
@@ -75,11 +81,11 @@ class GraphInterest(models.Model):
 class ActionGraphs(models.Model):
     _inherit = 'ozon.categories'
 
-    def action_draw_graphs(self):
+    def action_draw_graphs_by_categories(self):
         products_records = self.draw_sale_this_year()
         products_records += self.draw_sale_last_year()
         products_records += self.draw_graph_interest()
-        self.draw_graphs_products(products_records)
+        self.draw_graphs_products(list(set(products_records)))
 
     def draw_sale_this_year(self):
         year = self._get_year()
@@ -87,8 +93,6 @@ class ActionGraphs(models.Model):
         data_for_send = {}
 
         categorie_record = self[0]
-
-        data_categorie = {}
 
         products_records = self.env["ozon.products"].search([
             ("categories", "=", categorie_record.id),
@@ -112,7 +116,7 @@ class ActionGraphs(models.Model):
                 graph_data["dates"].append(sale_record.date.strftime("%Y-%m-%d"))
                 graph_data["values"].append(sale_record.qty)
 
-            data_categorie[product_record.id] = graph_data
+            data_for_send[product_record.id] = graph_data
     
         payload = {
             "model": "categorie_sale_this_year",
@@ -120,6 +124,8 @@ class ActionGraphs(models.Model):
             "data": data_for_send,
         }
         
+        # categorie_record.img_data_sale_this_year = data_for_send
+
         self._send_request(payload)
 
         return products_records
@@ -131,8 +137,6 @@ class ActionGraphs(models.Model):
 
         categorie_record = self[0]
 
-        data_categorie = {}
-
         products_records = self.env["ozon.products"].search([
             ("categories", "=", categorie_record.id),
             # ("is_alive", "=", True),
@@ -155,7 +159,7 @@ class ActionGraphs(models.Model):
                 graph_data["dates"].append(sale_record.date.strftime("%Y-%m-%d"))
                 graph_data["values"].append(sale_record.qty)
 
-            data_categorie[product_record.id] = graph_data
+            data_for_send[product_record.id] = graph_data
 
         payload = {
             "model": "categorie_sale_last_year",
@@ -163,6 +167,9 @@ class ActionGraphs(models.Model):
             "data": data_for_send,
         }
         
+        # categorie_record.img_data_sale_last_year = data_for_send
+        print(data_for_send)
+
         self._send_request(payload)
         
         return products_records
@@ -173,8 +180,6 @@ class ActionGraphs(models.Model):
         data_for_send = {}
 
         categorie_record = self[0]
-
-        data_categorie = {}
 
         products_records = self.env["ozon.products"].search([
             ("categories", "=", categorie_record.id),
@@ -203,7 +208,7 @@ class ActionGraphs(models.Model):
                 graph_data["hits_view"].append(analysis_data_record.hits_view)
                 graph_data["hits_tocart"].append(analysis_data_record.hits_tocart)
 
-            data_categorie[product_record.id] = graph_data
+            data_for_send[product_record.id] = graph_data
 
         payload = {
             "model": "categorie_analysis_data",
@@ -211,13 +216,18 @@ class ActionGraphs(models.Model):
             "data": data_for_send,
         }
         
+        # categorie_record.img_data_analysis_data_this_year = data_for_send
+        
         self._send_request(payload)
 
         return products_records
     
-    def draw_graphs_products(self, product_record):
-        product_record.action_draw_graphs()
+    def draw_graphs_products(self, products_records):
+        print(f"All records: {len(products_records)}")
 
+        for index, product_record in enumerate(products_records):
+            product_record.action_draw_graphs()
+            print(index + 1)
 
     def _send_request(self, payload):
         endpoint = "http://django:8000/api/v1/draw_graph"

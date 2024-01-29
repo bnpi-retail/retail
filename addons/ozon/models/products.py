@@ -1292,33 +1292,35 @@ class ProductGraphExtension(models.Model):
                 "product_id": rec.id,
             }
 
-            records = model_sale.search(
-                [
-                    ("product", "=", rec.id),
-                    ("date", ">=", f"{year}-01-01"),
-                    ("date", "<=", f"{year}-12-31"),
-                ]
-            )
+            records = model_sale.search([
+                ("product", "=", rec.id),
+                ("date", ">=", f"{year}-01-01"),
+                ("date", "<=", f"{year}-12-31"),
+            ])
 
-            graph_data = {"dates": [], "num": []}
+            graph_data = {"dates": [], "values": []}
             for record in records:
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
-                graph_data["num"].append(record.qty)
+                graph_data["values"].append(record.qty)
             payload["current"] = graph_data
 
-            records = model_sale.search(
-                [
-                    ("product", "=", rec.id),
-                    ("date", ">=", f"{last_year}-01-01"),
-                    ("date", "<=", f"{last_year}-12-31"),
-                ]
-            )
+            if rec.categories.img_data_sale_this_year:
+                payload["average_graph_this_year"] = rec.categories.img_data_sale_this_year
 
-            graph_data = {"dates": [], "num": []}
+            records = model_sale.search([
+                ("product", "=", rec.id),
+                ("date", ">=", f"{last_year}-01-01"),
+                ("date", "<=", f"{last_year}-12-31"),
+            ])
+
+            graph_data = {"dates": [], "values": []}
             for record in records:
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
-                graph_data["num"].append(record.qty)
+                graph_data["values"].append(record.qty)
             payload["last"] = graph_data
+
+            if rec.categories.img_data_sale_last_year:
+                payload["average_graph_last_year"] = rec.categories.img_data_sale_last_year
 
             self._send_request(payload)
 
@@ -1407,6 +1409,10 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(average_date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.hits_tocart)
             payload["hits_tocart"] = graph_data
+
+            if rec.categories.img_data_analysis_data_this_year_hits and rec.categories.img_data_analysis_data_this_year_to_cart:
+                payload["average_hits_view"] = rec.categories.img_data_analysis_data_this_year_hits
+                payload["average_to_cart"] = rec.categories.img_data_analysis_data_this_year_to_cart
 
             self._send_request(payload)
 

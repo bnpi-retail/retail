@@ -958,43 +958,36 @@ class ImportFile(models.Model):
             record.img_url_analysis_data = url
 
     def import_images_categorie_analysis_data(self, content):
-        lines = content.split("\n")
-
         model_categories = self.env["ozon.categories"]
 
-        for line in lines:
-            if not line: continue
+        model, categories_id, url, data_hits, data_tocart = content.split(",")
+        data_hits = data_hits.replace("|", ",")
+        data_tocart = data_tocart.replace("|", ",")
 
-            model, categories_id, url = line.split(",")
-
-            record = model_categories.search([("id", "=", categories_id)])
-            record.img_url_analysis_data_this_year = url
+        record = model_categories.search([("id", "=", categories_id)])
+        record.img_url_analysis_data_this_year = url
+        record.img_data_analysis_data_this_year_hits = data_hits
+        record.img_data_analysis_data_this_year_to_cart = data_tocart
 
     def import_images_categorie_categorie_sale_this_year(self, content):
-        lines = content.split("\n")
-
         model_categories = self.env["ozon.categories"]
 
-        for line in lines:
-            if not line: continue
-
-            model, categories_id, url = line.split(",")
-
-            record = model_categories.search([("id", "=", categories_id)])
-            record.img_url_sale_this_year = url
+        model, categories_id, url, average_data = content.split(",")
+        average_data = average_data.replace("|", ",")
+    
+        record = model_categories.search([("id", "=", categories_id)])
+        record.img_data_sale_this_year = url
+        record.img_data_sale_this_year = average_data
 
     def import_images_categorie_categorie_sale_last_year(self, content):
-        lines = content.split("\n")
-
         model_categories = self.env["ozon.categories"]
 
-        for line in lines:
-            if not line: continue
+        model, categories_id, url, average_data = content.split(",")
+        average_data = average_data.replace("|", ",")
 
-            model, categories_id, url = line.split(",")
-
-            record = model_categories.search([("id", "=", categories_id)])
-            record.img_url_sale_last_year = url
+        record = model_categories.search([("id", "=", categories_id)])
+        record.img_url_sale_last_year = url
+        record.img_data_sale_last_year = average_data
 
 
     def import_actions(self, content):
