@@ -11,3 +11,4 @@ from . import get_all_skus_of_lots
 from . import analysis_data
 from . import graph_lots
 from . import one_time
+from . import get_settings

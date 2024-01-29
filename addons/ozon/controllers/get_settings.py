@@ -1,4 +1,7 @@
+import json
+
 from odoo import http
+from odoo.http import Response
 
 
 class OzonSettingsCredentials(http.Controller):
@@ -13,4 +16,6 @@ class OzonSettingsCredentials(http.Controller):
         settings = {}
         for rec in all_settings_recs:
             settings[rec.name] = rec.value
-        return settings
+        return Response(
+            response=json.dumps(settings), status=200, content_type="application/json"
+        )
