@@ -16,6 +16,14 @@ class OzonSettingsCredentials(http.Controller):
         settings = {}
         for rec in all_settings_recs:
             settings[rec.name] = rec.value
-        return Response(
-            response=json.dumps(settings), status=200, content_type="application/json"
-        )
+
+        if settings:
+            return Response(
+                response=json.dumps(settings),
+                status=200,
+                content_type="application/json",
+            )
+        else:
+            return Response(
+                response=json.dumps("Настройки в ozon.settings не заданы", status=404)
+            )
