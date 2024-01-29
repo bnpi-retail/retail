@@ -594,10 +594,12 @@ class Product(models.Model):
                 days = (datetime.now() - indicator_cost_price.create_date).days
                 summary = summary_types.get('cost_not_calculated')
                 if summary:
-                    summary.name = f"Себестоимость не подсчитана дней: {days}."
+                    summary.name = f"Себестоимость не подсчитана дней: {days}. " \
+                                   f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта."
                 else:
                     self.env['ozon.products.indicator.summary'].create({
-                        'name': f"Себестоимость не подсчитана дней: {days}.",
+                        'name': f"Себестоимость не подсчитана дней: {days}. "
+                                f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта.",
                         'type': 'cost_not_calculated',
                         'ozon_product_id': record.id
                     })
@@ -614,11 +616,11 @@ class Product(models.Model):
                 summary = summary_types.get('no_competitor_robot')
                 if summary:
                     summary.name = f"Продукт имеет менее 3х конкурентов в течение дней: {days}. " \
-                                   f"Цена не может быть рассчитана."
+                                   f"Цена не может быть рассчитана. Добавьте товары конкурентов."
                 else:
                     self.env['ozon.products.indicator.summary'].create({
                         'name': f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
-                                f"Цена не может быть рассчитана.",
+                                f"Цена не может быть рассчитана. Добавьте товары конкурентов.",
                         'type': 'no_competitor_robot',
                         'ozon_product_id': record.id
                     })
