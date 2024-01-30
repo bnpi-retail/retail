@@ -228,7 +228,9 @@ class Product(models.Model):
     total_fbs_percent_expenses = fields.Float(
         string="Итого", compute="_compute_total_fbs_percent_expenses", store=True
     )
-
+    all_expenses_ids = fields.One2many(
+        "ozon.all_expenses", "product_id", string="Все затраты", readonly=True
+    )
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
     posting_ids = fields.Many2many("ozon.posting", string="Отправления Ozon")
     postings_count = fields.Integer(compute="_compute_count_postings")

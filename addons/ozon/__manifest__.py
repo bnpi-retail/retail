@@ -52,6 +52,7 @@
         "security/settings/ir.model.access.csv",
         "security/price/investment_expenses/investment_expenses/ir.model.access.csv",
         "security/price/investment_expenses/investment_expenses_wizard/ir.model.access.csv",
+        "security/price/all_expenses/ir.model.access.csv",
         ### views
         "views/menu.xml",
         "views/price/menu.xml",

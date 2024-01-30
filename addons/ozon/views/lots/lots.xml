@@ -148,7 +148,11 @@
                                 </group>
                             </group>
                         </page>
-
+                        <page id="page_all_expenses_info" string="Структура затрат">
+                            <group string="Структура затрат">
+                                <field name="all_expenses_ids" />
+                            </group>
+                        </page>
                         <page id="page_lot_expenses_info" string="Комиссии и себестоимость">
                             <separator string="Фиксированные затраты" />
                             <notebook>

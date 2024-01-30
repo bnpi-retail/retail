@@ -310,3 +310,20 @@ class InvestmentExpensesWizard(models.TransientModel):
         prod_ids = self._context["active_ids"]
         products = self.env["ozon.products"].browse(prod_ids)
         products.write({"investment_expenses_id": self.investment_expenses_id})
+
+
+class AllExpenses(models.Model):
+    _name = "ozon.all_expenses"
+    _description = "Все затраты по товару Ozon"
+
+    product_id = fields.Many2one("ozon.products", string="Товар Ozon")
+    name = fields.Char(string="Название")
+    description = fields.Char(string="Описание")
+    kind = fields.Selection(
+        [("fix", "Фиксированный"), ("percent", "Процентный")],
+        string="Тип затрат",
+        readonly=True,
+    )
+    percent = fields.Float(string="Процент")
+    value = fields.Float(string="Абсолютное значение в руб, исходя из текущей цены")
+    rrp_value = fields.Float(string="Абсолютное значение в руб, исходя из РРЦ")
