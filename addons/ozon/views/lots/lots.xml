@@ -121,6 +121,7 @@
                                         <field name="price" />
                                         <field name="old_price"
                                             style="text-decoration:line-through;" />
+                                        <field name="rrp" />
                                     </group>
                                     <group string="Прибыль">
                                         <field name="profit" />

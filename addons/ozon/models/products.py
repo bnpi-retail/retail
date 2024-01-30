@@ -56,6 +56,9 @@ class Product(models.Model):
     )
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
+    rrp = fields.Float(
+        string="Рекомендованная розничная цена", readonly=True, compute="_compute_rrp"
+    )
     old_price = fields.Float(string="Цена до учёта скидок", readonly=True)
     ext_comp_min_price = fields.Float(
         string="Минимальная цена товара у конкурентов на другой площадке", readonly=True
@@ -314,6 +317,11 @@ class Product(models.Model):
     revenue_share_temp = fields.Float()
     revenue_cumulative_share_temp = fields.Float()
     abc_group = fields.Char(size=3)
+
+    def _compute_rrp(self):
+        # TODO: откуда берем РРЦ?
+        for rec in self:
+            rec.rrp = rec.price
 
     @api.depends("products.total_cost_price")
     def _compute_total_cost_price(self):
