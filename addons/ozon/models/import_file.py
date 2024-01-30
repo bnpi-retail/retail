@@ -1,14 +1,21 @@
 import ast
 import base64
 import csv
+import logging
+from collections import defaultdict
+
+import openpyxl
+
 import magic
 import json
 import os
 import timeit
 
+from io import BytesIO
 from datetime import date
 from multiprocessing import Value
 from odoo import models, fields, api, exceptions
+from odoo.exceptions import UserError
 
 from ..ozon_api import (
     ALL_COMMISSIONS,
@@ -44,6 +51,7 @@ class ImportFile(models.Model):
             ("ozon_postings", "Отправления Ozon"),
             ("ozon_fbo_supply_orders", "Поставки FBO"),
             ("ozon_actions", "Акции Ozon"),
+            ("ozon_competitors_goods", "Товары ближайших конкурентов Ozon с продажами")
         ],
         string="Данные для загрузки",
     )
@@ -75,6 +83,11 @@ class ImportFile(models.Model):
 
         if not "data_for_download" in values or not values["data_for_download"]:
             raise exceptions.ValidationError("Необходимо выбрать 'данные для загрузки'")
+
+        if values["data_for_download"] == 'ozon_competitors_goods':
+            workbook = openpyxl.load_workbook(BytesIO(base64.b64decode(values["file"])))
+            self._parse_ozon_competitors_goods_xlsx_file(workbook)
+            return super(ImportFile, self).create(values)
 
         content = base64.b64decode(values["file"])
         mime_type = self.get_file_mime_type(content)
@@ -1114,3 +1127,64 @@ class ImportFile(models.Model):
                     "name": name,
                 }
             )
+
+    def _parse_ozon_competitors_goods_xlsx_file(self, wb):
+        for sheet in wb.worksheets:
+            period_from = None
+            period_to = None
+            category = None
+
+            for row in sheet.iter_rows(min_row=1, max_row=4, values_only=True):
+                if row[0]:
+                    if "Период:" in row[0]:
+                        splited_row = row[0].split(' ')
+                        for str_ in splited_row:
+                            if str_[0].isnumeric() and not period_from:
+                                period_from = date(*[int(x) for x in str_.split('-')])
+                                continue
+                            if str_[0].isnumeric() and period_from and not period_to:
+                                period_to = date(*[int(x) for x in str_.split('-')])
+                                break
+                    elif "Категория:" in row[0]:
+                        splited_row = row[0].split(': ')
+                        category = splited_row[1]
+
+            competitors_sales = []
+            for row in sheet.iter_rows(min_row=4, max_col=8, max_row=sheet.max_row, values_only=True):
+                if row[0] and row[0] != '№':
+                    competitor_name = row[1]
+                    product_name = row[2]
+                    article = row[3]
+                    category_lvl2 = row[4]
+                    category_lvl3 = row[5]
+                    ordered_quantity = row[6]
+                    ordered_amount = row[7]
+
+                    product_competitor = self.env["ozon.products_competitors"].search([
+                        ('article', '=', article),
+                        ('retail_seller_id.name', '=', competitor_name),
+                    ])
+                    if not product_competitor:
+                        seller = self.env['retail.seller'].search([('name', '=', competitor_name)])
+                        if len(seller) > 1:
+                            raise UserError('Найдено более одного продавца с одинаковым именем. '
+                                            'Убедитесь, что продавец один')
+                        if not seller:
+                            seller = self.env['retail.seller'].create({'name': competitor_name})
+                        product_competitor = self.env["ozon.products_competitors"].create({
+                            'name': product_name,
+                            'retail_seller_id': seller.id,
+                            'article': article,
+                        })
+
+                    competitor_sale = self.env['ozon.products_competitors.sale'].create({
+                        'period_from': period_from,
+                        'period_to': period_to,
+                        'ozon_products_competitors_id': product_competitor.id,
+                        'orders_qty': ordered_quantity,
+                        'orders_sum': ordered_amount,
+                        'category_lvl3': category_lvl3,
+                    })
+                    competitors_sales.append(competitor_sale)
+
+        wb.close()
