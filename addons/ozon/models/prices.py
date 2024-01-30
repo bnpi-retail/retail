@@ -3,7 +3,10 @@ from datetime import datetime, timedelta
 from email.policy import default
 from odoo import models, fields, api
 
-from .indirect_percent_expenses import STRING_FIELDNAMES
+from .indirect_percent_expenses import (
+    STRING_FIELDNAMES,
+    COEF_FIELDNAMES_STRINGS_WITHOUT_ACQUIRING,
+)
 from ..ozon_api import (
     MAX_FIX_EXPENSES_FBO,
     MAX_FIX_EXPENSES_FBS,
@@ -324,6 +327,182 @@ class AllExpenses(models.Model):
         string="Тип затрат",
         readonly=True,
     )
+    category = fields.Char(string="Категория затрат", readonly=True)
     percent = fields.Float(string="Процент")
     value = fields.Float(string="Абсолютное значение в руб, исходя из текущей цены")
     rrp_value = fields.Float(string="Абсолютное значение в руб, исходя из РРЦ")
+
+    def create_update_all_product_expenses(self, products):
+        data = []
+        tax = products[0].seller.tax
+        tax_percent = products[0].seller.tax_percent
+        tax_description = products[0].seller.tax_description
+        for prod in products:
+            total_expenses = 0
+            price = prod.price
+            # себестоимость
+            data.append(
+                {
+                    "product_id": prod.id,
+                    "name": "Себестоимость товара",
+                    "kind": "fix",
+                    "category": "Себестоимость",
+                    "value": prod.products.total_cost_price,
+                }
+            )
+            total_expenses += prod.products.total_cost_price
+            # услуги озон
+            category = "Услуги Ozon"
+            last_indir_per_exp_rec = self.env["ozon.indirect_percent_expenses"].search(
+                [], limit=1, order="id desc"
+            )
+            for k, v in COEF_FIELDNAMES_STRINGS_WITHOUT_ACQUIRING.items():
+                percent = last_indir_per_exp_rec[k] / 100
+                value = price * percent
+                data.append(
+                    {
+                        "product_id": prod.id,
+                        "name": v,
+                        "description": f"{last_indir_per_exp_rec[k]}%",
+                        "kind": "percent",
+                        "category": category,
+                        "percent": percent,
+                        "value": value,
+                    }
+                )
+                total_expenses += value
+            # вознаграждение озон, последняя миля, логистика, обработка, эквайринг
+            if prod.trading_scheme == "FBO":
+                ozon_com = prod.fbo_percent_expenses.filtered(
+                    lambda r: r.name.startswith("Процент")
+                )
+                last_mile = prod.fbo_fix_expenses_max.filtered(
+                    lambda r: r.name == "Последняя миля (FBO)"
+                )
+                logistics = prod.fbo_fix_expenses_max.filtered(
+                    lambda r: r.name == "Магистраль до (FBO)"
+                )
+                processing = prod.fbo_fix_expenses_max.filtered(
+                    lambda r: r.name == "Комиссия за сборку заказа (FBO)"
+                )
+                acquiring = prod.fbo_fix_expenses_max.filtered(
+                    lambda r: r.name == "Максимальная комиссия за эквайринг"
+                )
+            else:
+                ozon_com = prod.fbs_percent_expenses.filtered(
+                    lambda r: r.name.startswith("Процент")
+                )
+                last_mile = prod.fbs_fix_expenses_max.filtered(
+                    lambda r: r.name == "Последняя миля (FBS)"
+                )
+                logistics = prod.fbs_fix_expenses_max.filtered(
+                    lambda r: r.name == "Магистраль до (FBS)"
+                )
+                processing = prod.fbs_fix_expenses_max.filtered(
+                    lambda r: r.name.startswith("Максимальная комиссия за обработку")
+                )
+                acquiring = prod.fbs_fix_expenses_max.filtered(
+                    lambda r: r.name == "Максимальная комиссия за эквайринг"
+                )
+
+            data.extend(
+                [
+                    {
+                        "product_id": prod.id,
+                        "name": ozon_com.name,
+                        "description": ozon_com.discription,
+                        "kind": "percent",
+                        "category": "Вознаграждение Ozon",
+                        "percent": float(ozon_com.discription.replace("%", "")) / 100,
+                        "value": ozon_com.price,
+                    },
+                    {
+                        "product_id": prod.id,
+                        "name": last_mile.name,
+                        "kind": "fix",
+                        "category": "Последняя миля",
+                        "value": last_mile.price,
+                    },
+                    {
+                        "product_id": prod.id,
+                        "name": logistics.name,
+                        "kind": "fix",
+                        "category": "Логистика",
+                        "value": logistics.price,
+                    },
+                    {
+                        "product_id": prod.id,
+                        "name": processing.name,
+                        "kind": "fix",
+                        "category": "Обработка",
+                        "value": processing.price,
+                    },
+                    {
+                        "product_id": prod.id,
+                        "name": acquiring.name,
+                        "kind": "fix",
+                        "category": "Эквайринг",
+                        "value": acquiring.price,
+                    },
+                ]
+            )
+            total_expenses += (
+                ozon_com.price
+                + last_mile.price
+                + logistics.price
+                + processing.price
+                + acquiring.price
+            )
+
+            # рентабельность
+            if prod.profitability_norm:
+                prof_norm_percent = prod.profitability_norm.value
+            else:
+                prof_norm_percent = 0
+            prof_norm_value = price * prof_norm_percent
+            data.append(
+                {
+                    "product_id": prod.id,
+                    "name": "Норма прибыльности",
+                    "kind": "percent",
+                    "category": "Рентабельность",
+                    "value": prof_norm_value,
+                    "percent": prof_norm_percent,
+                },
+            )
+            total_expenses += prof_norm_value
+            # инвест.затраты
+            if prod.investment_expenses_id:
+                inv_exp_percent = prod.investment_expenses_id.value
+            else:
+                inv_exp_percent = 0
+            inv_exp_value = price * inv_exp_percent
+            data.append(
+                {
+                    "product_id": prod.id,
+                    "name": "Investment",
+                    "kind": "percent",
+                    "category": "Инвестиционные затраты",
+                    "value": inv_exp_value,
+                    "percent": inv_exp_percent,
+                },
+            )
+            total_expenses += inv_exp_value
+            # налог
+            if tax.startswith("earnings_minus_expenses"):
+                tax_value = (price - total_expenses) * tax_percent
+            else:
+                tax_value = price * tax_percent
+            data.append(
+                {
+                    "product_id": prod.id,
+                    "name": "Налог",
+                    "description": tax_description,
+                    "kind": "percent",
+                    "category": "Налоги",
+                    "value": tax_value,
+                    "percent": tax_percent,
+                },
+            )
+        prod.all_expenses_ids.unlink()
+        self.create(data)

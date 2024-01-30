@@ -13,9 +13,18 @@ class Seller(models.Model):
     tax = fields.Selection(
         [
             ("earnings_minus_expenses_15", "Доходы минус расходы - 15%"),
+            (
+                "earnings_minus_expenses_20",
+                "Доходы минус расходы - 20% (при превышении доходов)",
+            ),
             ("earnings_6", "Доходы 6%"),
+            ("earnings_8", "Доходы 8% (при превышении доходов)"),
         ],
         string="Налогообложение",
+    )
+    tax_percent = fields.Float(string="Процент налога", compute="_compute_tax_percent")
+    tax_description = fields.Char(
+        string="Описание налога", compute="_compute_tax_description"
     )
 
     def name_get(self):
@@ -35,3 +44,18 @@ class Seller(models.Model):
         # raise exceptions.ValidationError('ОГРН должен быть 13-значным числом')
 
         return super(Seller, self).create(values)
+
+    def _compute_tax_percent(self):
+        for rec in self:
+            if rec.tax == "earnings_minus_expenses_15":
+                rec.tax_percent = 0.15
+            elif rec.tax == "earnings_minus_expenses_20":
+                rec.tax_percent = 0.2
+            elif rec.tax == "earnings_6":
+                rec.tax_percent = 0.06
+            elif rec.tax == "earnings_8":
+                rec.tax_percent = 0.08
+
+    def _compute_tax_description(self):
+        for rec in self:
+            rec.tax_description = dict(rec._fields["tax"].selection).get(rec.tax)
