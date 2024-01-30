@@ -56,6 +56,9 @@ class Product(models.Model):
     )
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
+    rrp = fields.Float(
+        string="Рекомендованная розничная цена", readonly=True, compute="_compute_rrp"
+    )
     old_price = fields.Float(string="Цена до учёта скидок", readonly=True)
     ext_comp_min_price = fields.Float(
         string="Минимальная цена товара у конкурентов на другой площадке", readonly=True
@@ -228,7 +231,17 @@ class Product(models.Model):
     total_fbs_percent_expenses = fields.Float(
         string="Итого", compute="_compute_total_fbs_percent_expenses", store=True
     )
-
+    all_expenses_ids = fields.One2many(
+        "ozon.all_expenses", "product_id", string="Все затраты", readonly=True
+    )
+    total_all_expenses_ids = fields.Float(
+        string="Итого общих затрат, исходя из актуальной цены",
+        compute="_compute_total_all_expenses_ids",
+    )
+    total_rrp_all_expenses_ids = fields.Float(
+        string="Итого общих затрат, исходя из РРЦ",
+        compute="_compute_total_rrp_all_expenses_ids",
+    )
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
     posting_ids = fields.Many2many("ozon.posting", string="Отправления Ozon")
     postings_count = fields.Integer(compute="_compute_count_postings")
@@ -248,6 +261,9 @@ class Product(models.Model):
     )
     sales_per_day_last_30_days_group = fields.Char(
         string="Группа коэффициента продаваемости",
+    )
+    investment_expenses_id = fields.Many2one(
+        "ozon.investment_expenses", string="Инвестиционные затраты", readonly=True
     )
     profitability_norm = fields.Many2one(
         "ozon.profitability_norm", string="Норма прибыльности"
@@ -301,6 +317,11 @@ class Product(models.Model):
     revenue_share_temp = fields.Float()
     revenue_cumulative_share_temp = fields.Float()
     abc_group = fields.Char(size=3)
+
+    def _compute_rrp(self):
+        # TODO: откуда берем РРЦ?
+        for rec in self:
+            rec.rrp = rec.price
 
     @api.depends("products.total_cost_price")
     def _compute_total_cost_price(self):
@@ -449,6 +470,16 @@ class Product(models.Model):
         for record in self:
             record.total_fbs_percent_expenses = sum(
                 record.fbs_percent_expenses.mapped("price")
+            )
+
+    def _compute_total_all_expenses_ids(self):
+        for rec in self:
+            rec.total_all_expenses_ids = sum(rec.all_expenses_ids.mapped("value"))
+
+    def _compute_total_rrp_all_expenses_ids(self):
+        for rec in self:
+            rec.total_rrp_all_expenses_ids = sum(
+                rec.all_expenses_ids.mapped("rrp_value")
             )
 
     @api.depends("price_our_history_ids.price")
@@ -602,15 +633,19 @@ class Product(models.Model):
                 days = (datetime.now() - indicator_cost_price.create_date).days
                 summary = summary_types.get("cost_not_calculated")
                 if summary:
-                    summary.name = f"Себестоимость не подсчитана дней: {days}. " \
-                                   f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта."
+                    summary.name = (
+                        f"Себестоимость не подсчитана дней: {days}. "
+                        f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта."
+                    )
                 else:
-                    self.env['ozon.products.indicator.summary'].create({
-                        'name': f"Себестоимость не подсчитана дней: {days}. "
-                                f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта.",
-                        'type': 'cost_not_calculated',
-                        'ozon_product_id': record.id
-                    })
+                    self.env["ozon.products.indicator.summary"].create(
+                        {
+                            "name": f"Себестоимость не подсчитана дней: {days}. "
+                            f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта.",
+                            "type": "cost_not_calculated",
+                            "ozon_product_id": record.id,
+                        }
+                    )
 
             else:
                 summary = summary_types.get("cost_not_calculated")
@@ -624,16 +659,19 @@ class Product(models.Model):
                 days = (datetime.now() - indicator_no_competitor_r.create_date).days
                 summary = summary_types.get("no_competitor_robot")
                 if summary:
-
-                    summary.name = f"Продукт имеет менее 3х конкурентов в течение дней: {days}. " \
-                                   f"Цена не может быть рассчитана. Добавьте товары конкурентов."
+                    summary.name = (
+                        f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
+                        f"Цена не может быть рассчитана. Добавьте товары конкурентов."
+                    )
                 else:
-                    self.env['ozon.products.indicator.summary'].create({
-                        'name': f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
-                                f"Цена не может быть рассчитана. Добавьте товары конкурентов.",
-                        'type': 'no_competitor_robot',
-                        'ozon_product_id': record.id
-                    })
+                    self.env["ozon.products.indicator.summary"].create(
+                        {
+                            "name": f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
+                            f"Цена не может быть рассчитана. Добавьте товары конкурентов.",
+                            "type": "no_competitor_robot",
+                            "ozon_product_id": record.id,
+                        }
+                    )
 
             elif indicator_no_competitor_r and indicator_no_competitor_m:
                 manager = indicator_no_competitor_m.user_id
@@ -643,19 +681,23 @@ class Product(models.Model):
                 create_date = indicator_no_competitor_m.create_date.strftime("%d.%m.%Y")
                 summary_m = summary_types.get("no_competitor_manager")
                 if summary_m:
-                    summary_m.name = (f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
-                                      f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
-                                      f"что снизит точность прогнозирования правильной ценовой стратегии. "
-                                      f"Этот индикатор будет действовать до {expiration_date}")
+                    summary_m.name = (
+                        f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
+                        f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
+                        f"что снизит точность прогнозирования правильной ценовой стратегии. "
+                        f"Этот индикатор будет действовать до {expiration_date}"
+                    )
                 else:
-                    self.env['ozon.products.indicator.summary'].create({
-                        'name': f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
-                                f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
-                                f"что снизит точность прогнозирования правильной ценовой стратегии. "
-                                f"Этот индикатор будет действовать до {expiration_date}",
-                        'type': 'no_competitor_manager',
-                        'ozon_product_id': record.id
-                    })
+                    self.env["ozon.products.indicator.summary"].create(
+                        {
+                            "name": f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
+                            f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
+                            f"что снизит точность прогнозирования правильной ценовой стратегии. "
+                            f"Этот индикатор будет действовать до {expiration_date}",
+                            "type": "no_competitor_manager",
+                            "ozon_product_id": record.id,
+                        }
+                    )
 
                 # delete robot's summary
                 summary_r = summary_types.get("no_competitor_robot")
@@ -1014,11 +1056,18 @@ class Product(models.Model):
 
             product.percent_expenses = [(6, 0, percent_expenses_records)]
 
-            if i % 100 == 0:
-                self.env.cr.commit()
             print(
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
+
+    def update_all_expenses(self):
+        latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
+            [], limit=1, order="id desc"
+        )
+        all_products = self.env["ozon.products"].search([])
+        self.env["ozon.all_expenses"].create_update_all_product_expenses(
+            all_products, latest_indirect_expenses
+        )
 
     def get_view(self, view_id=None, view_type="form", **options):
         res = super(Product, self).get_view(view_id=view_id, view_type=view_type)
@@ -1442,7 +1491,7 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.qty)
             payload["two_weeks"] = graph_data
-            
+
             # rec.img_data_sale_two_weeks = graph_data
 
             records = model_sale.search(
@@ -1457,7 +1506,7 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.qty)
             payload["six_week"] = graph_data
-            
+
             # rec.img_data_sale_six_weeks = graph_data
 
             records = model_sale.search(
@@ -1565,7 +1614,8 @@ class ProductGraphExtension(models.Model):
     def _compute_img_stock(self):
         for rec in self:
             rec.img_html_stock = False
-            if not rec.img_url_stock: continue
+            if not rec.img_url_stock:
+                continue
 
             rec.img_html_stock = f"<img src='{rec.img_url_stock}' width='600'/>"
 
@@ -1636,7 +1686,7 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(average_date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.hits_view)
             payload["hits_view"] = graph_data
-            
+
             graph_data = {"dates": [], "num": []}
             for record in records:
                 start_date = record.timestamp_from
