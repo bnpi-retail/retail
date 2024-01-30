@@ -416,10 +416,15 @@ class DrawGraphSale(DataFunction):
             step = round((max(values) - min(values)) / (max_ticks - 1))
             if step == 0: step = 10
             plt.yticks(np.arange(min(values), max(values) + step, step=step))
+
         elif average_values:
             step = round((max(average_values) - min(average_values)) / (max_ticks - 1))
             if step == 0: step = 10
             plt.yticks(np.arange(min(average_values), max(average_values) + step, step=step))
+
+        else:
+            if step == 0: step = 10
+            plt.yticks(np.arange(0, 1000 + step, step=step))
 
         plt.tight_layout()
 

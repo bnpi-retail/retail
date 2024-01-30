@@ -85,7 +85,7 @@ class ActionGraphs(models.Model):
         products_records = self.draw_sale_this_year()
         products_records += self.draw_sale_last_year()
         products_records += self.draw_graph_interest()
-        # self.draw_graphs_products(list(set(products_records)))
+        self.draw_graphs_products(list(set(products_records)))
 
     def draw_sale_this_year(self):
         year = self._get_year()
