@@ -361,11 +361,12 @@
                     <field name="is_selling" />
                     <field name="is_alive" />
                     <field name="price_index" widget="badge"
-                        decoration-success="price_index=='PROFIT'"
-                        decoration-warning="price_index=='AVG_PROFIT'"
-                        decoration-danger="price_index=='NON_PROFIT'" />
-                    <field name="trading_scheme" />
-                    <field name="coef_profitability" />
+                           decoration-success="price_index=='PROFIT'"
+                           decoration-warning="price_index=='AVG_PROFIT'"
+                           decoration-danger="price_index=='NON_PROFIT'"/>
+                    <field name="trading_scheme"/>
+                    <field name="coef_profitability"/>
+                    <field name="revenue_share_temp" string="Доля продукта в выручке, %" readonly="1"/>
                     <field name="abc_group" string="ABC Группа"
                         decoration-success="abc_group=='A'"
                         decoration-danger="abc_group=='C'"
