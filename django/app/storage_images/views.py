@@ -15,8 +15,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from account.services import connect_to_odoo_api_with_auth
-from .services import DrawGraphCategoriesInterest , DrawGraphCategoriesThisYear , DrawGraphCategoriesLastYear, DrawGraphSale
+from .services import (
+    DrawGraphSale, 
+    InterestGraph,
 
+    DrawGraphCategoriesInterest, 
+    DrawGraphCategoriesThisYear,
+    DrawGraphCategoriesLastYear, 
+)
 
 class DrawGraph(APIView):
     permission_classes = (IsAuthenticated,)
@@ -41,7 +47,15 @@ class DrawGraph(APIView):
             payload_file, payload = self.draw_graph_stock(request, model)
 
         elif model == "analysis_data":
-            payload_file, payload = self.draw_graph_analysis_data(request, model)
+            data = {
+                "model": model,
+                "product_id": request.data.get('product_id', None),
+                "hits_view": request.data.get('hits_view', None),
+                "hits_tocart": request.data.get('hits_tocart', None),
+                "average_data": request.data.get('average_data', None),
+            }
+            graph = InterestGraph(data)
+            payload_file, payload = graph.main()
 
         elif model == "categorie_analysis_data":
             graph = DrawGraphCategoriesInterest()
@@ -105,6 +119,9 @@ class DrawGraph(APIView):
         graph = DrawGraphSale(dict)
         last_url = graph()
         
+        data_graph_current['dates'] = data_graph_current['dates'].strftime('%Y-%m-%d').tolist()
+        data_graph_last['dates'] = data_graph_last['dates'].strftime('%Y-%m-%d').tolist()
+
         data = [product_id, current_url, last_url, str(data_graph_current).replace(',', '|'), str(data_graph_last).replace(',', '|')]
         csv_file = self.get_csv_file(data)
         return {'file': ('output.csv', csv_file)}, {'model': model}
@@ -257,7 +274,6 @@ class DrawGraph(APIView):
         csv_file = self.get_csv_file(data)
         return {'file': ('output.csv', csv_file)}, {'model': model}
 
-
     def get_csv_file(self, data: list):
         csv_data = io.StringIO()
         csv_writer = csv.writer(csv_data)
@@ -365,18 +381,16 @@ class DrawGraph(APIView):
         fig, ax1 = plt.subplots(figsize=(10, 5))
 
         dates_hits_view = pd.to_datetime(dates_hits_view, errors='coerce')
-        dates_hits_tocart = pd.to_datetime(dates_hits_tocart, errors='coerce')
-        
         ax1.plot(dates_hits_view, num_hits_view, marker='o', label="График показа товаров")
         ax1.set_ylabel('Показы, кол.')
         ax1.tick_params('y')
-        
+        ax1.legend(loc='upper left')
+
+        dates_hits_tocart = pd.to_datetime(dates_hits_tocart, errors='coerce')
         ax2 = ax1.twinx()
         ax2.plot(dates_hits_tocart, num_hits_tocart, marker='o', label="График добавления в корзину", color='orange')
         ax2.set_ylabel('Добавление в корзину, кол')
         ax2.tick_params('y')
-
-        ax1.legend(loc='upper left')
         ax2.legend(loc='upper right')
 
         plt.title("График интереса")

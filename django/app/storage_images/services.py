@@ -5,12 +5,264 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.ticker as ticker
 
 from os import getenv
 from datetime import datetime
 from matplotlib.ticker import FuncFormatter
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+
+
+class GroupData:
+    @staticmethod
+    def __create_dataframe(data: dict) -> pd.DataFrame:
+        """
+        Создает DataFrame из словаря данных.
+        """
+        df = pd.DataFrame({'dates': pd.to_datetime(data["dates"]), 'values': data["values"]})
+        df.set_index('dates', inplace=True)
+        return df
+
+    @staticmethod
+    def __group_data(df: pd.DataFrame, mean: bool = False, sum_group: bool = False) -> pd.DataFrame:
+        """
+        Группирует данные по неделям или дням, суммирует или находит среднее.
+        """
+        if mean:
+            grouped_data = df.resample('W-Mon').mean()
+        elif sum_group:
+            grouped_data = df.resample('W-Mon').sum()
+        else:
+            grouped_data = df.resample('D').sum()
+        return grouped_data
+    
+    @staticmethod
+    def __format_dates(grouped_data: pd.DataFrame) -> pd.DatetimeIndex:
+        """
+        Форматирует даты для возвращения в виде pd.DatetimeIndex.
+        """
+        return pd.to_datetime(grouped_data.index.strftime('%Y-%m-%d'), errors='coerce')
+
+    @staticmethod
+    def __format_values(grouped_data: pd.DataFrame) -> list:
+        """
+        Форматирует значения для возвращения в виде списка.
+        """
+        return grouped_data['values'].tolist()
+
+    def data_group(self, data: dict, mean: bool = False, sum_group: bool = False) -> dict:
+        """
+        Группирует данные по неделям или дням и находит сумму или среднее.
+        """
+        df = self.__create_dataframe(data)
+        grouped_data = self.__group_data(df, mean, sum_group)
+
+        dates = self.__format_dates(grouped_data)
+        values = self.__format_values(grouped_data)
+
+        return {"dates": dates, "values": values}
+
+
+class Fill_Data:
+    @staticmethod
+    def create_zero_dates(start_date: str, end_date: str) -> list:
+        """
+        Создаем пустые значения для всего промежутка данных
+        """
+        dates = pd.date_range(start=start_date, end=end_date)
+        dates = dates.strftime('%Y-%m-%d').tolist()
+        return dates
+
+    @staticmethod
+    def data_merge(dates: list, values: list, zero_dates: list) -> tuple:
+        zero_values = [0] * len(zero_dates)
+        
+        dates.extend(zero_dates)
+        values.extend(zero_values)
+
+        sorted_data = sorted(set(zip(dates, values)), key=lambda x: x[0])
+        sorted_dates, sorted_values = zip(*sorted_data)
+
+        data = {
+            "dates": sorted_dates,
+            "values": sorted_values,
+        }
+        return data
+
+
+class OnePlots:
+    def __init__(self) -> None:
+        self.figsize = (10, 5)
+
+    @staticmethod
+    def process_average_data(data) -> dict:
+        data_fixed = data \
+            .replace("'", "\"") \
+            .replace("\r", "") \
+            .replace("\n", "")
+        data_object = json.loads(data_fixed)
+        return data_object
+
+    def setup_subplots(self, plt_instance) -> tuple:
+        fig, ax1 = plt_instance.subplots(figsize=self.figsize)
+        return fig, ax1
+
+    @staticmethod
+    def add_graph(ax, dates: pd.DatetimeIndex, values, label, y_label=None, color=None, step=10) -> None:
+        ax.plot(dates, values, marker='o', label=label, color=color)
+        if y_label:
+            ax.set_ylabel(f'{y_label}, кол.')
+        
+        y_min = min(values)
+        y_max = max(values)
+        range_size = y_max - y_min
+        step = max(1, round(range_size / 10, -1))
+
+        ax.yaxis.set_major_locator(ticker.MultipleLocator(base=step))
+        ax.set_yticks(np.arange(y_min, y_max + 1, step=step))
+
+    @staticmethod
+    def format_month_ticks(plt_instance) -> None:
+        russian_month_names = {
+            'Jan': 'Янв',
+            'Feb': 'Фев',
+            'Mar': 'Мар',
+            'Apr': 'Апр',
+            'May': 'Май',
+            'Jun': 'Июн',
+            'Jul': 'Июл',
+            'Aug': 'Авг',
+            'Sep': 'Сен',
+            'Oct': 'Окт',
+            'Nov': 'Ноя',
+            'Dec': 'Дек',
+        }
+
+        plt_instance.gca().xaxis.set_major_locator(mdates.MonthLocator())
+        plt_instance.gca().xaxis.set_major_formatter(FuncFormatter(
+            lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')])
+        )
+
+    @staticmethod
+    def generate_url(png) -> str:
+        filename = f'graph.png'
+        file_path = default_storage.save(filename, ContentFile(png))
+        file_url = default_storage.url(file_path)
+
+        return f"{getenv('DJANGO_DOMAIN')}{file_url}"
+
+    @staticmethod
+    def save_to_buffer(plt_instance):
+        buffer = io.BytesIO()
+        plt_instance.savefig(buffer, format='png')
+        buffer.seek(0)
+        return buffer
+
+    @staticmethod
+    def get_csv_file(data: list):
+        csv_data = io.StringIO()
+        csv_writer = csv.writer(csv_data)
+        csv_writer.writerow(data)
+        csv_data.seek(0)
+        return csv_data
+
+
+class TwoPlots(OnePlots):
+    def setup_subplots(self, plt_instance) -> tuple:
+        fig, ax1 = super().setup_subplots(plt_instance)
+        ax2 = ax1.twinx()
+        return fig, ax1, ax2
+
+
+class InterestGraph(GroupData, Fill_Data, TwoPlots):
+    def __init__(self, data) -> None:
+        super().__init__()
+        self.model = data['model']
+        self.product_id = data['product_id']
+        self.hits_view = data['hits_view']
+        self.hits_tocart = data['hits_tocart']
+        self.average_data = data['average_data']
+    
+    def main(self) -> tuple:
+        data_views, data_tocart, average_data = self.process_data()
+        png = self.draw(data_views, data_tocart, average_data)
+        url = self.generate_url(png)
+        data = [
+            self.product_id, url, 
+            str(self.hits_view).replace(',', '|'), 
+            str(self.hits_tocart).replace(',', '|'),
+        ]
+        csv_file = self.get_csv_file(data)
+        return {'file': ('output.csv', csv_file)}, {'model': self.model}
+    
+    def process_data(self) -> tuple:
+        year = datetime.now().year
+        zero_dates = self.create_zero_dates(start_date=f"{year}-01-01", end_date=f"{year}-12-31")
+
+        def process_data_for_category(dates, values) -> dict:
+            return self.data_group(
+                self.data_merge(dates, values, zero_dates),
+                sum_group=True
+            )
+
+        data_views = process_data_for_category(
+            self.hits_view["dates"], self.hits_view["num"]
+        )
+        data_tocart = process_data_for_category(
+            self.hits_tocart["dates"], self.hits_tocart["num"]
+        )
+        if self.average_data is not None:
+            average_data = self.process_average_data(self.average_data)
+
+        return data_views, data_tocart, average_data
+    
+    def draw(self, data_views, data_tocart, average_data):
+        fig, ax1, ax2 = self.setup_subplots(plt)
+
+        self.add_graph(
+            ax1, data_views["dates"], data_views["values"], 
+            y_label= "Показы товаров",
+            label="График показа товаров", step=10
+        )
+        self.add_graph(
+            ax2, data_tocart["dates"], data_tocart["values"], 
+            y_label= "Добавления в корзину",
+            label="График добавления в корзину", color='orange', step=10
+        )
+
+        if average_data is not None:
+            dates = np.array(average_data["hits_tocart"]["dates"], dtype='datetime64')
+            self.add_graph(
+                ax2, dates, average_data["hits_tocart"]["values"], 
+                label="График добавления в корзину средний по категории", 
+                color='green', step=10
+            )
+            self.add_graph(
+                ax1, dates, average_data["hits_view"]["values"], 
+                label="График показа товаров средний по категории", 
+                color='red', step=10
+            )
+
+        ax1.legend(loc='upper left')
+        ax2.legend(loc='upper right')
+        
+        self.format_month_ticks(plt)
+
+        plt.suptitle("График интереса")
+        plt.tight_layout()
+
+        buffer = self.save_to_buffer(plt)
+
+        plt.close()
+
+        return buffer.read()
+
+
+
+
+
+
 
 
 class DataFunction:
@@ -64,75 +316,6 @@ class DataFunction:
         csv_writer.writerow(data)
         csv_data.seek(0)
         return csv_data
-
-
-class AnalysisData(DataFunction):
-    def __init__(self, dict: dict) -> None:
-        self.data = dict["data"]
-        if dict["data_average"] is not None:
-            self.data_average = json.loads(dict["data_average"].replace("'", "\""))
-        else:
-            self.data_average = None
-        self.title = "График интереса"
-        self.ylabel = "Проданный товар, кол."
-        self.label_moving_average = "Средняя скользящая"
-        self.label_category_average = "Средняя по категории"
-
-    def generate_url_analysis_data(self, product_id, dates_hits_view, num_hits_view, dates_hits_tocart, num_hits_tocart):
-        fig, ax1 = plt.subplots(figsize=(10, 5))
-
-        dates_hits_view = pd.to_datetime(dates_hits_view, errors='coerce')
-        dates_hits_tocart = pd.to_datetime(dates_hits_tocart, errors='coerce')
-        
-        ax1.plot(dates_hits_view, num_hits_view, marker='o', label="График показа товаров")
-        ax1.set_ylabel('Показы, кол.')
-        ax1.tick_params('y')
-        
-        ax2 = ax1.twinx()
-        ax2.plot(dates_hits_tocart, num_hits_tocart, marker='o', label="График добавления в корзину", color='orange')
-        ax2.set_ylabel('Добавление в корзину, кол')
-        ax2.tick_params('y')
-
-        ax1.legend(loc='upper left')
-        ax2.legend(loc='upper right')
-
-        plt.title("График интереса")
-        plt.legend()
-
-        russian_month_names = {
-            'Jan': 'Янв',
-            'Feb': 'Фев',
-            'Mar': 'Мар',
-            'Apr': 'Апр',
-            'May': 'Май',
-            'Jun': 'Июн',
-            'Jul': 'Июл',
-            'Aug': 'Авг',
-            'Sep': 'Сен',
-            'Oct': 'Окт',
-            'Nov': 'Ноя',
-            'Dec': 'Дек',
-        }
-
-        plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-        plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')]))
-
-        if num_hits_view:
-            plt.yticks(np.arange(min(min(num_hits_view), min(num_hits_tocart)), max(max(num_hits_view), max(num_hits_tocart)) + 1000, step=1000))
-
-        plt.tight_layout()
-
-        buffer = io.BytesIO()
-        plt.savefig(buffer, format='png')
-        buffer.seek(0)
-
-        filename = f'graph_{product_id}.png'
-        file_path = default_storage.save(filename, ContentFile(buffer.read()))
-        file_url = default_storage.url(file_path)
-
-        plt.close()
-
-        return f"{getenv('DJANGO_DOMAIN')}{file_url}"
 
 
 class DrawGraphSale(DataFunction):
@@ -247,7 +430,7 @@ class DrawGraphSale(DataFunction):
         plt.close()
 
         return f"{getenv('DJANGO_DOMAIN')}{file_url}"
-    
+
 
 class DrawGraphCategoriesThisYear(DataFunction):
     def draw_graph(self, data: dict, model, categorie_id) -> None:
@@ -448,6 +631,9 @@ class DrawGraphCategoriesInterest(DataFunction):
 
         url = self.create_graph(data_views, data_tocart)
         
+        data_views['dates'] = data_views['dates'].strftime('%Y-%m-%d').tolist()
+        data_tocart['dates'] = data_tocart['dates'].strftime('%Y-%m-%d').tolist()
+
         data = [model, categorie_id, url, str(data_views).replace(',', '|'), str(data_tocart).replace(',', '|')]
         csv_file = self.get_csv_file(data)
         return {'file': ('output.csv', csv_file)}, {'model': model}
@@ -501,6 +687,3 @@ class DrawGraphCategoriesInterest(DataFunction):
         plt.close()
 
         return f"{getenv('DJANGO_DOMAIN')}{file_url}"
-
-
-

@@ -13,7 +13,9 @@ class MainApiTokens(models.Model):
     token = fields.Char(string='API токен', readonly=True)
     will_expire = fields.Date(string='Дата истечения API токена', readonly=True)
     worker = fields.Many2one('res.users', string='Сотрудник')
-    chrome_extension = fields.Char(string='Ссылка на актуальную версию Chrome Extension')
+    download_link = fields.Char(
+        string='Ссылка на актуальную версию Chrome Extension', widget='url'
+    )
 
 
 class NameGetApiTokens(models.Model):
@@ -49,6 +51,8 @@ class ActionsApiTokens(models.Model):
         res = response.json()
         record = self[0]
         record.token = res["token"]
+        record.download_link = res["download_link"]
+
 
         expiration_date = datetime.strptime(res["expiration_date"], '%Y-%m-%d %H:%M:%S')
         record.will_expire = expiration_date

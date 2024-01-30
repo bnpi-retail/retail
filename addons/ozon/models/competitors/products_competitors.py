@@ -29,6 +29,7 @@ class ProductCompetitors(models.Model):
         compute="compute_count_price_competitors"
     )
 
+    imgs_data_graph_this_year = fields.Text()
     imgs_html_graph_this_year = fields.Html(
         compute="_compute_imgs_analysis_data_this_year",
         string="График истории цен"

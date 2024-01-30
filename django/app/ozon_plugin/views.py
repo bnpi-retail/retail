@@ -1,3 +1,7 @@
+import os
+import shutil
+import zipfile
+
 import requests
 import tempfile
 
@@ -5,6 +9,7 @@ from django.http import FileResponse
 from django.shortcuts import render, redirect
 from django.views import View
 from django.core.cache import cache
+from django.http import HttpResponse
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -96,32 +101,16 @@ class OzonTakeRequests(APIView):
 
 class DownloadExtension(APIView):
     def get(self, request, *args, **kwargs):
-        extension_path = "./extension.7z"
+        folder_path = './chrome-extension'
+        zip_file_path = './chrome-extension.zip'
+        shutil.make_archive(zip_file_path[:-4], 'zip', folder_path)
 
-        response = FileResponse(open(extension_path, 'rb'), content_type='application/zip')
-        response['Content-Disposition'] = 'attachment; filename="OzonExtension.zip"'
+        with open(zip_file_path, 'rb') as zip_file:
+            response = HttpResponse(zip_file.read(), content_type='application/zip')
+            response['Content-Disposition'] = f'attachment; filename={os.path.basename(zip_file_path)}'
+
+        os.remove(zip_file_path)
         return response
-
-
-class FileUploadView(View):
-    template_name = 'upload_file.html'
-    extension_path = "./extension.7z"
-    
-    def get(self, request, *args, **kwargs):
-        form = FileUploadForm()
-        return render(request, APP_NAME + self.template_name, {'form': form})
-
-    def post(self, request, *args, **kwargs):
-        form = FileUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            self.handle_uploaded_file(request.FILES['file'])
-            return redirect('home')
-        return render(request, APP_NAME + self.template_name, {'form': form})
-
-    def handle_uploaded_file(self, file):
-        with open(self.extension_path, 'wb+') as destination:
-            for chunk in file.chunks():
-                destination.write(chunk)
 
 
 class StartParsing(APIView):
@@ -267,7 +256,6 @@ class DownloadCsvFile(APIView):
         temp_file.write(csv_data.encode())
         temp_file.close()
 
-        # Отправьте файл обратно клиенту
         response = FileResponse(open(temp_file.name, 'rb'))
         response['Content-Disposition'] = 'attachment; filename="output.csv"'
         return response

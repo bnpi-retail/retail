@@ -1,3 +1,4 @@
+from os import getenv
 from datetime import datetime, timedelta
 
 from django.shortcuts import render, redirect
@@ -62,9 +63,12 @@ class GetTokenAPI(APIView):
         if user:
             token, created = Token.objects.get_or_create(user=user)
             
+            domain = getenv("DJANGO_DOMAIN")
+
             return Response({
                 "token": token.key, 
-                "expiration_date": expiration_date.strftime('%Y-%m-%d %H:%M:%S')
+                "expiration_date": expiration_date.strftime('%Y-%m-%d %H:%M:%S'),
+                "download_link": f"{domain}/download-extension/"
             })
         
         return Response({"error": "User does not exist"}, status=400)

@@ -60,9 +60,7 @@ class GraphSaleLastYear(models.Model):
 class GraphInterest(models.Model):
     _inherit = "ozon.categories"
 
-    img_data_analysis_data_this_year_hits = fields.Text(string="Json data filed")
-    img_data_analysis_data_this_year_to_cart = fields.Text(string="Json data filed")
-
+    img_data_analysis_data_this_year = fields.Text(string="Json data filed")
     img_url_analysis_data_this_year = fields.Char(string="Ссылка на объект")
     img_html_analysis_data_this_year = fields.Html(
         compute="_compute_img_analysis_data_this_year",
@@ -87,7 +85,7 @@ class ActionGraphs(models.Model):
         products_records = self.draw_sale_this_year()
         products_records += self.draw_sale_last_year()
         products_records += self.draw_graph_interest()
-        self.draw_graphs_products(list(set(products_records)))
+        # self.draw_graphs_products(list(set(products_records)))
 
     def draw_sale_this_year(self):
         year = self._get_year()

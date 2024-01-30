@@ -805,8 +805,10 @@ class ImportFile(models.Model):
                     [("posting_number", "=", posting_number), ("status", "=", status)]
                 ):
                     continue
-                """Создаем отправление только если хотя бы один из товаров в отправлении
-                соответствует нашему товару"""
+                """
+                Создаем отправление только если хотя бы один из товаров в отправлении
+                соответствует нашему товару
+                """
                 skus = ast.literal_eval(row["skus"])
                 product_ids = []
                 for sku in skus:
@@ -918,18 +920,22 @@ class ImportFile(models.Model):
         record.img_url_sale_this_year = url_this_year
         record.img_url_sale_last_year = url_last_year
 
-        record.img_data_sale_this_year = data_this_year
-        record.img_data_sale_last_year = data_last_year
+        record.img_data_sale_this_year = data_this_year.replace("|", ",")
+        record.img_data_sale_last_year = data_last_year.replace("|", ",")
 
     def import_images_sale_by_week(self, content):
         model_products = self.env["ozon.products"]
 
-        product_id, url_two_weeks, url_six_weeks, url_twelve_weeks, data_two_weeks, data_six_week, data_twelve_week = content.split(",")
+        (
+            product_id, url_two_weeks, url_six_weeks, url_twelve_weeks, 
+            data_two_weeks, data_six_week, data_twelve_week 
+        ) = content.split(",")
+        
         record = model_products.search([("id", "=", product_id)])
 
-        record.img_url_sale_two_weeks = url_two_weeks
-        record.img_url_sale_six_weeks = url_six_weeks
-        record.img_url_sale_twelve_weeks = url_twelve_weeks
+        record.img_url_sale_two_weeks = url_two_weeks.replace("|", ",")
+        record.img_url_sale_six_weeks = url_six_weeks.replace("|", ",")
+        record.img_url_sale_twelve_weeks = url_twelve_weeks.replace("|", ",")
 
     def import_images_competitors_products(self, content):
         model_competitors_products = self.env["ozon.products_competitors"]
@@ -938,7 +944,7 @@ class ImportFile(models.Model):
 
         record = model_competitors_products.search([("id", "=", product_id)])
         record.imgs_url_this_year = url
-        record.imgs_data_this_year = data
+        record.imgs_data_graph_this_year = data.replace("|", ",")
             
     def import_images_price_history(self, content):
         model_products = self.env["ozon.products"]
@@ -948,7 +954,7 @@ class ImportFile(models.Model):
         record = model_products.search([("id", "=", product_id)])
 
         record.img_url_price_history = url
-        record.img_data_price_history = data
+        record.img_data_price_history = data.replace("|", ",")
 
     def import_images_stock(self, content):
         model_products = self.env["ozon.products"]
@@ -958,7 +964,7 @@ class ImportFile(models.Model):
         record = model_products.search([("id", "=", product_id)])
 
         record.img_url_stock = url
-        record.img_data_stock = data
+        record.img_data_stock = data.replace("|", ",")
 
     def import_images_analysis_data(self, content):
         model_products = self.env["ozon.products"]
@@ -977,14 +983,16 @@ class ImportFile(models.Model):
         model_categories = self.env["ozon.categories"]
 
         model, categories_id, url, data_hits, data_tocart = content.split(",")
-        data_hits = data_hits.replace("|", ",")
-        data_tocart = data_tocart.replace("|", ",")
+        data_hits = data_hits.replace("|", ",").replace("'", "\"")
+        data_tocart = data_tocart.replace("|", ",").replace("'", "\"")
 
         record = model_categories.search([("id", "=", categories_id)])
 
         record.img_url_analysis_data_this_year = url
-        record.img_data_analysis_data_this_year_hits = data_hits
-        record.img_data_analysis_data_this_year_to_cart = data_tocart
+        record.img_data_analysis_data_this_year = {
+            "hits_view": json.loads(data_hits),
+            "hits_tocart": json.loads(data_tocart),
+        }
 
     def import_images_categorie_categorie_sale_this_year(self, content):
         model_categories = self.env["ozon.categories"]
@@ -1004,10 +1012,9 @@ class ImportFile(models.Model):
         average_data = average_data.replace("|", ",")
 
         record = model_categories.search([("id", "=", categories_id)])
-        model_categories.write(record.id, {
-            'img_url_sale_last_year': url,
-            'img_data_sale_last_year': average_data,
-        })
+
+        record.img_url_sale_last_year = url
+        record.img_data_sale_last_year = average_data
 
     def import_actions(self, content):
         f_path = "/mnt/extra-addons/ozon/__pycache__/actions.csv"
