@@ -332,12 +332,12 @@ class AllExpenses(models.Model):
     value = fields.Float(string="Абсолютное значение в руб, исходя из текущей цены")
     rrp_value = fields.Float(string="Абсолютное значение в руб, исходя из РРЦ")
 
-    def create_update_all_product_expenses(self, products):
-        data = []
+    def create_update_all_product_expenses(self, products, latest_indirect_expenses):
         tax = products[0].seller.tax
         tax_percent = products[0].seller.tax_percent
         tax_description = products[0].seller.tax_description
-        for prod in products:
+        data = []
+        for idx, prod in enumerate(products):
             total_expenses = 0
             price = prod.price
             # себестоимость
@@ -353,17 +353,14 @@ class AllExpenses(models.Model):
             total_expenses += prod.products.total_cost_price
             # услуги озон
             category = "Услуги Ozon"
-            last_indir_per_exp_rec = self.env["ozon.indirect_percent_expenses"].search(
-                [], limit=1, order="id desc"
-            )
             for k, v in COEF_FIELDNAMES_STRINGS_WITHOUT_ACQUIRING.items():
-                percent = last_indir_per_exp_rec[k] / 100
+                percent = latest_indirect_expenses[k] / 100
                 value = price * percent
                 data.append(
                     {
                         "product_id": prod.id,
                         "name": v,
-                        "description": f"{last_indir_per_exp_rec[k]}%",
+                        "description": f"{latest_indirect_expenses[k]}%",
                         "kind": "percent",
                         "category": category,
                         "percent": percent,
@@ -490,7 +487,7 @@ class AllExpenses(models.Model):
             total_expenses += inv_exp_value
             # налог
             if tax.startswith("earnings_minus_expenses"):
-                tax_value = (price - total_expenses) * tax_percent
+                tax_value = abs((price - total_expenses) * tax_percent)
             else:
                 tax_value = price * tax_percent
             data.append(
@@ -504,5 +501,7 @@ class AllExpenses(models.Model):
                     "percent": tax_percent,
                 },
             )
-        prod.all_expenses_ids.unlink()
+            print(f"{idx} - All expenses were updated.")
+
+        products.all_expenses_ids.unlink()
         self.create(data)

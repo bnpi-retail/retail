@@ -1018,7 +1018,13 @@ class Product(models.Model):
         coef_total = latest_indirect_expenses.coef_total / 100
         coef_total_percentage_string = f"{coef_total:.2%}"
 
+        latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
+            [], limit=1, order="id desc"
+        )
         all_products = self.env["ozon.products"].search([])
+        self.env["ozon.all_expenses"].create_update_all_product_expenses(
+            all_products, latest_indirect_expenses
+        )
         for i, product in enumerate(all_products):
             percent_expenses_records = []
             per_exp_record = self.env["ozon.cost"].create(
@@ -1048,8 +1054,6 @@ class Product(models.Model):
 
             product.percent_expenses = [(6, 0, percent_expenses_records)]
 
-            if i % 100 == 0:
-                self.env.cr.commit()
             print(
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
@@ -1112,34 +1116,33 @@ class Product(models.Model):
                 self.price = round(min_comp_price * multiple, 2)
 
     def calculator(self):
-        self.env["ozon.all_expenses"].create_update_all_product_expenses(products=self)
-        # self.ensure_one()
-        # calculator_view = self.env["ir.ui.view"].search(
-        #     [("model", "=", "ozon.products"), ("name", "=", "Калькулятор")]
-        # )
-        # comp_prices = self.price_history_ids.mapped("price")
-        # min_competitors_price = min(comp_prices) if comp_prices else None
-        # return {
-        #     "type": "ir.actions.act_window",
-        #     "name": "Калькулятор",
-        #     "view_mode": "form",
-        #     "view_id": calculator_view.id,
-        #     "res_model": "ozon.products",
-        #     "res_id": self.id,
-        #     "target": "new",
-        #     "context": {
-        #         "default_products": self.id,
-        #         "default_price": self.price,
-        #         "default_profit": self.profit,
-        #         "default_profitability_norm": self.profitability_norm,
-        #         "default_coef_profitability": self.coef_profitability,
-        #         "default_total_fbs_fix_expenses_max": self.total_fbs_fix_expenses_max,
-        #         "default_total_fbo_fix_expenses_max": self.total_fbo_fix_expenses_max,
-        #         "default_total_fbs_percent_expenses": self.total_fbs_percent_expenses,
-        #         "default_total_fbo_percent_expenses": self.total_fbo_percent_expenses,
-        #         "min_competitors_price": min_competitors_price,
-        #     },
-        # }
+        self.ensure_one()
+        calculator_view = self.env["ir.ui.view"].search(
+            [("model", "=", "ozon.products"), ("name", "=", "Калькулятор")]
+        )
+        comp_prices = self.price_history_ids.mapped("price")
+        min_competitors_price = min(comp_prices) if comp_prices else None
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Калькулятор",
+            "view_mode": "form",
+            "view_id": calculator_view.id,
+            "res_model": "ozon.products",
+            "res_id": self.id,
+            "target": "new",
+            "context": {
+                "default_products": self.id,
+                "default_price": self.price,
+                "default_profit": self.profit,
+                "default_profitability_norm": self.profitability_norm,
+                "default_coef_profitability": self.coef_profitability,
+                "default_total_fbs_fix_expenses_max": self.total_fbs_fix_expenses_max,
+                "default_total_fbo_fix_expenses_max": self.total_fbo_fix_expenses_max,
+                "default_total_fbs_percent_expenses": self.total_fbs_percent_expenses,
+                "default_total_fbo_percent_expenses": self.total_fbo_percent_expenses,
+                "min_competitors_price": min_competitors_price,
+            },
+        }
 
     def reset_calculator(self):
         self.profitability_norm = False
