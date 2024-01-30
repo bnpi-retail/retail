@@ -11,6 +11,7 @@ class Seller(models.Model):
     ogrn = fields.Char(string='ОГРН', unique=True)
     fee = fields.Float(string='Налогообложение, %')
 
+    ozon_products_competitors_ids = fields.One2many("ozon.products_competitors", 'retail_seller_id')
 
     def name_get(self):
         """

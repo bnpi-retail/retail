@@ -14,6 +14,8 @@ class ProductCompetitors(models.Model):
     
     name = fields.Char(string="Наименование товара")
 
+    retail_seller_id = fields.Many2one('retail.seller', string="Продавец")
+
     url = fields.Char(
         string="URL товара", widget="url", help="Укажите ссылку на товар в поле"
     )
