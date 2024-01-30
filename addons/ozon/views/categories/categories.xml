@@ -10,16 +10,17 @@
                     <notebook>
                         <page string="Основная информация">
                             <group>
+                                <field name="c_id" />
                                 <field name="name_categories" />
-                                <field name="category_manager"/>
+                                <field name="category_manager" />
                             </group>
                         </page>
 
                         <page string="Аналитические данные">
                             <group>
-                                <field name="img_html_sale_this_year"/>
-                                <field name="img_html_sale_last_year"/>
-                                <field name="img_html_analysis_data_this_year"/>
+                                <field name="img_html_sale_this_year" />
+                                <field name="img_html_sale_last_year" />
+                                <field name="img_html_analysis_data_this_year" />
                             </group>
                         </page>
                     </notebook>

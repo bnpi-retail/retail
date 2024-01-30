@@ -7,29 +7,30 @@ from odoo import models, fields, api
 
 
 class Categories(models.Model):
-    _name = 'ozon.categories'
-    _description = 'Категории Ozon'
+    _name = "ozon.categories"
+    _description = "Категории Ozon"
 
-    name_categories = fields.Char(string='Наименование категории')
-    insurance = fields.Float(string='Страховой коэффициент, %')
+    name_categories = fields.Char(string="Название", readonly=True)
+    c_id = fields.Integer(string="Идентификатор", readonly=True)
+    insurance = fields.Float(string="Страховой коэффициент, %")
 
-    category_manager = fields.Many2one('res.users')
+    category_manager = fields.Many2one("res.users")
 
 
 class GraphSaleThisYear(models.Model):
-    _inherit = 'ozon.categories'
+    _inherit = "ozon.categories"
 
     img_data_sale_this_year = fields.Text(string="Json data filed")
     img_url_sale_this_year = fields.Char(string="Ссылка на объект")
     img_html_sale_this_year = fields.Html(
-        compute="_compute_img_sale_this_year",
-        string="График продаж за текущий год"
+        compute="_compute_img_sale_this_year", string="График продаж за текущий год"
     )
 
     def _compute_img_sale_this_year(self):
         for rec in self:
             rec.img_html_sale_this_year = False
-            if not rec.img_url_sale_this_year: continue
+            if not rec.img_url_sale_this_year:
+                continue
 
             rec.img_html_sale_this_year = (
                 f"<img src='{rec.img_url_sale_this_year}' width='600'/>"
@@ -37,19 +38,19 @@ class GraphSaleThisYear(models.Model):
 
 
 class GraphSaleLastYear(models.Model):
-    _inherit = 'ozon.categories'
+    _inherit = "ozon.categories"
 
     img_data_sale_last_year = fields.Text(string="Json data filed")
     img_url_sale_last_year = fields.Char(string="Ссылка на объект")
     img_html_sale_last_year = fields.Html(
-        compute="_compute_img_sale_last_year",
-        string="График продаж за прошлый год"
+        compute="_compute_img_sale_last_year", string="График продаж за прошлый год"
     )
 
     def _compute_img_sale_last_year(self):
         for rec in self:
             rec.img_html_sale_last_year = False
-            if not rec.img_url_sale_last_year: continue
+            if not rec.img_url_sale_last_year:
+                continue
 
             rec.img_html_sale_last_year = (
                 f"<img src='{rec.img_url_sale_last_year}' width='600'/>"
@@ -57,7 +58,7 @@ class GraphSaleLastYear(models.Model):
 
 
 class GraphInterest(models.Model):
-    _inherit = 'ozon.categories'
+    _inherit = "ozon.categories"
 
     img_data_analysis_data_this_year_hits = fields.Text(string="Json data filed")
     img_data_analysis_data_this_year_to_cart = fields.Text(string="Json data filed")
@@ -65,13 +66,14 @@ class GraphInterest(models.Model):
     img_url_analysis_data_this_year = fields.Char(string="Ссылка на объект")
     img_html_analysis_data_this_year = fields.Html(
         compute="_compute_img_analysis_data_this_year",
-        string="График интереса тукущий год"
+        string="График интереса тукущий год",
     )
 
     def _compute_img_analysis_data_this_year(self):
         for rec in self:
             rec.img_html_analysis_data_this_year = False
-            if not rec.img_url_analysis_data_this_year: continue
+            if not rec.img_url_analysis_data_this_year:
+                continue
 
             rec.img_html_analysis_data_this_year = (
                 f"<img src='{rec.img_url_analysis_data_this_year}' width='600'/>"
@@ -79,7 +81,7 @@ class GraphInterest(models.Model):
 
 
 class ActionGraphs(models.Model):
-    _inherit = 'ozon.categories'
+    _inherit = "ozon.categories"
 
     def action_draw_graphs_by_categories(self):
         products_records = self.draw_sale_this_year()
@@ -94,21 +96,25 @@ class ActionGraphs(models.Model):
 
         categorie_record = self[0]
 
-        products_records = self.env["ozon.products"].search([
-            ("categories", "=", categorie_record.id),
-            # ("is_alive", "=", True),
-            # ("is_selling", "=", True),
-        ])
+        products_records = self.env["ozon.products"].search(
+            [
+                ("categories", "=", categorie_record.id),
+                # ("is_alive", "=", True),
+                # ("is_selling", "=", True),
+            ]
+        )
 
         for product_record in products_records:
-
-            sale_records = self.env["ozon.sale"].search([
+            sale_records = self.env["ozon.sale"].search(
+                [
                     ("product", "=", product_record.id),
                     ("date", ">=", f"{year}-01-01"),
                     ("date", "<=", f"{year}-12-31"),
-            ])
+                ]
+            )
 
-            if not sale_records: continue
+            if not sale_records:
+                continue
 
             graph_data = {"dates": [], "values": []}
 
@@ -117,17 +123,17 @@ class ActionGraphs(models.Model):
                 graph_data["values"].append(sale_record.qty)
 
             data_for_send[product_record.id] = graph_data
-    
+
         payload = {
             "model": "categorie_sale_this_year",
             "categorie_id": categorie_record.id,
             "data": data_for_send,
         }
-        
+
         self._send_request(payload)
 
         return products_records
-    
+
     def draw_sale_last_year(self):
         year = self._get_year() - 1
 
@@ -135,21 +141,25 @@ class ActionGraphs(models.Model):
 
         categorie_record = self[0]
 
-        products_records = self.env["ozon.products"].search([
-            ("categories", "=", categorie_record.id),
-            # ("is_alive", "=", True),
-            # ("is_selling", "=", True),
-        ])
+        products_records = self.env["ozon.products"].search(
+            [
+                ("categories", "=", categorie_record.id),
+                # ("is_alive", "=", True),
+                # ("is_selling", "=", True),
+            ]
+        )
 
         for product_record in products_records:
-
-            sale_records = self.env["ozon.sale"].search([
+            sale_records = self.env["ozon.sale"].search(
+                [
                     ("product", "=", product_record.id),
                     ("date", ">=", f"{year}-01-01"),
                     ("date", "<=", f"{year}-12-31"),
-            ])
+                ]
+            )
 
-            if not sale_records: continue
+            if not sale_records:
+                continue
 
             graph_data = {"dates": [], "values": []}
 
@@ -164,12 +174,12 @@ class ActionGraphs(models.Model):
             "categorie_id": categorie_record.id,
             "data": data_for_send,
         }
-        
+
 
         self._send_request(payload)
-        
+
         return products_records
-    
+
     def draw_graph_interest(self):
         year = self._get_year()
 
@@ -177,21 +187,25 @@ class ActionGraphs(models.Model):
 
         categorie_record = self[0]
 
-        products_records = self.env["ozon.products"].search([
-            ("categories", "=", categorie_record.id),
-            # ("is_alive", "=", True),
-            # ("is_selling", "=", True),
-        ])
+        products_records = self.env["ozon.products"].search(
+            [
+                ("categories", "=", categorie_record.id),
+                # ("is_alive", "=", True),
+                # ("is_selling", "=", True),
+            ]
+        )
 
         for product_record in products_records:
+            analysis_data_records = self.env["ozon.analysis_data"].search(
+                [
+                    ("product", "=", product_record.id),
+                    ("timestamp_from", ">=", f"{year}-01-01"),
+                    ("timestamp_to", "<=", f"{year}-12-31"),
+                ]
+            )
 
-            analysis_data_records = self.env["ozon.analysis_data"].search([
-                ("product", "=", product_record.id),
-                ("timestamp_from", ">=", f"{year}-01-01"),
-                ("timestamp_to", "<=", f"{year}-12-31"),
-            ])
-
-            if not analysis_data_records: continue
+            if not analysis_data_records:
+                continue
 
             graph_data = {"dates": [], "hits_view": [], "hits_tocart": []}
 
@@ -211,11 +225,11 @@ class ActionGraphs(models.Model):
             "categorie_id": categorie_record.id,
             "data": data_for_send,
         }
-        
+
         self._send_request(payload)
 
         return products_records
-    
+
     def draw_graphs_products(self, products_records):
         print(f"All records: {len(products_records)}")
 
@@ -234,14 +248,14 @@ class ActionGraphs(models.Model):
 
     def _get_year(self) -> str:
         return datetime.now().year
-    
-    
+
+
 class NameGetCustom(models.Model):
-    _inherit = 'ozon.categories'
+    _inherit = "ozon.categories"
 
     def name_get(self):
         """
-        Rename name records 
+        Rename name records
         """
         result = []
         for record in self:

@@ -7,8 +7,8 @@
             <field name="model">ozon.sale</field>
             <field name="arch" type="xml">
                 <graph string="Продажи товара" type="line">
-                    <field name="qty" type="measure"/>
-                    <field interval="day" name="date" type="datetime"/>
+                    <field name="qty" type="measure" />
+                    <field interval="day" name="date" type="datetime" />
                 </graph>
             </field>
         </record>
@@ -20,7 +20,7 @@
             <field name="arch" type="xml">
                 <form>
                     <group string="Продажа товара">
-                        <field name="date" />
+                        <field name="product_id_on_platform" />
                         <field name="product">
                             <tree>
                                 <field name="products">
@@ -30,6 +30,7 @@
                                 </field>
                             </tree>
                         </field>
+                        <field name="date" />
                         <field name="qty" />
                         <field name="revenue" />
                         <field name="is_calculate" />
@@ -45,6 +46,7 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="date" />
+                    <field name="product_id_on_platform" />
                     <field name="product">
                         <tree>
                             <field name="id_on_platform" />

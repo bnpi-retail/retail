@@ -49,6 +49,7 @@
         "security/action/ir.model.access.csv",
         "security/indicator/ir.model.access.csv",
         "security/reports/ir.model.access.csv",
+        "security/settings/ir.model.access.csv",
         ### views
         "views/menu.xml",
         "views/price/menu.xml",
@@ -96,10 +97,14 @@
         "crone/ir_cron_data.xml",
         "views/reports/ozon_reports_views.xml",
         "views/indicators/indicator_views.xml",
+        "views/categories/abs_analysis_views.xml",
+        "views/settings/settings.xml",
+        # cron
+        "crone/ir_cron_data.xml",
     ],
     "demo": [
         "demo/demo.xml",
     ],
     "application": True,
-    "sequence": 1
+    "sequence": 1,
 }
