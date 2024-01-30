@@ -150,7 +150,16 @@
                         </page>
                         <page id="page_all_expenses_info" string="Структура затрат">
                             <group string="Структура затрат">
-                                <field name="all_expenses_ids" />
+                                <field name="all_expenses_ids">
+                                    <tree>
+                                        <field name="category" />
+                                        <field name="name" />
+                                        <field name="description" />
+                                        <field name="percent" />
+                                        <field name="value" />
+                                        <field name="rrp_value" />
+                                    </tree>
+                                </field>
                             </group>
                         </page>
                         <page id="page_lot_expenses_info" string="Комиссии и себестоимость">
