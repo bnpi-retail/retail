@@ -1026,13 +1026,7 @@ class Product(models.Model):
         coef_total = latest_indirect_expenses.coef_total / 100
         coef_total_percentage_string = f"{coef_total:.2%}"
 
-        latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
-            [], limit=1, order="id desc"
-        )
         all_products = self.env["ozon.products"].search([])
-        self.env["ozon.all_expenses"].create_update_all_product_expenses(
-            all_products, latest_indirect_expenses
-        )
         for i, product in enumerate(all_products):
             percent_expenses_records = []
             per_exp_record = self.env["ozon.cost"].create(
@@ -1065,6 +1059,15 @@ class Product(models.Model):
             print(
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
+
+    def update_all_expenses(self):
+        latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
+            [], limit=1, order="id desc"
+        )
+        all_products = self.env["ozon.products"].search([])
+        self.env["ozon.all_expenses"].create_update_all_product_expenses(
+            all_products, latest_indirect_expenses
+        )
 
     def get_view(self, view_id=None, view_type="form", **options):
         res = super(Product, self).get_view(view_id=view_id, view_type=view_type)
