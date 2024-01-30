@@ -24,39 +24,39 @@
                                 widget="statinfo" />
                         </button>
                         <button class="oe_stat_button" type="object"
-                                name="get_stocks">
+                            name="get_stocks">
                             <field string="История остатков" name="stock_history_count"
-                                   widget="statinfo"/>
+                                widget="statinfo" />
                         </button>
                     </div>
 
                     <field name="ozon_products_indicators_summary_ids"
-                           readonly="1"
-                           attrs="{'invisible': [('ozon_products_indicators_summary_ids', '=', [])]}">
+                        readonly="1"
+                        attrs="{'invisible': [('ozon_products_indicators_summary_ids', '=', [])]}">
                         <tree
-                                decoration-danger="type in (
+                            decoration-danger="type in (
                                 'cost_not_calculated',
                                 'no_competitor_robot',
                                 'out_of_stock',
                                 )"
-                                decoration-warning="type=='no_competitor_manager'"
-                                decoration-success="type in ('in_stock', )"
+                            decoration-warning="type=='no_competitor_manager'"
+                            decoration-success="type in ('in_stock', )"
                         >
-                            <field name="name" string="Индикаторы"/>
-                            <field name="type" optional="Hide"/>
+                            <field name="name" string="Индикаторы" />
+                            <field name="type" optional="Hide" />
                         </tree>
                     </field>
-                    <field name="ozon_products_indicator_ids" invisible="1"/>
-                    <field name="retail_product_total_cost_price" invisible="1"/>
+                    <field name="ozon_products_indicator_ids" invisible="1" />
+                    <field name="retail_product_total_cost_price" invisible="1" />
 
-                    <separator string="Калькулятор стратегий назначения цен"/>
+                    <separator string="Калькулятор стратегий назначения цен" />
 
                     <group>
                         <group>
                             <field name="pricing_strategy_ids">
                                 <tree editable="bottom" edit="True">
-                                    <field name="name"/>
-                                    <field name="value" widget="percentage"/>
+                                    <field name="name" />
+                                    <field name="value" widget="percentage" />
                                 </tree>
                             </field>
                         </group>
@@ -127,6 +127,7 @@
                                         <field name="profit_ideal" />
                                         <field name="profit_delta" />
                                         <field name="profitability_norm" readonly="true" />
+                                        <field name="investment_expenses_id" />
                                     </group>
                                 </group>
                                 <group>
@@ -265,10 +266,11 @@
                                         <field name="price_without_sale" />
                                     </tree>
                                 </field>
-                                <field name="not_enough_competitors" string="Конкурентов меньше трёх"/>
+                                <field name="not_enough_competitors"
+                                    string="Конкурентов меньше трёх" />
                                 <field name="commentary_not_enough_competitors" string="Комментарий"
-                                       attrs="{'invisible': [('not_enough_competitors', '=', False)]}"
-                                       placeholder="Подтвердите письменно, что конкурентов недостаточно"
+                                    attrs="{'invisible': [('not_enough_competitors', '=', False)]}"
+                                    placeholder="Подтвердите письменно, что конкурентов недостаточно"
                                 />
                             </group>
                         </page>
@@ -317,10 +319,12 @@
                         </page>
                         <page string="ABC Анализ">
                             <group>
-                                <field name="revenue_share_temp" string="Доля продукта в выручке, %" readonly="1"/>
-                                <field name="revenue_cumulative_share_temp" string="Накопительный вклад, %"
-                                       readonly="1"/>
-                                <field name="abc_group" string="Группа" readonly="1"/>
+                                <field name="revenue_share_temp" string="Доля продукта в выручке, %"
+                                    readonly="1" />
+                                <field name="revenue_cumulative_share_temp"
+                                    string="Накопительный вклад, %"
+                                    readonly="1" />
+                                <field name="abc_group" string="Группа" readonly="1" />
                             </group>
                         </page>
                     </notebook>
@@ -334,21 +338,21 @@
             <field name="model">ozon.products</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="retail_product_total_cost_price" invisible="1"/>
-                    <field name="article"/>
-                    <field name="products"/>
-                    <field name="price"/>
-                    <field name="is_selling"/>
-                    <field name="is_alive"/>
+                    <field name="retail_product_total_cost_price" invisible="1" />
+                    <field name="article" />
+                    <field name="products" />
+                    <field name="price" />
+                    <field name="is_selling" />
+                    <field name="is_alive" />
                     <field name="price_index" widget="badge"
-                           decoration-success="price_index=='PROFIT'"
-                           decoration-warning="price_index=='AVG_PROFIT'"
-                           decoration-danger="price_index=='NON_PROFIT'"/>
-                    <field name="trading_scheme"/>
-                    <field name="coef_profitability"/>
+                        decoration-success="price_index=='PROFIT'"
+                        decoration-warning="price_index=='AVG_PROFIT'"
+                        decoration-danger="price_index=='NON_PROFIT'" />
+                    <field name="trading_scheme" />
+                    <field name="coef_profitability" />
                     <field name="abc_group" string="ABC Группа"
-                           decoration-success="abc_group=='A'"
-                           decoration-danger="abc_group=='C'"
+                        decoration-success="abc_group=='A'"
+                        decoration-danger="abc_group=='C'"
                     />
                 </tree>
             </field>
@@ -365,15 +369,14 @@
                             <div class="oe_kanban_content">
                                 <div class="oe_kanban_global_click">
                                     <div class="oe_kanban_details">
-                                        <field name="img_html"/>
+                                        <field name="img_html" />
                                     </div>
                                 </div>
 
-                                <div style="display: block;">
-                                    Артикул: <field name="article"/>
+                                <div style="display: block;"> Артикул: <field name="article" />
                                 </div>
                                 <div style="display: block;">
-                                    <field name="products"/>
+                                    <field name="products" />
                                 </div>
 
                             </div>
@@ -391,7 +394,7 @@
                 <search>
                     <field name="article" />
                     <searchpanel>
-                        <field name="categories"/>
+                        <field name="categories" />
                     </searchpanel>
                 </search>
             </field>
@@ -435,6 +438,18 @@
             <field name="view_id" ref="wizard_view_profitability_norm_form" />
             <field name="target">new</field>
         </record>
+
+        <!-- Action to call investment_expenses wizard. This action calls wizard model form view -->
+        <record id="wizard_action_investment_expenses" model="ir.actions.act_window">
+            <field name="name">Назначить инвестиционные затраты</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="res_model">ozon.investment_expenses.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="wizard_view_investment_expenses_form" />
+            <field name="target">new</field>
+        </record>
+
 
         <!-- Calculator form -->
         <record id="view_products_calculator_form" model="ir.ui.view">

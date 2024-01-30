@@ -296,3 +296,17 @@ class InvestmentExpenses(models.Model):
 
     name = fields.Char(string="Наименование")
     value = fields.Float(string="Значение")
+
+
+class InvestmentExpensesWizard(models.TransientModel):
+    _name = "ozon.investment_expenses.wizard"
+    _description = "Wizard Инвестиционные затраты"
+
+    investment_expenses_id = fields.Many2one(
+        "ozon.investment_expenses", string="Инвестиционные затраты"
+    )
+
+    def change_investment_expenses(self):
+        prod_ids = self._context["active_ids"]
+        products = self.env["ozon.products"].browse(prod_ids)
+        products.write({"investment_expenses_id": self.investment_expenses_id})

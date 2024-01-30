@@ -43,7 +43,7 @@
             sequence="41" />
 
 
-        <!-- Wizards -->
+        <!-- Profitability norm wizard form -->
         <record id="wizard_view_profitability_norm_form" model="ir.ui.view">
             <field name="name">Изменить норму прибыльности</field>
             <field name="model">ozon.profitability_norm.wizard</field>
