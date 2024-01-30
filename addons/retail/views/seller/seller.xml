@@ -1,34 +1,34 @@
 <odoo>
-  <data>
-  
-    <!-- Form -->
+    <data>
 
-    <!-- Tree -->
-    <record id="view_seller_tree" model="ir.ui.view">
-        <field name="name">Продавец</field>
-        <field name="model">retail.seller</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="name" width="150"/>
-                <field name="ogrn" width="150"/>
-                <field name="fee" width="150"/>
-            </tree>
-        </field>
-    </record>
+        <!-- Form -->
 
-    <!-- Action -->
-    <record model="ir.actions.act_window" id="action_seller">
-    <field name="name">Продавец</field>
-    <field name="res_model">retail.seller</field>
-    <field name="view_mode">tree,form</field>
-    </record>
+        <!-- Tree -->
+        <record id="view_seller_tree" model="ir.ui.view">
+            <field name="name">Продавец</field>
+            <field name="model">retail.seller</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" width="150" />
+                    <field name="ogrn" width="150" />
+                    <field name="tax" width="150" />
+                </tree>
+            </field>
+        </record>
 
-    <!-- Menu -->
-    <menuitem name="Продавец"
-        id="menu_seller" 
-        parent="retail.menu_root"
-        action="action_seller"
-        sequence="30"/>
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_seller">
+            <field name="name">Продавец</field>
+            <field name="res_model">retail.seller</field>
+            <field name="view_mode">tree,form</field>
+        </record>
 
-  </data>
+        <!-- Menu -->
+        <menuitem name="Продавец"
+            id="menu_seller"
+            parent="retail.menu_root"
+            action="action_seller"
+            sequence="30" />
+
+    </data>
 </odoo>
