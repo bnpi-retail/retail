@@ -412,10 +412,14 @@ class DrawGraphSale(DataFunction):
         plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')]))
 
         max_ticks = 10
-        step = round((max(values) - min(values)) / (max_ticks - 1))
         if values:
+            step = round((max(values) - min(values)) / (max_ticks - 1))
             if step == 0: step = 10
             plt.yticks(np.arange(min(values), max(values) + step, step=step))
+        elif average_values:
+            step = round((max(average_values) - min(average_values)) / (max_ticks - 1))
+            if step == 0: step = 10
+            plt.yticks(np.arange(min(average_values), max(average_values) + step, step=step))
 
         plt.tight_layout()
 

@@ -933,9 +933,13 @@ class ImportFile(models.Model):
         
         record = model_products.search([("id", "=", product_id)])
 
-        record.img_url_sale_two_weeks = url_two_weeks.replace("|", ",")
-        record.img_url_sale_six_weeks = url_six_weeks.replace("|", ",")
-        record.img_url_sale_twelve_weeks = url_twelve_weeks.replace("|", ",")
+        record.img_url_sale_two_weeks = url_two_weeks
+        record.img_url_sale_six_weeks = url_six_weeks
+        record.img_url_sale_twelve_weeks = url_twelve_weeks
+
+        record.img_data_sale_two_weeks = url_two_weeks.replace("|", ",")
+        record.img_data_sale_six_weeks = url_six_weeks.replace("|", ",")
+        record.img_data_sale_twelve_weeks = url_twelve_weeks.replace("|", ",")
 
     def import_images_competitors_products(self, content):
         model_competitors_products = self.env["ozon.products_competitors"]
