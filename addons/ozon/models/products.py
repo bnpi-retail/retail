@@ -231,6 +231,14 @@ class Product(models.Model):
     all_expenses_ids = fields.One2many(
         "ozon.all_expenses", "product_id", string="Все затраты", readonly=True
     )
+    total_all_expenses_ids = fields.Float(
+        string="Итого общих затрат, исходя из актуальной цены",
+        compute="_compute_total_all_expenses_ids",
+    )
+    total_rrp_all_expenses_ids = fields.Float(
+        string="Итого общих затрат, исходя из РРЦ",
+        compute="_compute_total_rrp_all_expenses_ids",
+    )
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
     posting_ids = fields.Many2many("ozon.posting", string="Отправления Ozon")
     postings_count = fields.Integer(compute="_compute_count_postings")
@@ -454,6 +462,16 @@ class Product(models.Model):
         for record in self:
             record.total_fbs_percent_expenses = sum(
                 record.fbs_percent_expenses.mapped("price")
+            )
+
+    def _compute_total_all_expenses_ids(self):
+        for rec in self:
+            rec.total_all_expenses_ids = sum(rec.all_expenses_ids.mapped("value"))
+
+    def _compute_total_rrp_all_expenses_ids(self):
+        for rec in self:
+            rec.total_rrp_all_expenses_ids = sum(
+                rec.all_expenses_ids.mapped("rrp_value")
             )
 
     @api.depends("price_our_history_ids.price")

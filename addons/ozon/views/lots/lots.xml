@@ -160,6 +160,8 @@
                                         <field name="rrp_value" />
                                     </tree>
                                 </field>
+                                <field name="total_all_expenses_ids" />
+                                <field name="total_rrp_all_expenses_ids" />
                             </group>
                         </page>
                         <page id="page_lot_expenses_info" string="Комиссии и себестоимость">
