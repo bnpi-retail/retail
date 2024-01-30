@@ -288,3 +288,11 @@ class ProfitabilityNormWizard(models.TransientModel):
         prod_ids = self._context["active_ids"]
         products = self.env["ozon.products"].browse(prod_ids)
         products.write({"profitability_norm": self.profitability_norm})
+
+
+class InvestmentExpenses(models.Model):
+    _name = "ozon.investment_expenses"
+    _description = "Инвестиционные затраты"
+
+    name = fields.Char(string="Наименование")
+    value = fields.Float(string="Значение")
