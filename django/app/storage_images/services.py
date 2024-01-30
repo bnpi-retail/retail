@@ -1,6 +1,5 @@
 import io
 import csv
-import ast
 import json
 import numpy as np
 import pandas as pd
@@ -8,9 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 from os import getenv
-from typing import Any
 from datetime import datetime
-from multiprocessing import Value, process
 from matplotlib.ticker import FuncFormatter
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -138,7 +135,6 @@ class AnalysisData(DataFunction):
         return f"{getenv('DJANGO_DOMAIN')}{file_url}"
 
 
-
 class DrawGraphSale(DataFunction):
     def __init__(self, dict: dict) -> None:
         self.year = dict["year"]
@@ -232,14 +228,6 @@ class DrawGraphSale(DataFunction):
         plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
         plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, _: russian_month_names[mdates.num2date(x).strftime('%b')]))
 
-        # max_ticks = 10
-        # if values or average_values:
-            # min_value = min(values) if values else min(average_values)
-            # max_value = max(values) if values else max(average_values)
-
-            # step = (max_value - min_value) / (max_ticks - 1) if (max_ticks - 1) != 0 else 1
-
-        # plt.yticks(np.arange(0, 1000, step=100), bottom=0)
         max_ticks = 10
         step = round((max(values) - min(values)) / (max_ticks - 1))
         if values:

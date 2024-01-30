@@ -880,91 +880,73 @@ class ImportFile(models.Model):
         # TODO: if different products in one transaction
 
     def import_images_sale(self, content):
-        lines = content.split("\n")
-
         model_products = self.env["ozon.products"]
 
-        for line in lines:
-            if not line:
-                continue
+        product_id, url_this_year, url_last_year, data_this_year, data_last_year = content.split(",")
+    
+        record = model_products.search([("id", "=", product_id)])
 
-            product_id, url_this_year, url_last_year = line.split(",")
+        record.img_url_sale_this_year = url_this_year
+        record.img_url_sale_last_year = url_last_year
 
-            record = model_products.search([("id", "=", product_id)])
-            record.img_url_sale_this_year = url_this_year
-            record.img_url_sale_last_year = url_last_year
+        record.img_data_sale_this_year = data_this_year
+        record.img_data_sale_last_year = data_last_year
 
     def import_images_sale_by_week(self, content):
-        lines = content.split("\n")
+        model_products = self.env["ozon.products"]
 
-        model_competitors_products = self.env["ozon.products"]
+        product_id, url_two_weeks, url_six_weeks, url_twelve_weeks, data_two_weeks, data_six_week, data_twelve_week = content.split(",")
+        record = model_products.search([("id", "=", product_id)])
 
-        for line in lines:
-            if not line: continue
+        record.img_url_sale_two_weeks = url_two_weeks
+        record.img_url_sale_six_weeks = url_six_weeks
+        record.img_url_sale_twelve_weeks = url_twelve_weeks
 
-            product_id, url_two_weeks, url_six_weeks, url_twelve_weeks = line.split(",")
-
-            record = model_competitors_products.search([("id", "=", product_id)])
-            record.img_url_sale_two_weeks = url_two_weeks
-            record.img_url_sale_six_weeks = url_six_weeks
-            record.img_url_sale_twelve_weeks = url_twelve_weeks
+        record.img_data_sale_two_weeks = data_two_weeks
+        record.img_data_sale_six_weeks = data_six_week
+        record.img_data_sale_twelve_weeks = data_twelve_week
 
     def import_images_competitors_products(self, content):
-        lines = content.split("\n")
-
         model_competitors_products = self.env["ozon.products_competitors"]
 
-        for line in lines:
-            if not line:
-                continue
+        product_id, url, data = content.split(",")
 
-            product_id, url_this_year = line.split(",")
-
-            record = model_competitors_products.search([("id", "=", product_id)])
-            record.imgs_url_this_year = url_this_year
-
+        record = model_competitors_products.search([("id", "=", product_id)])
+        record.imgs_url_this_year = url
+        record.imgs_data_this_year = data
+            
     def import_images_price_history(self, content):
-        lines = content.split("\n")
-
         model_products = self.env["ozon.products"]
 
-        for line in lines:
-            if not line:
-                continue
+        product_id, url, data = content.split(",")
 
-            product_id, url = line.split(",")
+        record = model_products.search([("id", "=", product_id)])
 
-            record = model_products.search([("id", "=", product_id)])
-
-            record.img_url_price_history = url
+        record.img_url_price_history = url
+        record.img_data_price_history = data
 
     def import_images_stock(self, content):
-        lines = content.split("\n")
-
         model_products = self.env["ozon.products"]
 
-        for line in lines:
-            if not line:
-                continue
+        product_id, url, data = content.split(",")
 
-            product_id, url = line.split(",")
+        record = model_products.search([("id", "=", product_id)])
 
-            record = model_products.search([("id", "=", product_id)])
-            record.img_url_stock = url
+        record.img_url_stock = url
+        record.img_data_stock = data
 
     def import_images_analysis_data(self, content):
-        lines = content.split("\n")
-
         model_products = self.env["ozon.products"]
 
-        for line in lines:
-            if not line:
-                continue
+        product_id, url, hits_view, hits_tocart = content.split(",")
 
-            product_id, url = line.split(",")
-
-            record = model_products.search([("id", "=", product_id)])
-            record.img_url_analysis_data = url
+        record = model_products.search([("id", "=", product_id)])
+        
+        record.img_url_analysis_data = url
+        record.img_data_analysis_data = {
+            "hits_view": hits_view, 
+            "hits_tocart": hits_tocart
+        }
 
     def import_images_categorie_analysis_data(self, content):
         model_categories = self.env["ozon.categories"]
@@ -974,6 +956,7 @@ class ImportFile(models.Model):
         data_tocart = data_tocart.replace("|", ",")
 
         record = model_categories.search([("id", "=", categories_id)])
+
         record.img_url_analysis_data_this_year = url
         record.img_data_analysis_data_this_year_hits = data_hits
         record.img_data_analysis_data_this_year_to_cart = data_tocart
@@ -985,6 +968,7 @@ class ImportFile(models.Model):
         average_data = average_data.replace("|", ",")
     
         record = model_categories.search([("id", "=", categories_id)])
+
         record.img_url_sale_this_year = url
         record.img_data_sale_this_year = average_data
 
@@ -995,8 +979,10 @@ class ImportFile(models.Model):
         average_data = average_data.replace("|", ",")
 
         record = model_categories.search([("id", "=", categories_id)])
-        record.img_url_sale_last_year = url
-        record.img_data_sale_last_year = average_data
+        model_categories.write(record.id, {
+            'img_url_sale_last_year': url,
+            'img_data_sale_last_year': average_data,
+        })
 
     def import_actions(self, content):
         f_path = "/mnt/extra-addons/ozon/__pycache__/actions.csv"

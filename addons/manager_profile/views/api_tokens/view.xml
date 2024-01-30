@@ -1,0 +1,55 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_manager_profile_api_tokens_form" model="ir.ui.view">
+            <field name="name">API токен</field>
+            <field name="model">manager_profile.api_tokens</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="will_expire" />
+                        <field name="token" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_manager_profile_api_tokens_tree" model="ir.ui.view">
+            <field name="name">API токены</field>
+            <field name="model">manager_profile.api_tokens</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="will_expire" />
+                    <field name="token" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_manager_profile_api_tokens">
+            <field name="name">API токен</field>
+            <field name="res_model">manager_profile.api_tokens</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <record model="ir.actions.server" id="action_get_api_tokens">
+            <field name="name">Сгенерировать API ключ</field>
+            <field name="model_id" ref="model_manager_profile_api_tokens" />
+            <field name="binding_model_id" ref="model_manager_profile_api_tokens" />
+            <field name="state">code</field>
+            <field name="code">
+                records.actions_get_api_token()
+            </field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="API токены"
+            id="menu_manager_profile_api_tokens"
+            parent="manager_profile.menu_root"
+            action="action_manager_profile_api_tokens"
+            sequence="25" />
+
+    </data>
+</odoo>

@@ -1270,6 +1270,7 @@ class ProductGraphExtension(models.Model):
         self.draw_analysis_data()
 
     ### История цен (модель: ozon.price_history)
+    img_data_price_history = fields.Text(string="Данные графика")
     img_url_price_history = fields.Char(string="Ссылка на объект")
     img_html_price_history = fields.Html(compute="_compute_img_price_history")
 
@@ -1306,9 +1307,12 @@ class ProductGraphExtension(models.Model):
                 graph_data["num"].append(record.price)
             payload["current"] = graph_data
 
+            # rec.img_data_price_history = graph_data
+
             self._send_request(payload)
 
     ### История продаж по неделям (модель: ozon.sale)
+    img_data_sale_two_weeks = fields.Text(string="Данные графика")
     img_url_sale_two_weeks = fields.Char(string="Ссылка на объект")
     img_html_sale_two_weeks = fields.Html(compute="_compute_img_sale_two_weeks")
 
@@ -1322,6 +1326,7 @@ class ProductGraphExtension(models.Model):
                 f"<img src='{rec.img_url_sale_two_weeks}' width='600'/>"
             )
 
+    img_data_sale_six_weeks = fields.Text(string="Данные графика")
     img_url_sale_six_weeks = fields.Char(string="Ссылка на объект")
     img_html_sale_six_weeks = fields.Html(compute="_compute_img_sale_six_weeks")
 
@@ -1335,6 +1340,7 @@ class ProductGraphExtension(models.Model):
                 f"<img src='{rec.img_url_sale_six_weeks}' width='600'/>"
             )
 
+    img_data_sale_twelve_weeks = fields.Text(string="Данные графика")
     img_url_sale_twelve_weeks = fields.Char(string="Ссылка на объект")
     img_html_sale_twelve_weeks = fields.Html(compute="_compute_img_sale_twelve_weeks")
 
@@ -1374,6 +1380,8 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.qty)
             payload["two_weeks"] = graph_data
+            
+            # rec.img_data_sale_two_weeks = graph_data
 
             records = model_sale.search(
                 [
@@ -1387,6 +1395,8 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.qty)
             payload["six_week"] = graph_data
+            
+            # rec.img_data_sale_six_weeks = graph_data
 
             records = model_sale.search(
                 [
@@ -1401,9 +1411,12 @@ class ProductGraphExtension(models.Model):
                 graph_data["num"].append(record.qty)
             payload["twelve_week"] = graph_data
 
+            # rec.img_data_sale_twelve_weeks = graph_data
+
             self._send_request(payload)
 
     ### История продаж (модель: ozon.sale)
+    img_data_sale_this_year = fields.Text(string="Данные графика")
     img_url_sale_this_year = fields.Char(string="Ссылка на объект")
     img_html_sale_this_year = fields.Html(compute="_compute_img_sale_this_year")
 
@@ -1417,6 +1430,7 @@ class ProductGraphExtension(models.Model):
                 f"<img src='{rec.img_url_sale_this_year}' width='600'/>"
             )
 
+    img_data_sale_last_year = fields.Text(string="Ссылки на объект")
     img_url_sale_last_year = fields.Char(string="Ссылки на объект")
     img_html_sale_last_year = fields.Html(compute="_compute_img_sale_last_year")
 
@@ -1453,6 +1467,8 @@ class ProductGraphExtension(models.Model):
                 graph_data["values"].append(record.qty)
             payload["current"] = graph_data
 
+            # rec.img_data_sale_last_year = graph_data
+
             if rec.categories.img_data_sale_this_year:
                 payload["average_graph_this_year"] = rec.categories.img_data_sale_this_year
 
@@ -1468,20 +1484,22 @@ class ProductGraphExtension(models.Model):
                 graph_data["values"].append(record.qty)
             payload["last"] = graph_data
 
+            # rec.img_data_sale_last_year = graph_data
+
             if rec.categories.img_data_sale_last_year:
                 payload["average_graph_last_year"] = rec.categories.img_data_sale_last_year
 
             self._send_request(payload)
 
     ### История остатков (модель: ozon.stock)
+    img_data_stock = fields.Text(string="Данные графика")
     img_url_stock = fields.Char(string="Ссылка на объект")
     img_html_stock = fields.Html(compute="_compute_img_stock")
 
     def _compute_img_stock(self):
         for rec in self:
             rec.img_html_stock = False
-            if not rec.img_url_stock:
-                continue
+            if not rec.img_url_stock: continue
 
             rec.img_html_stock = f"<img src='{rec.img_url_stock}' width='600'/>"
 
@@ -1507,9 +1525,12 @@ class ProductGraphExtension(models.Model):
                 graph_data["num"].append(record.stocks_fbs)
             payload["current"] = graph_data
 
+            # rec.img_data_stock = graph_data
+
             self._send_request(payload)
 
     ### График интереса (модель: ozon.analysis_data)
+    img_data_analysis_data = fields.Text(string="Данные графика")
     img_url_analysis_data = fields.Char(string="Ссылка на объект")
     img_html_analysis_data = fields.Html(compute="_compute_img_analysis_data")
 
@@ -1548,7 +1569,7 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(average_date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.hits_view)
             payload["hits_view"] = graph_data
-
+            
             graph_data = {"dates": [], "num": []}
             for record in records:
                 start_date = record.timestamp_from
@@ -1558,6 +1579,8 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(average_date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.hits_tocart)
             payload["hits_tocart"] = graph_data
+
+            # rec.img_data_analysis_data = payload
 
             if rec.categories.img_data_analysis_data_this_year_hits and rec.categories.img_data_analysis_data_this_year_to_cart:
                 payload["average_hits_view"] = rec.categories.img_data_analysis_data_this_year_hits

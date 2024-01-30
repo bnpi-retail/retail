@@ -83,8 +83,10 @@ class DrawGraph(APIView):
     def draw_graph_sale(self, request, model):
         product_id = request.data.get('product_id', None)
         
+        data_graph_current = request.data.get('current', None)
+
         dict = {
-            "data": request.data.get('current', None),
+            "data": data_graph_current,
             "data_average":request.data.get('average_graph_this_year', None),
             "year": datetime.now().year,
         }
@@ -92,8 +94,10 @@ class DrawGraph(APIView):
         graph = DrawGraphSale(dict)
         current_url = graph()
 
+        data_graph_last = request.data.get('last', None)
+        
         dict = {
-            "data": request.data.get('last', None),
+            "data": data_graph_last,
             "data_average":request.data.get('average_graph_last_year', None),
             "year": datetime.now().year - 1,
         }
@@ -101,7 +105,7 @@ class DrawGraph(APIView):
         graph = DrawGraphSale(dict)
         last_url = graph()
         
-        data = [product_id, current_url, last_url]
+        data = [product_id, current_url, last_url, str(data_graph_current).replace(',', '|'), str(data_graph_last).replace(',', '|')]
         csv_file = self.get_csv_file(data)
         return {'file': ('output.csv', csv_file)}, {'model': model}
 
@@ -159,7 +163,7 @@ class DrawGraph(APIView):
             day_xaxis=True,
         )
 
-        data = [product_id, two_week_url, six_week_url, twelve_week_url]
+        data = [product_id, two_week_url, six_week_url, twelve_week_url, str(data_two_weeks).replace(',', '|'), str(data_six_week).replace(',', '|'), str(data_twelve_week).replace(',', '|')]
         csv_file = self.get_csv_file(data)
         return {'file': ('output.csv', csv_file)}, {'model': model}
     
@@ -180,7 +184,7 @@ class DrawGraph(APIView):
             ylabel='Средняя цена за неделю, руб.',
         )
 
-        data = [product_id, url]
+        data = [product_id, url, str(data_current).replace(',', '|')]
         csv_file = self.get_csv_file(data)
         return {'file': ('output.csv', csv_file)}, {'model': model}
     
@@ -201,7 +205,7 @@ class DrawGraph(APIView):
             ylabel='Средняя цена за неделю, руб.',
         )
 
-        data = [product_id, url]
+        data = [product_id, url, str(data_current).replace(',', '|')]
         csv_file = self.get_csv_file(data)
         return {'file': ('output.csv', csv_file)}, {'model': model}
     
@@ -222,7 +226,7 @@ class DrawGraph(APIView):
             ylabel='Остатки товара, кол.',
         )
 
-        data = [product_id, url]
+        data = [product_id, url, str(data_current).replace(',', '|')]
         csv_file = self.get_csv_file(data)
         return {'file': ('output.csv', csv_file)}, {'model': model}
     
@@ -249,7 +253,7 @@ class DrawGraph(APIView):
             num_hits_tocart=grouped_num_hits_tocart,
         )
 
-        data = [product_id, url]
+        data = [product_id, url, str(hits_view).replace(',', '|'), str(hits_tocart).replace(',', '|')]
         csv_file = self.get_csv_file(data)
         return {'file': ('output.csv', csv_file)}, {'model': model}
 

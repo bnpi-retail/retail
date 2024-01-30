@@ -145,6 +145,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+    'DEFAULT_TOKEN_EXPIRE_SECONDS': 60*60*24*30,
 }
 
 LOGIN_REDIRECT_URL = '/'
