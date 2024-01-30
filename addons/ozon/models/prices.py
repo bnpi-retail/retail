@@ -330,7 +330,17 @@ class AllExpenses(models.Model):
     category = fields.Char(string="Категория затрат", readonly=True)
     percent = fields.Float(string="Процент")
     value = fields.Float(string="Абсолютное значение в руб, исходя из текущей цены")
-    rrp_value = fields.Float(string="Абсолютное значение в руб, исходя из РРЦ")
+    rrp_value = fields.Float(
+        string="Абсолютное значение в руб, исходя из РРЦ", compute="_compute_rrp_value"
+    )
+
+    def _compute_rrp_value(self):
+        # TODO: как рассчитываем затраты исходя из РРЦ?
+        for rec in self:
+            if rec.kind == "fix":
+                rec.rrp_value = rec.value
+            else:
+                rec.rrp_value = rec.product_id.rrp * rec.percent
 
     def create_update_all_product_expenses(self, products, latest_indirect_expenses):
         tax = products[0].seller.tax
@@ -498,7 +508,7 @@ class AllExpenses(models.Model):
                     "kind": "percent",
                     "category": "Налоги",
                     "value": tax_value,
-                    "percent": tax_percent,
+                    "percent": tax_value / price,
                 },
             )
             print(f"{idx} - All expenses were updated.")
