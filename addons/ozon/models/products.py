@@ -10,7 +10,7 @@ from operator import itemgetter
 from lxml import etree
 
 from odoo import models, fields, api
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 logger = logging.getLogger()
 
@@ -1270,6 +1270,8 @@ class Product(models.Model):
                     comp_prices = self.competitors_with_price_ids.mapped("price")
                     min_comp_price = min(comp_prices)
                     new_price = round(min_comp_price * (1 - strategy_value), 2)
+                else:
+                    raise UserError("Конкуренты не заданы")
 
             if strategy_id == "profitability_norm":
                 prof_norm = strategy_value
