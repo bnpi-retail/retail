@@ -1085,6 +1085,15 @@ class Product(models.Model):
             all_products, latest_indirect_expenses
         )
 
+    def update_current_product_all_expenses(self):
+        self.ensure_one()
+        latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
+            [], limit=1, order="id desc"
+        )
+        self.env["ozon.all_expenses"].create_update_all_product_expenses(
+            self, latest_indirect_expenses
+        )
+
     def get_view(self, view_id=None, view_type="form", **options):
         res = super(Product, self).get_view(view_id=view_id, view_type=view_type)
         if view_type == "form":
@@ -1284,6 +1293,7 @@ class Product(models.Model):
 
     def calculate(self):
         self._compute_product_calculator_ids()
+        self.update_current_product_all_expenses()
         return super(Product, self).write({})
 
     @api.depends("posting_ids")
