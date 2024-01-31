@@ -7,8 +7,11 @@ class ProductCompetitorSale(models.Model):
 
     period_from = fields.Date()
     period_to = fields.Date()
-    ozon_products_competitors_id = fields.Many2one("ozon.products_competitors")
     category_lvl3 = fields.Char()
     orders_qty = fields.Integer()
+    orders_avg_price = fields.Float()
     orders_sum = fields.Float()
-    revenue_share = fields.Float()
+    revenue_share_percentage = fields.Float()
+    retail_seller_id = fields.Many2one('retail.seller', string="Продавец")
+    ozon_products_competitors_id = fields.Many2one("ozon.products_competitors")
+    ozon_report_category_market_share = fields.Many2one("ozon.report_category_market_share")

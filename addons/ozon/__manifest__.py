@@ -100,6 +100,7 @@
         "views/indicators/indicator_views.xml",
         "views/categories/abs_analysis_views.xml",
         "views/settings/settings.xml",
+        "views/reports/ozon_report_category_market_share_views.xml",
         # cron
         "crone/ir_cron_data.xml",
     ],

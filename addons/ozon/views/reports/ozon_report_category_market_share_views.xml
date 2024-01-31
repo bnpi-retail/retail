@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ozon_report_category_market_share_view_form" model="ir.ui.view">
+            <field name="name">ozon_report_category_market_share.form</field>
+            <field name="model">ozon.report_category_market_share</field>
+            <field name="arch" type="xml">
+                <form string="Report">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="period_from" string="Период с" class="oe_inline" widget="date"/>
+                                <field name="ozon_categories_id" string="Категория" class="oe_inline"/>
+                            </group>
+                            <group>
+                                <field name="period_to" string="по" class="oe_inline" widjet="date"/>
+                            </group>
+                            <notebook>
+                                <page string="Товары конкурентов">
+                                    <field name="ozon_products_competitors_sale_ids">
+                                        <tree string="Товары конкурентов">
+                                            <field name="retail_seller_id"/>
+                                            <field name="ozon_products_competitors_id"/>
+                                            <field name="ozon_products_competitors_id"/>
+                                        </tree>
+                                    </field>
+                                </page>
+                            </notebook>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="ozon_report_category_market_share_view_tree" model="ir.ui.view">
+            <field name="name">ozon_report_category_market_share.tree</field>
+            <field name="model">ozon.report_category_market_share</field>
+            <field name="arch" type="xml">
+                <tree string="Отчеты" create="0">
+                    <field name="create_date" string="Дата создания" readonly="1"/>
+                    <field name="ozon_categories_id" string="Категория" readonly="1"/>
+                    <field name="period_from" string="За период с" readonly="1"/>
+                    <field name="period_to" string="по" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_open_report_category_market_share" model="ir.actions.act_window">
+            <field name="name">Отчеты по продажам и долям продаж конкурентов</field>
+            <field name="res_model">ozon.report_category_market_share</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_report_category_market_share" name="Отчеты по продажам конкурентов" parent="ozon.menu_categories"
+                  action="action_open_report_category_market_share" sequence="36"/>
+
+    </data>
+</odoo>
