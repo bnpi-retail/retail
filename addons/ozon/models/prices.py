@@ -438,6 +438,7 @@ class AllExpenses(models.Model):
                         "name": last_mile.name,
                         "kind": "percent",
                         "category": "Последняя миля",
+                        "percent": last_mile.price / price,
                         "value": last_mile.price,
                     },
                     {
@@ -459,6 +460,7 @@ class AllExpenses(models.Model):
                         "name": acquiring.name,
                         "kind": "percent",
                         "category": "Эквайринг",
+                        "percent": acquiring.price / price,
                         "value": acquiring.price,
                     },
                 ]

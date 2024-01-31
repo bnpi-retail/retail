@@ -154,6 +154,9 @@
                                 <field name="all_expenses_ids">
                                     <tree>
                                         <field name="category" />
+                                        <field name="kind" />
+                                        <field name="percent" />
+                                        <field name="value" />
                                         <field name="rrp_value" />
                                     </tree>
                                 </field>
