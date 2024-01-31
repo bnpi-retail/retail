@@ -272,7 +272,7 @@ class Product(models.Model):
         string="Группа коэффициента продаваемости",
     )
     investment_expenses_id = fields.Many2one(
-        "ozon.investment_expenses", string="Инвестиционные затраты"
+        "ozon.investment_expenses", string="Investment"
     )
     profitability_norm = fields.Many2one(
         "ozon.profitability_norm", string="Ожидаемая доходность"

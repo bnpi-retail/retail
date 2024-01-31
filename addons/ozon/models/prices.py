@@ -295,7 +295,7 @@ class ProfitabilityNormWizard(models.TransientModel):
 
 class InvestmentExpenses(models.Model):
     _name = "ozon.investment_expenses"
-    _description = "Инвестиционные затраты"
+    _description = "Investment"
 
     name = fields.Char(string="Наименование")
     value = fields.Float(string="Значение")
