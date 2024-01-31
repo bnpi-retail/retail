@@ -506,7 +506,7 @@ class AllExpenses(models.Model):
                     "product_id": prod.id,
                     "name": "Investment",
                     "kind": "percent",
-                    "category": "Инвестиционные затраты",
+                    "category": "Investment",
                     "value": inv_exp_value,
                     "percent": inv_exp_percent,
                 },

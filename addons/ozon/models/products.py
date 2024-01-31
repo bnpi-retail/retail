@@ -520,7 +520,7 @@ class Product(models.Model):
         for rec in self:
             all_expenses_except_tax_roe_roi = rec.all_expenses_ids.filtered(
                 lambda r: r.category
-                not in ["Рентабельность", "Налоги", "Инвестиционные затраты"]
+                not in ["Рентабельность", "Налоги", "Investment"]
             )
             total_expenses = sum(all_expenses_except_tax_roe_roi.mapped("value"))
             rec.total_all_expenses_ids_except_tax_roe_roi = total_expenses
