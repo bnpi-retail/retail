@@ -436,7 +436,7 @@ class AllExpenses(models.Model):
                     {
                         "product_id": prod.id,
                         "name": last_mile.name,
-                        "kind": "fix",
+                        "kind": "percent",
                         "category": "Последняя миля",
                         "value": last_mile.price,
                     },
@@ -457,7 +457,7 @@ class AllExpenses(models.Model):
                     {
                         "product_id": prod.id,
                         "name": acquiring.name,
-                        "kind": "fix",
+                        "kind": "percent",
                         "category": "Эквайринг",
                         "value": acquiring.price,
                     },
