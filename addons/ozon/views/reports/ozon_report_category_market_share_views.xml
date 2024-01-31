@@ -9,23 +9,59 @@
                     <sheet>
                         <group>
                             <group>
-                                <field name="period_from" string="Период с" class="oe_inline" widget="date"/>
-                                <field name="ozon_categories_id" string="Категория" class="oe_inline"/>
+                                <field name="period_from" string="Период с" class="oe_inline" widget="date"
+                                       readonly="1"/>
+                                <field name="ozon_categories_id" string="Категория" class="oe_inline" readonly="1"/>
                             </group>
                             <group>
-                                <field name="period_to" string="по" class="oe_inline" widjet="date"/>
+                                <field name="period_to" string="по" class="oe_inline" widjet="date" readonly="1"/>
                             </group>
-                            <notebook>
-                                <page string="Товары конкурентов">
-                                    <field name="ozon_products_competitors_sale_ids">
-                                        <tree string="Товары конкурентов">
-                                            <field name="retail_seller_id"/>
-                                            <field name="ozon_products_competitors_id"/>
-                                            <field name="ozon_products_competitors_id"/>
-                                        </tree>
-                                    </field>
-                                </page>
-                            </notebook>
+                        </group>
+
+                        <field name="ozon_report_competitor_category_share">
+                            <tree string="">
+                                <field name="place" string="#"/>
+                                <field name="retail_seller_id" string="Продавец"/>
+                                <field name="category_share" string="Доля в категории"/>
+                                <field name="turnover" string="Оборот"/>
+                                <field name="turnover_growth" string="Рост оборота"/>
+                            </tree>
+                        </field>
+                        <notebook>
+                            <page string="Товары конкурентов">
+                                <field name="ozon_products_competitors_sale_ids">
+                                    <tree string="Товары конкурентов"
+                                          default_order="retail_seller_id, revenue_share_percentage desc">
+                                        <field name="retail_seller_id" string="Продавец"/>
+                                        <field name="ozon_products_competitors_id" string="Товар"/>
+                                        <field name="orders_qty" string="Кол-во заказов"/>
+                                        <field name="orders_avg_price" string="Средняя цена"/>
+                                        <field name="orders_sum" string="Заказано на сумму"/>
+                                        <field name="revenue_share_percentage"
+                                               string="Доля среди представленных товаров, %"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="ozon_report_competitor_category_share_view_form" model="ir.ui.view">
+            <field name="name">ozon_report_competitor_category_share.form</field>
+            <field name="model">ozon.report.competitor_category_share</field>
+            <field name="arch" type="xml">
+                <form string="Report">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="place" string="Место в категории" class="oe_inline" readonly="1"/>
+                                <field name="retail_seller_id" string="Продавец" class="oe_inline" readonly="1"/>
+                                <field name="category_share" string="Доля продавца в категории" class="oe_inline" readonly="1"/>
+                                <field name="turnover" string="Оборот" class="oe_inline" readonly="1"/>
+                                <field name="turnover_growth" string="Рост оборота" class="oe_inline" readonly="0"/>
+                            </group>
                         </group>
                     </sheet>
                 </form>
@@ -51,7 +87,8 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_report_category_market_share" name="Отчеты по продажам конкурентов" parent="ozon.menu_categories"
+        <menuitem id="menu_report_category_market_share" name="Отчеты по продажам конкурентов"
+                  parent="ozon.menu_categories"
                   action="action_open_report_category_market_share" sequence="36"/>
 
     </data>
