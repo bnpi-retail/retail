@@ -1085,16 +1085,6 @@ class Product(models.Model):
             all_products, latest_indirect_expenses
         )
 
-    @api.depends("profitability_norm", "investment_expenses_id")
-    def update_current_product_all_expenses(self):
-        latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
-            [], limit=1, order="id desc"
-        )
-        for rec in self:
-            self.env["ozon.all_expenses"].create_update_all_product_expenses(
-                rec, latest_indirect_expenses
-            )
-
     def get_view(self, view_id=None, view_type="form", **options):
         res = super(Product, self).get_view(view_id=view_id, view_type=view_type)
         if view_type == "form":
