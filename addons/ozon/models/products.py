@@ -336,21 +336,9 @@ class Product(models.Model):
                 lambda r: r.kind == "percent"
             )
             total_percent = sum(all_per_expenses.mapped("percent"))
-            tax_percent_from_price = rec.all_expenses_ids.filtered(
-                lambda r: r.category == "Налоги"
-            ).percent
-            if rec.profitability_norm:
-                ros = rec.profitability_norm.value
-            else:
-                ros = 0
-            if rec.investment_expenses_id:
-                roi = rec.investment_expenses_id.value
-            else:
-                roi = 0
-
-            rec.expected_price = sum_fix_expenses / (
-                1 - total_percent - ros - tax_percent_from_price - roi
-            )
+            # print(f"{rec.expected_price} = {sum_fix_expenses}/(1 - {total_percent})")
+            rec.expected_price = sum_fix_expenses / (1 - total_percent)
+            # print(rec.expected_price)
 
     def _compute_price_delta(self):
         for rec in self:
@@ -1292,6 +1280,13 @@ class Product(models.Model):
                 prod_calc_rec.new_value = mean(new_coef_profs)
 
     def calculate(self):
+        # TODO: удалить после тестов
+        # latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
+        #     [],
+        #     limit=1,
+        #     order="create_date desc",
+        # )
+        # latest_indirect_expenses.coef_total = 15
         self._compute_product_calculator_ids()
         self.update_current_product_all_expenses()
         return super(Product, self).write({})
