@@ -306,7 +306,7 @@ class InvestmentExpensesWizard(models.TransientModel):
     _description = "Wizard Инвестиционные затраты"
 
     investment_expenses_id = fields.Many2one(
-        "ozon.investment_expenses", string="Инвестиционные затраты"
+        "ozon.investment_expenses", string="Investment"
     )
 
     def change_investment_expenses(self):
