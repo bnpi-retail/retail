@@ -284,15 +284,14 @@ class Product(models.Model):
         string="Группа отклонения от прибыли",
     )
     profit = fields.Float(
-        string="Прибыль от актуальной цены", compute="_compute_profit", store=True
+        string="Прибыль от актуальной цены", compute="_compute_profit"
     )
     profit_ideal = fields.Float(
-        string="Идеальная прибыль", compute="_compute_profit_ideal", store=True
+        string="Идеальная прибыль", compute="_compute_profit_ideal"
     )
     profit_delta = fields.Float(
         string="Разница между прибылью и идеальной прибылью",
         compute="_compute_profit_delta",
-        store=True,
     )
     pricing_strategy_id = fields.Many2one(
         "ozon.pricing_strategy", string="Стратегия назначения цен"
@@ -422,34 +421,9 @@ class Product(models.Model):
             },
         }
 
-    @api.depends(
-        "price",
-        "total_fbs_fix_expenses_max",
-        "total_fbo_fix_expenses_max",
-        "total_fbs_percent_expenses",
-        "total_fbo_percent_expenses",
-    )
     def _compute_profit(self):
-        for record in self:
-            if record.trading_scheme == "FBS":
-                record.profit = (
-                    record.price
-                    - record.total_fbs_fix_expenses_max
-                    - record.total_fbs_percent_expenses
-                )
-            elif record.trading_scheme == "FBO":
-                record.profit = (
-                    record.price
-                    - record.total_fbo_fix_expenses_max
-                    - record.total_fbo_percent_expenses
-                )
-            # TODO: удалить после того, как все товары будут либо FBS, либо FBO
-            else:
-                record.profit = (
-                    record.price
-                    - record.total_fbs_fix_expenses_max
-                    - record.total_fbs_percent_expenses
-                )
+        for rec in self:
+            rec.profit = rec.price - rec.total_all_expenses_ids_except_tax_roe_roi
 
     @api.depends("price", "profitability_norm.value")
     def _compute_profit_ideal(self):
@@ -519,8 +493,7 @@ class Product(models.Model):
     def _compute_total_all_expenses_ids_except_tax_roe_roi(self):
         for rec in self:
             all_expenses_except_tax_roe_roi = rec.all_expenses_ids.filtered(
-                lambda r: r.category
-                not in ["Рентабельность", "Налоги", "Investment"]
+                lambda r: r.category not in ["Рентабельность", "Налоги", "Investment"]
             )
             total_expenses = sum(all_expenses_except_tax_roe_roi.mapped("value"))
             rec.total_all_expenses_ids_except_tax_roe_roi = total_expenses
