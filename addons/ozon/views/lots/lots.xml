@@ -127,8 +127,6 @@
                                         <field name="profit" />
                                         <field name="profit_ideal" />
                                         <field name="profit_delta" />
-                                        <field name="profitability_norm" readonly="true" />
-                                        <field name="investment_expenses_id" />
                                     </group>
                                 </group>
                                 <group>
@@ -151,6 +149,8 @@
                         </page>
                         <page id="page_all_expenses_info" string="Структура затрат">
                             <group string="Структура затрат">
+                                <field name="profitability_norm" />
+                                <field name="investment_expenses_id" />
                                 <field name="all_expenses_ids">
                                     <tree>
                                         <field name="category" />
