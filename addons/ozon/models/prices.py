@@ -340,6 +340,10 @@ class AllExpenses(models.Model):
             if rec.kind == "fix":
                 rec.expected_value = rec.value
             else:
+                if rec.category == "Investment":
+                    rec.percent = rec.product_id.investment_expenses_id.value
+                elif rec.category == "Рентабельность":
+                    rec.percent = rec.product_id.profitability_norm.value
                 rec.expected_value = rec.product_id.expected_price * rec.percent
 
     def create_update_all_product_expenses(self, products, latest_indirect_expenses):
