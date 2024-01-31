@@ -266,7 +266,7 @@ class Product(models.Model):
         "ozon.investment_expenses", string="Инвестиционные затраты", readonly=True
     )
     profitability_norm = fields.Many2one(
-        "ozon.profitability_norm", string="Норма прибыльности"
+        "ozon.profitability_norm", string="Ожидаемая доходность"
     )
     coef_profitability = fields.Float(
         string="Отклонение от прибыли",
@@ -1629,11 +1629,13 @@ class ProductGraphExtension(models.Model):
                 "product_id": rec.id,
             }
 
-            records = model_stock.search([
-                ("product", "=", rec.id),
-                ("timestamp", ">=", f"{year}-01-01"),
-                ("timestamp", "<=", f"{year}-12-31"),
-            ])
+            records = model_stock.search(
+                [
+                    ("product", "=", rec.id),
+                    ("timestamp", ">=", f"{year}-01-01"),
+                    ("timestamp", "<=", f"{year}-12-31"),
+                ]
+            )
 
             graph_data = {"dates": [], "num": []}
             for record in records:
@@ -1663,18 +1665,20 @@ class ProductGraphExtension(models.Model):
         year = self._get_year()
 
         for rec in self:
-            records = model_analysis_data.search([
-                ("product", "=", rec.id),
-                ("timestamp_from", ">=", f"{year}-01-01"),
-                ("timestamp_to", "<=", f"{year}-12-31"),
-            ])
+            records = model_analysis_data.search(
+                [
+                    ("product", "=", rec.id),
+                    ("timestamp_from", ">=", f"{year}-01-01"),
+                    ("timestamp_to", "<=", f"{year}-12-31"),
+                ]
+            )
 
             payload = {
                 "model": "analysis_data",
                 "product_id": rec.id,
                 "hits_view": None,
                 "hits_tocart": None,
-                "average_data": None
+                "average_data": None,
             }
 
             graph_data = {"dates": [], "num": []}
@@ -1698,9 +1702,9 @@ class ProductGraphExtension(models.Model):
             payload["hits_tocart"] = graph_data
 
             if rec.categories.img_data_analysis_data_this_year:
-                payload["average_data"] = (
-                    rec.categories.img_data_analysis_data_this_year
-                )
+                payload[
+                    "average_data"
+                ] = rec.categories.img_data_analysis_data_this_year
 
             self._send_request(payload)
 
@@ -1708,11 +1712,13 @@ class ProductGraphExtension(models.Model):
         return datetime.now().year
 
     def _get_records(self, model, record, year, timestamp_field):
-        return model.search([
-            ("product", "=", record.id),
-            (timestamp_field, ">=", f"{year}-01-01"),
-            (timestamp_field, "<=", f"{year}-12-31"),
-        ])
+        return model.search(
+            [
+                ("product", "=", record.id),
+                (timestamp_field, ">=", f"{year}-01-01"),
+                (timestamp_field, "<=", f"{year}-12-31"),
+            ]
+        )
 
     def _send_request(self, payload):
         endpoint = "http://django:8000/api/v1/draw_graph"
