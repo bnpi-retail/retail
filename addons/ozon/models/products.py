@@ -10,7 +10,7 @@ from operator import itemgetter
 from lxml import etree
 
 from odoo import models, fields, api
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 logger = logging.getLogger()
 
@@ -56,6 +56,14 @@ class Product(models.Model):
     )
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
+    expected_price = fields.Float(
+        string="Ожидаемая цена", readonly=True, compute="_compute_expected_price"
+    )
+    price_delta = fields.Float(
+        string="Разница между актуальной и ожидаемой ценой",
+        readonly=True,
+        compute="_compute_price_delta",
+    )
     old_price = fields.Float(string="Цена до учёта скидок", readonly=True)
     ext_comp_min_price = fields.Float(
         string="Минимальная цена товара у конкурентов на другой площадке", readonly=True
@@ -228,7 +236,21 @@ class Product(models.Model):
     total_fbs_percent_expenses = fields.Float(
         string="Итого", compute="_compute_total_fbs_percent_expenses", store=True
     )
-
+    all_expenses_ids = fields.One2many(
+        "ozon.all_expenses", "product_id", string="Все затраты", readonly=True
+    )
+    total_all_expenses_ids = fields.Float(
+        string="Итого общих затрат, исходя из актуальной цены",
+        compute="_compute_total_all_expenses_ids",
+    )
+    total_expected_price_all_expenses_ids = fields.Float(
+        string="Итого общих затрат, исходя из ожидаемой цены",
+        compute="_compute_total_expected_price_all_expenses_ids",
+    )
+    total_all_expenses_ids_except_tax_roe_roi = fields.Float(
+        string="Итого общих затрат без налогов, ROE, ROI, исходя из актуальной цены",
+        compute="_compute_total_all_expenses_ids_except_tax_roe_roi",
+    )
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
     posting_ids = fields.Many2many("ozon.posting", string="Отправления Ozon")
     postings_count = fields.Integer(compute="_compute_count_postings")
@@ -249,8 +271,11 @@ class Product(models.Model):
     sales_per_day_last_30_days_group = fields.Char(
         string="Группа коэффициента продаваемости",
     )
+    investment_expenses_id = fields.Many2one(
+        "ozon.investment_expenses", string="Investment"
+    )
     profitability_norm = fields.Many2one(
-        "ozon.profitability_norm", string="Норма прибыльности"
+        "ozon.profitability_norm", string="Ожидаемая доходность"
     )
     coef_profitability = fields.Float(
         string="Отклонение от прибыли",
@@ -259,15 +284,14 @@ class Product(models.Model):
         string="Группа отклонения от прибыли",
     )
     profit = fields.Float(
-        string="Прибыль от актуальной цены", compute="_compute_profit", store=True
+        string="Прибыль от актуальной цены", compute="_compute_profit"
     )
     profit_ideal = fields.Float(
-        string="Идеальная прибыль", compute="_compute_profit_ideal", store=True
+        string="Идеальная прибыль", compute="_compute_profit_ideal"
     )
     profit_delta = fields.Float(
         string="Разница между прибылью и идеальной прибылью",
         compute="_compute_profit_delta",
-        store=True,
     )
     pricing_strategy_id = fields.Many2one(
         "ozon.pricing_strategy", string="Стратегия назначения цен"
@@ -301,6 +325,36 @@ class Product(models.Model):
     revenue_share_temp = fields.Float()
     revenue_cumulative_share_temp = fields.Float()
     abc_group = fields.Char(size=3)
+
+    def _compute_expected_price(self):
+        # TODO: откуда берем РРЦ?
+        # ожид.цена=фикс.затраты/(1-процент_затрат-ожид.ROS-проц.налог-ожид.ROI)
+        for rec in self:
+            all_fix_expenses = rec.all_expenses_ids.filtered(lambda r: r.kind == "fix")
+            sum_fix_expenses = sum(all_fix_expenses.mapped("value"))
+            all_per_expenses = rec.all_expenses_ids.filtered(
+                lambda r: r.kind == "percent"
+            )
+            total_percent = sum(all_per_expenses.mapped("percent"))
+            tax_percent_from_price = rec.all_expenses_ids.filtered(
+                lambda r: r.category == "Налоги"
+            ).percent
+            if rec.profitability_norm:
+                ros = rec.profitability_norm.value
+            else:
+                ros = 0
+            if rec.investment_expenses_id:
+                roi = rec.investment_expenses_id.value
+            else:
+                roi = 0
+
+            rec.expected_price = sum_fix_expenses / (
+                1 - total_percent - ros - tax_percent_from_price - roi
+            )
+
+    def _compute_price_delta(self):
+        for rec in self:
+            rec.price_delta = rec.price - rec.expected_price
 
     @api.depends("products.total_cost_price")
     def _compute_total_cost_price(self):
@@ -367,34 +421,9 @@ class Product(models.Model):
             },
         }
 
-    @api.depends(
-        "price",
-        "total_fbs_fix_expenses_max",
-        "total_fbo_fix_expenses_max",
-        "total_fbs_percent_expenses",
-        "total_fbo_percent_expenses",
-    )
     def _compute_profit(self):
-        for record in self:
-            if record.trading_scheme == "FBS":
-                record.profit = (
-                    record.price
-                    - record.total_fbs_fix_expenses_max
-                    - record.total_fbs_percent_expenses
-                )
-            elif record.trading_scheme == "FBO":
-                record.profit = (
-                    record.price
-                    - record.total_fbo_fix_expenses_max
-                    - record.total_fbo_percent_expenses
-                )
-            # TODO: удалить после того, как все товары будут либо FBS, либо FBO
-            else:
-                record.profit = (
-                    record.price
-                    - record.total_fbs_fix_expenses_max
-                    - record.total_fbs_percent_expenses
-                )
+        for rec in self:
+            rec.profit = rec.price - rec.total_all_expenses_ids_except_tax_roe_roi
 
     @api.depends("price", "profitability_norm.value")
     def _compute_profit_ideal(self):
@@ -450,6 +479,24 @@ class Product(models.Model):
             record.total_fbs_percent_expenses = sum(
                 record.fbs_percent_expenses.mapped("price")
             )
+
+    def _compute_total_all_expenses_ids(self):
+        for rec in self:
+            rec.total_all_expenses_ids = sum(rec.all_expenses_ids.mapped("value"))
+
+    def _compute_total_expected_price_all_expenses_ids(self):
+        for rec in self:
+            rec.total_expected_price_all_expenses_ids = sum(
+                rec.all_expenses_ids.mapped("expected_value")
+            )
+
+    def _compute_total_all_expenses_ids_except_tax_roe_roi(self):
+        for rec in self:
+            all_expenses_except_tax_roe_roi = rec.all_expenses_ids.filtered(
+                lambda r: r.category not in ["Рентабельность", "Налоги", "Investment"]
+            )
+            total_expenses = sum(all_expenses_except_tax_roe_roi.mapped("value"))
+            rec.total_all_expenses_ids_except_tax_roe_roi = total_expenses
 
     @api.depends("price_our_history_ids.price")
     def _compute_price_history_values(self):
@@ -602,15 +649,19 @@ class Product(models.Model):
                 days = (datetime.now() - indicator_cost_price.create_date).days
                 summary = summary_types.get("cost_not_calculated")
                 if summary:
-                    summary.name = f"Себестоимость не подсчитана дней: {days}. " \
-                                   f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта."
+                    summary.name = (
+                        f"Себестоимость не подсчитана дней: {days}. "
+                        f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта."
+                    )
                 else:
-                    self.env['ozon.products.indicator.summary'].create({
-                        'name': f"Себестоимость не подсчитана дней: {days}. "
-                                f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта.",
-                        'type': 'cost_not_calculated',
-                        'ozon_product_id': record.id
-                    })
+                    self.env["ozon.products.indicator.summary"].create(
+                        {
+                            "name": f"Себестоимость не подсчитана дней: {days}. "
+                            f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта.",
+                            "type": "cost_not_calculated",
+                            "ozon_product_id": record.id,
+                        }
+                    )
 
             else:
                 summary = summary_types.get("cost_not_calculated")
@@ -624,16 +675,19 @@ class Product(models.Model):
                 days = (datetime.now() - indicator_no_competitor_r.create_date).days
                 summary = summary_types.get("no_competitor_robot")
                 if summary:
-
-                    summary.name = f"Продукт имеет менее 3х конкурентов в течение дней: {days}. " \
-                                   f"Цена не может быть рассчитана. Добавьте товары конкурентов."
+                    summary.name = (
+                        f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
+                        f"Цена не может быть рассчитана. Добавьте товары конкурентов."
+                    )
                 else:
-                    self.env['ozon.products.indicator.summary'].create({
-                        'name': f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
-                                f"Цена не может быть рассчитана. Добавьте товары конкурентов.",
-                        'type': 'no_competitor_robot',
-                        'ozon_product_id': record.id
-                    })
+                    self.env["ozon.products.indicator.summary"].create(
+                        {
+                            "name": f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
+                            f"Цена не может быть рассчитана. Добавьте товары конкурентов.",
+                            "type": "no_competitor_robot",
+                            "ozon_product_id": record.id,
+                        }
+                    )
 
             elif indicator_no_competitor_r and indicator_no_competitor_m:
                 manager = indicator_no_competitor_m.user_id
@@ -643,19 +697,23 @@ class Product(models.Model):
                 create_date = indicator_no_competitor_m.create_date.strftime("%d.%m.%Y")
                 summary_m = summary_types.get("no_competitor_manager")
                 if summary_m:
-                    summary_m.name = (f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
-                                      f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
-                                      f"что снизит точность прогнозирования правильной ценовой стратегии. "
-                                      f"Этот индикатор будет действовать до {expiration_date}")
+                    summary_m.name = (
+                        f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
+                        f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
+                        f"что снизит точность прогнозирования правильной ценовой стратегии. "
+                        f"Этот индикатор будет действовать до {expiration_date}"
+                    )
                 else:
-                    self.env['ozon.products.indicator.summary'].create({
-                        'name': f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
-                                f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
-                                f"что снизит точность прогнозирования правильной ценовой стратегии. "
-                                f"Этот индикатор будет действовать до {expiration_date}",
-                        'type': 'no_competitor_manager',
-                        'ozon_product_id': record.id
-                    })
+                    self.env["ozon.products.indicator.summary"].create(
+                        {
+                            "name": f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
+                            f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
+                            f"что снизит точность прогнозирования правильной ценовой стратегии. "
+                            f"Этот индикатор будет действовать до {expiration_date}",
+                            "type": "no_competitor_manager",
+                            "ozon_product_id": record.id,
+                        }
+                    )
 
                 # delete robot's summary
                 summary_r = summary_types.get("no_competitor_robot")
@@ -907,11 +965,11 @@ class Product(models.Model):
     def update_coefs_and_groups(self):
         all_products = self.search([])
         for i, prod in enumerate(all_products):
-            # product calculator ids
-            prod._compute_product_calculator_ids()
             # coefs
             prod._compute_coef_profitability()
             prod._compute_sales_per_day_last_30_days()
+            # product calculator ids
+            prod._compute_product_calculator_ids()
             # is_alive
             prod._compute_is_alive()
             print(
@@ -1014,11 +1072,18 @@ class Product(models.Model):
 
             product.percent_expenses = [(6, 0, percent_expenses_records)]
 
-            if i % 100 == 0:
-                self.env.cr.commit()
             print(
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
+
+    def update_all_expenses(self):
+        latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
+            [], limit=1, order="id desc"
+        )
+        all_products = self.env["ozon.products"].search([])
+        self.env["ozon.all_expenses"].create_update_all_product_expenses(
+            all_products, latest_indirect_expenses
+        )
 
     def get_view(self, view_id=None, view_type="form", **options):
         res = super(Product, self).get_view(view_id=view_id, view_type=view_type)
@@ -1164,16 +1229,7 @@ class Product(models.Model):
             for prod_calc_rec in prod_calc_recs:
                 prod_calc_rec.new_value = 0
             return
-
-        # constants
-        if self.trading_scheme in ["FBS", "FBS, FBO", ""]:
-            total_expenses = (
-                self.total_fbs_fix_expenses_max + self.total_fbs_percent_expenses
-            )
-        elif self.trading_scheme == "FBO":
-            total_expenses = (
-                self.total_fbo_fix_expenses_max + self.total_fbo_percent_expenses
-            )
+        total_expenses = self.total_all_expenses_ids_except_tax_roe_roi
         prof_norm = self.profitability_norm.value if self.profitability_norm else 0.2
 
         # TODO: как считать новые значения, если применяется несколько стратегий?
@@ -1191,12 +1247,17 @@ class Product(models.Model):
                     comp_prices = self.competitors_with_price_ids.mapped("price")
                     min_comp_price = min(comp_prices)
                     new_price = round(min_comp_price * (1 - strategy_value), 2)
+                else:
+                    raise UserError("Конкуренты не заданы")
 
             if strategy_id == "profitability_norm":
                 prof_norm = strategy_value
                 if prof_norm == 0:
                     return
                 new_price = total_expenses / (1 - prof_norm)
+
+            if strategy_id == "expected_price":
+                new_price = self.expected_price
 
             new_profit = new_price - total_expenses
             new_profit_ideal = new_price * prof_norm
@@ -1222,6 +1283,7 @@ class Product(models.Model):
                 prod_calc_rec.new_value = mean(new_coef_profs)
 
     def calculate(self):
+        self._compute_product_calculator_ids()
         return super(Product, self).write({})
 
     @api.depends("posting_ids")
@@ -1442,7 +1504,7 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.qty)
             payload["two_weeks"] = graph_data
-            
+
             # rec.img_data_sale_two_weeks = graph_data
 
             records = model_sale.search(
@@ -1457,7 +1519,7 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.qty)
             payload["six_week"] = graph_data
-            
+
             # rec.img_data_sale_six_weeks = graph_data
 
             records = model_sale.search(
@@ -1531,8 +1593,6 @@ class ProductGraphExtension(models.Model):
                 graph_data["values"].append(record.qty)
             payload["current"] = graph_data
 
-            # rec.img_data_sale_last_year = graph_data
-
             if rec.categories.img_data_sale_this_year:
                 payload[
                     "average_graph_this_year"
@@ -1552,8 +1612,6 @@ class ProductGraphExtension(models.Model):
                 graph_data["values"].append(record.qty)
             payload["last"] = graph_data
 
-            # rec.img_data_sale_last_year = graph_data
-
             if rec.categories.img_data_sale_last_year:
                 payload[
                     "average_graph_last_year"
@@ -1569,7 +1627,8 @@ class ProductGraphExtension(models.Model):
     def _compute_img_stock(self):
         for rec in self:
             rec.img_html_stock = False
-            if not rec.img_url_stock: continue
+            if not rec.img_url_stock:
+                continue
 
             rec.img_html_stock = f"<img src='{rec.img_url_stock}' width='600'/>"
 
@@ -1596,8 +1655,6 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(record.timestamp.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.stocks_fbs)
             payload["current"] = graph_data
-
-            # rec.img_data_stock = graph_data
 
             self._send_request(payload)
 
@@ -1632,6 +1689,9 @@ class ProductGraphExtension(models.Model):
             payload = {
                 "model": "analysis_data",
                 "product_id": rec.id,
+                "hits_view": None,
+                "hits_tocart": None,
+                "average_data": None,
             }
 
             graph_data = {"dates": [], "num": []}
@@ -1643,7 +1703,7 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(average_date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.hits_view)
             payload["hits_view"] = graph_data
-            
+
             graph_data = {"dates": [], "num": []}
             for record in records:
                 start_date = record.timestamp_from
@@ -1654,16 +1714,10 @@ class ProductGraphExtension(models.Model):
                 graph_data["num"].append(record.hits_tocart)
             payload["hits_tocart"] = graph_data
 
-            if (
-                rec.categories.img_data_analysis_data_this_year_hits
-                and rec.categories.img_data_analysis_data_this_year_to_cart
-            ):
+            if rec.categories.img_data_analysis_data_this_year:
                 payload[
-                    "average_hits_view"
-                ] = rec.categories.img_data_analysis_data_this_year_hits
-                payload[
-                    "average_to_cart"
-                ] = rec.categories.img_data_analysis_data_this_year_to_cart
+                    "average_data"
+                ] = rec.categories.img_data_analysis_data_this_year
 
             self._send_request(payload)
 

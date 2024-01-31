@@ -1,0 +1,3 @@
+[submodule "django/app/chrome-extension"]
+	path = django/app/chrome-extension
+	url = https://github.com/bnpi-retail/chrome-extension.git

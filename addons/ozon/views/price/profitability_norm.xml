@@ -3,7 +3,7 @@
 
         <!-- Form -->
         <record id="view_ozon_profitability_norm_form" model="ir.ui.view">
-            <field name="name">Норма прибыльности</field>
+            <field name="name">Ожидаемая доходность</field>
             <field name="model">ozon.profitability_norm</field>
             <field name="arch" type="xml">
                 <form>
@@ -17,7 +17,7 @@
 
         <!-- Tree -->
         <record id="view_profitability_norm_tree" model="ir.ui.view">
-            <field name="name">Норма прибыльности</field>
+            <field name="name">Ожидаемая доходность</field>
             <field name="model">ozon.profitability_norm</field>
             <field name="arch" type="xml">
                 <tree>
@@ -30,22 +30,22 @@
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_profitability_norm">
-            <field name="name">Норма прибыльности</field>
+            <field name="name">Ожидаемая доходность</field>
             <field name="res_model">ozon.profitability_norm</field>
             <field name="view_mode">tree,form</field>
         </record>
 
         <!-- Menu -->
-        <menuitem name="Норма прибыльности"
+        <menuitem name="Ожидаемая доходность"
             id="menu_profitability_norm"
             parent="menu_price"
             action="action_profitability_norm"
             sequence="41" />
 
 
-        <!-- Wizards -->
+        <!-- Profitability norm wizard form -->
         <record id="wizard_view_profitability_norm_form" model="ir.ui.view">
-            <field name="name">Изменить норму прибыльности</field>
+            <field name="name">Назначить ожидаемую доходность</field>
             <field name="model">ozon.profitability_norm.wizard</field>
             <field name="arch" type="xml">
                 <form>

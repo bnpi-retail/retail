@@ -60,9 +60,7 @@ class GraphSaleLastYear(models.Model):
 class GraphInterest(models.Model):
     _inherit = "ozon.categories"
 
-    img_data_analysis_data_this_year_hits = fields.Text(string="Json data filed")
-    img_data_analysis_data_this_year_to_cart = fields.Text(string="Json data filed")
-
+    img_data_analysis_data_this_year = fields.Text(string="Json data filed")
     img_url_analysis_data_this_year = fields.Char(string="Ссылка на объект")
     img_html_analysis_data_this_year = fields.Html(
         compute="_compute_img_analysis_data_this_year",

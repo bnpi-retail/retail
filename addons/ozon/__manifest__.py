@@ -51,6 +51,9 @@
         "security/indicator/ir.model.access.csv",
         "security/reports/ir.model.access.csv",
         "security/settings/ir.model.access.csv",
+        "security/price/investment_expenses/investment_expenses/ir.model.access.csv",
+        "security/price/investment_expenses/investment_expenses_wizard/ir.model.access.csv",
+        "security/price/all_expenses/ir.model.access.csv",
         ### views
         "views/menu.xml",
         "views/price/menu.xml",
@@ -60,6 +63,7 @@
         "views/price/mass_pricing.xml",
         "views/price/profitability_norm.xml",
         "views/price/pricing_strategy.xml",
+        "views/price/investment_expenses.xml",
         "views/lots/menu.xml",
         "views/lots/lots.xml",
         "views/lots/tracked_search_queries.xml",

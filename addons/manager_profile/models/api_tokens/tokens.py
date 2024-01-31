@@ -7,15 +7,19 @@ from odoo import models, fields, api
 
 
 class MainApiTokens(models.Model):
-    _name = "manager_profile.api_tokens"
+    _name = "parser.api_tokens"
     _description = "Получение API токенов"
 
     token = fields.Char(string='API токен', readonly=True)
-    will_expire = fields.Date(string='Дата истечения API токена', readonly=True, widget='date', options={'datepicker_options': {'format': 'dd.MM.yyyy'}})
+    will_expire = fields.Date(string='Дата истечения API токена', readonly=True)
+    worker = fields.Many2one('res.users', string='Сотрудник')
+    download_link = fields.Char(
+        string='Ссылка на актуальную версию Chrome Extension', widget='url'
+    )
 
 
 class NameGetApiTokens(models.Model):
-    _inherit = "manager_profile.api_tokens"
+    _inherit = "parser.api_tokens"
 
     def name_get(self):
         """
@@ -29,11 +33,12 @@ class NameGetApiTokens(models.Model):
 
 
 class ActionsApiTokens(models.Model):
-    _inherit = "manager_profile.api_tokens"
+    _inherit = "parser.api_tokens"
 
     def actions_get_api_token(self):
-        user_email = self.env.user.email
-        payload = {"email": user_email}
+        email = self.worker.email
+
+        payload = {"email": email}
 
         endpoint = "http://django:8000/account/get_api_token/"
         api_token = getenv("API_TOKEN_DJANGO")
@@ -46,6 +51,8 @@ class ActionsApiTokens(models.Model):
         res = response.json()
         record = self[0]
         record.token = res["token"]
+        record.download_link = res["download_link"]
+
 
         expiration_date = datetime.strptime(res["expiration_date"], '%Y-%m-%d %H:%M:%S')
         record.will_expire = expiration_date

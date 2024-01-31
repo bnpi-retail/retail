@@ -1,5 +1,5 @@
 <odoo>
   <data>
-    <menuitem name="Личный кабинет" id="manager_profile.menu_root"  sequence="3" />
+    <menuitem name="Парсер" id="manager_profile.menu_root"  sequence="3" />
   </data>
 </odoo>
