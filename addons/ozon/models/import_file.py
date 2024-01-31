@@ -3,6 +3,7 @@ import base64
 import csv
 import logging
 from collections import defaultdict
+from typing import Any
 
 import openpyxl
 
@@ -16,6 +17,8 @@ from datetime import date
 from multiprocessing import Value
 from odoo import models, fields, api, exceptions
 from odoo.exceptions import UserError
+
+logger = logging.getLogger()
 
 from ..ozon_api import (
     ALL_COMMISSIONS,
@@ -1134,6 +1137,7 @@ class ImportFile(models.Model):
             period_to = None
             category = None
 
+            # get period and category via parsing
             for row in sheet.iter_rows(min_row=1, max_row=4, values_only=True):
                 if row[0]:
                     if "Период:" in row[0]:
@@ -1160,31 +1164,58 @@ class ImportFile(models.Model):
                     ordered_quantity = row[6]
                     ordered_amount = row[7]
 
-                    product_competitor = self.env["ozon.products_competitors"].search([
-                        ('article', '=', article),
-                        ('retail_seller_id.name', '=', competitor_name),
-                    ])
-                    if not product_competitor:
-                        seller = self.env['retail.seller'].search([('name', '=', competitor_name)])
-                        if len(seller) > 1:
-                            raise UserError('Найдено более одного продавца с одинаковым именем. '
-                                            'Убедитесь, что продавец один')
-                        if not seller:
-                            seller = self.env['retail.seller'].create({'name': competitor_name})
-                        product_competitor = self.env["ozon.products_competitors"].create({
-                            'name': product_name,
-                            'retail_seller_id': seller.id,
-                            'article': article,
-                        })
+                    product_competitor = self._get_product_competitor(article, competitor_name, product_name)
+                    competitor_sale = self._get_competitor_sale(
+                        product_competitor,
+                        period_from,
+                        period_to,
+                        ordered_quantity,
+                        ordered_amount,
+                        category_lvl3
+                    )
 
-                    competitor_sale = self.env['ozon.products_competitors.sale'].create({
-                        'period_from': period_from,
-                        'period_to': period_to,
-                        'ozon_products_competitors_id': product_competitor.id,
-                        'orders_qty': ordered_quantity,
-                        'orders_sum': ordered_amount,
-                        'category_lvl3': category_lvl3,
-                    })
                     competitors_sales.append(competitor_sale)
+                    logger.warning(competitor_sale)
+
+            # create report
 
         wb.close()
+
+    def _get_competitor_sale(
+            self, product_competitor, period_from, period_to, ordered_quantity, ordered_amount, category_lvl3):
+        competitor_sale = None
+        for sale in product_competitor.ozon_products_competitors_sale_ids:
+            if sale.period_from == period_from and sale.period_to == period_to:
+                sale.orders_qty = ordered_quantity
+                sale.orders_sum = ordered_amount
+                competitor_sale = sale
+        if not competitor_sale:
+            competitor_sale = self.env['ozon.products_competitors.sale'].create({
+                'period_from': period_from,
+                'period_to': period_to,
+                'ozon_products_competitors_id': product_competitor.id,
+                'orders_qty': ordered_quantity,
+                'orders_sum': ordered_amount,
+                'category_lvl3': category_lvl3,
+            })
+        return competitor_sale
+
+    def _get_product_competitor(self, article, competitor_name, product_name) -> Any:
+        product_competitor = self.env["ozon.products_competitors"].search([
+            ('article', '=', article),
+            ('retail_seller_id.name', '=', competitor_name),
+        ])
+        if not product_competitor:
+            seller = self.env['retail.seller'].search([('name', '=', competitor_name)])
+            if len(seller) > 1:
+                raise UserError('Найдено более одного продавца с одинаковым именем. '
+                                'Убедитесь, что продавец один')
+            if not seller:
+                seller = self.env['retail.seller'].create({'name': competitor_name})
+            product_competitor = self.env["ozon.products_competitors"].create({
+                'name': product_name,
+                'retail_seller_id': seller.id,
+                'article': article,
+            })
+
+        return product_competitor
