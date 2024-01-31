@@ -18,11 +18,11 @@
                             </group>
                         </group>
 
-                        <field name="ozon_report_competitor_category_share">
+                        <field name="ozon_report_competitor_category_share_ids">
                             <tree string="" editable="bottom">
                                 <field name="place" string="#" readonly="1"/>
                                 <field name="retail_seller_id" string="Продавец" readonly="1"/>
-                                <field name="category_share" string="Доля в категории" readonly="1"/>
+                                <field name="category_share" string="Доля в категории"/>
                                 <field name="turnover" string="Оборот" readonly="1"/>
                                 <field name="turnover_growth" string="Рост оборота"/>
                             </tree>
@@ -58,7 +58,8 @@
                             <group>
                                 <field name="place" string="Место в категории" class="oe_inline" readonly="1"/>
                                 <field name="retail_seller_id" string="Продавец" class="oe_inline" readonly="1"/>
-                                <field name="category_share" string="Доля продавца в категории" class="oe_inline" readonly="1"/>
+                                <field name="category_share" string="Доля продавца в категории" class="oe_inline"
+                                       readonly="1"/>
                                 <field name="turnover" string="Оборот" class="oe_inline" readonly="1"/>
                                 <field name="turnover_growth" string="Рост оборота" class="oe_inline" readonly="0"/>
                             </group>
@@ -78,6 +79,16 @@
                     <field name="period_from" string="За период с" readonly="1"/>
                     <field name="period_to" string="по" readonly="1"/>
                 </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.server" id="action_do_report_category_market_share">
+            <field name="name">Рассчитать долю рынка товаров</field>
+            <field name="model_id" ref="model_ozon_report_category_market_share"/>
+            <field name="binding_model_id" ref="model_ozon_report_category_market_share"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = records.action_do_report_category_market_share()
             </field>
         </record>
 

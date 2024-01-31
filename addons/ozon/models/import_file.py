@@ -1175,10 +1175,8 @@ class ImportFile(models.Model):
             })
 
             # accumulate data from file
-            competitors_sales = []
-            total_quantity = 0
-            total_amount = 0
-            sales_and_share_per_seller = defaultdict(lambda: [0, 0])
+            competitors_sales_ids = []
+            sales_and_share_per_seller = defaultdict(int)
             for row in sheet.iter_rows(min_row=4, max_col=8, max_row=sheet.max_row, values_only=True):
                 if row[0] and row[0] != '№':
                     competitor_name = row[1]
@@ -1189,13 +1187,10 @@ class ImportFile(models.Model):
                     ordered_quantity = row[6]
                     ordered_amount = row[7]
 
-                    total_quantity += ordered_quantity
-                    total_amount += ordered_amount
-
                     product_competitor, seller = self._get_product_competitor_and_seller(
                         article, competitor_name, product_name
                     )
-                    sales_and_share_per_seller[seller][0] += ordered_amount
+                    sales_and_share_per_seller[seller] += ordered_amount
 
                     competitor_sale = self._get_competitor_sale(
                         product_competitor,
@@ -1206,17 +1201,7 @@ class ImportFile(models.Model):
                         category_lvl3,
                         seller
                     )
-                    competitors_sales.append(competitor_sale)
-
-            # calculate shares
-            competitors_sales_ids = []
-            for sale in competitors_sales:
-                revenue_share_percentage = (sale.orders_sum * 100) / total_amount
-                sale.revenue_share_percentage = revenue_share_percentage
-                sale.orders_avg_price = sale.orders_sum / sale.orders_qty
-                seller = sale.retail_seller_id
-                sales_and_share_per_seller[seller][1] += revenue_share_percentage
-                competitors_sales_ids.append(sale.id)
+                    competitors_sales_ids.append(competitor_sale.id)
 
             # create ozon.report.competitor_category_share
             sellers = [(seller, shares) for seller, shares in sales_and_share_per_seller.items()]
@@ -1227,15 +1212,14 @@ class ImportFile(models.Model):
                 competitor_category_share = self.env["ozon.report.competitor_category_share"].create({
                     'place': place,
                     'retail_seller_id': seller_tuple[0].id,
-                    'category_share': seller_tuple[1][1],
-                    'turnover': seller_tuple[1][0],
+                    'turnover': seller_tuple[1],
                 })
                 competitors_category_share_ids.append(competitor_category_share.id)
                 place += 1
 
             # add data to report
             report.ozon_products_competitors_sale_ids = competitors_sales_ids
-            report.ozon_report_competitor_category_share = competitors_category_share_ids
+            report.ozon_report_competitor_category_share_ids = competitors_category_share_ids
 
         wb.close()
 

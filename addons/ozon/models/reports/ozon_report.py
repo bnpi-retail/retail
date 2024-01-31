@@ -1,4 +1,5 @@
 from odoo import models, fields
+import logging
 
 
 class OzonReport(models.Model):
@@ -23,9 +24,22 @@ class OzonReportCategoryMarketShare(models.Model):
 
     ozon_products_competitors_sale_ids = fields.One2many(
         "ozon.products_competitors.sale", 'ozon_report_category_market_share')
-    ozon_report_competitor_category_share = fields.One2many(
+    ozon_report_competitor_category_share_ids = fields.One2many(
         "ozon.report.competitor_category_share", 'ozon_report_category_market_share'
     )
+
+    def action_do_report_category_market_share(self):
+        for record in self:
+            known_share_percentage = 0
+            total_amount = 0
+            for competitor_category_share in record.ozon_report_competitor_category_share_ids:
+                known_share_percentage += competitor_category_share.category_share
+                total_amount += competitor_category_share.turnover
+
+            for sale in record.ozon_products_competitors_sale_ids:
+                revenue_share_percentage = (sale.orders_sum * known_share_percentage) / total_amount
+                sale.revenue_share_percentage = revenue_share_percentage
+                sale.orders_avg_price = sale.orders_sum / sale.orders_qty
 
 
 class OzonReportCompetitorCategoryShare(models.Model):
