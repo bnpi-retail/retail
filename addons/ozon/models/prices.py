@@ -330,15 +330,17 @@ class AllExpenses(models.Model):
     category = fields.Char(string="Категория затрат", readonly=True)
     percent = fields.Float(string="Процент")
     value = fields.Float(string="Абсолютное значение в руб, исходя из текущей цены")
-    rrp_value = fields.Float(string="Ожидаемое значение", compute="_compute_rrp_value")
+    expected_value = fields.Float(
+        string="Ожидаемое значение", compute="_compute_expected_value"
+    )
 
-    def _compute_rrp_value(self):
+    def _compute_expected_value(self):
         # TODO: как рассчитываем затраты исходя из РРЦ?
         for rec in self:
             if rec.kind == "fix":
-                rec.rrp_value = rec.value
+                rec.expected_value = rec.value
             else:
-                rec.rrp_value = rec.product_id.rrp * rec.percent
+                rec.expected_value = rec.product_id.expected_price * rec.percent
 
     def create_update_all_product_expenses(self, products, latest_indirect_expenses):
         tax = products[0].seller.tax

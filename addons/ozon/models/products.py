@@ -56,8 +56,8 @@ class Product(models.Model):
     )
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
-    rrp = fields.Float(
-        string="Рекомендованная розничная цена", readonly=True, compute="_compute_rrp"
+    expected_price = fields.Float(
+        string="Ожидаемая цена", readonly=True, compute="_compute_expected_price"
     )
     old_price = fields.Float(string="Цена до учёта скидок", readonly=True)
     ext_comp_min_price = fields.Float(
@@ -238,9 +238,9 @@ class Product(models.Model):
         string="Итого общих затрат, исходя из актуальной цены",
         compute="_compute_total_all_expenses_ids",
     )
-    total_rrp_all_expenses_ids = fields.Float(
-        string="Итого общих затрат, исходя из РРЦ",
-        compute="_compute_total_rrp_all_expenses_ids",
+    total_expected_price_all_expenses_ids = fields.Float(
+        string="Итого общих затрат, исходя из ожидаемой цены",
+        compute="_compute_total_expected_price_all_expenses_ids",
     )
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
     posting_ids = fields.Many2many("ozon.posting", string="Отправления Ozon")
@@ -318,10 +318,11 @@ class Product(models.Model):
     revenue_cumulative_share_temp = fields.Float()
     abc_group = fields.Char(size=3)
 
-    def _compute_rrp(self):
+    def _compute_expected_price(self):
         # TODO: откуда берем РРЦ?
+        # ожид.цена=фикс.затраты/(1-процент_затрат-ожид.ROS-проц.налог-ожид.ROI)
         for rec in self:
-            rec.rrp = rec.price
+            rec.expected_price = rec.price
 
     @api.depends("products.total_cost_price")
     def _compute_total_cost_price(self):
@@ -476,10 +477,10 @@ class Product(models.Model):
         for rec in self:
             rec.total_all_expenses_ids = sum(rec.all_expenses_ids.mapped("value"))
 
-    def _compute_total_rrp_all_expenses_ids(self):
+    def _compute_total_expected_price_all_expenses_ids(self):
         for rec in self:
-            rec.total_rrp_all_expenses_ids = sum(
-                rec.all_expenses_ids.mapped("rrp_value")
+            rec.total_expected_price_all_expenses_ids = sum(
+                rec.all_expenses_ids.mapped("expected_value")
             )
 
     @api.depends("price_our_history_ids.price")

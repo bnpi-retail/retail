@@ -121,7 +121,7 @@
                                         <field name="price" />
                                         <field name="old_price"
                                             style="text-decoration:line-through;" />
-                                        <field name="rrp" />
+                                        <field name="expected_price" />
                                     </group>
                                     <group string="Прибыль">
                                         <field name="profit" />
@@ -157,11 +157,11 @@
                                         <field name="kind" />
                                         <field name="percent" />
                                         <field name="value" />
-                                        <field name="rrp_value" />
+                                        <field name="expected_value" />
                                     </tree>
                                 </field>
                                 <field name="total_all_expenses_ids" />
-                                <field name="total_rrp_all_expenses_ids" />
+                                <field name="total_expected_price_all_expenses_ids" />
                             </group>
                         </page>
                         <page id="page_lot_expenses_info" string="Комиссии и себестоимость">
