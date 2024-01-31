@@ -247,6 +247,10 @@ class Product(models.Model):
         string="Итого общих затрат, исходя из ожидаемой цены",
         compute="_compute_total_expected_price_all_expenses_ids",
     )
+    total_all_expenses_ids_except_tax_roe_roi = fields.Float(
+        string="Итого общих затрат без налогов, ROE, ROI, исходя из актуальной цены",
+        compute="_compute_total_all_expenses_ids_except_tax_roe_roi",
+    )
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
     posting_ids = fields.Many2many("ozon.posting", string="Отправления Ozon")
     postings_count = fields.Integer(compute="_compute_count_postings")
@@ -511,6 +515,15 @@ class Product(models.Model):
             rec.total_expected_price_all_expenses_ids = sum(
                 rec.all_expenses_ids.mapped("expected_value")
             )
+
+    def _compute_total_all_expenses_ids_except_tax_roe_roi(self):
+        for rec in self:
+            all_expenses_except_tax_roe_roi = rec.all_expenses_ids.filtered(
+                lambda r: r.category
+                not in ["Рентабельность", "Налоги", "Инвестиционные затраты"]
+            )
+            total_expenses = sum(all_expenses_except_tax_roe_roi.mapped("value"))
+            rec.total_all_expenses_ids_except_tax_roe_roi = total_expenses
 
     @api.depends("price_our_history_ids.price")
     def _compute_price_history_values(self):
@@ -1243,16 +1256,7 @@ class Product(models.Model):
             for prod_calc_rec in prod_calc_recs:
                 prod_calc_rec.new_value = 0
             return
-
-        # constants
-        if self.trading_scheme in ["FBS", "FBS, FBO", ""]:
-            total_expenses = (
-                self.total_fbs_fix_expenses_max + self.total_fbs_percent_expenses
-            )
-        elif self.trading_scheme == "FBO":
-            total_expenses = (
-                self.total_fbo_fix_expenses_max + self.total_fbo_percent_expenses
-            )
+        total_expenses = self.total_all_expenses_ids_except_tax_roe_roi
         prof_norm = self.profitability_norm.value if self.profitability_norm else 0.2
 
         # TODO: как считать новые значения, если применяется несколько стратегий?
