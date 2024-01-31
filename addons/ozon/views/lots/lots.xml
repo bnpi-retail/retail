@@ -164,7 +164,7 @@
                                     </tree>
                                 </field>
                                 <field name="price_delta" />
-                                <!-- <field name="total_all_expenses_ids_except_tax_roe_roi" /> -->
+                                <field name="total_all_expenses_ids_except_tax_roe_roi" />
                                 <!-- <field name="total_all_expenses_ids" />
                                 <field name="total_expected_price_all_expenses_ids" /> -->
                             </group>
