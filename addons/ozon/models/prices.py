@@ -273,7 +273,7 @@ class PriceHistory(models.Model):
 
 class ProfitabilityNorm(models.Model):
     _name = "ozon.profitability_norm"
-    _description = "Норма прибыльности"
+    _description = "Ожидаемая доходность"
 
     name = fields.Char(string="Наименование")
     value = fields.Float(string="Значение")
@@ -281,10 +281,10 @@ class ProfitabilityNorm(models.Model):
 
 class ProfitabilityNormWizard(models.TransientModel):
     _name = "ozon.profitability_norm.wizard"
-    _description = "Wizard Норма прибыльности"
+    _description = "Wizard Ожидаемая доходность"
 
     profitability_norm = fields.Many2one(
-        "ozon.profitability_norm", string="Норма прибыльности"
+        "ozon.profitability_norm", string="Ожидаемая доходность"
     )
 
     def change_profitability_norm(self):
@@ -295,7 +295,7 @@ class ProfitabilityNormWizard(models.TransientModel):
 
 class InvestmentExpenses(models.Model):
     _name = "ozon.investment_expenses"
-    _description = "Инвестиционные затраты"
+    _description = "Investment"
 
     name = fields.Char(string="Наименование")
     value = fields.Float(string="Значение")
@@ -306,7 +306,7 @@ class InvestmentExpensesWizard(models.TransientModel):
     _description = "Wizard Инвестиционные затраты"
 
     investment_expenses_id = fields.Many2one(
-        "ozon.investment_expenses", string="Инвестиционные затраты"
+        "ozon.investment_expenses", string="Investment"
     )
 
     def change_investment_expenses(self):
@@ -330,17 +330,17 @@ class AllExpenses(models.Model):
     category = fields.Char(string="Категория затрат", readonly=True)
     percent = fields.Float(string="Процент")
     value = fields.Float(string="Абсолютное значение в руб, исходя из текущей цены")
-    rrp_value = fields.Float(
-        string="Абсолютное значение в руб, исходя из РРЦ", compute="_compute_rrp_value"
+    expected_value = fields.Float(
+        string="Ожидаемое значение", compute="_compute_expected_value"
     )
 
-    def _compute_rrp_value(self):
+    def _compute_expected_value(self):
         # TODO: как рассчитываем затраты исходя из РРЦ?
         for rec in self:
             if rec.kind == "fix":
-                rec.rrp_value = rec.value
+                rec.expected_value = rec.value
             else:
-                rec.rrp_value = rec.product_id.rrp * rec.percent
+                rec.expected_value = rec.product_id.expected_price * rec.percent
 
     def create_update_all_product_expenses(self, products, latest_indirect_expenses):
         tax = products[0].seller.tax
@@ -362,22 +362,37 @@ class AllExpenses(models.Model):
             )
             total_expenses += prod.products.total_cost_price
             # услуги озон
-            category = "Услуги Ozon"
-            for k, v in COEF_FIELDNAMES_STRINGS_WITHOUT_ACQUIRING.items():
-                percent = latest_indirect_expenses[k] / 100
-                value = price * percent
-                data.append(
-                    {
-                        "product_id": prod.id,
-                        "name": v,
-                        "description": f"{latest_indirect_expenses[k]}%",
-                        "kind": "percent",
-                        "category": category,
-                        "percent": percent,
-                        "value": value,
-                    }
-                )
-                total_expenses += value
+            # category = "Услуги Ozon"
+            # for k, v in COEF_FIELDNAMES_STRINGS_WITHOUT_ACQUIRING.items():
+            #     percent = latest_indirect_expenses[k] / 100
+            #     value = price * percent
+            #     data.append(
+            #         {
+            # "product_id": prod.id,
+            # "name": v,
+            # "description": f"{latest_indirect_expenses[k]}%",
+            # "kind": "percent",
+            # "category": category,
+            # "percent": percent,
+            # "value": value,
+            #         }
+            #     )
+            #     total_expenses += value
+            coef_total = latest_indirect_expenses.coef_total
+            data.append(
+                {
+                    "product_id": prod.id,
+                    "name": "Общий коэффициент косвенных затрат",
+                    "description": f"{round(coef_total,2)}%",
+                    "kind": "percent",
+                    "category": "Услуги Ozon",
+                    "percent": coef_total / 100,
+                    "value": price * coef_total / 100,
+                    # TODO: убрать после тестов
+                    # "percent": 0.05,
+                    # "value": price * 0.05,
+                }
+            )
             # вознаграждение озон, последняя миля, логистика, обработка, эквайринг
             if prod.trading_scheme == "FBO":
                 ozon_com = prod.fbo_percent_expenses.filtered(
@@ -426,8 +441,9 @@ class AllExpenses(models.Model):
                     {
                         "product_id": prod.id,
                         "name": last_mile.name,
-                        "kind": "fix",
+                        "kind": "percent",
                         "category": "Последняя миля",
+                        "percent": last_mile.price / price,
                         "value": last_mile.price,
                     },
                     {
@@ -447,8 +463,9 @@ class AllExpenses(models.Model):
                     {
                         "product_id": prod.id,
                         "name": acquiring.name,
-                        "kind": "fix",
+                        "kind": "percent",
                         "category": "Эквайринг",
+                        "percent": acquiring.price / price,
                         "value": acquiring.price,
                     },
                 ]
@@ -470,7 +487,7 @@ class AllExpenses(models.Model):
             data.append(
                 {
                     "product_id": prod.id,
-                    "name": "Норма прибыльности",
+                    "name": "Ожидаемая доходность",
                     "kind": "percent",
                     "category": "Рентабельность",
                     "value": prof_norm_value,
@@ -489,7 +506,7 @@ class AllExpenses(models.Model):
                     "product_id": prod.id,
                     "name": "Investment",
                     "kind": "percent",
-                    "category": "Инвестиционные затраты",
+                    "category": "Investment",
                     "value": inv_exp_value,
                     "percent": inv_exp_percent,
                 },
