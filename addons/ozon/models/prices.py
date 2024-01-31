@@ -330,21 +330,19 @@ class AllExpenses(models.Model):
     category = fields.Char(string="Категория затрат", readonly=True)
     percent = fields.Float(string="Процент")
     value = fields.Float(string="Абсолютное значение в руб, исходя из текущей цены")
-    expected_value = fields.Float(
-        string="Ожидаемое значение", compute="_compute_expected_value"
-    )
+    expected_value = fields.Float(string="Ожидаемое значение")
 
-    def _compute_expected_value(self):
-        # TODO: как рассчитываем затраты исходя из РРЦ?
-        for rec in self:
-            if rec.kind == "fix":
-                rec.expected_value = rec.value
-            else:
-                if rec.category == "Investment":
-                    rec.percent = rec.product_id.investment_expenses_id.value
-                elif rec.category == "Рентабельность":
-                    rec.percent = rec.product_id.profitability_norm.value
-                rec.expected_value = rec.product_id.expected_price * rec.percent
+    # def _compute_expected_value(self):
+    #     # TODO: как рассчитываем затраты исходя из РРЦ?
+    #     for rec in self:
+    #         if rec.kind == "fix":
+    #             rec.expected_value = rec.value
+    #         else:
+    #             if rec.category == "Investment":
+    #                 rec.percent = rec.product_id.investment_expenses_id.value
+    #             elif rec.category == "Рентабельность":
+    #                 rec.percent = rec.product_id.profitability_norm.value
+    #             rec.expected_value = rec.product_id.expected_price * rec.percent
 
     def create_update_all_product_expenses(self, products, latest_indirect_expenses):
         tax = products[0].seller.tax
@@ -354,6 +352,7 @@ class AllExpenses(models.Model):
         for idx, prod in enumerate(products):
             total_expenses = 0
             price = prod.price
+            expected_price = prod.expected_price
             # себестоимость
             data.append(
                 {
@@ -362,6 +361,7 @@ class AllExpenses(models.Model):
                     "kind": "fix",
                     "category": "Себестоимость",
                     "value": prod.products.total_cost_price,
+                    "expected_value": prod.products.total_cost_price,
                 }
             )
             total_expenses += prod.products.total_cost_price
@@ -392,6 +392,7 @@ class AllExpenses(models.Model):
                     "category": "Услуги Ozon",
                     "percent": coef_total / 100,
                     "value": price * coef_total / 100,
+                    "expected_value": expected_price * coef_total / 100,
                     # TODO: убрать после тестов
                     # "percent": 0.05,
                     # "value": price * 0.05,
@@ -441,6 +442,9 @@ class AllExpenses(models.Model):
                         "category": "Вознаграждение Ozon",
                         "percent": float(ozon_com.discription.replace("%", "")) / 100,
                         "value": ozon_com.price,
+                        "expected_value": expected_price
+                        * float(ozon_com.discription.replace("%", ""))
+                        / 100,
                     },
                     {
                         "product_id": prod.id,
@@ -449,6 +453,7 @@ class AllExpenses(models.Model):
                         "category": "Последняя миля",
                         "percent": last_mile.price / price,
                         "value": last_mile.price,
+                        "expected_value": expected_price * last_mile.price / price,
                     },
                     {
                         "product_id": prod.id,
@@ -456,6 +461,7 @@ class AllExpenses(models.Model):
                         "kind": "fix",
                         "category": "Логистика",
                         "value": logistics.price,
+                        "expected_value": logistics.price,
                     },
                     {
                         "product_id": prod.id,
@@ -463,6 +469,7 @@ class AllExpenses(models.Model):
                         "kind": "fix",
                         "category": "Обработка",
                         "value": processing.price,
+                        "expected_value": processing.price,
                     },
                     {
                         "product_id": prod.id,
@@ -471,6 +478,7 @@ class AllExpenses(models.Model):
                         "category": "Эквайринг",
                         "percent": acquiring.price / price,
                         "value": acquiring.price,
+                        "expected_value": expected_price * acquiring.price / price,
                     },
                 ]
             )
@@ -488,14 +496,16 @@ class AllExpenses(models.Model):
             else:
                 prof_norm_percent = 0
             prof_norm_value = price * prof_norm_percent
+            expected_prof_norm_value = expected_price * prof_norm_percent
             data.append(
                 {
                     "product_id": prod.id,
                     "name": "Ожидаемая доходность",
                     "kind": "percent",
                     "category": "Рентабельность",
-                    "value": prof_norm_value,
                     "percent": prof_norm_percent,
+                    "value": prof_norm_value,
+                    "expected_value": expected_prof_norm_value,
                 },
             )
             total_expenses += prof_norm_value
@@ -505,14 +515,16 @@ class AllExpenses(models.Model):
             else:
                 inv_exp_percent = 0
             inv_exp_value = price * inv_exp_percent
+            expected_inv_exp_value = expected_price * inv_exp_percent
             data.append(
                 {
                     "product_id": prod.id,
                     "name": "Investment",
                     "kind": "percent",
                     "category": "Investment",
-                    "value": inv_exp_value,
                     "percent": inv_exp_percent,
+                    "value": inv_exp_value,
+                    "expected_value": expected_inv_exp_value,
                 },
             )
             total_expenses += inv_exp_value
@@ -528,8 +540,9 @@ class AllExpenses(models.Model):
                     "description": tax_description,
                     "kind": "percent",
                     "category": "Налоги",
-                    "value": tax_value,
                     "percent": tax_value / price,
+                    "value": tax_value,
+                    "expected_value": expected_price * tax_value / price,
                 },
             )
             print(f"{idx} - All expenses were updated.")

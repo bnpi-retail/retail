@@ -157,9 +157,9 @@
                                 <field name="all_expenses_ids">
                                     <tree>
                                         <field name="category" />
-                                        <!-- <field name="kind" />
+                                        <field name="kind" />
                                         <field name="percent" />
-                                        <field name="value" /> -->
+                                        <field name="value" />
                                         <field name="expected_value" />
                                     </tree>
                                 </field>
