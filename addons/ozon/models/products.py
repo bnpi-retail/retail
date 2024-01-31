@@ -965,11 +965,11 @@ class Product(models.Model):
     def update_coefs_and_groups(self):
         all_products = self.search([])
         for i, prod in enumerate(all_products):
-            # product calculator ids
-            prod._compute_product_calculator_ids()
             # coefs
             prod._compute_coef_profitability()
             prod._compute_sales_per_day_last_30_days()
+            # product calculator ids
+            prod._compute_product_calculator_ids()
             # is_alive
             prod._compute_is_alive()
             print(
@@ -1283,6 +1283,7 @@ class Product(models.Model):
                 prod_calc_rec.new_value = mean(new_coef_profs)
 
     def calculate(self):
+        self._compute_product_calculator_ids()
         return super(Product, self).write({})
 
     @api.depends("posting_ids")
