@@ -59,6 +59,11 @@ class Product(models.Model):
     expected_price = fields.Float(
         string="Ожидаемая цена", readonly=True, compute="_compute_expected_price"
     )
+    price_delta = fields.Float(
+        string="Разница между актуальной и ожидаемой ценой",
+        readonly=True,
+        compute="_compute_price_delta",
+    )
     old_price = fields.Float(string="Цена до учёта скидок", readonly=True)
     ext_comp_min_price = fields.Float(
         string="Минимальная цена товара у конкурентов на другой площадке", readonly=True
@@ -343,6 +348,10 @@ class Product(models.Model):
             rec.expected_price = sum_fix_expenses / (
                 1 - total_percent - ros - tax_percent_from_price - roi
             )
+
+    def _compute_price_delta(self):
+        for rec in self:
+            rec.price_delta = rec.price - rec.expected_price
 
     @api.depends("products.total_cost_price")
     def _compute_total_cost_price(self):
