@@ -322,7 +322,27 @@ class Product(models.Model):
         # TODO: откуда берем РРЦ?
         # ожид.цена=фикс.затраты/(1-процент_затрат-ожид.ROS-проц.налог-ожид.ROI)
         for rec in self:
-            rec.expected_price = rec.price
+            all_fix_expenses = rec.all_expenses_ids.filtered(lambda r: r.kind == "fix")
+            sum_fix_expenses = sum(all_fix_expenses.mapped("value"))
+            all_per_expenses = rec.all_expenses_ids.filtered(
+                lambda r: r.kind == "percent"
+            )
+            total_percent = sum(all_per_expenses.mapped("percent"))
+            tax_percent_from_price = rec.all_expenses_ids.filtered(
+                lambda r: r.category == "Налоги"
+            ).percent
+            if rec.profitability_norm:
+                ros = rec.profitability_norm.value
+            else:
+                ros = 0
+            if rec.investment_expenses_id:
+                roi = rec.investment_expenses_id.value
+            else:
+                roi = 0
+
+            rec.expected_price = sum_fix_expenses / (
+                1 - total_percent - ros - tax_percent_from_price - roi
+            )
 
     @api.depends("products.total_cost_price")
     def _compute_total_cost_price(self):

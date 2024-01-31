@@ -388,6 +388,9 @@ class AllExpenses(models.Model):
                     "category": "Услуги Ozon",
                     "percent": coef_total / 100,
                     "value": price * coef_total / 100,
+                    # TODO: убрать после тестов
+                    # "percent": 0.05,
+                    # "value": price * 0.05,
                 }
             )
             # вознаграждение озон, последняя миля, логистика, обработка, эквайринг
