@@ -19,11 +19,11 @@
                         </group>
 
                         <field name="ozon_report_competitor_category_share">
-                            <tree string="">
-                                <field name="place" string="#"/>
-                                <field name="retail_seller_id" string="Продавец"/>
-                                <field name="category_share" string="Доля в категории"/>
-                                <field name="turnover" string="Оборот"/>
+                            <tree string="" editable="bottom">
+                                <field name="place" string="#" readonly="1"/>
+                                <field name="retail_seller_id" string="Продавец" readonly="1"/>
+                                <field name="category_share" string="Доля в категории" readonly="1"/>
+                                <field name="turnover" string="Оборот" readonly="1"/>
                                 <field name="turnover_growth" string="Рост оборота"/>
                             </tree>
                         </field>
@@ -31,7 +31,7 @@
                             <page string="Товары конкурентов">
                                 <field name="ozon_products_competitors_sale_ids">
                                     <tree string="Товары конкурентов"
-                                          default_order="retail_seller_id, revenue_share_percentage desc">
+                                          default_order="revenue_share_percentage desc">
                                         <field name="retail_seller_id" string="Продавец"/>
                                         <field name="ozon_products_competitors_id" string="Товар"/>
                                         <field name="orders_qty" string="Кол-во заказов"/>

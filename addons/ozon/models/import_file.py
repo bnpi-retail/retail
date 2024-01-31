@@ -1153,15 +1153,17 @@ class ImportFile(models.Model):
                         splited_row = row[0].split(': ')
                         category = splited_row[1]
 
-            category = self.env['ozon.categories'].search([('name_categories', '=', category)])
-            if not category:
-                category = self.env['ozon.categories'].create({'name_categories': category})
+            # create report
+            existed_category = self.env['ozon.categories'].search([('name_categories', '=', category)])
+            if not existed_category:
+                existed_category = self.env['ozon.categories'].create({'name_categories': category})
             report = self.env["ozon.report_category_market_share"].create({
-                'ozon_categories_id': category.id,
+                'ozon_categories_id': existed_category.id,
                 'period_from': period_from,
                 'period_to': period_to,
             })
 
+            # accumulate data from file
             competitors_sales = []
             total_quantity = 0
             total_amount = 0
@@ -1196,21 +1198,20 @@ class ImportFile(models.Model):
                     competitors_sales.append(competitor_sale)
 
             # calculate shares
+            competitors_sales_ids = []
             for sale in competitors_sales:
                 revenue_share_percentage = (sale.orders_sum * 100) / total_amount
                 sale.revenue_share_percentage = revenue_share_percentage
                 sale.orders_avg_price = sale.orders_sum / sale.orders_qty
                 seller = sale.retail_seller_id
                 sales_and_share_per_seller[seller][1] += revenue_share_percentage
+                competitors_sales_ids.append(sale.id)
 
             # create ozon.report.competitor_category_share
             sellers = [(seller, shares) for seller, shares in sales_and_share_per_seller.items()]
-
-            logger.warning(sellers)
-
             sellers.sort(key=lambda x: x[1], reverse=True)
             place = 1
-            competitors_category_share = []
+            competitors_category_share_ids = []
             for seller_tuple in sellers:
                 competitor_category_share = self.env["ozon.report.competitor_category_share"].create({
                     'place': place,
@@ -1218,12 +1219,12 @@ class ImportFile(models.Model):
                     'category_share': seller_tuple[1][1],
                     'turnover': seller_tuple[1][0],
                 })
-                competitors_category_share.append(competitor_category_share)
+                competitors_category_share_ids.append(competitor_category_share.id)
                 place += 1
 
             # add data to report
-            report.ozon_products_competitors_sale_ids = competitors_sales
-            report.ozon_report_competitor_category_share = competitors_category_share
+            report.ozon_products_competitors_sale_ids = competitors_sales_ids
+            report.ozon_report_competitor_category_share = competitors_category_share_ids
 
         wb.close()
 
@@ -1231,21 +1232,11 @@ class ImportFile(models.Model):
             self, product_competitor, period_from, period_to, ordered_quantity, ordered_amount, category_lvl3, seller):
         competitor_sale = None
         for sale in product_competitor.ozon_products_competitors_sale_ids:
-
-            logger.warning(product_competitor.ozon_products_competitors_sale_ids)
-
-            logger.warning(sale.retail_seller_id == seller)
-            logger.warning(seller)
-            logger.warning(sale.retail_seller_id)
-
-
             if sale.period_from == period_from and sale.period_to == period_to and sale.retail_seller_id == seller:
                 sale.orders_qty = ordered_quantity
                 sale.orders_sum = ordered_amount
                 competitor_sale = sale
-                logger.warning(222222222222222222)
         if not competitor_sale:
-            logger.warning(11111111111111111111)
             competitor_sale = self.env['ozon.products_competitors.sale'].create({
                 'period_from': period_from,
                 'period_to': period_to,
