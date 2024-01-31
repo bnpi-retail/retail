@@ -494,7 +494,7 @@
 
         <!-- Action to call investment_expenses wizard. This action calls wizard model form view -->
         <record id="wizard_action_investment_expenses" model="ir.actions.act_window">
-            <field name="name">Назначить инвестиционные затраты</field>
+            <field name="name">Назначить investment</field>
             <field name="type">ir.actions.act_window</field>
             <field name="binding_model_id" ref="model_ozon_products" />
             <field name="res_model">ozon.investment_expenses.wizard</field>
