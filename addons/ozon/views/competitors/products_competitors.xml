@@ -22,6 +22,7 @@
                             <field name="name"/>
                             <field name="product"/>
                             <field name="url"/>
+                            <field name="market_share" readonly="1"/>
                         </group>
                     </page>
                     <page id="page_graph_history" string="Аналитические данные">
@@ -44,6 +45,7 @@
                 <field name="id_product" string="Id товара на Ozon"/>
                 <field name="retail_seller_id" string="Продавец"/>
                 <field name="name" string="Наименование товара"/>
+                <field name="market_share" readonly="1"/>
                 <field name="product" string="Лот"/>
             </tree>
         </field>

@@ -107,6 +107,7 @@
                                 <group>
                                     <group>
                                         <field name="products" />
+                                        <field name="categories" string="Категория"/>
                                         <field name="id_on_platform" />
                                         <field name="article" />
                                     </group>
@@ -129,6 +130,7 @@
                                         <field name="is_selling" />
                                     </group>
                                     <group>
+                                        <field name="market_share" readonly="1"/>
                                         <field name="revenue_share_temp"
                                             string="Доля продукта в выручке, %"
                                             readonly="1" />
@@ -411,6 +413,7 @@
                         decoration-success="abc_group=='A'"
                         decoration-danger="abc_group=='C'"
                     />
+                    <field name="market_share" readonly="1"/>
                 </tree>
             </field>
         </record>
@@ -450,6 +453,8 @@
             <field name="arch" type="xml">
                 <search>
                     <field name="article" />
+                    <field name="categories"/>
+                    <filter name="ozon_caetgory" string="Category" context="{'group_by':'categories'}"/>
                     <searchpanel>
                         <field name="categories" />
                     </searchpanel>
