@@ -12,10 +12,10 @@ class DownloadDataGraph(http.Controller):
                     record[field],
                     [('Content-Type', 'text/plain'), ('Content-Disposition', f'attachment; filename={model}_{id}_{field}.txt')]
                 )
-            else:
-                return request.make_response(
-                    '',
-                    [('Content-Type', 'text/plain'), ('Content-Disposition', f'attachment; filename={model}_{id}_{field}.txt')]
-                )
         except Exception as e:
-            return str(e)
+            pass
+
+        return request.make_response(
+            '',
+            [('Content-Type', 'text/plain'), ('Content-Disposition', f'attachment; filename={model}_{id}_{field}.txt')]
+        )
