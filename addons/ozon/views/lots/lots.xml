@@ -378,8 +378,6 @@
                                             name="download_img_data_analysis_data"
                                         />
 
-
-                                    </group>
                                 </page>
                                 <page id="page_analysis_data_abc_analysis" string="ABC анализ">
                                     <group>
