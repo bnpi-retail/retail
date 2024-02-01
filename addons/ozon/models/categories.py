@@ -35,6 +35,15 @@ class GraphSaleThisYear(models.Model):
                 f"<img src='{rec.img_url_sale_this_year}' width='600'/>"
             )
 
+    def download_data_sale_this_year(self):
+        base_url = self.env['ir.config_parameter'].get_param('web.base.url')
+        action_url = f"{base_url}/web/content?model={self._name}&id={self.id}&field=img_data_sale_this_year&download=true&filename=data.json"
+        return {
+            'type': 'ir.actions.act_url',
+            'url': action_url,
+            'target': 'new',
+        }
+    
 
 class GraphSaleLastYear(models.Model):
     _inherit = "ozon.categories"

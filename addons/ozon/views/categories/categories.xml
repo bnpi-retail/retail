@@ -21,6 +21,13 @@
                                 <field name="img_html_sale_this_year" />
                                 <field name="img_data_sale_this_year" />
 
+                                <button string="Download Data File" 
+                                    type="object" 
+                                    class="oe_highlight" 
+                                    icon="fa-download" 
+                                    name="download_data_sale_this_year"
+                                />
+
                                 <field name="img_html_sale_last_year" />
                                 <field name="img_data_sale_last_year" />
 
