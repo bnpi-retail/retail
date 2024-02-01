@@ -1,6 +1,5 @@
 import requests
 
-from time import sleep
 from os import getenv
 from datetime import datetime
 from odoo import models, fields, api

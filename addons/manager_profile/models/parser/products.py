@@ -27,6 +27,10 @@ class ProductCompetitors(models.Model):
         compute="compute_count_price_competitors"
     )
 
+
+class NameGet(models.Model):
+    _inherit = "parser.products_competitors"
+
     def name_get(self):
         """
         Rename name records
