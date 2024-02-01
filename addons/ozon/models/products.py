@@ -751,7 +751,54 @@ class Product(models.Model):
                     )
 
     def _check_investment_expenses(self, record):
-        pass
+        if not record.investment_expenses_id:
+            found = 0
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == "no_investment_expenses":
+                    found = 1
+                    break
+            if not found:
+                self.env["ozon.products.indicator"].create(
+                    {
+                        "ozon_product_id": record.id,
+                        "source": "robot",
+                        "type": "no_investment_expenses",
+                        "expiration_date": False,
+                        "user_id": False,
+                    }
+                )
+        else:
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == "no_investment_expenses":
+                    indicator.end_date = datetime.now().date()
+                    indicator.active = False
+        # обновить выводы по индикаторам
+        self._update_indicator_summary(record)
+
+    def _check_profitability_norm(self, record):
+        if not record.profitability_norm:
+            found = 0
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == "no_profitability_norm":
+                    found = 1
+                    break
+            if not found:
+                self.env["ozon.products.indicator"].create(
+                    {
+                        "ozon_product_id": record.id,
+                        "source": "robot",
+                        "type": "no_profitability_norm",
+                        "expiration_date": False,
+                        "user_id": False,
+                    }
+                )
+        else:
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == "no_profitability_norm":
+                    indicator.end_date = datetime.now().date()
+                    indicator.active = False
+        # обновить выводы по индикаторам
+        self._update_indicator_summary(record)
 
     def _check_cost_price(self, record):
         cost_price = 0
