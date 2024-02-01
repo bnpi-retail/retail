@@ -1028,7 +1028,8 @@ class ImportFile(models.Model):
                         ordered_amount,
                         category_lvl3,
                         seller,
-                        product_name
+                        product_name,
+                        article
                     )
                     competitors_sales_ids.append(competitor_sale.id)
 
@@ -1054,7 +1055,7 @@ class ImportFile(models.Model):
 
     def _get_competitor_sale(
             self, product_competitor_or_product, period_from,
-            period_to, ordered_quantity, ordered_amount, category_lvl3, seller, product_name
+            period_to, ordered_quantity, ordered_amount, category_lvl3, seller, product_name, article
     ):
         competitor_sale = None
         if not seller.is_my_shop:
@@ -1072,7 +1073,7 @@ class ImportFile(models.Model):
                     'orders_sum': ordered_amount,
                     'category_lvl3': category_lvl3,
                     'retail_seller_id': seller.id,
-                    'name': product_name,
+                    'name': f"{article}, {product_name}",
                 })
         else:
             competitor_sale = self.env['ozon.products_competitors.sale'].create({
@@ -1083,7 +1084,7 @@ class ImportFile(models.Model):
                 'orders_sum': ordered_amount,
                 'category_lvl3': category_lvl3,
                 'retail_seller_id': seller.id,
-                'name': product_name,
+                'name': f"{article}, {product_name}",
             })
 
         return competitor_sale

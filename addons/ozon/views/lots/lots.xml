@@ -97,7 +97,7 @@
                                 <group>
                                     <group>
                                         <field name="products" />
-                                        <field name="categories"/>
+                                        <field name="categories" string="Категория"/>
                                         <field name="id_on_platform" />
                                         <field name="article" />
                                     </group>
