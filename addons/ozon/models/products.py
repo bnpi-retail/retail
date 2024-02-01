@@ -750,6 +750,9 @@ class Product(models.Model):
                         }
                     )
 
+    def _check_investment_expenses(self, record):
+        pass
+
     def _check_cost_price(self, record):
         cost_price = 0
         if record.fix_expenses:
