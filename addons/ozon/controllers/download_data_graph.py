@@ -13,6 +13,9 @@ class DownloadDataGraph(http.Controller):
                     [('Content-Type', 'text/plain'), ('Content-Disposition', f'attachment; filename={model}_{id}_{field}.txt')]
                 )
             else:
-                return request.not_found()
+                return request.make_response(
+                    '',
+                    [('Content-Type', 'text/plain'), ('Content-Disposition', f'attachment; filename={model}_{id}_{field}.txt')]
+                )
         except Exception as e:
             return str(e)
