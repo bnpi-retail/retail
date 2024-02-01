@@ -50,9 +50,9 @@ class ActionCreateOzonProducts(models.Model):
         for record in self:
             if not record.product \
             or record.is_our_product is True \
-            or record.is_processed is "complete":
+            or record.is_processed == "complete":
                 continue
-                
+                    
             record.is_processed = "complete"
 
             record_seller = self.get_or_create_seller(
@@ -105,6 +105,8 @@ class ActionCreateOzonProducts(models.Model):
 
     def create_price_history_competitors(self, record, record_product_competitors):
         model_price_history_competitors = self.env["ozon.price_history_competitors"]
+
+        raise ValueError(record_product_competitors.id)
 
         model_price_history_competitors.create({
                 "product_competitors": record_product_competitors.id,
