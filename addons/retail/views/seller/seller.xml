@@ -8,10 +8,11 @@
             <field name="name">Продавец</field>
             <field name="model">retail.seller</field>
             <field name="arch" type="xml">
-                <tree>
-                    <field name="name" width="150" />
-                    <field name="ogrn" width="150" />
-                    <field name="tax" width="150" />
+                <tree editable="bottom">
+                    <field name="name" width="150" readonly="1"/>
+                    <field name="ogrn" width="150" readonly="1"/>
+                    <field name="tax" width="150" readonly="1"/>
+                    <field name="my_shop" width="150" />
                 </tree>
             </field>
         </record>
