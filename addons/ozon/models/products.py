@@ -1097,7 +1097,7 @@ class Product(models.Model):
         ).new_value
 
         if new_price != 0:
-            comment = f"Цена рассчитана исходя из стратегий:\n{self.pricing_strategy_ids.mapped('name')}"
+            comment = f"Цена рассчитана исходя из стратегий: {' и '.join(self.pricing_strategy_ids.mapped('name'))}"
         else:
             comment = ""
         return {
