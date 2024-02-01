@@ -141,6 +141,7 @@ class PricingStrategy(models.Model):
     timestamp = fields.Date(string="Дата расчёта", default=fields.Date.today)
     name = fields.Char(string="Стратегия назначения цен")
     strategy_id = fields.Char(string="ID стратегии")
+    weight = fields.Float(string="Вес")
     value = fields.Float(string="Задаваемое значение")
     expected_price = fields.Float(string="Ожидаемая цена")
     message = fields.Char(string="Сообщение", readonly=True)
