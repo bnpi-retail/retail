@@ -94,7 +94,7 @@ const Contact = () => {
   const proccess = () => {
     handleDeleteSelected();
     handleSaveButtonClick();
-    setButtonVisibility(true);
+    setButtonVisibility(false);
     setButtonClicked(true);
     setSaveSuccessful(true);
   };
