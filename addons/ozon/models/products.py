@@ -1174,8 +1174,6 @@ class Product(models.Model):
 
     def _compute_product_calculator_ids(self):
         for rec in self:
-            # TODO: удалить после того, как очистишь таблицу от всех старых product_calculator_ids
-            rec.product_calculator_ids.unlink()
             if pc_recs := rec.product_calculator_ids:
                 for pc_rec in pc_recs:
                     if pc_rec.name == "Ожидаемая цена по всем стратегиям":
@@ -1203,6 +1201,7 @@ class Product(models.Model):
         if sum(self.pricing_strategy_ids.mapped("weight")) != 1:
             raise UserError("Суммарный вес стратегий должен составлять 1.")
         prices = []
+        errors = False
         for price_strategy in self.pricing_strategy_ids:
             strategy_value = price_strategy.value
             strategy_id = price_strategy.strategy_id
@@ -1211,40 +1210,40 @@ class Product(models.Model):
             if ind_sum := self.ozon_products_indicators_summary_ids.filtered(
                 lambda r: r.type == "cost_not_calculated"
             ):
-                price_strategy.value = None
-                price_strategy.expected_price = None
+                errors = True
                 price_strategy.message = ind_sum.name
-                return
 
             # TODO: переделать, когда появятся соотв. индикаторы
             if not self.profitability_norm:
-                price_strategy.value = None
-                price_strategy.expected_price = None
+                errors = True
                 price_strategy.message = (
                     "Невозможно рассчитать цену. Задайте ожидаемую доходность"
                 )
-                return
+
             if not self.investment_expenses_id:
-                price_strategy.value = None
-                price_strategy.expected_price = None
+                errors = True
                 price_strategy.message = (
                     "Невозможно рассчитать цену. Задайте Investment"
                 )
-                return
 
             if strategy_id == "lower_min_competitor":
                 if ind_sum := self.ozon_products_indicators_summary_ids.filtered(
                     lambda r: r.type.startswith("no_competitor")
                 ):
                     price_strategy.message = ind_sum.name
-                    return
-
-                comp_prices = self.competitors_with_price_ids.mapped("price")
-                min_comp_price = min(comp_prices)
-                new_price = round(min_comp_price * (1 - strategy_value), 2)
+                    errors = True
+                else:
+                    comp_prices = self.competitors_with_price_ids.mapped("price")
+                    min_comp_price = min(comp_prices)
+                    new_price = round(min_comp_price * (1 - strategy_value), 2)
 
             if strategy_id == "expected_price":
                 new_price = self.expected_price
+
+            if errors:
+                self.pricing_strategy_ids.value = None
+                self.pricing_strategy_ids.expected_price = None
+                return
 
             price_strategy.expected_price = new_price
             prices.append(round(new_price * price_strategy.weight))
