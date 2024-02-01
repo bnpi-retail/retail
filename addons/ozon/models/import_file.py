@@ -40,7 +40,6 @@ class ImportFile(models.Model):
 
     data_for_download = fields.Selection(
         [
-            ("logistics_cost", "Стоимость логистики"),
             ("ozon_products", "Товары Ozon"),
             ("ozon_plugin", "Товары Ozon (Плагин)"),
             ("ozon_commissions", "Комиссии Ozon по категориям"),
@@ -52,7 +51,7 @@ class ImportFile(models.Model):
             ("ozon_postings", "Отправления Ozon"),
             ("ozon_fbo_supply_orders", "Поставки FBO"),
             ("ozon_actions", "Акции Ozon"),
-            ("ozon_competitors_goods", "Товары ближайших конкурентов Ozon с продажами")
+            ("ozon_competitors_goods", "Товары ближайших конкурентов Ozon с продажами"),
         ],
         string="Данные для загрузки",
     )
@@ -85,7 +84,7 @@ class ImportFile(models.Model):
         if not "data_for_download" in values or not values["data_for_download"]:
             raise exceptions.ValidationError("Необходимо выбрать 'данные для загрузки'")
 
-        if values["data_for_download"] == 'ozon_competitors_goods':
+        if values["data_for_download"] == "ozon_competitors_goods":
             workbook = openpyxl.load_workbook(BytesIO(base64.b64decode(values["file"])))
             self._parse_ozon_competitors_goods_xlsx_file(workbook)
             return super(ImportFile, self).create(values)
@@ -129,24 +128,7 @@ class ImportFile(models.Model):
             self.import_successful_products_competitors(content)
 
         if "csv" in mime_type:
-            if values["data_for_download"] == "logistics_cost":
-                logistics_ozon = self.env["ozon.logistics_ozon"]
-
-                for line in lines:
-                    if line:
-                        trading_scheme, volume, price = line.split(",")
-                        volume = float(volume)
-                        price = float(price)
-
-                        logistics_ozon.create(
-                            {
-                                "trading_scheme": trading_scheme,
-                                "volume": volume,
-                                "price": price,
-                            }
-                        )
-
-            elif values["data_for_download"] == "ozon_products":
+            if values["data_for_download"] == "ozon_products":
                 f_path = "/mnt/extra-addons/ozon/products_from_ozon_api.csv"
                 with open(f_path, "w") as f:
                     f.write(content)
@@ -216,8 +198,6 @@ class ImportFile(models.Model):
                                 seller = self.env["retail.seller"].create(
                                     {
                                         "name": "Продавец",
-                                        "ogrn": 1111111111111,
-                                        "fee": 20,
                                     }
                                 )
 
@@ -457,20 +437,6 @@ class ImportFile(models.Model):
     def is_retail_seller_exists(self, seller_name):
         result = self.env["retail.seller"].search(
             [("name", "=", seller_name)],
-            limit=1,
-        )
-        return result if result else False
-
-    def is_ozon_localization_index_exists(
-        self, l_threshold, u_threshold, coef, percent
-    ):
-        result = self.env["ozon.localization_index"].search(
-            [
-                ("lower_threshold", "=", l_threshold),
-                ("upper_threshold", "=", u_threshold),
-                ("coefficient", "=", coef),
-                ("percent", "=", percent),
-            ],
             limit=1,
         )
         return result if result else False
@@ -771,8 +737,14 @@ class ImportFile(models.Model):
     def import_images_sale(self, content):
         model_products = self.env["ozon.products"]
 
-        product_id, url_this_year, url_last_year, data_this_year, data_last_year = content.split(",")
-    
+        (
+            product_id,
+            url_this_year,
+            url_last_year,
+            data_this_year,
+            data_last_year,
+        ) = content.split(",")
+
         record = model_products.search([("id", "=", product_id)])
 
         record.img_url_sale_this_year = url_this_year
@@ -785,10 +757,15 @@ class ImportFile(models.Model):
         model_products = self.env["ozon.products"]
 
         (
-            product_id, url_two_weeks, url_six_weeks, url_twelve_weeks, 
-            data_two_weeks, data_six_week, data_twelve_week 
+            product_id,
+            url_two_weeks,
+            url_six_weeks,
+            url_twelve_weeks,
+            data_two_weeks,
+            data_six_week,
+            data_twelve_week,
         ) = content.split(",")
-        
+
         record = model_products.search([("id", "=", product_id)])
 
         record.img_url_sale_two_weeks = url_two_weeks
@@ -807,7 +784,7 @@ class ImportFile(models.Model):
         record = model_competitors_products.search([("id", "=", product_id)])
         record.imgs_url_this_year = url
         record.imgs_data_graph_this_year = data.replace("|", ",")
-            
+
     def import_images_price_history(self, content):
         model_products = self.env["ozon.products"]
 
@@ -834,19 +811,19 @@ class ImportFile(models.Model):
         product_id, url, hits_view, hits_tocart = content.split(",")
 
         record = model_products.search([("id", "=", product_id)])
-        
+
         record.img_url_analysis_data = url
         record.img_data_analysis_data = {
-            "hits_view": hits_view, 
-            "hits_tocart": hits_tocart
+            "hits_view": hits_view,
+            "hits_tocart": hits_tocart,
         }
 
     def import_images_categorie_analysis_data(self, content):
         model_categories = self.env["ozon.categories"]
 
         model, categories_id, url, data_hits, data_tocart = content.split(",")
-        data_hits = data_hits.replace("|", ",").replace("'", "\"")
-        data_tocart = data_tocart.replace("|", ",").replace("'", "\"")
+        data_hits = data_hits.replace("|", ",").replace("'", '"')
+        data_tocart = data_tocart.replace("|", ",").replace("'", '"')
 
         record = model_categories.search([("id", "=", categories_id)])
 
@@ -994,33 +971,41 @@ class ImportFile(models.Model):
             for row in sheet.iter_rows(min_row=1, max_row=4, values_only=True):
                 if row[0]:
                     if "Период:" in row[0]:
-                        splited_row = row[0].split(' ')
+                        splited_row = row[0].split(" ")
                         for str_ in splited_row:
                             if str_[0].isnumeric() and not period_from:
-                                period_from = date(*[int(x) for x in str_.split('-')])
+                                period_from = date(*[int(x) for x in str_.split("-")])
                                 continue
                             if str_[0].isnumeric() and period_from and not period_to:
-                                period_to = date(*[int(x) for x in str_.split('-')])
+                                period_to = date(*[int(x) for x in str_.split("-")])
                                 break
                     elif "Категория:" in row[0]:
-                        splited_row = row[0].split(': ')
+                        splited_row = row[0].split(": ")
                         category = splited_row[1]
 
             # create report
-            existed_category = self.env['ozon.categories'].search([('name_categories', '=', category)])
+            existed_category = self.env["ozon.categories"].search(
+                [("name_categories", "=", category)]
+            )
             if not existed_category:
-                existed_category = self.env['ozon.categories'].create({'name_categories': category})
-            report = self.env["ozon.report_category_market_share"].create({
-                'ozon_categories_id': existed_category.id,
-                'period_from': period_from,
-                'period_to': period_to,
-            })
+                existed_category = self.env["ozon.categories"].create(
+                    {"name_categories": category}
+                )
+            report = self.env["ozon.report_category_market_share"].create(
+                {
+                    "ozon_categories_id": existed_category.id,
+                    "period_from": period_from,
+                    "period_to": period_to,
+                }
+            )
 
             # accumulate data from file
             competitors_sales_ids = []
             sales_and_share_per_seller = defaultdict(int)
-            for row in sheet.iter_rows(min_row=4, max_col=8, max_row=sheet.max_row, values_only=True):
-                if row[0] and row[0] != '№':
+            for row in sheet.iter_rows(
+                min_row=4, max_col=8, max_row=sheet.max_row, values_only=True
+            ):
+                if row[0] and row[0] != "№":
                     competitor_name = row[1]
                     product_name = row[2]
                     article = row[3]

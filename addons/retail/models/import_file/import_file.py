@@ -40,10 +40,6 @@ class ImportFile(models.Model):
             result.append((id, name))
         return result
 
-    def get_local_index_id(self):
-        local_index = self.env["ozon.localization_index"].search([], limit=1).id
-        return local_index
-
     def get_seller(self):
         """
         Get seller record from
@@ -75,7 +71,6 @@ class ImportFile(models.Model):
 
         model_products = self.env["retail.products"]
 
-        local_index = self.get_local_index_id()
         seller = self.get_seller()
 
         for offer in root.findall(".//offer"):
@@ -133,7 +128,6 @@ class ImportFile(models.Model):
             values = {
                 "full_categories": ozon_fulltitle,
                 "id_on_platform": id,
-                "index_localization": local_index,
                 "products": product.id,
                 "seller": seller.id,
                 "trading_scheme": "FBS",
