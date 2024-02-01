@@ -40,8 +40,6 @@ class OzonPlugin(APIView):
         api_key = token.key
         key = f'all--{api_key}'
         data = cache.get(key)
-        cache.set(api_key, None)
-        cache.set(key, None)
         if data is None: data = []
         
         csv_data = ""
@@ -79,6 +77,10 @@ class OzonPlugin(APIView):
         response = requests.post(endpoint, headers=headers, files=files, data=email)
         if response.status_code != 200:
             return Response({'message': 'Bad Request'}, status=400)
+        
+        cache.set(api_key, None)
+        cache.set(key, None)
+        
         return Response({'message': str(response.status_code), 'data': data})
 
 
