@@ -21,6 +21,7 @@ class GenerateUrlForDownloadGrpahData(models.Model):
 
     def get_url(self, model_name, record_id, field_name):
         base_url = getenv("ODOO_DOMAIN")
+        raise ValueError(base_url)
         return f'{base_url}/web/content_text?model={model_name}&id={record_id}&field={field_name}'
 
     def get_download_url(self, field_name):
