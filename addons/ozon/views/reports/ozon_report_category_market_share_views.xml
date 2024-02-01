@@ -33,7 +33,7 @@
                                     <tree string="Товары конкурентов"
                                           default_order="revenue_share_percentage desc">
                                         <field name="retail_seller_id" string="Продавец"/>
-                                        <field name="ozon_products_competitors_id" string="Товар"/>
+                                        <field name="name" string="Товар"/>
                                         <field name="orders_qty" string="Кол-во заказов"/>
                                         <field name="orders_avg_price" string="Средняя цена"/>
                                         <field name="orders_sum" string="Заказано на сумму"/>

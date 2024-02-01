@@ -14,6 +14,8 @@ class Indicator(models.Model):
         ('cost_not_calculated', 'Себестоимость не подсчитана'),
         ('out_of_stock', 'Товара нет в наличии'),
         ('in_stock', 'Товар в наличии'),
+        ('no_investment_expenses', 'Investment не установлена'),
+        ('no_profitability_norm', 'Не установлена ожидаемая доходность'),
     ])
     end_date = fields.Date()
     expiration_date = fields.Date()
