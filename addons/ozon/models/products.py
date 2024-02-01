@@ -88,9 +88,6 @@ class Product(models.Model):
     imgs_urls = fields.Char(string="Ссылки на изображения")
     imgs_html = fields.Html(compute="_compute_imgs")
     seller = fields.Many2one("retail.seller", string="Продавец")
-    index_localization = fields.Many2one(
-        "ozon.localization_index", string="Индекс локализации"
-    )
     insurance = fields.Float(string="Страховой коэффициент, %")
     search_queries = fields.One2many(
         "ozon.search_queries", "product_id", string="Ключевые слова"

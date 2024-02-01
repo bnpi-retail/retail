@@ -1,2 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_ozon_localization_index,Access Ozon Localization Index,model_ozon_localization_index,base.group_user,1,1,1,1

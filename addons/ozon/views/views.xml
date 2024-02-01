@@ -44,22 +44,6 @@
       </field>
     </record>
 
-
-    <!-- Инедкс локализации -->
-    <record id="view_seller_tree" model="ir.ui.view">
-      <field name="name">Инедкс локализации</field>
-      <field name="model">ozon.localization_index</field>
-      <field name="arch" type="xml">
-        <tree>
-          <field name="lower_threshold" />
-          <field name="upper_threshold" />
-          <field name="coefficient" />
-          <field name="percent" />
-        </tree>
-      </field>
-    </record>
-
-
     <!-- История цены -->
     <record id="view_price_history_tree" model="ir.ui.view">
       <field name="name">История цены</field>
@@ -102,14 +86,6 @@
     <record model="ir.actions.act_window" id="action_fee_ozon">
       <field name="name">Комиссии</field>
       <field name="res_model">ozon.ozon_fee</field>
-      <field name="view_mode">tree,form</field>
-    </record>
-
-
-    <!-- Инедкс локализации -->
-    <record model="ir.actions.act_window" id="action_localization_index">
-      <field name="name">Инедкс локализации</field>
-      <field name="res_model">ozon.localization_index</field>
       <field name="view_mode">tree,form</field>
     </record>
 
@@ -158,10 +134,6 @@
     <!-- Комиссии -->
     <menuitem name="Комиссии" id="menu_fee_ozon" parent="ozon.menu_root"
       action="action_fee_ozon" />
-
-    <!-- Инедкс локализации -->
-    <menuitem name="Инедкс локализации" id="menu_localization_index" parent="ozon.menu_root"
-      action="action_localization_index" />
 
     <!-- Цены -->
     <menuitem name="Цены" id="menu_price" parent="ozon.menu_root" />

@@ -445,20 +445,6 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
-    def is_ozon_localization_index_exists(
-        self, l_threshold, u_threshold, coef, percent
-    ):
-        result = self.env["ozon.localization_index"].search(
-            [
-                ("lower_threshold", "=", l_threshold),
-                ("upper_threshold", "=", u_threshold),
-                ("coefficient", "=", coef),
-                ("percent", "=", percent),
-            ],
-            limit=1,
-        )
-        return result if result else False
-
     def is_ozon_fee_exists(self, category_name, commission_name):
         result = self.env["ozon.ozon_fee"].search(
             [
