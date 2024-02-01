@@ -200,8 +200,6 @@ class ImportFile(models.Model):
                                 seller = self.env["retail.seller"].create(
                                     {
                                         "name": "Продавец",
-                                        "ogrn": 1111111111111,
-                                        "fee": 20,
                                     }
                                 )
 
