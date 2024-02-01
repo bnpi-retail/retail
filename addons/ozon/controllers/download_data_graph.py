@@ -5,6 +5,8 @@ from odoo.http import request
 class DownloadDataGraph(http.Controller):
     @http.route('/web/content_text', type='http', auth="public")
     def content_text(self, model, id, field, **kwargs):
+        raise ValueError(12312312)
+        
         try:
             record = request.env[model].browse(int(id))
             if record and field in record:
