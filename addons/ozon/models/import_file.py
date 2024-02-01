@@ -37,7 +37,6 @@ class ImportFile(models.Model):
     timestamp = fields.Date(
         string="Дата импорта", default=fields.Date.today, readonly=True
     )
-    worker = fields.Char(string="Сотрудник")
     model = fields.Char(string="К какой модели относиться график")
 
     data_for_download = fields.Selection(

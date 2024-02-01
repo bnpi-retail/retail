@@ -10,7 +10,7 @@ logger = logging.getLogger()
 class ImportFile(models.Model):
     _name = "parser.import_file"
     _description = "Импорт"
-    
+
     timestamp = fields.Date(
         string="Дата импорта", default=fields.Date.today, readonly=True
     )
@@ -20,6 +20,7 @@ class ImportFile(models.Model):
         ],
         string="Данные для загрузки",
     )
+    worker = fields.Char(string="Сотрудник")
 
     file = fields.Binary(
         attachment=True, string="Файл для загрузки своих данных", help="Выбрать файл"
