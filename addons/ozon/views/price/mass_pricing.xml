@@ -9,19 +9,12 @@
                 <form>
                     <group>
                         <field name="status" />
-                        <field name="strategy" />
                         <field name="comment" />
                     </group>
-                    <group>
-                        <group string="Наш товар">
-                            <field name="product" />
-                            <field name="price" />
-                            <field name="new_price" />
-                        </group>
-                        <group string="Товар конкурента">
-                            <field name="competitor_product" />
-                            <field name="competitor_price" />
-                        </group>
+                    <group string="Наш товар">
+                        <field name="product" />
+                        <field name="price" />
+                        <field name="new_price" />
                     </group>
                 </form>
             </field>
@@ -50,16 +43,6 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- <record model="ir.actions.act_window" id="action_mass_pricing_aaa">
-            <field name="name">Массовое назначение цен</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="res_model">ozon.mass_pricing</field>
-            <field name="domain">[]</field>
-
-            <field name="view_mode">tree,form</field>
-            <field name="view_id" ref="view_ozon_mass_pricing_form" />
-            <field name="binding_model_id" ref="model_ozon_mass_pricing" />
-        </record> -->
         <record model="ir.actions.server" id="action_mass_pricing_update_prices_in_ozon">
             <field name="name">Назначить цены в Ozon</field>
             <field name="model_id" ref="model_ozon_mass_pricing" />

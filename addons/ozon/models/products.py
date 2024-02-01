@@ -1103,6 +1103,12 @@ class Product(models.Model):
 
     def create_mass_pricing(self):
         self.ensure_one()
+        new_price = self.product_calculator_ids.filtered(
+            lambda r: r.name == "Ожидаемая цена по всем стратегиям"
+        ).new_value
+
+        if new_price != 0:
+            comment = f"Цена рассчитана исходя из стратегий:\n{self.pricing_strategy_ids.mapped('name')}"
         return {
             "type": "ir.actions.act_window",
             "name": "Добавить в очередь на изменение цен",
@@ -1112,7 +1118,8 @@ class Product(models.Model):
             "context": {
                 "default_product": self.id,
                 "default_price": self.price,
-                "default_new_price": self.price,
+                "default_new_price": new_price,
+                "default_comment": comment if comment else None,
             },
         }
 
@@ -1187,12 +1194,7 @@ class Product(models.Model):
                 )
 
     def calculate_pricing_stragegy_ids(self):
-        prod_calc_recs = self.env["ozon.product_calculator"].browse(
-            self.product_calculator_ids.ids
-        )
         if not self.pricing_strategy_ids:
-            for prod_calc_rec in prod_calc_recs:
-                prod_calc_rec.new_value = 0
             return
 
         if sum(self.pricing_strategy_ids.mapped("weight")) != 1:
@@ -1238,6 +1240,7 @@ class Product(models.Model):
                 new_price = self.expected_price
 
             if errors:
+                self.product_calculator_ids.new_value = 0
                 self.pricing_strategy_ids.value = None
                 self.pricing_strategy_ids.expected_price = None
                 return
