@@ -106,8 +106,6 @@ class ActionCreateOzonProducts(models.Model):
     def create_price_history_competitors(self, record, record_product_competitors):
         model_price_history_competitors = self.env["ozon.price_history_competitors"]
 
-        raise ValueError(record_product_competitors.id)
-
         model_price_history_competitors.create({
                 "product_competitors": record_product_competitors.id,
                 "price": record.price,
