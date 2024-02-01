@@ -44,18 +44,6 @@
       </field>
     </record>
 
-    <!-- Стоимость логистики -->
-    <record id="view_cost_price_tree" model="ir.ui.view">
-      <field name="name">Стоимость логистики</field>
-      <field name="model">ozon.logistics_ozon</field>
-      <field name="arch" type="xml">
-        <tree>
-          <field name="trading_scheme" />
-          <field name="volume" />
-          <field name="price" />
-        </tree>
-      </field>
-    </record>
 
     <!-- Инедкс локализации -->
     <record id="view_seller_tree" model="ir.ui.view">
@@ -117,12 +105,6 @@
       <field name="view_mode">tree,form</field>
     </record>
 
-    <!-- Стоимость логистики -->
-    <record model="ir.actions.act_window" id="action_logistics_price">
-      <field name="name">Стоимость логистики</field>
-      <field name="res_model">ozon.logistics_ozon</field>
-      <field name="view_mode">tree,form</field>
-    </record>
 
     <!-- Инедкс локализации -->
     <record model="ir.actions.act_window" id="action_localization_index">
@@ -176,10 +158,6 @@
     <!-- Комиссии -->
     <menuitem name="Комиссии" id="menu_fee_ozon" parent="ozon.menu_root"
       action="action_fee_ozon" />
-
-    <!-- Стоимость логистики -->
-    <menuitem name="Стоимость логистики" id="menu_logistics_price" parent="ozon.menu_root"
-      action="action_logistics_price" />
 
     <!-- Инедкс локализации -->
     <menuitem name="Инедкс локализации" id="menu_localization_index" parent="ozon.menu_root"

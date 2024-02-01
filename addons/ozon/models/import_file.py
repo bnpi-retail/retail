@@ -42,7 +42,6 @@ class ImportFile(models.Model):
 
     data_for_download = fields.Selection(
         [
-            ("logistics_cost", "Стоимость логистики"),
             ("ozon_products", "Товары Ozon"),
             ("ozon_plugin", "Товары Ozon (Плагин)"),
             ("ozon_commissions", "Комиссии Ozon по категориям"),
@@ -131,24 +130,7 @@ class ImportFile(models.Model):
             self.import_successful_products_competitors(content)
 
         if "csv" in mime_type:
-            if values["data_for_download"] == "logistics_cost":
-                logistics_ozon = self.env["ozon.logistics_ozon"]
-
-                for line in lines:
-                    if line:
-                        trading_scheme, volume, price = line.split(",")
-                        volume = float(volume)
-                        price = float(price)
-
-                        logistics_ozon.create(
-                            {
-                                "trading_scheme": trading_scheme,
-                                "volume": volume,
-                                "price": price,
-                            }
-                        )
-
-            elif values["data_for_download"] == "ozon_products":
+            if values["data_for_download"] == "ozon_products":
                 f_path = "/mnt/extra-addons/ozon/products_from_ozon_api.csv"
                 with open(f_path, "w") as f:
                     f.write(content)
