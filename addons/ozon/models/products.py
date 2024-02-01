@@ -560,6 +560,8 @@ class Product(models.Model):
         records = super(Product, self).create(values)
         for record in records:
             self._check_cost_price(record)
+            self._check_investment_expenses(record)
+            self._check_profitability_norm(record)
             self._check_competitors_with_price_ids_qty(record)
 
         return records
@@ -604,6 +606,10 @@ class Product(models.Model):
             self._not_enough_competitors_write(self)
         if values.get("competitors_with_price_ids"):
             self._check_competitors_with_price_ids_qty(self)
+        if values.get("investment_expenses_id") or values.get("investment_expenses_id") is False:
+            self._check_investment_expenses(self)
+        if values.get("profitability_norm") is values.get("profitability_norm") is False:
+            self._check_profitability_norm(self)
 
         return res
 
@@ -617,21 +623,41 @@ class Product(models.Model):
             for summary in record.ozon_products_indicators_summary_ids:
                 summary_types[summary.type] = summary
 
-            # cost price
+            # cost price, investment, profitability_norm
             indicator_cost_price = indicator_types.get("cost_not_calculated")
+            indicator_investment = indicator_types.get("no_investment_expenses")
+            indicator_profitability_norm = indicator_types.get("no_profitability_norm")
+            common_indicator = False
+            words = []
+            days = 0
+            for ind in (indicator_investment, indicator_cost_price, indicator_profitability_norm):
+                if ind:
+                    logger.warning(ind)
+                    common_indicator = True
+                    ind_days = (datetime.now() - ind.create_date).days
+                    if days < ind_days:
+                        days = ind_days
             if indicator_cost_price:
-                days = (datetime.now() - indicator_cost_price.create_date).days
+                words.append('себестоимость не подсчитана, ')
+            if indicator_investment:
+                words.append('investment не установлен, ')
+            if indicator_profitability_norm:
+                words.append('ожидаемая доходность не установлена, ')
+
+            if common_indicator:
+                text = ''.join(words)
+                text = text.capitalize()[:-2]
                 summary = summary_types.get("cost_not_calculated")
                 if summary:
                     summary.name = (
-                        f"Себестоимость не подсчитана дней: {days}. "
-                        f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта."
+                        f"{text} дней: {days}. "
+                        f"Точность расчета цены может быть снижена."
                     )
                 else:
                     self.env["ozon.products.indicator.summary"].create(
                         {
-                            "name": f"Себестоимость не подсчитана дней: {days}. "
-                            f"Точность расчета цены может быть снижена. Добавьте себестоимость продукта.",
+                            "name": f"{text} дней: {days}. "
+                            f"Точность расчета цены может быть снижена.",
                             "type": "cost_not_calculated",
                             "ozon_product_id": record.id,
                         }
