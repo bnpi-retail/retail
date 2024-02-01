@@ -23,23 +23,15 @@ class GenerateUrlForDownloadGrpahData(models.Model):
         base_url = getenv("ODOO_DOMAIN")
         return f'{base_url}/web/content_text?model={model_name}&id={record_id}&field={field_name}'
 
-    def action_download_file(self, field_name):
+    def get_download_url(self, field_name):
         model_name = self._name
         record_id = self.id
-        field_name = 'img_data_sale_this_year'
-
         url = self.get_url(model_name, record_id, field_name)
-
-        return {
-            'type': 'ir.actions.act_url',
-            'url': url,
-            'target': 'new',
-        }
+        return url
 
 
 class GraphSaleThisYear(models.Model):
     _inherit = "ozon.categories"
-    
 
     img_data_sale_this_year = fields.Text(string="Json data filed")
     img_url_sale_this_year = fields.Char(string="Ссылка на объект")
@@ -48,7 +40,14 @@ class GraphSaleThisYear(models.Model):
     )
 
     def download_data_sale_this_year(self):
-        return self.action_download_file("img_data_sale_this_year")
+        field_name = "img_data_sale_this_year"
+        url = self.get_download_url(field_name)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
+
 
     def _compute_img_sale_this_year(self):
         for rec in self:
@@ -71,7 +70,13 @@ class GraphSaleLastYear(models.Model):
     )
 
     def download_data_sale_last_year(self):
-        return self.action_download_file("img_data_sale_last_year")
+        field_name = "img_data_sale_last_year"
+        url = self.get_download_url(field_name)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
     
     def _compute_img_sale_last_year(self):
         for rec in self:
@@ -95,7 +100,13 @@ class GraphInterest(models.Model):
     )
 
     def download_data_analysis_data_this_year(self):
-        return self.action_download_file("img_data_analysis_data_this_year")
+        field_name = "img_data_analysis_data_this_year"
+        url = self.get_download_url(field_name)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
 
     def _compute_img_analysis_data_this_year(self):
         for rec in self:
