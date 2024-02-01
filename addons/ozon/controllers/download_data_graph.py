@@ -17,6 +17,6 @@ class DownloadDataGraph(http.Controller):
             pass
         
         return request.make_response(
-            [b'Data is empty'],
+            b'Data is empty',
             [('Content-Type', 'text/plain'), ('Content-Disposition', f'attachment; filename={model}_{id}_{field}.txt')]
         )
