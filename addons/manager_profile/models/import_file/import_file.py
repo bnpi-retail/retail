@@ -1,10 +1,6 @@
-import logging
 import base64
 
 from odoo import models, fields, api, exceptions
-
-
-logger = logging.getLogger()
 
 
 class ImportFile(models.Model):
@@ -25,6 +21,10 @@ class ImportFile(models.Model):
     file = fields.Binary(
         attachment=True, string="Файл для загрузки своих данных", help="Выбрать файл"
     )
+
+
+class CreateMethod(models.Model):
+    _inherit = "parser.import_file"
 
     @api.model
     def create(self, values):

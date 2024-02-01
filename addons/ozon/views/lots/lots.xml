@@ -68,9 +68,7 @@
                     <group col="7">
                         <group />
                         <group />
-
                         <group />
-
                         <group>
                             <button type="object" name="calculate" string="Рассчитать"
                                 class="btn-outline-primary" />
@@ -88,7 +86,19 @@
                             </tree>
                         </field>
                     </group>
-
+                    <group col="7">
+                        <group />
+                        <group />
+                        <group />
+                        <group>
+                            <button type="object" name="create_mass_pricing"
+                                string="Применить рассчитанную цену"
+                                class="btn-outline-primary" />
+                        </group>
+                        <group />
+                        <group />
+                        <group />
+                    </group>
 
                     <!-- Main info -->
                     <notebook>

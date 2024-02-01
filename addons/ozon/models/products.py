@@ -564,47 +564,35 @@ class Product(models.Model):
 
         return records
 
-    def create_update_fix_exp_cost_price(self, total_cost_price):
-        self.ensure_one()
-        fix_exp_id = None
-        fix_expenses = self.fix_expenses.read(["name"])
-        for i in fix_expenses:
-            if i["name"] == "Себестоимость товара":
-                fix_exp_id = i["id"]
-                break
-        # if fix_exp_rec_cost_price := self.env["ozon.fix_expenses"].search(
-        #     [("product_id", "=", self.id), ("name", "=", "Себестоимость товара")],
-        #     limit=1,
-        #     order="create_date desc",
-        # ):
-        #     fix_exp_rec_cost_price.price = total_cost_price
-        if fix_exp_id:
-            self.percent_expenses = [(1, fix_exp_id, {"price": total_cost_price})]
-        else:
-            fix_exp_id = (
-                self.env["ozon.fix_expenses"]
-                .create(
+    def create_update_fix_exp_cost_price(self):
+        for i, rec in enumerate(self):
+            total_cost_price = rec.products.total_cost_price
+            fix_exp_cost_price = rec.fix_expenses.filtered(
+                lambda r: r.name == "Себестоимость товара"
+            )
+            if fix_exp_cost_price:
+                fix_exp_cost_price.write({"price": total_cost_price})
+                print(f'{i} - Fix expense "Себестоимость товара" was updated')
+            else:
+                fix_exp_cost_price = self.env["ozon.fix_expenses"].create(
                     {
                         "name": "Себестоимость товара",
                         "price": total_cost_price,
                         "discription": "Общая себестоимость товара",
-                        "product_id": self.id,
+                        "product_id": rec.id,
                     }
                 )
-                .id
-            )
-        return fix_exp_id
+                print(f'{i} - Fix expense "Себестоимость товара" was created')
 
     def write(self, values, **kwargs):
         if isinstance(values, dict) and values.get("fix_expenses"):
-            total_cost_price = self.products.total_cost_price
-            fix_exp_rec_cost_price_id = self.create_update_fix_exp_cost_price(
-                total_cost_price
+            fix_exp_cost_price = self.fix_expenses.filtered(
+                lambda r: r.name == "Себестоимость товара"
             )
-            values["fix_expenses"] = [fix_exp_rec_cost_price_id] + values[
-                "fix_expenses"
-            ]
-
+            if fix_exp_cost_price:
+                values["fix_expenses"] = [fix_exp_cost_price.id] + values[
+                    "fix_expenses"
+                ]
             per_exp_recs = kwargs.get("percent_expenses")
             names = [rec.name for rec in per_exp_recs]
             for per_exp in self.percent_expenses:
@@ -1117,6 +1105,7 @@ class Product(models.Model):
             [], limit=1, order="id desc"
         )
         all_products = self.env["ozon.products"].search([])
+        all_products.create_update_fix_exp_cost_price()
         self.env["ozon.all_expenses"].create_update_all_product_expenses(
             all_products, latest_indirect_expenses
         )
@@ -1155,6 +1144,14 @@ class Product(models.Model):
 
     def create_mass_pricing(self):
         self.ensure_one()
+        new_price = self.product_calculator_ids.filtered(
+            lambda r: r.name == "Ожидаемая цена по всем стратегиям"
+        ).new_value
+
+        if new_price != 0:
+            comment = f"Цена рассчитана исходя из стратегий: {' и '.join(self.pricing_strategy_ids.mapped('name'))}"
+        else:
+            comment = ""
         return {
             "type": "ir.actions.act_window",
             "name": "Добавить в очередь на изменение цен",
@@ -1164,7 +1161,8 @@ class Product(models.Model):
             "context": {
                 "default_product": self.id,
                 "default_price": self.price,
-                "default_new_price": self.price,
+                "default_new_price": new_price,
+                "default_comment": comment,
             },
         }
 
@@ -1239,12 +1237,7 @@ class Product(models.Model):
                 )
 
     def calculate_pricing_stragegy_ids(self):
-        prod_calc_recs = self.env["ozon.product_calculator"].browse(
-            self.product_calculator_ids.ids
-        )
         if not self.pricing_strategy_ids:
-            for prod_calc_rec in prod_calc_recs:
-                prod_calc_rec.new_value = 0
             return
 
         if sum(self.pricing_strategy_ids.mapped("weight")) != 1:
@@ -1256,30 +1249,39 @@ class Product(models.Model):
             strategy_id = price_strategy.strategy_id
 
             # общие условия для всех стратегий
-            if ind_sum := self.ozon_products_indicators_summary_ids.filtered(
-                lambda r: r.type == "cost_not_calculated"
-            ):
+            # TODO: включить, когда будет исправлен индикатор себестоимости
+            # if ind_sum := self.ozon_products_indicators_summary_ids.filtered(
+            #     lambda r: r.type == "cost_not_calculated"
+            # ):
+            #     errors = True
+            #     price_strategy.message = (
+            #         "Невозможно рассчитать цену. Не задана себестоимость"
+            #     )
+            if not self.retail_product_total_cost_price:
                 errors = True
-                price_strategy.message = ind_sum.name
-
+                price_strategy.message = (
+                    "Невозможно рассчитать цену. Не задана себестоимость"
+                )
             # TODO: переделать, когда появятся соотв. индикаторы
             if not self.profitability_norm:
                 errors = True
                 price_strategy.message = (
-                    "Невозможно рассчитать цену. Задайте ожидаемую доходность"
+                    "Невозможно рассчитать цену. Не задана ожидаемая доходность"
                 )
 
             if not self.investment_expenses_id:
                 errors = True
                 price_strategy.message = (
-                    "Невозможно рассчитать цену. Задайте Investment"
+                    "Невозможно рассчитать цену. Не задан Investment"
                 )
 
             if strategy_id == "lower_min_competitor":
                 if ind_sum := self.ozon_products_indicators_summary_ids.filtered(
                     lambda r: r.type.startswith("no_competitor")
                 ):
-                    price_strategy.message = ind_sum.name
+                    price_strategy.message = (
+                        "Невозможно рассчитать цену. У товара меньше 3ёх конкурентов"
+                    )
                     errors = True
                 else:
                     comp_prices = self.competitors_with_price_ids.mapped("price")
@@ -1289,15 +1291,18 @@ class Product(models.Model):
             if strategy_id == "expected_price":
                 new_price = self.expected_price
 
+            self.pricing_strategy_ids.timestamp = fields.Date.today()
             if errors:
+                self.product_calculator_ids.new_value = 0
                 self.pricing_strategy_ids.value = None
                 self.pricing_strategy_ids.expected_price = None
                 return
-
+            else:
+                price_strategy.message = ""
             price_strategy.expected_price = new_price
             prices.append(round(new_price * price_strategy.weight))
 
-        for prod_calc_rec in prod_calc_recs:
+        for prod_calc_rec in self.product_calculator_ids:
             if prod_calc_rec.name == "Ожидаемая цена по всем стратегиям":
                 prod_calc_rec.new_value = mean(prices)
 

@@ -12,6 +12,10 @@ class SearchQueryQueue(models.Model):
         ('available', 'Доступен'),
     ], string='Статус', default='available')
 
+
+class NameGet(models.Model):
+    _inherit = "parser.search_query_queue"
+
     def name_get(self):
         """
         Rename name records 
