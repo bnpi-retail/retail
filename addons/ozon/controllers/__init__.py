@@ -11,3 +11,4 @@ from . import analysis_data
 from . import graph_lots
 from . import one_time
 from . import get_settings
+from . import download_data_graph
