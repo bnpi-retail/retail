@@ -212,6 +212,7 @@ class InterestGraph(GroupData, Fill_Data, TwoPlots):
         data_tocart = process_data_for_category(
             self.hits_tocart["dates"], self.hits_tocart["num"]
         )
+        average_data = None
         if self.average_data is not None:
             average_data = self.process_average_data(self.average_data)
 
