@@ -90,7 +90,7 @@ class PricingStrategy(models.Model):
     _name = "ozon.pricing_strategy"
     _description = "Стратегия назначения цен"
 
-    timestamp = fields.Date(string="Дата расчёта", default=fields.Date.today)
+    timestamp = fields.Date(string="Дата расчёта")
     name = fields.Char(string="Стратегия назначения цен")
     strategy_id = fields.Char(string="ID стратегии")
     weight = fields.Float(string="Вес")
