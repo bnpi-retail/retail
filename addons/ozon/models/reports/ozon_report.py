@@ -41,6 +41,13 @@ class OzonReportCategoryMarketShare(models.Model):
                 sale.revenue_share_percentage = revenue_share_percentage
                 sale.orders_avg_price = sale.orders_sum / sale.orders_qty
 
+                ozon_products_competitors_id = sale.ozon_products_competitors_id
+                ozon_products_id = sale.ozon_products_id
+                if ozon_products_id:
+                    sale.ozon_products_id.market_share = revenue_share_percentage
+                elif ozon_products_competitors_id:
+                    sale.ozon_products_competitors_id.market_share = revenue_share_percentage
+
 
 class OzonReportCompetitorCategoryShare(models.Model):
     _name = "ozon.report.competitor_category_share"

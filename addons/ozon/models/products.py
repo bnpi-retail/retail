@@ -322,6 +322,8 @@ class Product(models.Model):
     revenue_cumulative_share_temp = fields.Float()
     abc_group = fields.Char(size=3)
 
+    market_share = fields.Float(string='Доля рынка')
+
     def _compute_expected_price(self):
         # TODO: откуда берем РРЦ?
         # ожид.цена=фикс.затраты/(1-процент_затрат-ожид.ROS-проц.налог-ожид.ROI)

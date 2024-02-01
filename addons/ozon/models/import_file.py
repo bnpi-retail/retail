@@ -1057,7 +1057,7 @@ class ImportFile(models.Model):
             period_to, ordered_quantity, ordered_amount, category_lvl3, seller, product_name
     ):
         competitor_sale = None
-        if isinstance(product_competitor_or_product, ProductCompetitorSale):
+        if not seller.is_my_shop:
             for sale in product_competitor_or_product.ozon_products_competitors_sale_ids:
                 if sale.period_from == period_from and sale.period_to == period_to and sale.retail_seller_id == seller:
                     sale.orders_qty = ordered_quantity
@@ -1075,8 +1075,6 @@ class ImportFile(models.Model):
                     'name': product_name,
                 })
         else:
-            logger.warning(1111111111111111)
-            logger.warning(product_competitor_or_product)
             competitor_sale = self.env['ozon.products_competitors.sale'].create({
                 'period_from': period_from,
                 'period_to': period_to,
@@ -1091,7 +1089,15 @@ class ImportFile(models.Model):
         return competitor_sale
 
     def _get_product_competitor_or_product(self, article, seller, product_name) -> Any:
-        if not seller.is_my_shop:
+        if seller.is_my_shop:
+            product = self.env["ozon.products"].search([
+                ('article', '=', article),
+                # ('seller', '=', seller.id),
+            ], limit=1)
+            if not product:
+                pass
+            return product
+        else:
             product_competitor = self.env["ozon.products_competitors"].search([
                 ('article', '=', article),
                 ('retail_seller_id', '=', seller.id),
@@ -1103,14 +1109,7 @@ class ImportFile(models.Model):
                     'article': article,
                 })
             return product_competitor
-        else:
-            product = self.env["ozon.products"].search([
-                ('article', '=', article),
-                # ('seller', '=', seller.id),
-            ], limit=1)
-            if not product:
-                pass
-            return product
+
 
     def _get_seller(self, competitor_name: str) -> Any:
         seller = self.env['retail.seller'].search([('name', '=', competitor_name)])
