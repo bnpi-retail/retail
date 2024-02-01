@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import os
+
 from odoo import http
-from werkzeug.wrappers import Response
 from io import BytesIO
 
 

@@ -13,13 +13,18 @@
     'category': 'Uncategorized',
     'version': '0.1',
 
-    'depends': ['base'],
+    "depends": ["base", "retail", "ozon"],
 
     'data': [
         'security/ir.model.access.csv',
+
         'views/menu.xml',
         'views/api_tokens/menu.xml',
         'views/api_tokens/view.xml',
+
+        'views/products/products_competitors.xml',
+        'views/search/search_query_queue.xml',
+        'views/import_file/import_file.xml',
     ],
     'demo': [
         'demo/demo.xml',

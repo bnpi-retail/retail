@@ -1,2 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_parser_products_competitors,parser.products_competitors,model_parser_products_competitors,base.group_user,1,1,1,1
 access_parser_api_tokens,parser.api_tokens,model_parser_api_tokens,base.group_user,1,1,1,1
+access_parser_search_query_queue,parser.search_query_queue,model_parser_search_query_queue,base.group_user,1,1,1,1
+access_parser_import_file,parser.import_file,model_parser_import_file,base.group_user,1,1,1,1

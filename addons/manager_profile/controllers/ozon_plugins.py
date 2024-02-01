@@ -5,16 +5,16 @@ from odoo.http import request
 from odoo.http import Response
 
 
-class OzonPlugin(http.Controller):
+class ParserPlugin(http.Controller):
     @http.route('/take_ozon_data', auth='user', type='http', csrf=False, methods=["POST"])
-    def ozon_plugin(self, **kwargs):
+    def parser_plugin(self, **kwargs):
         uploaded_file = http.request.httprequest.files.get('file')
         email = http.request.params.get('email')
         worker = request.env['res.users'].search([('email', '=', email)])
 
         if uploaded_file:
             file_binary_data = uploaded_file.read()
-            model_ozon_import_file = http.request.env["ozon.import_file"]
+            model_ozon_import_file = http.request.env["parser.import_file"]
             model_ozon_import_file.create({
                 "worker": worker.id,
                 "data_for_download": "ozon_plugin",
@@ -35,9 +35,9 @@ class OzonPlugin(http.Controller):
         )
     
     @http.route('/take_requests', auth='user', type='http', csrf=False, methods=["POST"])
-    def ozon_requests(self, **kwargs):
+    def parser_requests(self, **kwargs):
 
-        record = request.env['ozon.search_query_queue'] \
+        record = request.env['parser.search_query_queue'] \
             .search([('status', '=', 'available')], limit=1)
         
         length_query = 0

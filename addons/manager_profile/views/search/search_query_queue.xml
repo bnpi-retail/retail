@@ -4,9 +4,9 @@
     <!-- Form -->
 
     <!-- Tree -->
-    <record id="view_search_query_queue_tree" model="ir.ui.view">
+    <record id="view_parser_search_query_queue_tree" model="ir.ui.view">
         <field name="name">Очередь поисковых запросов</field>
-        <field name="model">ozon.search_query_queue</field>
+        <field name="model">parser.search_query_queue</field>
         <field name="arch" type="xml">
             <tree>
                 <field name="query"/>
@@ -16,18 +16,18 @@
     </record>
 
     <!-- Action -->
-    <record model="ir.actions.act_window" id="action_search_query_queue">
+    <record model="ir.actions.act_window" id="action_parser_search_query_queue">
         <field name="name">Очередь поисковых запросов</field>
-        <field name="res_model">ozon.search_query_queue</field>
+        <field name="res_model">parser.search_query_queue</field>
         <field name="view_mode">tree,form</field>
     </record>
 
     <!-- Menu -->
-    <menuitem name="Очередь поисковых запросов"
-        id="menu_search_query_queue"
-        parent="ozon.menu_competitors"
-        action="action_search_query_queue"
-        sequence="100"/>
+    <menuitem name="Очередь поисковых запросов" 
+      id="parser_search_query_queue"
+      parent="manager_profile.menu_root"
+      action="action_parser_search_query_queue"
+      sequence="50"/>
 
   </data>
 </odoo>

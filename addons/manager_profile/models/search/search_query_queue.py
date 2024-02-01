@@ -2,7 +2,7 @@ from odoo import models, fields, api
 
 
 class SearchQueryQueue(models.Model):
-    _name = 'ozon.search_query_queue'
+    _name = 'parser.search_query_queue'
     _description = 'Очередь поисковых запросов'
 
     query = fields.Many2one('ozon.search_queries', string='Поисковый запрос')
