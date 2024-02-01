@@ -12,7 +12,7 @@
                     <field name="name" width="150" readonly="1"/>
                     <field name="ogrn" width="150" readonly="1"/>
                     <field name="tax" width="150" readonly="1"/>
-                    <field name="my_shop" width="150" />
+                    <field name="is_my_shop" width="150" />
                 </tree>
             </field>
         </record>
