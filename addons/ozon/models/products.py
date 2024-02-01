@@ -1216,7 +1216,6 @@ class Product(models.Model):
             #     price_strategy.message = (
             #         "Невозможно рассчитать цену. Не задана себестоимость"
             #     )
-            print(self.retail_product_total_cost_price)
             if not self.retail_product_total_cost_price:
                 errors = True
                 price_strategy.message = (
@@ -1251,6 +1250,7 @@ class Product(models.Model):
             if strategy_id == "expected_price":
                 new_price = self.expected_price
 
+            self.pricing_strategy_ids.timestamp = fields.Date.today()
             if errors:
                 self.product_calculator_ids.new_value = 0
                 self.pricing_strategy_ids.value = None
