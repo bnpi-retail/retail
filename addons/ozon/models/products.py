@@ -1208,30 +1208,40 @@ class Product(models.Model):
             strategy_id = price_strategy.strategy_id
 
             # общие условия для всех стратегий
-            if ind_sum := self.ozon_products_indicators_summary_ids.filtered(
-                lambda r: r.type == "cost_not_calculated"
-            ):
+            # TODO: включить, когда будет исправлен индикатор себестоимости
+            # if ind_sum := self.ozon_products_indicators_summary_ids.filtered(
+            #     lambda r: r.type == "cost_not_calculated"
+            # ):
+            #     errors = True
+            #     price_strategy.message = (
+            #         "Невозможно рассчитать цену. Не задана себестоимость"
+            #     )
+            print(self.retail_product_total_cost_price)
+            if not self.retail_product_total_cost_price:
                 errors = True
-                price_strategy.message = ind_sum.name
-
+                price_strategy.message = (
+                    "Невозможно рассчитать цену. Не задана себестоимость"
+                )
             # TODO: переделать, когда появятся соотв. индикаторы
             if not self.profitability_norm:
                 errors = True
                 price_strategy.message = (
-                    "Невозможно рассчитать цену. Задайте ожидаемую доходность"
+                    "Невозможно рассчитать цену. Не задана ожидаемая доходность"
                 )
 
             if not self.investment_expenses_id:
                 errors = True
                 price_strategy.message = (
-                    "Невозможно рассчитать цену. Задайте Investment"
+                    "Невозможно рассчитать цену. Не задан Investment"
                 )
 
             if strategy_id == "lower_min_competitor":
                 if ind_sum := self.ozon_products_indicators_summary_ids.filtered(
                     lambda r: r.type.startswith("no_competitor")
                 ):
-                    price_strategy.message = ind_sum.name
+                    price_strategy.message = (
+                        "Невозможно рассчитать цену. У товара меньше 3ёх конкурентов"
+                    )
                     errors = True
                 else:
                     comp_prices = self.competitors_with_price_ids.mapped("price")
@@ -1246,11 +1256,12 @@ class Product(models.Model):
                 self.pricing_strategy_ids.value = None
                 self.pricing_strategy_ids.expected_price = None
                 return
-
+            else:
+                price_strategy.message = ""
             price_strategy.expected_price = new_price
             prices.append(round(new_price * price_strategy.weight))
 
-        for prod_calc_rec in prod_calc_recs:
+        for prod_calc_rec in self.product_calculator_ids:
             if prod_calc_rec.name == "Ожидаемая цена по всем стратегиям":
                 prod_calc_rec.new_value = mean(prices)
 
