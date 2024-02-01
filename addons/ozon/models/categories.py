@@ -16,14 +16,39 @@ class Categories(models.Model):
     category_manager = fields.Many2one("res.users")
 
 
+class GenerateUrlForDownloadGrpahData(models.Model):
+    _inherit = "ozon.categories"
+
+    def get_url(self, model_name, record_id, field_name):
+        base_url = getenv("ODOO_DOMAIN")
+        return f'{base_url}/web/content_text?model={model_name}&id={record_id}&field={field_name}'
+
+    def action_download_file(self, field_name):
+        model_name = self._name
+        record_id = self.id
+        field_name = 'img_data_sale_this_year'
+
+        url = self.get_url(model_name, record_id, field_name)
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
+
+
 class GraphSaleThisYear(models.Model):
     _inherit = "ozon.categories"
+    
 
     img_data_sale_this_year = fields.Text(string="Json data filed")
     img_url_sale_this_year = fields.Char(string="Ссылка на объект")
     img_html_sale_this_year = fields.Html(
         compute="_compute_img_sale_this_year", string="График продаж за текущий год"
     )
+
+    def download_data_sale_this_year(self):
+        return self.action_download_file("img_data_sale_this_year")
 
     def _compute_img_sale_this_year(self):
         for rec in self:
@@ -34,7 +59,7 @@ class GraphSaleThisYear(models.Model):
             rec.img_html_sale_this_year = (
                 f"<img src='{rec.img_url_sale_this_year}' width='600'/>"
             )
-    
+
 
 class GraphSaleLastYear(models.Model):
     _inherit = "ozon.categories"
@@ -45,6 +70,9 @@ class GraphSaleLastYear(models.Model):
         compute="_compute_img_sale_last_year", string="График продаж за прошлый год"
     )
 
+    def download_data_sale_last_year(self):
+        return self.action_download_file("img_data_sale_last_year")
+    
     def _compute_img_sale_last_year(self):
         for rec in self:
             rec.img_html_sale_last_year = False
@@ -65,6 +93,9 @@ class GraphInterest(models.Model):
         compute="_compute_img_analysis_data_this_year",
         string="График интереса тукущий год",
     )
+
+    def download_data_analysis_data_this_year(self):
+        return self.action_download_file("img_data_analysis_data_this_year")
 
     def _compute_img_analysis_data_this_year(self):
         for rec in self:
