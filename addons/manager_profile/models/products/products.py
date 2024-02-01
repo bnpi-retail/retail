@@ -71,7 +71,7 @@ class ActionCreateOzonProducts(models.Model):
         model_seller = self.env["retail.seller"]
 
         record_seller = model_seller \
-            .search([("name", "=", record.seller)])
+            .search([("name", "=", record.seller)], limit=1)
 
         if not record_seller:
             record_seller = model_seller \
@@ -85,7 +85,7 @@ class ActionCreateOzonProducts(models.Model):
         model_products_competitors = self.env["ozon.products_competitors"]
     
         record_product_competitors = model_products_competitors \
-            .search([("id_product", "=", record.id_product)])
+            .search([("id_product", "=", record.id_product)], limit=1)
 
         if not record_product_competitors:
             record_product_competitors = model_products_competitors \
@@ -107,7 +107,7 @@ class ActionCreateOzonProducts(models.Model):
         model_price_history_competitors = self.env["ozon.price_history_competitors"]
 
         model_price_history_competitors.create({
-                "product_competitors": record_product_competitors.id,
+                # "product_competitors": record_product_competitors.id,
                 "price": record.price,
                 "price_with_card": record.price_with_card,
                 "price_without_sale": record.price_without_sale,
