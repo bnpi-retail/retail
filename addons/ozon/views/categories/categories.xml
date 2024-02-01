@@ -17,27 +17,35 @@
                         </page>
 
                         <page string="Аналитические данные">
-                            <field name="img_html_sale_this_year" />
-                            <button string="Скачать данные" 
-                                type="object" 
-                                class="oe_highlight" 
-                                icon="fa-download" 
-                                name="download_data_sale_this_year"
-                            />
-                            <field name="img_html_sale_last_year" />
-                            <button string="Скачать данные" 
-                                type="object" 
-                                class="oe_highlight" 
-                                icon="fa-download" 
-                                name="download_data_sale_last_year"
-                            />
-                            <field name="img_html_analysis_data_this_year" />
-                            <button string="Скачать данные" 
-                                type="object" 
-                                class="oe_highlight" 
-                                icon="fa-download" 
-                                name="download_data_analysis_data_this_year"
-                            />
+                            <group>
+                                <field name="img_html_sale_this_year" />
+                                <a string="Скачать данные" 
+                                    type="object" 
+                                    class="oe_highlight" 
+                                    icon="fa-download" 
+                                    name="download_data_sale_this_year"
+                                />
+                            </group>
+                            
+                            <group>
+                                <field name="img_html_sale_last_year" />
+                                <a string="Скачать данные" 
+                                    type="object" 
+                                    class="oe_highlight" 
+                                    icon="fa-download" 
+                                    name="download_data_sale_last_year"
+                                />
+                            </group>
+
+                            <group>
+                                <field name="img_html_analysis_data_this_year" />
+                                <a string="Скачать данные" 
+                                    type="object" 
+                                    class="oe_highlight" 
+                                    icon="fa-download" 
+                                    name="download_data_analysis_data_this_year"
+                                />
+                            </group>
                                 
                         </page>
                     </notebook>
