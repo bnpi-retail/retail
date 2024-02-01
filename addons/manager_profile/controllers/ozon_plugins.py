@@ -17,7 +17,7 @@ class ParserPlugin(http.Controller):
             model_ozon_import_file = http.request.env["parser.import_file"]
             model_ozon_import_file.create({
                 "worker": worker.id,
-                "data_for_download": "ozon_plugin",
+                "data_for_download": "parser_plugin",
                 "file": base64.b64encode(file_binary_data),
             })
             response_data = {'response': 'success', 'message': 'File received and processed successfully'}
