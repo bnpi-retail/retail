@@ -9,9 +9,8 @@ class DownloadDataGraph(http.Controller):
         try:
             record = request.env[model].browse(int(id))
             if record and field in record:
-                raise ValueError(912312313)
                 return request.make_response(
-                    record[field],
+                    record[field].encode('utf-8'),
                     [('Content-Type', 'text/plain'), ('Content-Disposition', f'attachment; filename={model}_{id}_{field}.txt')]
                 )
         except Exception as e:
