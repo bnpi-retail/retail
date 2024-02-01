@@ -19,33 +19,33 @@
                         <page string="Аналитические данные">
                             <group>
                                 <field name="img_html_sale_this_year" />
-                                <a string="Скачать данные" 
-                                    type="object" 
-                                    class="oe_highlight" 
-                                    icon="fa-download" 
-                                    name="download_data_sale_this_year"
-                                />
                             </group>
+                            <button string="Скачать данные" 
+                                type="object" 
+                                class="oe_highlight" 
+                                icon="fa-download" 
+                                name="download_data_sale_this_year"
+                            />
                             
                             <group>
                                 <field name="img_html_sale_last_year" />
-                                <a string="Скачать данные" 
-                                    type="object" 
-                                    class="oe_highlight" 
-                                    icon="fa-download" 
-                                    name="download_data_sale_last_year"
-                                />
                             </group>
+                            <button string="Скачать данные" 
+                                type="object" 
+                                class="oe_highlight" 
+                                icon="fa-download" 
+                                name="download_data_sale_last_year"
+                            />
 
                             <group>
                                 <field name="img_html_analysis_data_this_year" />
-                                <a string="Скачать данные" 
-                                    type="object" 
-                                    class="oe_highlight" 
-                                    icon="fa-download" 
-                                    name="download_data_analysis_data_this_year"
-                                />
                             </group>
+                            <button string="Скачать данные" 
+                                type="object" 
+                                class="oe_highlight" 
+                                icon="fa-download" 
+                                name="download_data_analysis_data_this_year"
+                            />
                                 
                         </page>
                     </notebook>
