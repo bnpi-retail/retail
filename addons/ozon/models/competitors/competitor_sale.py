@@ -13,5 +13,7 @@ class ProductCompetitorSale(models.Model):
     orders_sum = fields.Float()
     revenue_share_percentage = fields.Float()
     retail_seller_id = fields.Many2one('retail.seller', string="Продавец")
+    name = fields.Char()
     ozon_products_competitors_id = fields.Many2one("ozon.products_competitors")
+    ozon_products_id = fields.Many2one('ozon.products')
     ozon_report_category_market_share = fields.Many2one("ozon.report_category_market_share")
