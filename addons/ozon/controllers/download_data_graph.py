@@ -14,7 +14,8 @@ class DownloadDataGraph(http.Controller):
                 )
         except Exception as e:
             pass
-
+        
+        raise ValueError(12312312)
         return request.make_response(
             [b'Data not available'],
             [('Content-Type', 'text/plain'), ('Content-Disposition', f'attachment; filename={model}_{id}_{field}.txt')]
