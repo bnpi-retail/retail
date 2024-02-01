@@ -6,7 +6,7 @@ class ParserProductCompetitors(models.Model):
     _description = "Товары конкуренты"
 
     product = fields.Many2one("ozon.products", string="Рекомендуемый наш товар")
-    is_our_product = fields.Boolean(string="Наш продукт")
+    is_our_product = fields.Boolean(string="Наш товар")
 
     number = fields.Char(string="Номер позиции карточки Ozon")
     name = fields.Char(string="Наименование товара")
