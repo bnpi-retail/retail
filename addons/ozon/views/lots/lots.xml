@@ -304,6 +304,7 @@
                                             class="oe_highlight" 
                                             icon="fa-download" 
                                             name="download_img_data_sale_this_year"
+                                            attrs="{'invisible': [('img_data_sale_this_year', '=', False)]}"
                                         />
 
                                         <group>
@@ -314,6 +315,7 @@
                                             class="oe_highlight" 
                                             icon="fa-download" 
                                             name="download_img_data_sale_last_year"
+                                            attrs="{'invisible': [('img_data_sale_last_year', '=', False)]}"
                                         />
 
                                         <group>
@@ -323,7 +325,8 @@
                                             type="object" 
                                             class="oe_highlight" 
                                             icon="fa-download" 
-                                            name="download_img_data_analysis_data"
+                                            name="download_img_data_price_history"
+                                            attrs="{'invisible': [('img_data_price_history', '=', False)]}"
                                         />
 
                                         <group>
@@ -334,6 +337,7 @@
                                             class="oe_highlight" 
                                             icon="fa-download" 
                                             name="download_img_data_sale_two_weeks"
+                                            attrs="{'invisible': [('img_data_sale_two_weeks', '=', False)]}"
                                         />
 
 
@@ -345,6 +349,7 @@
                                             class="oe_highlight" 
                                             icon="fa-download" 
                                             name="download_img_data_sale_six_weeks"
+                                            attrs="{'invisible': [('img_data_sale_six_weeks', '=', False)]}"
                                         />
 
 
@@ -356,6 +361,7 @@
                                             class="oe_highlight" 
                                             icon="fa-download" 
                                             name="download_img_data_sale_twelve_weeks"
+                                            attrs="{'invisible': [('img_data_sale_twelve_weeks', '=', False)]}"
                                         />
 
                                         <group>
@@ -366,6 +372,7 @@
                                             class="oe_highlight" 
                                             icon="fa-download" 
                                             name="download_img_data_stock"
+                                            attrs="{'invisible': [('img_data_stock', '=', False)]}"
                                         />
 
                                         <group>
@@ -376,6 +383,7 @@
                                             class="oe_highlight" 
                                             icon="fa-download" 
                                             name="download_img_data_analysis_data"
+                                            attrs="{'invisible': [('img_data_analysis_data', '=', False)]}"
                                         />
 
                                 </page>

@@ -25,6 +25,7 @@
                                 class="oe_highlight" 
                                 icon="fa-download" 
                                 name="download_data_sale_this_year"
+                                attrs="{'invisible': [('img_data_sale_this_year', '=', False)]}"
                             />
                             
                             <group>
@@ -35,6 +36,7 @@
                                 class="oe_highlight" 
                                 icon="fa-download" 
                                 name="download_data_sale_last_year"
+                                attrs="{'invisible': [('img_data_sale_last_year', '=', False)]}"
                             />
 
                             <group>
@@ -45,6 +47,7 @@
                                 class="oe_highlight" 
                                 icon="fa-download" 
                                 name="download_data_analysis_data_this_year"
+                                attrs="{'invisible': [('img_data_analysis_data_this_year', '=', False)]}"
                             />
                                 
                         </page>
