@@ -1,5 +1,5 @@
 {
-    'name': "manager_profile",
+    'name': "Парсер",
 
     'summary': """Приложение для личного кабинета менеджеров""",
 
@@ -8,7 +8,7 @@
     """,
 
     'author': "My Company",
-    'website': "https://www.yourcompany.com",
+    'website': "#",
 
     'category': 'Uncategorized',
     'version': '0.1',
