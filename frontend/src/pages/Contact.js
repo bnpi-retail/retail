@@ -109,7 +109,7 @@ const Contact = () => {
 
   function DemoSecond() {
     return (
-      <Blockquote color="green" cite="– Forrest Gump" radius="xs" mt="xl">
+      <Blockquote color="green" radius="xs" mt="xl">
         Информация о {data.length} товарах сохранена
       </Blockquote>
     );
