@@ -18,7 +18,9 @@
 
                         <page string="Аналитические данные">
                             <group>
-                                <field name="img_html_sale_this_year" nolabel="1" />
+                                <group>
+                                    <field name="img_html_sale_this_year" nolabel="1" />
+                                </group>
                                 <button string="Скачать данные" 
                                     type="object" 
                                     class="oe_highlight" 
@@ -28,7 +30,9 @@
                             </group>
                             
                             <group>
-                                <field name="img_html_sale_last_year" nolabel="1" />
+                                <group>
+                                    <field name="img_html_sale_last_year" nolabel="1" />
+                                </group>
                                 <button string="Скачать данные" 
                                     type="object" 
                                     class="oe_highlight" 
@@ -38,7 +42,9 @@
                             </group>
 
                             <group>
-                                <field name="img_html_analysis_data_this_year" nolabel="1" />
+                                <group>
+                                    <field name="img_html_analysis_data_this_year" nolabel="1" />
+                                </group>
                                 <button string="Скачать данные" 
                                     type="object" 
                                     class="oe_highlight" 
