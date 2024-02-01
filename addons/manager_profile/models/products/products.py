@@ -107,7 +107,7 @@ class ActionCreateOzonProducts(models.Model):
         model_price_history_competitors = self.env["ozon.price_history_competitors"]
 
         model_price_history_competitors.create({
-                # "product_competitors": record_product_competitors.id,
+                "product_competitors": record_product_competitors.id,
                 "price": record.price,
                 "price_with_card": record.price_with_card,
                 "price_without_sale": record.price_without_sale,
