@@ -43,6 +43,16 @@ class ProductCompetitors(models.Model):
     imgs_url_this_year = fields.Char(
         string="Ссылка на объект аналитический данных за этот год"
     )
+
+    def download_data_graph_this_year(self):
+        field_name = "imgs_data_graph_this_year"
+        url = self.get_download_url(field_name)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
+
     def _compute_imgs_analysis_data_this_year(self):
         for rec in self:
             rec.imgs_html_graph_this_year = False
@@ -135,3 +145,16 @@ class ProductCompetitors(models.Model):
             [], limit=1, order="create_date desc"
         )
         return price_history.price if price_history else None
+
+
+class GenerateUrlForDownloadGrpahData(models.Model):
+    _inherit = "ozon.products_competitors"
+
+    def get_url(self, model_name, record_id, field_name):
+        return f'/web/content_text?model={model_name}&id={record_id}&field={field_name}'
+
+    def get_download_url(self, field_name):
+        model_name = self._name
+        record_id = self.id
+        url = self.get_url(model_name, record_id, field_name)
+        return url

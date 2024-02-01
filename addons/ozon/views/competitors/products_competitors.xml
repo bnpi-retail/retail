@@ -28,8 +28,13 @@
                     <page id="page_graph_history" string="Аналитические данные">
                         <group>
                             <field name="imgs_html_graph_this_year"/>
-                            <field name="imgs_data_graph_this_year" string="Данные графика продаж за текущий год" />
                         </group>
+                        <button string="Скачать данные" 
+                            type="object" 
+                            class="oe_highlight" 
+                            icon="fa-download" 
+                            name="download_data_graph_this_year"
+                        />
                     </page>
                 </notebook>
             </form>

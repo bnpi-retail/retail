@@ -1473,6 +1473,15 @@ class ProductGraphExtension(models.Model):
     img_url_sale_two_weeks = fields.Char(string="Ссылка на объект")
     img_html_sale_two_weeks = fields.Html(compute="_compute_img_sale_two_weeks")
 
+    def download_img_data_sale_two_weeks(self):
+        field_name = "img_data_sale_two_weeks"
+        url = self.get_download_url(field_name)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
+    
     def _compute_img_sale_two_weeks(self):
         for rec in self:
             rec.img_html_sale_two_weeks = False
@@ -1487,6 +1496,15 @@ class ProductGraphExtension(models.Model):
     img_url_sale_six_weeks = fields.Char(string="Ссылка на объект")
     img_html_sale_six_weeks = fields.Html(compute="_compute_img_sale_six_weeks")
 
+    def download_img_data_sale_six_weeks(self):
+        field_name = "img_data_sale_six_weeks"
+        url = self.get_download_url(field_name)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
+    
     def _compute_img_sale_six_weeks(self):
         for rec in self:
             rec.img_html_sale_six_weeks = False
@@ -1501,6 +1519,15 @@ class ProductGraphExtension(models.Model):
     img_url_sale_twelve_weeks = fields.Char(string="Ссылка на объект")
     img_html_sale_twelve_weeks = fields.Html(compute="_compute_img_sale_twelve_weeks")
 
+    def download_img_data_sale_twelve_weeks(self):
+        field_name = "img_data_sale_twelve_weeks"
+        url = self.get_download_url(field_name)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
+    
     def _compute_img_sale_twelve_weeks(self):
         for rec in self:
             rec.img_html_sale_twelve_weeks = False
@@ -1577,6 +1604,15 @@ class ProductGraphExtension(models.Model):
     img_url_sale_this_year = fields.Char(string="Ссылка на объект")
     img_html_sale_this_year = fields.Html(compute="_compute_img_sale_this_year")
 
+    def download_img_data_sale_this_year(self):
+        field_name = "img_data_sale_this_year"
+        url = self.get_download_url(field_name)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
+    
     def _compute_img_sale_this_year(self):
         for rec in self:
             rec.img_html_sale_this_year = False
@@ -1591,6 +1627,15 @@ class ProductGraphExtension(models.Model):
     img_url_sale_last_year = fields.Char(string="Ссылки на объект")
     img_html_sale_last_year = fields.Html(compute="_compute_img_sale_last_year")
 
+    def download_img_data_sale_last_year(self):
+        field_name = "img_data_sale_last_year"
+        url = self.get_download_url(field_name)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
+    
     def _compute_img_sale_last_year(self):
         for rec in self:
             rec.img_html_sale_last_year = False
@@ -1657,6 +1702,15 @@ class ProductGraphExtension(models.Model):
     img_url_stock = fields.Char(string="Ссылка на объект")
     img_html_stock = fields.Html(compute="_compute_img_stock")
 
+    def download_img_data_stock(self):
+        field_name = "img_data_stock"
+        url = self.get_download_url(field_name)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
+    
     def _compute_img_stock(self):
         for rec in self:
             rec.img_html_stock = False
@@ -1695,6 +1749,15 @@ class ProductGraphExtension(models.Model):
     img_data_analysis_data = fields.Text(string="Данные графика")
     img_url_analysis_data = fields.Char(string="Ссылка на объект")
     img_html_analysis_data = fields.Html(compute="_compute_img_analysis_data")
+
+    def download_img_data_analysis_data(self):
+        field_name = "img_data_analysis_data"
+        url = self.get_download_url(field_name)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
 
     def _compute_img_analysis_data(self):
         for rec in self:
@@ -1784,6 +1847,19 @@ class ProductGraphExtension(models.Model):
             "res_id": self.id,
             "target": "current",
         }
+
+
+class GenerateUrlForDownloadGrpahData(models.Model):
+    _inherit = "ozon.products"
+
+    def get_url(self, model_name, record_id, field_name):
+        return f'/web/content_text?model={model_name}&id={record_id}&field={field_name}'
+
+    def get_download_url(self, field_name):
+        model_name = self._name
+        record_id = self.id
+        url = self.get_url(model_name, record_id, field_name)
+        return url
 
 
 class ProductCalculator(models.Model):
