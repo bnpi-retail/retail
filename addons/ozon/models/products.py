@@ -1109,6 +1109,8 @@ class Product(models.Model):
 
         if new_price != 0:
             comment = f"Цена рассчитана исходя из стратегий:\n{self.pricing_strategy_ids.mapped('name')}"
+        else:
+            comment = ""
         return {
             "type": "ir.actions.act_window",
             "name": "Добавить в очередь на изменение цен",
@@ -1119,7 +1121,7 @@ class Product(models.Model):
                 "default_product": self.id,
                 "default_price": self.price,
                 "default_new_price": new_price,
-                "default_comment": comment if comment else None,
+                "default_comment": comment,
             },
         }
 
