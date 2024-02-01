@@ -143,4 +143,5 @@ class PricingStrategy(models.Model):
     strategy_id = fields.Char(string="ID стратегии")
     value = fields.Float(string="Задаваемое значение")
     expected_price = fields.Float(string="Ожидаемая цена")
+    message = fields.Char(string="Сообщение", readonly=True)
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
