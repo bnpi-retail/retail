@@ -56,20 +56,23 @@
                             <tree editable="bottom" edit="True">
                                 <field name="strategy_id" invisible="1" />
                                 <field name="name" />
+                                <field name="weight" />
                                 <field name="timestamp" />
                                 <field name="value" widget="percentage"
                                     attrs="{'invisible':[('strategy_id','=','expected_price')]}" />
+                                <field name="message" width="300px" />
+                                <field name="expected_price" />
                             </tree>
                         </field>
-                        <!-- <group>
-                            <field name="product_calculator_ids">
-                                <tree>
-                                    <field name="name" />
-                                    <field name="value" />
-                                    <field name="new_value" />
-                                </tree>
-                            </field>
-                        </group> -->
+                    </group>
+                    <group>
+                        <field name="product_calculator_ids">
+                            <tree editable="bottom" edit="True">
+                                <field name="name" />
+                                <field name="value" />
+                                <field name="new_value" />
+                            </tree>
+                        </field>
                     </group>
 
                     <group col="7">

@@ -303,7 +303,6 @@ class Product(models.Model):
         "ozon.product_calculator",
         "product_id",
         string="Рассчитываемые параметры",
-        readonly=True,
     )
     get_sales_count = fields.Integer(compute="compute_count_sales")
     price_history_count = fields.Integer(compute="compute_count_price_history")
@@ -1175,109 +1174,84 @@ class Product(models.Model):
 
     def _compute_product_calculator_ids(self):
         for rec in self:
+            # TODO: удалить после того, как очистишь таблицу от всех старых product_calculator_ids
+            rec.product_calculator_ids.unlink()
             if pc_recs := rec.product_calculator_ids:
                 for pc_rec in pc_recs:
-                    if pc_rec.name == "Цена":
+                    if pc_rec.name == "Ожидаемая цена по всем стратегиям":
                         pc_rec.value = rec.price
-                    elif pc_rec.name == "Прибыль":
-                        pc_rec.value = rec.profit
-                    elif pc_rec.name == "Идеальная прибыль":
-                        pc_rec.value = rec.profit_ideal
-                    elif pc_rec.name == "Разница между прибылью и идеальной прибылью":
-                        pc_rec.value = rec.profit_delta
-                    elif pc_rec.name == "Отклонение от прибыли":
-                        pc_rec.value = rec.coef_profitability
             else:
                 self.env["ozon.product_calculator"].create(
                     [
                         {
-                            "name": "Цена",
+                            "name": "Ожидаемая цена по всем стратегиям",
                             "product_id": rec.id,
                             "value": rec.price,
-                        },
-                        {
-                            "name": "Прибыль",
-                            "product_id": rec.id,
-                            "value": rec.profit,
-                        },
-                        {
-                            "name": "Идеальная прибыль",
-                            "product_id": rec.id,
-                            "value": rec.profit_ideal,
-                        },
-                        {
-                            "name": "Разница между прибылью и идеальной прибылью",
-                            "product_id": rec.id,
-                            "value": rec.profit_delta,
-                        },
-                        {
-                            "name": "Отклонение от прибыли",
-                            "product_id": rec.id,
-                            "value": rec.coef_profitability,
-                        },
+                        }
                     ]
                 )
 
-    @api.onchange("pricing_strategy_ids")
-    def onchange_pricing_stragegy_ids(self):
-        prod_calc_ids = self.product_calculator_ids.ids
-        prod_calc_recs = self.env["ozon.product_calculator"].browse(prod_calc_ids)
+    def calculate_pricing_stragegy_ids(self):
+        prod_calc_recs = self.env["ozon.product_calculator"].browse(
+            self.product_calculator_ids.ids
+        )
         if not self.pricing_strategy_ids:
             for prod_calc_rec in prod_calc_recs:
                 prod_calc_rec.new_value = 0
             return
-        total_expenses = self.total_all_expenses_ids_except_tax_roe_roi
-        prof_norm = self.profitability_norm.value if self.profitability_norm else 0.2
 
-        # TODO: как считать новые значения, если применяется несколько стратегий?
-        new_prices = []
-        new_profits = []
-        new_profit_ideals = []
-        new_profit_deltas = []
-        new_coef_profs = []
+        if sum(self.pricing_strategy_ids.mapped("weight")) != 1:
+            raise UserError("Суммарный вес стратегий должен составлять 1.")
+        prices = []
         for price_strategy in self.pricing_strategy_ids:
             strategy_value = price_strategy.value
             strategy_id = price_strategy.strategy_id
 
-            if strategy_id == "lower_min_competitor":
-                if self.competitors_with_price_ids:
-                    comp_prices = self.competitors_with_price_ids.mapped("price")
-                    min_comp_price = min(comp_prices)
-                    new_price = round(min_comp_price * (1 - strategy_value), 2)
-                else:
-                    raise UserError("Конкуренты не заданы")
+            # общие условия для всех стратегий
+            if ind_sum := self.ozon_products_indicators_summary_ids.filtered(
+                lambda r: r.type == "cost_not_calculated"
+            ):
+                price_strategy.value = None
+                price_strategy.expected_price = None
+                price_strategy.message = ind_sum.name
+                return
 
-            if strategy_id == "profitability_norm":
-                prof_norm = strategy_value
-                if prof_norm == 0:
+            # TODO: переделать, когда появятся соотв. индикаторы
+            if not self.profitability_norm:
+                price_strategy.value = None
+                price_strategy.expected_price = None
+                price_strategy.message = (
+                    "Невозможно рассчитать цену. Задайте ожидаемую доходность"
+                )
+                return
+            if not self.investment_expenses_id:
+                price_strategy.value = None
+                price_strategy.expected_price = None
+                price_strategy.message = (
+                    "Невозможно рассчитать цену. Задайте Investment"
+                )
+                return
+
+            if strategy_id == "lower_min_competitor":
+                if ind_sum := self.ozon_products_indicators_summary_ids.filtered(
+                    lambda r: r.type.startswith("no_competitor")
+                ):
+                    price_strategy.message = ind_sum.name
                     return
-                new_price = total_expenses / (1 - prof_norm)
+
+                comp_prices = self.competitors_with_price_ids.mapped("price")
+                min_comp_price = min(comp_prices)
+                new_price = round(min_comp_price * (1 - strategy_value), 2)
 
             if strategy_id == "expected_price":
                 new_price = self.expected_price
 
-            new_profit = new_price - total_expenses
-            new_profit_ideal = new_price * prof_norm
-            new_profit_delta = new_profit - new_profit_ideal
-            new_coef_profitability = round(new_profit_delta / new_profit_ideal, 2)
-
-            new_prices.append(new_price)
-            new_profits.append(new_profit)
-            new_profit_ideals.append(new_profit_ideal)
-            new_profit_deltas.append(new_profit_delta)
-            new_coef_profs.append(new_coef_profitability)
+            price_strategy.expected_price = new_price
+            prices.append(round(new_price * price_strategy.weight))
 
         for prod_calc_rec in prod_calc_recs:
-            if prod_calc_rec.name == "Цена":
-                prod_calc_rec.new_value = mean(new_prices)
-            elif prod_calc_rec.name == "Прибыль":
-                prod_calc_rec.new_value = mean(new_profits)
-            elif prod_calc_rec.name == "Идеальная прибыль":
-                prod_calc_rec.new_value = mean(new_profit_ideals)
-            elif prod_calc_rec.name == "Разница между прибылью и идеальной прибылью":
-                prod_calc_rec.new_value = mean(new_profit_deltas)
-            elif prod_calc_rec.name == "Отклонение от прибыли":
-                prod_calc_rec.new_value = mean(new_coef_profs)
+            if prod_calc_rec.name == "Ожидаемая цена по всем стратегиям":
+                prod_calc_rec.new_value = mean(prices)
 
     def calculate(self):
         # TODO: удалить после тестов
@@ -1289,6 +1263,7 @@ class Product(models.Model):
         # latest_indirect_expenses.coef_total = 15
         self._compute_product_calculator_ids()
         self.update_current_product_all_expenses()
+        self.calculate_pricing_stragegy_ids()
         return super(Product, self).write({})
 
     @api.depends("posting_ids")
@@ -1763,6 +1738,6 @@ class ProductCalculator(models.Model):
     _description = "Калькулятор лота"
 
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
-    name = fields.Char(string="Параметр")
-    value = fields.Float(string="Текущее значение")
+    name = fields.Char(string="Параметр", readonly=True)
+    value = fields.Float(string="Текущее значение", readonly=True)
     new_value = fields.Float(string="Новое значение")

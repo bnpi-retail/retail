@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    "name": "ozon",
+    "name": "Ozon",
     "summary": """
         Short (1 phrase/line) summary of the module's purpose, used as
         subtitle on modules listing or apps.openerp.com""",
@@ -31,7 +31,6 @@
         "security/import/import/ir.model.access.csv",
         "security/competitors/products_competitors/ir.model.access.csv",
         "security/competitors/price_competitors/ir.model.access.csv",
-        "security/competitors/search_query_queue/ir.model.access.csv",
         "security/competitors/analysis_competitors/ir.model.access.csv",
         "security/competitors/analysis_competitors_record/ir.model.access.csv",
         "security/competitors/successful_product_competitors/ir.model.access.csv",
@@ -80,7 +79,6 @@
         "views/import/import.xml",
         "views/competitors/menu.xml",
         "views/competitors/products_competitors.xml",
-        "views/competitors/search_query_queue.xml",
         "views/competitors/price_competitors.xml",
         "views/competitors/analysis_competitors.xml",
         "views/competitors/successful_products_competitors.xml",

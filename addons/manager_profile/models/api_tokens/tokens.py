@@ -14,7 +14,7 @@ class MainApiTokens(models.Model):
     will_expire = fields.Date(string='Дата истечения API токена', readonly=True)
     worker = fields.Many2one('res.users', string='Сотрудник')
     download_link = fields.Char(
-        string='Ссылка на актуальную версию Chrome Extension', widget='url'
+        string='Ссылка на актуальную версию Chrome Extension'
     )
 
 

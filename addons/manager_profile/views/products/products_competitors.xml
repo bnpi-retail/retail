@@ -1,0 +1,61 @@
+<odoo>
+  <data>
+
+    <!-- Form -->
+    <record id="view_parser_products_competitors_form" model="ir.ui.view">
+        <field name="name">Собранные товары</field>
+        <field name="model">parser.products_competitors</field>
+        <field name="arch" type="xml">
+            <form>
+                <group string="Рекомендуемый наш товар">
+                    <field name="product"/>
+                    <field name="is_our_product"/>
+                </group>
+                <group string="Информация карточки">
+                    <field name="number"/>
+                    <field name="name"/>
+                    <field name="search_query"/>
+                    <field name="seller"/>
+                    <field name="id_product"/>
+                    <field name="price"/>
+                    <field name="price_without_sale"/>
+                    <field name="price_with_card"/>
+                </group>
+                <field name="url" widget="url" readonly="1" nolabel="1" text="Перейти к товару"/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree -->
+    <record id="view_parser_products_competitors_tree" model="ir.ui.view">
+        <field name="name">Собранные товары</field>
+        <field name="model">parser.products_competitors</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="number"/>
+                <field name="name"/>
+                <field name="seller"/>
+                <field name="id_product"/>
+                <field name="price"/>
+                <field name="price_without_sale"/>
+                <field name="price_with_card"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_parser_products_competitors">
+        <field name="name">Собранные товары</field>
+        <field name="res_model">parser.products_competitors</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem name="Собранные товары" 
+      id="parser_menu_product_competitors"
+      parent="manager_profile.menu_root"
+      action="action_parser_products_competitors"
+      sequence="35"/>
+
+  </data>
+</odoo>

@@ -27,7 +27,6 @@ from . import settings
 from .competitors import products_competitors
 from .competitors import price_history_competitors
 from .competitors import analysis_competitors
-from .competitors import search_query_queue
 from .competitors import successful_product_competitors
 from .competitors import competitor_sale
 from .pricing import pricing
@@ -37,3 +36,6 @@ from .analysis_data import analysis_data
 from .reports import ozon_report
 from .indicators import indicator, indicator_summary
 from .abc_analize import abs_analysis
+
+# bucket
+from .bucket import search_queries

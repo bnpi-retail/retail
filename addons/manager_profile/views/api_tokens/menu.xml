@@ -4,6 +4,5 @@
             id="main_menu_manager_profile_api_tokens"
             parent="manager_profile.menu_root"
             sequence="25" />
-
     </data>
 </odoo>

@@ -21,6 +21,7 @@ class ProductCompetitors(models.Model):
         string="URL товара", widget="url", help="Укажите ссылку на товар в поле"
     )
 
+    # product = fields.Many2one("ozon.products", string="Лот", required=True)
     product = fields.Many2one("ozon.products", string="Лот")
 
     price_competitors_count = fields.One2many(
