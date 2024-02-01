@@ -1254,6 +1254,7 @@ class Product(models.Model):
                 new_price = total_expenses / (1 - prof_norm)
 
             if strategy_id == "expected_price":
+                price_strategy.expected_price = self.expected_price
                 new_price = self.expected_price
 
             new_profit = new_price - total_expenses

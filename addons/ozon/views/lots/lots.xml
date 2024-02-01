@@ -59,6 +59,7 @@
                                 <field name="timestamp" />
                                 <field name="value" widget="percentage"
                                     attrs="{'invisible':[('strategy_id','=','expected_price')]}" />
+                                <field name="expected_price" />
                             </tree>
                         </field>
                         <!-- <group>
