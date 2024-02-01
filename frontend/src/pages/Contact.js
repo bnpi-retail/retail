@@ -154,7 +154,7 @@ const Contact = () => {
       <Button 
         style={{ 
           marginTop: '20px',
-          // display: isButtonVisible ? 'block' : 'none',
+          display: isButtonVisible ? 'block' : 'none',
           margin: 'auto',
         }}
         onClick={proccess}
