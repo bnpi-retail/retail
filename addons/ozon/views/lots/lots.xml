@@ -56,16 +56,16 @@
                             <tree editable="bottom" edit="True">
                                 <field name="strategy_id" invisible="1" />
                                 <field name="name" />
-                                <field name="weight" />
-                                <field name="timestamp" />
                                 <field name="value" widget="percentage"
                                     attrs="{'invisible':[('strategy_id','=','expected_price')]}" />
+                                <field name="weight" />
                                 <field name="message" width="300px" />
-                                <field name="expected_price" />
+                                <!-- <field name="expected_price" /> -->
+                                <field name="timestamp" />
                             </tree>
                         </field>
                     </group>
-                    <group col="7">
+                    <!-- <group col="7">
                         <group />
                         <group />
                         <group />
@@ -76,7 +76,7 @@
                         <group />
                         <group />
                         <group />
-                    </group>
+                    </group> -->
                     <group>
                         <field name="product_calculator_ids">
                             <tree editable="bottom" edit="True">
@@ -86,19 +86,14 @@
                             </tree>
                         </field>
                     </group>
-                    <group col="7">
-                        <group />
-                        <group />
-                        <group />
+                    <div class="oe_right oe_button_box">
                         <group>
-                            <button type="object" name="create_mass_pricing"
+                            <button type="object" name="create_mass_pricing_without_dialog"
                                 string="Применить рассчитанную цену"
                                 class="btn-outline-primary" />
                         </group>
-                        <group />
-                        <group />
-                        <group />
-                    </group>
+                    </div>
+
 
                     <!-- Main info -->
                     <notebook>
@@ -107,7 +102,7 @@
                                 <group>
                                     <group>
                                         <field name="products" />
-                                        <field name="categories" string="Категория"/>
+                                        <field name="categories" string="Категория" />
                                         <field name="id_on_platform" />
                                         <field name="article" />
                                     </group>
@@ -130,7 +125,7 @@
                                         <field name="is_selling" />
                                     </group>
                                     <group>
-                                        <field name="market_share" readonly="1"/>
+                                        <field name="market_share" readonly="1" />
                                         <field name="revenue_share_temp"
                                             string="Доля продукта в выручке, %"
                                             readonly="1" />
@@ -392,7 +387,6 @@
                                             name="download_img_data_analysis_data"
                                             attrs="{'invisible': [('img_data_analysis_data', '=', False)]}"
                                         />
-
                                 </page>
                                 <page id="page_analysis_data_abc_analysis" string="ABC анализ">
                                     <group>
@@ -461,7 +455,7 @@
                         decoration-success="abc_group=='A'"
                         decoration-danger="abc_group=='C'"
                     />
-                    <field name="market_share" readonly="1"/>
+                    <field name="market_share" readonly="1" />
                 </tree>
             </field>
         </record>
@@ -501,8 +495,9 @@
             <field name="arch" type="xml">
                 <search>
                     <field name="article" />
-                    <field name="categories"/>
-                    <filter name="ozon_caetgory" string="Category" context="{'group_by':'categories'}"/>
+                    <field name="categories" />
+                    <filter name="ozon_caetgory" string="Category"
+                        context="{'group_by':'categories'}" />
                     <searchpanel>
                         <field name="categories" />
                     </searchpanel>

@@ -301,6 +301,11 @@ class Product(models.Model):
         "product_id",
         string="Рассчитываемые параметры",
     )
+    mass_pricing_ids = fields.One2many(
+        "ozon.mass_pricing",
+        "product",
+        string="Товар в очереди на изменение цен",
+    )
     get_sales_count = fields.Integer(compute="compute_count_sales")
     price_history_count = fields.Integer(compute="compute_count_price_history")
     action_candidate_ids = fields.One2many(
@@ -322,7 +327,6 @@ class Product(models.Model):
     revenue_share_temp = fields.Float()
     revenue_cumulative_share_temp = fields.Float()
     abc_group = fields.Char(size=3)
-
     market_share = fields.Float(string='Доля рынка', digits=(12, 5))
 
     def _compute_expected_price(self):
@@ -607,9 +611,16 @@ class Product(models.Model):
             self._not_enough_competitors_write(self)
         if values.get("competitors_with_price_ids"):
             self._check_competitors_with_price_ids_qty(self)
-        if values.get("investment_expenses_id") or values.get("investment_expenses_id") is False:
+        if (
+            values.get("investment_expenses_id")
+            or values.get("investment_expenses_id") is False
+        ):
             self._check_investment_expenses(self)
-        if values.get("profitability_norm") is values.get("profitability_norm") is False:
+        if (
+            values.get("profitability_norm")
+            is values.get("profitability_norm")
+            is False
+        ):
             self._check_profitability_norm(self)
 
         return res
@@ -631,7 +642,11 @@ class Product(models.Model):
             common_indicator = False
             words = []
             days = 0
-            for ind in (indicator_investment, indicator_cost_price, indicator_profitability_norm):
+            for ind in (
+                indicator_investment,
+                indicator_cost_price,
+                indicator_profitability_norm,
+            ):
                 if ind:
                     logger.warning(ind)
                     common_indicator = True
@@ -639,14 +654,14 @@ class Product(models.Model):
                     if days < ind_days:
                         days = ind_days
             if indicator_cost_price:
-                words.append('себестоимость не подсчитана, ')
+                words.append("себестоимость не подсчитана, ")
             if indicator_investment:
-                words.append('investment не установлен, ')
+                words.append("investment не установлен, ")
             if indicator_profitability_norm:
-                words.append('ожидаемая доходность не установлена, ')
+                words.append("ожидаемая доходность не установлена, ")
 
             if common_indicator:
-                text = ''.join(words)
+                text = "".join(words)
                 text = text.capitalize()[:-2]
                 summary = summary_types.get("cost_not_calculated")
                 if summary:
@@ -1193,6 +1208,16 @@ class Product(models.Model):
             },
         }
 
+    def create_mass_pricing_without_dialog(self):
+        self.ensure_one()
+        new_price = self.product_calculator_ids.filtered(
+            lambda r: r.name == "Ожидаемая цена по всем стратегиям"
+        ).new_value
+        print(new_price)
+        self.env["ozon.mass_pricing"].create(
+            {"product": self.id, "price": self.price, "new_price": new_price}
+        )
+
     def _compute_imgs(self):
         for rec in self:
             rec.imgs_html = False
@@ -1263,12 +1288,13 @@ class Product(models.Model):
                     ]
                 )
 
+    @api.onchange("pricing_strategy_ids")
     def calculate_pricing_stragegy_ids(self):
         if not self.pricing_strategy_ids:
             return
 
-        if sum(self.pricing_strategy_ids.mapped("weight")) != 1:
-            raise UserError("Суммарный вес стратегий должен составлять 1.")
+        # if sum(self.pricing_strategy_ids.mapped("weight")) != 1:
+        #     raise UserError("Суммарный вес стратегий должен составлять 1.")
         prices = []
         errors = False
         for price_strategy in self.pricing_strategy_ids:
@@ -1325,8 +1351,9 @@ class Product(models.Model):
                 self.pricing_strategy_ids.expected_price = None
                 return
             else:
-                price_strategy.message = ""
-            price_strategy.expected_price = new_price
+                price_strategy.expected_price = new_price
+                price_strategy.message = str(round(new_price, 2))
+
             prices.append(round(new_price * price_strategy.weight))
 
         for prod_calc_rec in self.product_calculator_ids:
@@ -1512,11 +1539,11 @@ class ProductGraphExtension(models.Model):
         field_name = "img_data_sale_two_weeks"
         url = self.get_download_url(field_name)
         return {
-            'type': 'ir.actions.act_url',
-            'url': url,
-            'target': 'new',
+            "type": "ir.actions.act_url",
+            "url": url,
+            "target": "new",
         }
-    
+
     def _compute_img_sale_two_weeks(self):
         for rec in self:
             rec.img_html_sale_two_weeks = False
@@ -1535,11 +1562,11 @@ class ProductGraphExtension(models.Model):
         field_name = "img_data_sale_six_weeks"
         url = self.get_download_url(field_name)
         return {
-            'type': 'ir.actions.act_url',
-            'url': url,
-            'target': 'new',
+            "type": "ir.actions.act_url",
+            "url": url,
+            "target": "new",
         }
-    
+
     def _compute_img_sale_six_weeks(self):
         for rec in self:
             rec.img_html_sale_six_weeks = False
@@ -1558,11 +1585,11 @@ class ProductGraphExtension(models.Model):
         field_name = "img_data_sale_twelve_weeks"
         url = self.get_download_url(field_name)
         return {
-            'type': 'ir.actions.act_url',
-            'url': url,
-            'target': 'new',
+            "type": "ir.actions.act_url",
+            "url": url,
+            "target": "new",
         }
-    
+
     def _compute_img_sale_twelve_weeks(self):
         for rec in self:
             rec.img_html_sale_twelve_weeks = False
@@ -1643,11 +1670,11 @@ class ProductGraphExtension(models.Model):
         field_name = "img_data_sale_this_year"
         url = self.get_download_url(field_name)
         return {
-            'type': 'ir.actions.act_url',
-            'url': url,
-            'target': 'new',
+            "type": "ir.actions.act_url",
+            "url": url,
+            "target": "new",
         }
-    
+
     def _compute_img_sale_this_year(self):
         for rec in self:
             rec.img_html_sale_this_year = False
@@ -1666,11 +1693,11 @@ class ProductGraphExtension(models.Model):
         field_name = "img_data_sale_last_year"
         url = self.get_download_url(field_name)
         return {
-            'type': 'ir.actions.act_url',
-            'url': url,
-            'target': 'new',
+            "type": "ir.actions.act_url",
+            "url": url,
+            "target": "new",
         }
-    
+
     def _compute_img_sale_last_year(self):
         for rec in self:
             rec.img_html_sale_last_year = False
@@ -1741,11 +1768,11 @@ class ProductGraphExtension(models.Model):
         field_name = "img_data_stock"
         url = self.get_download_url(field_name)
         return {
-            'type': 'ir.actions.act_url',
-            'url': url,
-            'target': 'new',
+            "type": "ir.actions.act_url",
+            "url": url,
+            "target": "new",
         }
-    
+
     def _compute_img_stock(self):
         for rec in self:
             rec.img_html_stock = False
@@ -1789,9 +1816,9 @@ class ProductGraphExtension(models.Model):
         field_name = "img_data_analysis_data"
         url = self.get_download_url(field_name)
         return {
-            'type': 'ir.actions.act_url',
-            'url': url,
-            'target': 'new',
+            "type": "ir.actions.act_url",
+            "url": url,
+            "target": "new",
         }
 
     def _compute_img_analysis_data(self):
@@ -1888,7 +1915,7 @@ class GenerateUrlForDownloadGrpahData(models.Model):
     _inherit = "ozon.products"
 
     def get_url(self, model_name, record_id, field_name):
-        return f'/web/content_text?model={model_name}&id={record_id}&field={field_name}'
+        return f"/web/content_text?model={model_name}&id={record_id}&field={field_name}"
 
     def get_download_url(self, field_name):
         model_name = self._name
