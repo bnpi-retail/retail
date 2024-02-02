@@ -21,6 +21,7 @@ from . import warehouse
 from . import fbo_supply_order
 from . import action
 from . import settings
+from . import schedule_model
 
 from .competitors import products_competitors
 from .competitors import price_history_competitors
