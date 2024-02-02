@@ -57,6 +57,8 @@ class Seller(models.Model):
                 rec.tax_percent = 0.06
             elif rec.tax == "earnings_8":
                 rec.tax_percent = 0.08
+            else:
+                rec.tax_percent = 0
 
     def _compute_tax_description(self):
         for rec in self:
