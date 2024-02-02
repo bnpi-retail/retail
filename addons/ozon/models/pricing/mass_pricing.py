@@ -91,10 +91,10 @@ class PricingStrategy(models.Model):
     _description = "Стратегия назначения цен"
 
     timestamp = fields.Date(string="Дата расчёта")
-    name = fields.Char(string="Стратегия назначения цен")
+    name = fields.Char(string="Название")
     strategy_id = fields.Char(string="ID стратегии")
     weight = fields.Float(string="Вес")
-    value = fields.Float(string="Задаваемое значение")
-    expected_price = fields.Float(string="Ожидаемая цена")
+    value = fields.Float(string="Значение")
+    expected_price = fields.Float(string="Цена")
     message = fields.Char(string="Сообщение", readonly=True)
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")

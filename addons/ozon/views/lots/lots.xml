@@ -56,12 +56,12 @@
                             <tree editable="bottom" edit="True">
                                 <field name="strategy_id" invisible="1" />
                                 <field name="name" />
-                                <field name="weight" />
-                                <field name="timestamp" />
                                 <field name="value" widget="percentage"
                                     attrs="{'invisible':[('strategy_id','=','expected_price')]}" />
-                                <field name="message" width="300px" />
+                                <field name="weight" />
                                 <field name="expected_price" />
+                                <field name="timestamp" />
+                                <field name="message" width="300px" />
                             </tree>
                         </field>
                     </group>
