@@ -589,6 +589,7 @@ class Product(models.Model):
                 print(f'{i} - Fix expense "Себестоимость товара" was created')
 
     def write(self, values, **kwargs):
+        self.calculate_pricing_stragegy_ids()
         if isinstance(values, dict) and values.get("fix_expenses"):
             fix_exp_cost_price = self.fix_expenses.filtered(
                 lambda r: r.name == "Себестоимость товара"
@@ -1210,7 +1211,6 @@ class Product(models.Model):
         new_price = self.product_calculator_ids.filtered(
             lambda r: r.name == "Ожидаемая цена по всем стратегиям"
         ).new_value
-        print(new_price)
         self.env["ozon.mass_pricing"].create(
             {"product": self.id, "price": self.price, "new_price": new_price}
         )
@@ -1356,13 +1356,6 @@ class Product(models.Model):
                 prod_calc_rec.new_value = mean(prices)
 
     def calculate(self):
-        # TODO: удалить после тестов
-        # latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
-        #     [],
-        #     limit=1,
-        #     order="create_date desc",
-        # )
-        # latest_indirect_expenses.coef_total = 15
         self._compute_product_calculator_ids()
         self.update_current_product_all_expenses()
         self.calculate_pricing_stragegy_ids()
