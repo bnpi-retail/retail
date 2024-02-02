@@ -6,3 +6,4 @@ class CompetitorSeller(models.Model):
     _description = "Магазин-конкурент"
 
     trade_name = fields.Char(string='Торговое название')
+    is_my_shop = fields.Char(default=False)

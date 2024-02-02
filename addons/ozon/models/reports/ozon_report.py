@@ -1,4 +1,5 @@
 from odoo import models, fields
+from odoo.exceptions import UserError
 import logging
 
 
@@ -36,6 +37,9 @@ class OzonReportCategoryMarketShare(models.Model):
                 known_share_percentage += competitor_category_share.category_share
                 total_amount += competitor_category_share.turnover
 
+            if total_amount == 0:
+                raise UserError('Суммарная стоимость всех продаж = 0. Нельзя посчитать доли рынка.')
+
             for sale in record.ozon_products_competitors_sale_ids:
                 revenue_share_percentage = (sale.orders_sum * known_share_percentage) / total_amount
                 sale.revenue_share_percentage = revenue_share_percentage
@@ -54,7 +58,7 @@ class OzonReportCompetitorCategoryShare(models.Model):
     _description = "Место и доля продаж конкурентов в категории"
 
     place = fields.Integer()
-    retail_seller_id = fields.Many2one('retail.seller', string="Продавец")
+    seller_name = fields.Char()
     category_share = fields.Float()
     turnover = fields.Float()
     turnover_growth = fields.Float()

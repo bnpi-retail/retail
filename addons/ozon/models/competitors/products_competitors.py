@@ -14,7 +14,7 @@ class ProductCompetitors(models.Model):
     
     name = fields.Char(string="Наименование товара")
 
-    retail_seller_id = fields.Many2one('retail.seller', string="Продавец")
+    competitor_seller_id = fields.Many2one("ozon.competitor_seller", string="Продавец")
     ozon_products_competitors_sale_ids = fields.One2many('ozon.products_competitors.sale', 'ozon_products_competitors_id')
 
     url = fields.Char(

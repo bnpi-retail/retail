@@ -10,6 +10,7 @@ class Seller(models.Model):
     name = fields.Char(string="Название")
     ogrn = fields.Char(string="ОГРН")
     trade_name = fields.Char(string="Торговое название")
+    is_my_shop = fields.Char(default=True)
 
     tax = fields.Selection(
         [

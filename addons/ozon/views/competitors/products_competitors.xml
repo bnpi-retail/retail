@@ -53,7 +53,7 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="id_product" string="Id товара на Ozon" />
-                    <field name="retail_seller_id" string="Продавец" />
+                    <field name="competitor_seller_id" string="Продавец" />
                     <field name="name" string="Наименование товара" />
                     <field name="market_share" readonly="1" />
                     <field name="product" string="Лот" />
