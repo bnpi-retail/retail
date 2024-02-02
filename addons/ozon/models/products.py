@@ -326,8 +326,7 @@ class Product(models.Model):
     revenue_share_temp = fields.Float()
     revenue_cumulative_share_temp = fields.Float()
     abc_group = fields.Char(size=3)
-
-    market_share = fields.Float(string="Доля рынка")
+    market_share = fields.Float(string='Доля рынка', digits=(12, 5))
 
     def _compute_expected_price(self):
         # TODO: откуда берем РРЦ?

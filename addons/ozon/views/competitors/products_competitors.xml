@@ -14,35 +14,37 @@
                         </button>
                     </div>
 
-                    <separator string="Процентные затраты" />
-                    <notebook>
-                        <page id="page_info_competitors_history"
-                            string="Информация о товаре конкурента">
-                            <group>
-                                <field name="id_product" />
-                                <field name="article" />
-                                <field name="name" />
-                                <field name="product" />
-                                <field name="url" />
-                                <field name="market_share" readonly="1" />
-                            </group>
-                        </page>
-                        <page id="page_graph_history" string="Аналитические данные">
-                            <group>
-                                <field name="imgs_html_graph_this_year" />
-                            </group>
-                            <button string="Скачать данные"
-                                type="object"
-                                class="oe_highlight"
-                                icon="fa-download"
-                                name="download_data_graph_this_year"
-                                attrs="{'invisible': [('imgs_data_graph_this_year', '=', False)]}"
-                            />
-                        </page>
-                    </notebook>
-                </form>
-            </field>
-        </record>
+
+                <separator string="Процентные затраты" />
+                <notebook>
+                    <page id="page_info_competitors_history" string="Информация о товаре конкурента">
+                        <group>
+                            <field name="id_product"/>
+                            <field name="article"/>
+                            <field name="name"/>
+                            <field name="product"/>
+                            <field name="url"/>
+                            <field name="market_share" readonly="1"/>
+                        </group>
+                    </page>
+                    <page id="page_graph_history" string="Аналитические данные">
+                        <group>
+                            <field name="imgs_html_graph_this_year"/>
+                            <field name="imgs_data_graph_this_year" invisible="1"/>
+                        </group>
+                        <button string="Скачать данные" 
+                            type="object" 
+                            class="oe_highlight" 
+                            icon="fa-download" 
+                            name="download_data_graph_this_year"
+                            attrs="{'invisible': [('imgs_data_graph_this_year', '=', False)]}"
+                        />
+                    </page>
+                </notebook>
+            </form>
+        </field>
+    </record>
+
 
         <!-- Tree -->
         <record id="view_products_competitors_tree" model="ir.ui.view">
