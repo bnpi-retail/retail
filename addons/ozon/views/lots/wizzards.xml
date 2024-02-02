@@ -16,11 +16,10 @@
                                 <field name="weight" />
                             </tree>
                         </field>
-
                     </group>
                     <footer>
                         <button string="Отмена" class="btn-secondary" special="cancel" />
-                        <button name="change_calculated_price_based_on_all_strategies"
+                        <button name="assign_calculated_pricing_strategy_ids"
                             string="Изменить" type="object"
                             class="btn-primary" />
                     </footer>

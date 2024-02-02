@@ -589,7 +589,7 @@ class Product(models.Model):
                 print(f'{i} - Fix expense "Себестоимость товара" was created')
 
     def write(self, values, **kwargs):
-        self.calculate_calculated_pricing_stragegy_ids()
+        self.calculate_calculated_pricing_strategy_ids()
         self.update_current_product_all_expenses()
         if isinstance(values, dict) and values.get("fix_expenses"):
             fix_exp_cost_price = self.fix_expenses.filtered(
@@ -1246,7 +1246,7 @@ class Product(models.Model):
                 )
 
     @api.onchange("calculated_pricing_strategy_ids")
-    def calculate_calculated_pricing_stragegy_ids(self):
+    def calculate_calculated_pricing_strategy_ids(self):
         if not self.calculated_pricing_strategy_ids:
             return
         self._compute_product_calculator_ids()
