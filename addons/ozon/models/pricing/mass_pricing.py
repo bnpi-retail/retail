@@ -22,6 +22,12 @@ class MassPricing(models.Model):
     new_price = fields.Float(string="Новая цена")
     comment = fields.Text(string="Причина")
 
+    def create(self, values, **kwargs):
+        if product := kwargs.get("product"):
+            product.mass_pricing_ids.unlink()
+        rec = super(MassPricing, self).create(values)
+        return rec
+
     def is_product_in_queue(self, product):
         res = self.env["ozon.mass_pricing"].search([("product", "=", product.id)])
         return res if res else False
@@ -90,9 +96,23 @@ class PricingStrategy(models.Model):
     _name = "ozon.pricing_strategy"
     _description = "Стратегия назначения цен"
 
-    timestamp = fields.Date(string="Дата расчёта")
     name = fields.Char(string="Название")
     strategy_id = fields.Char(string="ID стратегии")
+    weight = fields.Float(string="Вес")
+    value = fields.Float(string="Значение")
+
+
+class PricingStrategy(models.Model):
+    _name = "ozon.calculated_pricing_strategy"
+    _description = "Стратегия назначения цен"
+
+    timestamp = fields.Date(string="Дата расчёта")
+    pricing_strategy_id = fields.Many2one(
+        "ozon.pricing_strategy", string="Стратегия назначения цен"
+    )
+    strategy_id = fields.Char(
+        string="ID стратегии", related="pricing_strategy_id.strategy_id"
+    )
     weight = fields.Float(string="Вес")
     value = fields.Float(string="Значение")
     expected_price = fields.Float(string="Цена")
@@ -101,4 +121,5 @@ class PricingStrategy(models.Model):
         readonly=True,
         help="Показывает цену либо сообщение об ошибке, если цена не может быть рассчитана",
     )
+
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")

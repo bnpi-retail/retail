@@ -62,6 +62,7 @@
         "views/price/pricing_strategy.xml",
         "views/price/investment_expenses.xml",
         "views/lots/menu.xml",
+        "views/lots/wizards.xml",
         "views/lots/lots.xml",
         "views/lots/tracked_search_queries.xml",
         "views/lots/lots_for_gpt.xml",

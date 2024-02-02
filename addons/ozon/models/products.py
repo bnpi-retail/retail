@@ -290,11 +290,8 @@ class Product(models.Model):
         string="Разница между прибылью и идеальной прибылью",
         compute="_compute_profit_delta",
     )
-    pricing_strategy_id = fields.Many2one(
-        "ozon.pricing_strategy", string="Стратегия назначения цен"
-    )
-    pricing_strategy_ids = fields.Many2many(
-        "ozon.pricing_strategy", string="Стратегии назначения цен"
+    calculated_pricing_strategy_ids = fields.One2many(
+        "ozon.calculated_pricing_strategy", "product_id", string="Калькулятор стратегий"
     )
     product_calculator_ids = fields.One2many(
         "ozon.product_calculator",
@@ -305,6 +302,9 @@ class Product(models.Model):
         "ozon.mass_pricing",
         "product",
         string="Товар в очереди на изменение цен",
+    )
+    is_button_create_mass_pricing_shown = fields.Boolean(
+        compute="_compute_is_button_create_mass_pricing_shown"
     )
     get_sales_count = fields.Integer(compute="compute_count_sales")
     price_history_count = fields.Integer(compute="compute_count_price_history")
@@ -327,21 +327,21 @@ class Product(models.Model):
     revenue_share_temp = fields.Float()
     revenue_cumulative_share_temp = fields.Float()
     abc_group = fields.Char(size=3)
-    market_share = fields.Float(string='Доля рынка', digits=(12, 5))
+    market_share = fields.Float(string="Доля рынка", digits=(12, 5))
 
     def _compute_expected_price(self):
-        # TODO: откуда берем РРЦ?
-        # ожид.цена=фикс.затраты/(1-процент_затрат-ожид.ROS-проц.налог-ожид.ROI)
         for rec in self:
-            all_fix_expenses = rec.all_expenses_ids.filtered(lambda r: r.kind == "fix")
-            sum_fix_expenses = sum(all_fix_expenses.mapped("value"))
-            all_per_expenses = rec.all_expenses_ids.filtered(
-                lambda r: r.kind == "percent"
-            )
-            total_percent = sum(all_per_expenses.mapped("percent"))
-            # print(f"{rec.expected_price} = {sum_fix_expenses}/(1 - {total_percent})")
-            rec.expected_price = sum_fix_expenses / (1 - total_percent)
-            # print(rec.expected_price)
+            rec.expected_price = sum(rec.all_expenses_ids.mapped("expected_value"))
+        # TODO: откуда берем ожидаемую цену?
+        # ожид.цена=фикс.затраты/(1-процент_затрат-ожид.ROS-проц.налог-ожид.ROI)
+        # for rec in self:
+        #     all_fix_expenses = rec.all_expenses_ids.filtered(lambda r: r.kind == "fix")
+        #     sum_fix_expenses = sum(all_fix_expenses.mapped("value"))
+        #     all_per_expenses = rec.all_expenses_ids.filtered(
+        #         lambda r: r.kind == "percent"
+        #     )
+        #     total_percent = sum(all_per_expenses.mapped("percent"))
+        #     rec.expected_price = sum_fix_expenses / (1 - total_percent)
 
     def _compute_price_delta(self):
         for rec in self:
@@ -592,6 +592,8 @@ class Product(models.Model):
                 print(f'{i} - Fix expense "Себестоимость товара" was created')
 
     def write(self, values, **kwargs):
+        self.calculate_calculated_pricing_strategy_ids()
+        self.update_current_product_all_expenses()
         if isinstance(values, dict) and values.get("fix_expenses"):
             fix_exp_cost_price = self.fix_expenses.filtered(
                 lambda r: r.name == "Себестоимость товара"
@@ -1184,38 +1186,14 @@ class Product(models.Model):
 
         return res
 
-    def create_mass_pricing(self):
-        self.ensure_one()
-        new_price = self.product_calculator_ids.filtered(
-            lambda r: r.name == "Ожидаемая цена по всем стратегиям"
-        ).new_value
-
-        if new_price != 0:
-            comment = f"Цена рассчитана исходя из стратегий: {' и '.join(self.pricing_strategy_ids.mapped('name'))}"
-        else:
-            comment = ""
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Добавить в очередь на изменение цен",
-            "view_mode": "form",
-            "res_model": "ozon.mass_pricing",
-            "target": "new",
-            "context": {
-                "default_product": self.id,
-                "default_price": self.price,
-                "default_new_price": new_price,
-                "default_comment": comment,
-            },
-        }
-
     def create_mass_pricing_without_dialog(self):
         self.ensure_one()
         new_price = self.product_calculator_ids.filtered(
             lambda r: r.name == "Ожидаемая цена по всем стратегиям"
         ).new_value
-        print(new_price)
         self.env["ozon.mass_pricing"].create(
-            {"product": self.id, "price": self.price, "new_price": new_price}
+            {"product": self.id, "price": self.price, "new_price": new_price},
+            product=self,
         )
 
     def _compute_imgs(self):
@@ -1228,48 +1206,6 @@ class Product(models.Model):
                     render_html.append(f"<img src='{img}' width='400'/>")
 
                 rec.imgs_html = "\n".join(render_html)
-
-    @api.onchange("pricing_strategy_id")
-    def onchange_pricing_stragegy_id(self):
-        if self.pricing_strategy_id.strategy_id == "lower_3_percent_min_competitor":
-            # if product has at least one competitor
-            if min_comp_price := self.env.context.get("min_competitors_price"):
-                multiple = self.pricing_strategy_id.value
-                self.price = round(min_comp_price * multiple, 2)
-
-    def calculator(self):
-        self.ensure_one()
-        calculator_view = self.env["ir.ui.view"].search(
-            [("model", "=", "ozon.products"), ("name", "=", "Калькулятор")]
-        )
-        comp_prices = self.price_history_ids.mapped("price")
-        min_competitors_price = min(comp_prices) if comp_prices else None
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Калькулятор",
-            "view_mode": "form",
-            "view_id": calculator_view.id,
-            "res_model": "ozon.products",
-            "res_id": self.id,
-            "target": "new",
-            "context": {
-                "default_products": self.id,
-                "default_price": self.price,
-                "default_profit": self.profit,
-                "default_profitability_norm": self.profitability_norm,
-                "default_coef_profitability": self.coef_profitability,
-                "default_total_fbs_fix_expenses_max": self.total_fbs_fix_expenses_max,
-                "default_total_fbo_fix_expenses_max": self.total_fbo_fix_expenses_max,
-                "default_total_fbs_percent_expenses": self.total_fbs_percent_expenses,
-                "default_total_fbo_percent_expenses": self.total_fbo_percent_expenses,
-                "min_competitors_price": min_competitors_price,
-            },
-        }
-
-    def reset_calculator(self):
-        self.profitability_norm = False
-        self.pricing_strategy_id = False
-        return self.calculator()
 
     def _compute_product_calculator_ids(self):
         for rec in self:
@@ -1288,18 +1224,16 @@ class Product(models.Model):
                     ]
                 )
 
-    @api.onchange("pricing_strategy_ids")
-    def calculate_pricing_stragegy_ids(self):
-        if not self.pricing_strategy_ids:
+    @api.onchange("calculated_pricing_strategy_ids")
+    def calculate_calculated_pricing_strategy_ids(self):
+        if not self.calculated_pricing_strategy_ids:
             return
-
-        # if sum(self.pricing_strategy_ids.mapped("weight")) != 1:
-        #     raise UserError("Суммарный вес стратегий должен составлять 1.")
+        self._compute_product_calculator_ids()
         prices = []
         errors = False
-        for price_strategy in self.pricing_strategy_ids:
+        for price_strategy in self.calculated_pricing_strategy_ids:
             strategy_value = price_strategy.value
-            strategy_id = price_strategy.strategy_id
+            strategy_id = price_strategy.pricing_strategy_id.strategy_id
 
             # общие условия для всех стратегий
             # TODO: включить, когда будет исправлен индикатор себестоимости
@@ -1344,11 +1278,9 @@ class Product(models.Model):
             if strategy_id == "expected_price":
                 new_price = self.expected_price
 
-            self.pricing_strategy_ids.timestamp = fields.Date.today()
+            self.calculated_pricing_strategy_ids.timestamp = fields.Date.today()
             if errors:
                 self.product_calculator_ids.new_value = 0
-                self.pricing_strategy_ids.value = None
-                self.pricing_strategy_ids.expected_price = None
                 return
             else:
                 price_strategy.expected_price = new_price
@@ -1361,16 +1293,7 @@ class Product(models.Model):
                 prod_calc_rec.new_value = mean(prices)
 
     def calculate(self):
-        # TODO: удалить после тестов
-        # latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
-        #     [],
-        #     limit=1,
-        #     order="create_date desc",
-        # )
-        # latest_indirect_expenses.coef_total = 15
         self._compute_product_calculator_ids()
-        self.update_current_product_all_expenses()
-        self.calculate_pricing_stragegy_ids()
         return super(Product, self).write({})
 
     @api.depends("posting_ids")
@@ -1425,6 +1348,13 @@ class Product(models.Model):
             ],
             "context": {"create": False},
         }
+
+    def _compute_is_button_create_mass_pricing_shown(self):
+        for rec in self:
+            if rec.product_calculator_ids.new_value == rec.mass_pricing_ids.new_price:
+                rec.is_button_create_mass_pricing_shown = False
+            else:
+                rec.is_button_create_mass_pricing_shown = True
 
     # def _run_checks(self):
     #     for record in self:
