@@ -16,16 +16,16 @@
                             <notebook>
                                 <page string="Лоты">
                                     <field name="ozon_products_ids">
-                                        <tree string="Лоты">
+                                        <tree string="Лоты" default_order="abc_group">
                                             <button name="action_open_lot_full_screen" type="object"
                                                     string="Перейти"
                                                     class="oe_highlight"/>
                                             <field name="article"/>
                                             <field name="products"/>
-                                            <field name="revenue_share_temp" string="Доля продукта в выручке, %"
-                                                   readonly="1"/>
-                                            <field name="revenue_cumulative_share_temp" string="Накопительный вклад, %"
-                                                   readonly="1"/>
+<!--                                            <field name="revenue_share_temp" string="Доля продукта в выручке, %"-->
+<!--                                                   readonly="1"/>-->
+<!--                                            <field name="revenue_cumulative_share_temp" string="Накопительный вклад, %"-->
+<!--                                                   readonly="1"/>-->
                                             <field name="abc_group" string="Группа" readonly="1"/>
                                             <field name="ozon_products_indicators_summary_ids" widget="many2many_tags"
                                                    string="Индикаторы"
