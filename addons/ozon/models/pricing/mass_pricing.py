@@ -96,5 +96,9 @@ class PricingStrategy(models.Model):
     weight = fields.Float(string="Вес")
     value = fields.Float(string="Значение")
     expected_price = fields.Float(string="Цена")
-    message = fields.Char(string="Сообщение", readonly=True)
+    message = fields.Char(
+        string="Цена",
+        readonly=True,
+        help="Показывает цену либо сообщение об ошибке, если цена не может быть рассчитана",
+    )
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
