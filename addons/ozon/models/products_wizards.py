@@ -12,9 +12,7 @@ class ProductsMassPricingWizard(models.TransientModel):
 
     def change_calculated_price_based_on_all_strategies(self):
         """Массово назначает рассчитанную цену исходя из выбранных стратегий для выбранных товаров"""
-        # TODO
-        print("here")
-        pass
-        # prod_ids = self._context["active_ids"]
-        # products = self.env["ozon.products"].browse(prod_ids)
-        # products.write({"profitability_norm": self.profitability_norm})
+        prod_ids = self._context["active_ids"]
+        products = self.env["ozon.products"].browse(prod_ids)
+        for prod in products:
+            prod.pricing_strategy_ids = self.pricing_strategy_ids
