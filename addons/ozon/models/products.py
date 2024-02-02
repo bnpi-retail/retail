@@ -1212,7 +1212,8 @@ class Product(models.Model):
             lambda r: r.name == "Ожидаемая цена по всем стратегиям"
         ).new_value
         self.env["ozon.mass_pricing"].create(
-            {"product": self.id, "price": self.price, "new_price": new_price}
+            {"product": self.id, "price": self.price, "new_price": new_price},
+            product=self,
         )
 
     def _compute_imgs(self):

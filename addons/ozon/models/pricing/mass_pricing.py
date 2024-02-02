@@ -22,6 +22,12 @@ class MassPricing(models.Model):
     new_price = fields.Float(string="Новая цена")
     comment = fields.Text(string="Причина")
 
+    def create(self, values, **kwargs):
+        if product := kwargs.get("product"):
+            product.mass_pricing_ids.unlink()
+        rec = super(MassPricing, self).create(values)
+        return rec
+
     def is_product_in_queue(self, product):
         res = self.env["ozon.mass_pricing"].search([("product", "=", product.id)])
         return res if res else False
