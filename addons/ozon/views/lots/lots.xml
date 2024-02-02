@@ -101,16 +101,17 @@
                                     <group>
                                         <field name="products" />
                                         <field name="categories" string="Категория" />
-                                        <field name="id_on_platform" />
-                                        <field name="article" />
+                                        <field name="abc_group" string="Группа" readonly="1" />
                                     </group>
                                     <group>
+                                        <field name="id_on_platform" />
+                                        <field name="article" />
                                         <field name="sku" />
                                         <field name="fbo_sku" />
                                         <field name="fbs_sku" />
                                     </group>
                                 </group>
-                                <group col="3">
+                                <group>
                                     <group>
                                         <field name="price" />
                                         <field name="old_price"
@@ -118,19 +119,11 @@
                                     </group>
                                     <group>
                                         <field name="trading_scheme" readonly="true" />
-                                        <field name="stocks_fbo" />
-                                        <field name="stocks_fbs" />
+                                        <field name="stocks_fbo"
+                                            attrs="{'invisible':[('trading_scheme','=','FBS')]}" />
+                                        <field name="stocks_fbs"
+                                            attrs="{'invisible':[('trading_scheme','=','FBO')]}" />
                                         <field name="is_selling" />
-                                    </group>
-                                    <group>
-                                        <field name="market_share" readonly="1" />
-                                        <field name="revenue_share_temp"
-                                            string="Доля продукта в выручке, %"
-                                            readonly="1" />
-                                        <field name="revenue_cumulative_share_temp"
-                                            string="Накопительный вклад, %"
-                                            readonly="1" />
-                                        <field name="abc_group" string="Группа" readonly="1" />
                                     </group>
                                 </group>
                             </group>
@@ -449,20 +442,11 @@
                     <field name="products" />
                     <field name="price" />
                     <field name="is_selling" />
-                    <field name="is_alive" />
-                    <field name="price_index" widget="badge"
-                        decoration-success="price_index=='PROFIT'"
-                        decoration-warning="price_index=='AVG_PROFIT'"
-                        decoration-danger="price_index=='NON_PROFIT'" />
                     <field name="trading_scheme" />
-                    <field name="coef_profitability" />
-                    <field name="revenue_share_temp" string="Доля продукта в выручке, %"
-                        readonly="1" />
                     <field name="abc_group" string="ABC Группа"
                         decoration-success="abc_group=='A'"
                         decoration-danger="abc_group=='C'"
                     />
-                    <field name="market_share" readonly="1" />
                 </tree>
             </field>
         </record>
