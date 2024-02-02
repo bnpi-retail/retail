@@ -28,6 +28,7 @@
                     <page id="page_graph_history" string="Аналитические данные">
                         <group>
                             <field name="imgs_html_graph_this_year"/>
+                            <field name="imgs_data_graph_this_year" invisible="1"/>
                         </group>
                         <button string="Скачать данные" 
                             type="object" 

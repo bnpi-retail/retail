@@ -18,7 +18,10 @@
 
                         <page string="Аналитические данные">
                             <group>
-                                <field name="img_html_sale_this_year" />
+                                <field name="img_html_sale_this_year"/>
+                                <field name="img_data_sale_this_year" invisible="1"/>
+                                <field name="img_data_sale_last_year" invisible="1"/>
+                                <field name="img_data_analysis_data_this_year" invisible="1"/>
                             </group>
                             <button string="Скачать данные" 
                                 type="object" 
