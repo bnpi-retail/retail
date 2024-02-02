@@ -1,31 +1,33 @@
 <odoo>
-  <data>
+    <data>
 
-    <!-- Form -->
-    <record id="view_products_competitors_form" model="ir.ui.view">
-        <field name="name">Товары конкурентов</field>
-        <field name="model">ozon.products_competitors</field>
-        <field name="arch" type="xml">
-            <form>
-                <div name="button_box" position="inside">
-                     <button class="oe_stat_button" type="object" name="get_price_competitors">
-                            <field string="История цен конкурентов" name="get_price_competitors_count" widget="statinfo"/>
+        <!-- Form -->
+        <record id="view_products_competitors_form" model="ir.ui.view">
+            <field name="name">Товары конкурентов</field>
+            <field name="model">ozon.products_competitors</field>
+            <field name="arch" type="xml">
+                <form>
+                    <div name="button_box" position="inside">
+                        <button class="oe_stat_button" type="object" name="get_price_competitors">
+                            <field string="История цен конкурентов"
+                                name="get_price_competitors_count" widget="statinfo" />
                         </button>
-                </div>
+                    </div>
 
-                <separator string="Процентные затраты" />
-                <notebook>
-                    <page id="page_info_competitors_history" string="Информация о товаре конкурента">
-                        <group>
-                            <field name="id_product"/>
-                            <field name="article"/>
-                            <field name="name"/>
-                            <field name="product"/>
-                            <field name="url"/>
-                            <field name="market_share" readonly="1"/>
-                        </group>
-                    </page>
-                    <page id="page_graph_history" string="Аналитические данные">
+                    <separator string="Процентные затраты" />
+                    <notebook>
+                        <page id="page_info_competitors_history"
+                            string="Информация о товаре конкурента">
+                            <group>
+                                <field name="id_product" />
+                                <field name="article" />
+                                <field name="name" />
+                                <field name="product" />
+                                <field name="url" />
+                                <field name="market_share" readonly="1" />
+                            </group>
+                        </page>
+                        <!-- <page id="page_graph_history" string="Аналитические данные">
                         <group>
                             <field name="imgs_html_graph_this_year"/>
                         </group>
@@ -36,62 +38,62 @@
                             name="download_data_graph_this_year"
                             attrs="{'invisible': [('imgs_data_graph_this_year', '=', False)]}"
                         />
-                    </page>
-                </notebook>
-            </form>
-        </field>
-    </record>
+                    </page> -->
+                    </notebook>
+                </form>
+            </field>
+        </record>
 
-    <!-- Tree -->
-    <record id="view_products_competitors_tree" model="ir.ui.view">
-        <field name="name">Товары конкурентов</field>
-        <field name="model">ozon.products_competitors</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="id_product" string="Id товара на Ozon"/>
-                <field name="retail_seller_id" string="Продавец"/>
-                <field name="name" string="Наименование товара"/>
-                <field name="market_share" readonly="1"/>
-                <field name="product" string="Лот"/>
-            </tree>
-        </field>
-    </record>
+        <!-- Tree -->
+        <record id="view_products_competitors_tree" model="ir.ui.view">
+            <field name="name">Товары конкурентов</field>
+            <field name="model">ozon.products_competitors</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="id_product" string="Id товара на Ozon" />
+                    <field name="retail_seller_id" string="Продавец" />
+                    <field name="name" string="Наименование товара" />
+                    <field name="market_share" readonly="1" />
+                    <field name="product" string="Лот" />
+                </tree>
+            </field>
+        </record>
 
-    <!-- Actions -->
-    <record model="ir.actions.server" id="action_draw_plot_competitors_products">
-        <field name="name">Рассчитать "Аналитические данные"</field>
-        <field name="model_id" ref="model_ozon_products_competitors" />
-        <field name="binding_model_id" ref="model_ozon_products_competitors" />
-        <field name="state">code</field>
-        <field name="code">
-            action = records.draw_plot()
-        </field>
-    </record>
+        <!-- Actions -->
+        <record model="ir.actions.server" id="action_draw_plot_competitors_products">
+            <field name="name">Рассчитать "Аналитические данные"</field>
+            <field name="model_id" ref="model_ozon_products_competitors" />
+            <field name="binding_model_id" ref="model_ozon_products_competitors" />
+            <field name="state">code</field>
+            <field name="code">
+                action = records.draw_plot()
+            </field>
+        </record>
 
-    <!-- Search -->
-    <record id="view_ozon_products_competitors_search" model="ir.ui.view">
-        <field name="name">Товары конкурентов</field>
-        <field name="model">ozon.products_competitors</field>
-        <field name="arch" type="xml">
-            <search>
-                <field name="article"/>
-            </search>
-        </field>
-    </record>
+        <!-- Search -->
+        <record id="view_ozon_products_competitors_search" model="ir.ui.view">
+            <field name="name">Товары конкурентов</field>
+            <field name="model">ozon.products_competitors</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="article" />
+                </search>
+            </field>
+        </record>
 
-    <!-- Action -->
-    <record model="ir.actions.act_window" id="action_products_competitors">
-        <field name="name">Товары конкурентов</field>
-        <field name="res_model">ozon.products_competitors</field>
-        <field name="view_mode">tree,form</field>
-    </record>
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_products_competitors">
+            <field name="name">Товары конкурентов</field>
+            <field name="res_model">ozon.products_competitors</field>
+            <field name="view_mode">tree,form</field>
+        </record>
 
-    <!-- Menu -->
-    <menuitem name="Товары конкурентов"
-        id="menu_products_competitors"
-        parent="ozon.menu_competitors"
-        action="action_products_competitors"
-        sequence="50"/>
+        <!-- Menu -->
+        <menuitem name="Товары конкурентов"
+            id="menu_products_competitors"
+            parent="ozon.menu_competitors"
+            action="action_products_competitors"
+            sequence="50" />
 
-  </data>
+    </data>
 </odoo>

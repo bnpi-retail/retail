@@ -16,7 +16,7 @@
                             </group>
                         </page>
 
-                        <page string="Аналитические данные">
+                        <!-- <page string="Аналитические данные">
                             <group>
                                 <field name="img_html_sale_this_year" />
                             </group>
@@ -50,7 +50,7 @@
                                 attrs="{'invisible': [('img_data_analysis_data_this_year', '=', False)]}"
                             />
                                 
-                        </page>
+                        </page> -->
                     </notebook>
                 </form>
             </field>
