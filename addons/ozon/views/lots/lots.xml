@@ -58,18 +58,15 @@
                     <field name="ozon_products_indicator_ids" invisible="1" />
                     <field name="retail_product_total_cost_price" invisible="1" />
 
-                    <separator string="Калькулятор стратегий назначения цен" />
-
                     <group>
-                        <field name="pricing_strategy_ids">
+                        <field name="calculated_pricing_strategy_ids">
                             <tree editable="bottom" edit="True">
                                 <field name="strategy_id" invisible="1" />
-                                <field name="name" />
+                                <field name="pricing_strategy_id" />
                                 <field name="value" widget="percentage"
                                     attrs="{'invisible':[('strategy_id','=','expected_price')]}" />
                                 <field name="weight" />
                                 <field name="message" width="300px" />
-                                <!-- <field name="expected_price" /> -->
                                 <field name="timestamp" />
                             </tree>
                         </field>
@@ -91,6 +88,7 @@
                                 class="btn-outline-primary"
                                 attrs="{'invisible':[('is_button_create_mass_pricing_shown','=',False)]}"
                             />
+                            <!-- <button type="object" name="calculate" string="Рассчитать" /> -->
                         </group>
                     </div>
 
@@ -574,53 +572,6 @@
             <field name="target">new</field>
         </record>
 
-
-        <!-- Calculator form -->
-        <record id="view_products_calculator_form" model="ir.ui.view">
-            <field name="name">Калькулятор</field>
-            <field name="model">ozon.products</field>
-            <field name="arch" type="xml">
-                <form create="false" write="false" delete="false">
-                    <style>
-                        <!-- header{display:none !important;}  --> footer{ display:none !important;} </style>
-
-                    <field name="products" readonly="true" style="margin-bottom: 30px;" />
-                    <button type="object" name="reset_calculator"
-                        string="Сбросить" />
-                    <group>
-                        <group>
-                            <field name="profitability_norm"
-                                string="Обеспечить норму прибыльности в" />
-                            <field name="pricing_strategy_id" />
-                        </group>
-                        <group>
-                            <field name="price" />
-                            <field name="profit" />
-                            <field name="profit_ideal" />
-                            <field name="profit_delta" />
-                            <field name="coef_profitability" widget="percentage"
-                                style="max-width: 58px;" readonly="true" />
-                        </group>
-                        <field name="total_fbs_fix_expenses_max" invisible="true" />
-                        <field name="total_fbo_fix_expenses_max" invisible="true" />
-                        <field name="total_fbs_percent_expenses" invisible="true" />
-                        <field name="total_fbo_percent_expenses" invisible="true" />
-                    </group>
-
-                </form>
-            </field>
-        </record>
-
-        <record model="ir.actions.server" id="action_product_calculator">
-            <field name="name">Калькулятор</field>
-            <field name="model_id" ref="model_ozon_products" />
-            <field name="binding_model_id" ref="model_ozon_products" />
-            <field name="binding_view_types">form</field>
-            <field name="state">code</field>
-            <field name="code">
-                action = records.calculator()
-            </field>
-        </record>
 
         <!-- Menu -->
         <menuitem name="Продукты"

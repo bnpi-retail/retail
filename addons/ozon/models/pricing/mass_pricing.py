@@ -96,9 +96,23 @@ class PricingStrategy(models.Model):
     _name = "ozon.pricing_strategy"
     _description = "Стратегия назначения цен"
 
-    timestamp = fields.Date(string="Дата расчёта")
     name = fields.Char(string="Название")
     strategy_id = fields.Char(string="ID стратегии")
+    weight = fields.Float(string="Вес")
+    value = fields.Float(string="Значение")
+
+
+class PricingStrategy(models.Model):
+    _name = "ozon.calculated_pricing_strategy"
+    _description = "Стратегия назначения цен"
+
+    timestamp = fields.Date(string="Дата расчёта")
+    pricing_strategy_id = fields.Many2one(
+        "ozon.pricing_strategy", string="Стратегия назначения цен"
+    )
+    strategy_id = fields.Char(
+        string="ID стратегии", related="pricing_strategy_id.strategy_id"
+    )
     weight = fields.Float(string="Вес")
     value = fields.Float(string="Значение")
     expected_price = fields.Float(string="Цена")
@@ -107,4 +121,5 @@ class PricingStrategy(models.Model):
         readonly=True,
         help="Показывает цену либо сообщение об ошибке, если цена не может быть рассчитана",
     )
+
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
