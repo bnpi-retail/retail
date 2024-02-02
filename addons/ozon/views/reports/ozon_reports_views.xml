@@ -45,7 +45,7 @@
             <field name="name">ozon_report.tree</field>
             <field name="model">ozon.report</field>
             <field name="arch" type="xml">
-                <tree string="Отчеты" create="0">
+                <tree string="Отчеты" create="0" default_order="create_date desc">
                     <field name="create_date" string="Дата создания" readonly="1"/>
                     <field name="res_users_id" string="Ответственный менеджер" readonly="1"/>
                     <field name="lots_quantity" string="Количество лотов" readonly="1"/>

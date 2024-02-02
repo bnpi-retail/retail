@@ -73,7 +73,7 @@
             <field name="name">ozon_report_category_market_share.tree</field>
             <field name="model">ozon.report_category_market_share</field>
             <field name="arch" type="xml">
-                <tree string="Отчеты" create="0">
+                <tree string="Отчеты" create="0" default_order="create_date desc">
                     <field name="create_date" string="Дата создания" readonly="1"/>
                     <field name="ozon_categories_id" string="Категория" readonly="1"/>
                     <field name="period_from" string="За период с" readonly="1"/>
