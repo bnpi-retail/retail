@@ -16,14 +16,14 @@
                                 <field name="period_to" string="по" class="oe_inline" widjet="date"/>
                             </group>
                             <field name="ozon_products_ids" attrs="{'invisible':[('ozon_products_ids','=',[])]}">
-                                <tree default_order="abc_group"
+                                <tree default_order="revenue_share_temp desc"
                                       decoration-success="abc_group=='A'"
                                       decoration-danger="abc_group=='C'"
                                 >
                                     <field name="article"/>
                                     <field name="products"/>
-<!--                                    <field name="revenue_share_temp" string="Доля продукта в выручке, %"/>-->
-<!--                                    <field name="revenue_cumulative_share_temp" string="Накопительный вклад, %"/>-->
+                                    <field name="revenue_share_temp" string="Доля продукта в выручке, %"/>
+                                    <field name="revenue_cumulative_share_temp" string="Накопительный вклад, %"/>
                                     <field name="abc_group" string="Группа"/>
                                 </tree>
                             </field>
