@@ -326,10 +326,10 @@ class Product(models.Model):
     revenue_share_temp = fields.Float()
     revenue_cumulative_share_temp = fields.Float()
     abc_group = fields.Char(size=3)
-    market_share = fields.Float(string='Доля рынка', digits=(12, 5))
+    market_share = fields.Float(string="Доля рынка", digits=(12, 5))
 
     def _compute_expected_price(self):
-        # TODO: откуда берем РРЦ?
+        # TODO: откуда берем ожидаемую цену?
         # ожид.цена=фикс.затраты/(1-процент_затрат-ожид.ROS-проц.налог-ожид.ROI)
         for rec in self:
             all_fix_expenses = rec.all_expenses_ids.filtered(lambda r: r.kind == "fix")
@@ -338,9 +338,7 @@ class Product(models.Model):
                 lambda r: r.kind == "percent"
             )
             total_percent = sum(all_per_expenses.mapped("percent"))
-            # print(f"{rec.expected_price} = {sum_fix_expenses}/(1 - {total_percent})")
             rec.expected_price = sum_fix_expenses / (1 - total_percent)
-            # print(rec.expected_price)
 
     def _compute_price_delta(self):
         for rec in self:
@@ -1291,9 +1289,7 @@ class Product(models.Model):
     def calculate_pricing_stragegy_ids(self):
         if not self.pricing_strategy_ids:
             return
-
-        # if sum(self.pricing_strategy_ids.mapped("weight")) != 1:
-        #     raise UserError("Суммарный вес стратегий должен составлять 1.")
+        self._compute_product_calculator_ids()
         prices = []
         errors = False
         for price_strategy in self.pricing_strategy_ids:
