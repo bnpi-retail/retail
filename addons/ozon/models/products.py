@@ -318,7 +318,7 @@ class Product(models.Model):
     ozon_products_indicators_summary_ids = fields.One2many(
         "ozon.products.indicator.summary", inverse_name="ozon_product_id"
     )
-    hidden_trigger_for_checking_fields = fields.Boolean(compute='_run_checks')
+    # hidden_trigger_for_checking_fields = fields.Boolean(compute='_run_checks')
 
     retail_product_total_cost_price = fields.Float(
         compute="_compute_total_cost_price", store=True
@@ -1426,10 +1426,10 @@ class Product(models.Model):
             "context": {"create": False},
         }
 
-    def _run_checks(self):
-        for record in self:
-            if record.hidden_trigger_for_checking_fields:
-                pass
+    # def _run_checks(self):
+    #     for record in self:
+    #         if record.hidden_trigger_for_checking_fields:
+    #             pass
 
 
 

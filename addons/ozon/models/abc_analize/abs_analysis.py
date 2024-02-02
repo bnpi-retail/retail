@@ -34,14 +34,19 @@ class AbcAnalysis(models.Model):
                 raise UserError('Выберите правильный период.')
 
             ozon_sales = record.env['ozon.sale'].search([
-                ('product.categories', '=', 'ozon_categories_id'),
+                ('product.categories', '=', category.id),
                 ('date', '>', record.period_from),
                 ('date', '<', record.period_to),
+            ])
+            all_category_products = record.env['ozon.products'].search([
+                ('categories', '=', category.id)
             ])
 
             # get products
             products_revenues = defaultdict(float)
             total_period_revenue = 0
+            for product in all_category_products:
+                products_revenues[product] = 0
             for sale in ozon_sales:
                 try:
                     products_revenues[sale.product] += sale.revenue
@@ -50,9 +55,13 @@ class AbcAnalysis(models.Model):
                     logger.warning(f"abc ananysis error: {traceback.format_exc()}")
 
             # compute percentage
-            products_percentage = [(product, [(revenue * 100) / total_period_revenue]) for product, revenue in
-                                   products_revenues.items()]
-            products_percentage.sort(key=lambda x: x[1][0], reverse=True)
+            if total_period_revenue:
+                products_percentage = [(product, [(revenue * 100) / total_period_revenue]) for product, revenue in
+                                       products_revenues.items()]
+                products_percentage.sort(key=lambda x: x[1][0], reverse=True)
+            else:
+                products_percentage = [(product, [0]) for product, revenue in
+                                       products_revenues.items()]
 
             # compute cumulative percentage
             prev_percent = 0
@@ -64,9 +73,9 @@ class AbcAnalysis(models.Model):
             # set groups
             product_ids = []
             for product in products_percentage:
-                if product[1][1] <= 80:
+                if 0 < product[1][1] <= 80:
                     product[1].append('A')
-                elif product[1][1] <= 95:
+                elif 80 < product[1][1] <= 95:
                     product[1].append('B')
                 else:
                     product[1].append('C')

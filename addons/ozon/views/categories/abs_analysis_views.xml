@@ -16,14 +16,14 @@
                                 <field name="period_to" string="по" class="oe_inline" widjet="date"/>
                             </group>
                             <field name="ozon_products_ids" attrs="{'invisible':[('ozon_products_ids','=',[])]}">
-                                <tree default_order="revenue_share_temp desc"
+                                <tree default_order="abc_group"
                                       decoration-success="abc_group=='A'"
                                       decoration-danger="abc_group=='C'"
                                 >
                                     <field name="article"/>
                                     <field name="products"/>
-                                    <field name="revenue_share_temp" string="Доля продукта в выручке, %"/>
-                                    <field name="revenue_cumulative_share_temp" string="Накопительный вклад, %"/>
+<!--                                    <field name="revenue_share_temp" string="Доля продукта в выручке, %"/>-->
+<!--                                    <field name="revenue_cumulative_share_temp" string="Накопительный вклад, %"/>-->
                                     <field name="abc_group" string="Группа"/>
                                 </tree>
                             </field>
@@ -37,7 +37,8 @@
             <field name="name">ozon_abc_analysis.tree</field>
             <field name="model">ozon.abc_analysis</field>
             <field name="arch" type="xml">
-                <tree string="ABC анализ">
+                <tree string="ABC анализ" default_order="create_date desc">
+                    <field name="create_date" string="Создан"/>
                     <field name="ozon_categories_id" string="Категория"/>
                     <field name="period_from" string="Начало периода"/>
                     <field name="period_to" string="Конец периода"/>
