@@ -546,7 +546,7 @@
             <field name="target">new</field>
         </record>
 
-        <record id="wizard_action_investment_expenses" model="ir.actions.act_window">
+        <record id="wizard_action_assign_strategies" model="ir.actions.act_window">
             <field name="name">Назначить стратегии</field>
             <field name="type">ir.actions.act_window</field>
             <field name="binding_model_id" ref="model_ozon_products" />
