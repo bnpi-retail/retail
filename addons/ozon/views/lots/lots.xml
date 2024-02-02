@@ -74,18 +74,6 @@
                             </tree>
                         </field>
                     </group>
-                    <!-- <group col="7">
-                        <group />
-                        <group />
-                        <group />
-                        <group>
-                            <button type="object" name="calculate" string="Рассчитать"
-                                class="btn-outline-primary" />
-                        </group>
-                        <group />
-                        <group />
-                        <group />
-                    </group> -->
                     <group>
                         <field name="product_calculator_ids">
                             <tree editable="bottom" edit="True">
@@ -97,9 +85,12 @@
                     </group>
                     <div class="oe_right oe_button_box">
                         <group>
+                            <field name="is_button_create_mass_pricing_shown" invisible="1" />
                             <button type="object" name="create_mass_pricing_without_dialog"
                                 string="Применить рассчитанную цену"
-                                class="btn-outline-primary" />
+                                class="btn-outline-primary"
+                                attrs="{'invisible':[('is_button_create_mass_pricing_shown','=',False)]}"
+                            />
                         </group>
                     </div>
 

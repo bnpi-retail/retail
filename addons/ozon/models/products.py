@@ -306,6 +306,9 @@ class Product(models.Model):
         "product",
         string="Товар в очереди на изменение цен",
     )
+    is_button_create_mass_pricing_shown = fields.Boolean(
+        compute="_compute_is_button_create_mass_pricing_shown"
+    )
     get_sales_count = fields.Integer(compute="compute_count_sales")
     price_history_count = fields.Integer(compute="compute_count_price_history")
     action_candidate_ids = fields.One2many(
@@ -1414,6 +1417,13 @@ class Product(models.Model):
             ],
             "context": {"create": False},
         }
+
+    def _compute_is_button_create_mass_pricing_shown(self):
+        for rec in self:
+            if rec.product_calculator_ids.new_value == rec.mass_pricing_ids.new_price:
+                rec.is_button_create_mass_pricing_shown = False
+            else:
+                rec.is_button_create_mass_pricing_shown = True
 
 
 class ProductNameGetExtension(models.Model):
