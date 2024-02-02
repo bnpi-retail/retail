@@ -1277,8 +1277,8 @@ class Product(models.Model):
         if not self.pricing_strategy_ids:
             return
 
-        if sum(self.pricing_strategy_ids.mapped("weight")) != 1:
-            raise UserError("Суммарный вес стратегий должен составлять 1.")
+        # if sum(self.pricing_strategy_ids.mapped("weight")) != 1:
+        #     raise UserError("Суммарный вес стратегий должен составлять 1.")
         prices = []
         errors = False
         for price_strategy in self.pricing_strategy_ids:

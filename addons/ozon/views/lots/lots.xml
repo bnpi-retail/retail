@@ -86,19 +86,14 @@
                             </tree>
                         </field>
                     </group>
-                    <group col="7">
-                        <group />
-                        <group />
-                        <group />
+                    <div class="oe_right oe_button_box">
                         <group>
                             <button type="object" name="create_mass_pricing"
                                 string="Применить рассчитанную цену"
                                 class="btn-outline-primary" />
                         </group>
-                        <group />
-                        <group />
-                        <group />
-                    </group>
+                    </div>
+
 
                     <!-- Main info -->
                     <notebook>
