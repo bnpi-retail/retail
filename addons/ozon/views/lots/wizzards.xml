@@ -1,0 +1,22 @@
+<odoo>
+    <data>
+        <!-- Profitability norm wizard form -->
+        <record id="products_mass_pricing_wizard_form" model="ir.ui.view">
+            <field name="name">Назначить стратегии</field>
+            <field name="model">ozon.products_mass_pricing.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group class="oe_title">
+                        <field name="pricing_strategy_ids" />
+                    </group>
+                    <footer>
+                        <button string="Отмена" class="btn-secondary" special="cancel" />
+                        <button name="change_calculated_price_based_on_all_strategies"
+                            string="Изменить" type="object"
+                            class="btn-primary" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
