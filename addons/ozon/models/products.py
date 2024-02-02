@@ -329,16 +329,18 @@ class Product(models.Model):
     market_share = fields.Float(string="Доля рынка", digits=(12, 5))
 
     def _compute_expected_price(self):
+        for rec in self:
+            rec.expected_price = sum(rec.all_expenses_ids.mapped("expected_value"))
         # TODO: откуда берем ожидаемую цену?
         # ожид.цена=фикс.затраты/(1-процент_затрат-ожид.ROS-проц.налог-ожид.ROI)
-        for rec in self:
-            all_fix_expenses = rec.all_expenses_ids.filtered(lambda r: r.kind == "fix")
-            sum_fix_expenses = sum(all_fix_expenses.mapped("value"))
-            all_per_expenses = rec.all_expenses_ids.filtered(
-                lambda r: r.kind == "percent"
-            )
-            total_percent = sum(all_per_expenses.mapped("percent"))
-            rec.expected_price = sum_fix_expenses / (1 - total_percent)
+        # for rec in self:
+        #     all_fix_expenses = rec.all_expenses_ids.filtered(lambda r: r.kind == "fix")
+        #     sum_fix_expenses = sum(all_fix_expenses.mapped("value"))
+        #     all_per_expenses = rec.all_expenses_ids.filtered(
+        #         lambda r: r.kind == "percent"
+        #     )
+        #     total_percent = sum(all_per_expenses.mapped("percent"))
+        #     rec.expected_price = sum_fix_expenses / (1 - total_percent)
 
     def _compute_price_delta(self):
         for rec in self:
