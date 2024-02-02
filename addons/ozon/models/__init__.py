@@ -14,6 +14,7 @@ from . import indirect_percent_expenses
 from . import supplementary_categories
 
 from . import products
+from . import products_wizards
 from . import lots_for_gpt
 from . import tracked_search_queries
 from . import posting

@@ -1,0 +1,30 @@
+<odoo>
+    <data>
+
+        <record id="products_mass_pricing_wizard_form" model="ir.ui.view">
+            <field name="name">Назначить стратегии</field>
+            <field name="model">ozon.products_mass_pricing.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group class="oe_title">
+                        <field name="pricing_strategy_ids">
+                            <tree editable="bottom" edit="True">
+                                <field name="strategy_id" invisible="1" />
+                                <field name="name" />
+                                <field name="value" widget="percentage"
+                                    attrs="{'invisible':[('strategy_id','=','expected_price')]}" />
+                                <field name="weight" />
+                            </tree>
+                        </field>
+                    </group>
+                    <footer>
+                        <button string="Отмена" class="btn-secondary" special="cancel" />
+                        <button name="assign_calculated_pricing_strategy_ids"
+                            string="Изменить" type="object"
+                            class="btn-primary" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

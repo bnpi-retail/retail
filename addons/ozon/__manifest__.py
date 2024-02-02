@@ -65,6 +65,7 @@
         "views/lots/tracked_search_queries.xml",
         "views/lots/lots_for_gpt.xml",
         "views/lots/analysis_data.xml",
+        "views/lots/wizzards.xml",
         "views/categories/menu.xml",
         "views/categories/categories.xml",
         "views/categories/supplementary_categories.xml",
