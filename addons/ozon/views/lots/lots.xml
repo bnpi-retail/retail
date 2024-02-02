@@ -88,7 +88,7 @@
                     </group>
                     <div class="oe_right oe_button_box">
                         <group>
-                            <button type="object" name="create_mass_pricing"
+                            <button type="object" name="create_mass_pricing_without_dialog"
                                 string="Применить рассчитанную цену"
                                 class="btn-outline-primary" />
                         </group>

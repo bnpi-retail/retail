@@ -1203,6 +1203,17 @@ class Product(models.Model):
             },
         }
 
+    def create_mass_pricing_without_dialog(self):
+        self.ensure_one()
+        new_price = self.product_calculator_ids.filtered(
+            lambda r: r.name == "Ожидаемая цена по всем стратегиям"
+        ).new_value
+        print(new_price)
+        self.env["ozon.mass_pricing"].create(
+            {"product": self.id, "price": self.price, "new_price": new_price}
+        )
+        pass
+
     def _compute_imgs(self):
         for rec in self:
             rec.imgs_html = False
@@ -1272,7 +1283,8 @@ class Product(models.Model):
                         }
                     ]
                 )
-    @api.onchange('pricing_strategy_ids')
+
+    @api.onchange("pricing_strategy_ids")
     def calculate_pricing_stragegy_ids(self):
         if not self.pricing_strategy_ids:
             return
