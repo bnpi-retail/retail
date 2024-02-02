@@ -301,6 +301,11 @@ class Product(models.Model):
         "product_id",
         string="Рассчитываемые параметры",
     )
+    mass_pricing_ids = fields.One2many(
+        "ozon.mass_pricing",
+        "product",
+        string="Товар в очереди на изменение цен",
+    )
     get_sales_count = fields.Integer(compute="compute_count_sales")
     price_history_count = fields.Integer(compute="compute_count_price_history")
     action_candidate_ids = fields.One2many(
@@ -1212,7 +1217,6 @@ class Product(models.Model):
         self.env["ozon.mass_pricing"].create(
             {"product": self.id, "price": self.price, "new_price": new_price}
         )
-        pass
 
     def _compute_imgs(self):
         for rec in self:
