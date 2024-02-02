@@ -564,6 +564,16 @@
             <field name="target">new</field>
         </record>
 
+        <record id="wizard_action_investment_expenses" model="ir.actions.act_window">
+            <field name="name">Назначить стратегии</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="res_model">ozon.products_mass_pricing.wizard</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="products_mass_pricing_wizard_form" />
+            <field name="target">new</field>
+        </record>
+
 
         <!-- Calculator form -->
         <record id="view_products_calculator_form" model="ir.ui.view">
