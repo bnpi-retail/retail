@@ -32,6 +32,7 @@
         "security/competitors/analysis_competitors_record/ir.model.access.csv",
         "security/competitors/successful_product_competitors/ir.model.access.csv",
         "security/competitors/competitor_sale/ir.model.access.csv",
+        "security/competitors/competitor_seller/ir.model.access.csv",
         "security/search_queries/search_queries/ir.model.access.csv",
         "security/transaction/ir.model.access.csv",
         "security/stock/ir.model.access.csv",
@@ -98,6 +99,7 @@
         "views/categories/abs_analysis_views.xml",
         "views/settings/settings.xml",
         "views/reports/ozon_report_category_market_share_views.xml",
+        "views/competitors/competitor_seller_view.xml",
         # cron
         "crone/ir_cron_data.xml",
     ],

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="ozon_competitor_seller_view_tree" model="ir.ui.view">
+            <field name="name">ozon_competitor_seller.tree</field>
+            <field name="model">ozon.competitor_seller</field>
+            <field name="arch" type="xml">
+                <tree string="Магазины-конкуренты">
+                    <field name="trade_name"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_open_ozon_competitor_seller" model="ir.actions.act_window">
+            <field name="name">Магазины-конкуренты</field>
+            <field name="res_model">ozon.competitor_seller</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_ozon_competitor_seller" name="Магазины-конкуренты" parent="ozon.menu_competitors"
+                  action="action_open_ozon_competitor_seller" sequence="100"/>
+
+    </data>
+</odoo>
