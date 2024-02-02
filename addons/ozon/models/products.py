@@ -1272,7 +1272,7 @@ class Product(models.Model):
                         }
                     ]
                 )
-
+    @api.onchange('pricing_strategy_ids')
     def calculate_pricing_stragegy_ids(self):
         if not self.pricing_strategy_ids:
             return
