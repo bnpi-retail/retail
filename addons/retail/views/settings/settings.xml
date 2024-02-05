@@ -2,9 +2,9 @@
     <data>
 
         <!-- Form -->
-        <record id="view_settings_form" model="ir.ui.view">
+        <record id="view_retail_settings_form" model="ir.ui.view">
             <field name="name">Настройки</field>
-            <field name="model">ozon.settings</field>
+            <field name="model">retail.settings</field>
             <field name="arch" type="xml">
                 <form>
                     <group string="Продажа товара">
@@ -16,9 +16,9 @@
         </record>
 
         <!-- Tree -->
-        <record id="view_settings_tree" model="ir.ui.view">
+        <record id="view_retail_settings_tree" model="ir.ui.view">
             <field name="name">Настройки</field>
-            <field name="model">ozon.settings</field>
+            <field name="model">retail.settings</field>
             <field name="arch" type="xml">
                 <tree>
                     <field name="name" />
@@ -28,18 +28,18 @@
         </record>
 
         <!-- Action -->
-        <record model="ir.actions.act_window" id="action_settings">
+        <record model="ir.actions.act_window" id="action_retail_settings">
             <field name="name">Настройки</field>
-            <field name="res_model">ozon.settings</field>
+            <field name="res_model">retail.settings</field>
             <field name="view_mode">tree,form</field>
         </record>
 
         <!-- Menu -->
         <menuitem name="Настройки"
-            id="menu_settings"
-            parent="ozon.menu_root"
-            action="action_settings"
-            sequence="42" />
+            id="menu_retail_settings"
+            parent="retail.menu_root"
+            action="action_retail_settings"
+            sequence="60" />
 
     </data>
 </odoo>

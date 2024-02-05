@@ -10,7 +10,6 @@ class ImportFile(models.Model):
     """
     Model for import all files in 'Retail' app
     """
-
     _name = "retail.import_file"
     _description = "Импорт"
 
@@ -24,7 +23,9 @@ class ImportFile(models.Model):
         string="Дата импорта", default=fields.Date.today, readonly=True
     )
     data_for_download = fields.Selection(
-        [("cost_price", "Себестоимость 1C")],
+        [
+            ("cost_price", "Себестоимость 1C")
+        ],
         string="Данные для загрузки",
         help="Выберите данные для загрузки",
     )

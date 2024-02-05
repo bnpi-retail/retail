@@ -12,13 +12,16 @@
     "version": "0.1",
     "depends": ["base"],
     "data": [
+        # security
         "security/ir.model.access.csv",
         "security/import_file/ir.model.access.csv",
         "security/products/ir.model.access.csv",
         "security/seller/ir.model.access.csv",
         "security/cost_price/ir.model.access.csv",
         "security/categories/ir.model.access.csv",
-        # 'views/views.xml',
+        "security/settings/ir.model.access.csv",
+        
+        # views
         "views/menu.xml",
         "views/cost_price/menu.xml",
         "views/cost_price/acts.xml",
@@ -28,6 +31,7 @@
         "views/import/import.xml",
         "views/products/products.xml",
         "views/seller/seller.xml",
+        "views/settings/settings.xml",
     ],
     "demo": [
         "demo/demo.xml",
