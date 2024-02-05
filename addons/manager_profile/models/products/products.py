@@ -80,7 +80,7 @@ class ActionCreateOzonProducts(models.Model):
         if not record_seller:
             record_seller = model_competitor_seller \
                 .create({
-                    "trade_name": record.name,
+                    "trade_name": record.seller,
                 })
             
         return record_seller
