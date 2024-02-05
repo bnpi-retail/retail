@@ -48,7 +48,7 @@ class ImportProductsPlugin(models.Model):
     _inherit = "parser.import_file"
     
     def import_products_plugin(self, lines):
-        our_product_record = self.find_our_product(lines)
+        our_sku, our_product_record = self.find_our_product(lines)
 
         model_competitors_products = self.env["parser.products_competitors"]
 
@@ -80,29 +80,26 @@ class ImportProductsPlugin(models.Model):
             if our_product_record:
                 value["product"] = our_product_record.id
 
+            if our_sku == str(sku):
+                value["is_our_product"] = True
+            
             model_competitors_products.create(value)
-
-    def find_our_product(self, lines):
+            
+    def find_our_product(self, lines) -> tuple:
         model_products = self.env["ozon.products"]
         for line in lines[1:]:
             values = line.split(",")
             if len(values) != 9: continue
             
             sku = str(values[3])
-            record = model_products.search([
-                ("sku", "=", sku),
-            ])
-            if record: return record
+            record = model_products.search([("sku", "=", sku)])
+            if record: return sku, record
 
-            record = model_products.search([
-                ("fbo_sku", "=", sku),
-            ])
-            if record: return record
+            record = model_products.search([("fbo_sku", "=", sku)])
+            if record: return sku, record
             
-            record = model_products.search([
-                ("fbs_sku", "=", sku), 
-            ])
-            if record: return record
+            record = model_products.search([("fbs_sku", "=", sku)])
+            if record: return sku, record
 
 
 class NameGet(models.Model):

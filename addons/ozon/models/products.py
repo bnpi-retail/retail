@@ -1,9 +1,8 @@
 import ast
 import logging
-from collections import defaultdict
-
 import requests
 
+from collections import defaultdict
 from os import getenv
 from datetime import datetime, time, timedelta
 from operator import itemgetter
