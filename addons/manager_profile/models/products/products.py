@@ -73,12 +73,12 @@ class ActionCreateOzonProducts(models.Model):
         model_competitor_seller = self.env["ozon.competitor_seller"]
 
         record_seller = model_competitor_seller \
-            .search([("name", "=", record.seller)], limit=1)
+            .search([("trade_name", "=", record.seller)], limit=1)
 
         if not record_seller:
             record_seller = model_competitor_seller \
                 .create({
-                    "name": record.name,
+                    "trade_name": record.name,
                 })
             
         return record_seller
