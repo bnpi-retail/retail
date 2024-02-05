@@ -623,8 +623,7 @@ class Product(models.Model):
             self._check_investment_expenses(self)
         if (
             values.get("profitability_norm")
-            is values.get("profitability_norm")
-            is False
+            or values.get("profitability_norm") is False
         ):
             self._check_profitability_norm(self)
 
