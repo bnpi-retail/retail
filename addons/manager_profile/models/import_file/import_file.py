@@ -90,12 +90,19 @@ class ImportProductsPlugin(models.Model):
             
             sku = str(values[3])
             record = model_products.search([
-                # ("sku", "=", sku),
-                # ("fbo_sku", "=", sku),
+                ("sku", "=", sku),
+            ])
+            if record: return record
+
+            record = model_products.search([
+                ("fbo_sku", "=", sku),
+            ])
+            if record: return record
+            
+            record = model_products.search([
                 ("fbs_sku", "=", sku), 
             ])
-            if record:
-                return record
+            if record: return record
 
 
 class NameGet(models.Model):
