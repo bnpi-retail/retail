@@ -21,6 +21,6 @@ class ImportCostPrice(http.Controller):
             "file": base64.b64encode(file_binary_data),
         }
 
-        # model_retail_import_file.create(values)
+        model_retail_import_file.create(values)
         
         return "File uploaded and processed successfully."
