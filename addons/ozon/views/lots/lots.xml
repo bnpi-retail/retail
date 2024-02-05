@@ -436,7 +436,7 @@
             <field name="name">Продукты</field>
             <field name="model">ozon.products</field>
             <field name="arch" type="xml">
-                <tree>
+                <tree default_order="urgency_indicators, abc_group">
                     <field name="retail_product_total_cost_price" invisible="1" />
                     <field name="article" />
                     <field name="products" />
@@ -446,6 +446,12 @@
                     <field name="abc_group" string="ABC Группа"
                         decoration-success="abc_group=='A'"
                         decoration-danger="abc_group=='C'"
+                    />
+                    <field name="urgency_indicators" invisible="1"/>
+                    <field name="ozon_products_indicator_tag_id" string="Индикаторы"
+                           decoration-success="urgency_indicators=='c'"
+                           decoration-warning="urgency_indicators=='b'"
+                           decoration-danger="urgency_indicators=='a'"
                     />
                 </tree>
             </field>
