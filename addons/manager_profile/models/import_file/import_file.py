@@ -89,19 +89,17 @@ class ImportProductsPlugin(models.Model):
             if len(values) != 9: continue
             
             sku = str(values[3])
-            # record = model_products.search([
-            #     ("sku", "=", sku),
-            # ])
-            # if record: return record
-
-            # record = model_products.search([
-            #     ("fbo_sku", "=", sku),
-            # ])
-            # if record: return record
-            
             record = model_products.search([
                 ("sku", "=", sku),
+            ])
+            if record: return record
+
+            record = model_products.search([
                 ("fbo_sku", "=", sku),
+            ])
+            if record: return record
+            
+            record = model_products.search([
                 ("fbs_sku", "=", sku), 
             ])
             if record: return record
