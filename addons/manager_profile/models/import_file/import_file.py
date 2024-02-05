@@ -87,12 +87,16 @@ class ImportProductsPlugin(models.Model):
         for line in lines[1:]:
             values = line.split(",")
             if len(values) != 9: continue
-
-            sku = values[3]
-            record = model_products.search([("id_on_platform", "=", sku)])
+            
+            sku = str(values[3])
+            record = model_products.search([
+                # ("sku", "=", sku),
+                # ("fbo_sku", "=", sku),
+                ("fbs_sku", "=", sku), 
+            ])
             if record:
                 return record
-    
+
 
 class NameGet(models.Model):
     _inherit = "parser.import_file"

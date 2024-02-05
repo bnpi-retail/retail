@@ -1,7 +1,6 @@
 <odoo>
     <data>
 
-
         <!-- Form -->
         <record id="view_settings_form" model="ir.ui.view">
             <field name="name">Настройки</field>

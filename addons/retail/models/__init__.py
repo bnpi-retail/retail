@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from .import_file import import_file
 
 from . import categories
