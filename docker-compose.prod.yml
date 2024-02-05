@@ -80,6 +80,7 @@ services:
   ### Odoo
   db:
     image: postgres:16
+    container_name: odoo-db
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD=odoo

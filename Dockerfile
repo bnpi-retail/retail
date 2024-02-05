@@ -1,5 +1,11 @@
 FROM odoo:16
 
-COPY ./requirements.txt /odoo/
+USER root
 
-RUN cd /odoo && pip install -r requirements.txt
+COPY ./requirements.txt /etc/odoo/
+
+RUN pip3 install --no-cache-dir -r /etc/odoo/requirements.txt
+
+RUN chown -R odoo:odoo /var/lib/odoo/.local
+
+USER odoo

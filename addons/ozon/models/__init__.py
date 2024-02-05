@@ -38,5 +38,3 @@ from .reports import ozon_report
 from .indicators import indicator, indicator_summary
 from .abc_analize import abs_analysis
 
-# bucket
-from .bucket import search_queries
