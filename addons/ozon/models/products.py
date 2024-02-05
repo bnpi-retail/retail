@@ -318,7 +318,6 @@ class Product(models.Model):
     ozon_products_indicators_summary_ids = fields.One2many(
         "ozon.products.indicator.summary", inverse_name="ozon_product_id"
     )
-    # hidden_trigger_for_checking_fields = fields.Boolean(compute='_run_checks')
 
     retail_product_total_cost_price = fields.Float(
         compute="_compute_total_cost_price", store=True
@@ -564,10 +563,13 @@ class Product(models.Model):
 
         records = super(Product, self).create(values)
         for record in records:
-            self._check_cost_price(record)
-            self._check_investment_expenses(record)
-            self._check_profitability_norm(record)
-            self._check_competitors_with_price_ids_qty(record)
+            self._check_cost_price(record, summary_update=False)
+            self._check_investment_expenses(record, summary_update=False)
+            self._check_profitability_norm(record, summary_update=False)
+            self._check_competitors_with_price_ids_qty(record, summary_update=False)
+            self._update_in_out_stock_indicators(record, summary_update=False)
+
+            self._update_indicator_summary(record)
 
         return records
 
@@ -609,7 +611,10 @@ class Product(models.Model):
         res = super(Product, self).write(values)
         if values.get("not_enough_competitors"):
             self._not_enough_competitors_write(self)
-        if values.get("competitors_with_price_ids"):
+        if (
+                values.get("competitors_with_price_ids") or
+                values.get("competitors_with_price_ids") is False
+        ):
             self._check_competitors_with_price_ids_qty(self)
         if (
             values.get("investment_expenses_id")
@@ -618,8 +623,7 @@ class Product(models.Model):
             self._check_investment_expenses(self)
         if (
             values.get("profitability_norm")
-            is values.get("profitability_norm")
-            is False
+            or values.get("profitability_norm") is False
         ):
             self._check_profitability_norm(self)
 
@@ -648,7 +652,6 @@ class Product(models.Model):
                 indicator_profitability_norm,
             ):
                 if ind:
-                    logger.warning(ind)
                     common_indicator = True
                     ind_days = (datetime.now() - ind.create_date).days
                     if days < ind_days:
@@ -782,7 +785,7 @@ class Product(models.Model):
                         }
                     )
 
-    def _check_investment_expenses(self, record):
+    def _check_investment_expenses(self, record, summary_update=True):
         if not record.investment_expenses_id:
             found = 0
             for indicator in record.ozon_products_indicator_ids:
@@ -805,9 +808,10 @@ class Product(models.Model):
                     indicator.end_date = datetime.now().date()
                     indicator.active = False
         # обновить выводы по индикаторам
-        self._update_indicator_summary(record)
+        if summary_update:
+            self._update_indicator_summary(record)
 
-    def _check_profitability_norm(self, record):
+    def _check_profitability_norm(self, record, summary_update=True):
         if not record.profitability_norm:
             found = 0
             for indicator in record.ozon_products_indicator_ids:
@@ -830,9 +834,10 @@ class Product(models.Model):
                     indicator.end_date = datetime.now().date()
                     indicator.active = False
         # обновить выводы по индикаторам
-        self._update_indicator_summary(record)
+        if summary_update:
+            self._update_indicator_summary(record)
 
-    def _check_cost_price(self, record):
+    def _check_cost_price(self, record, summary_update=True):
         cost_price = 0
         if record.fix_expenses:
             cost_price_record = [
@@ -863,9 +868,10 @@ class Product(models.Model):
                     indicator.active = False
 
         # обновить выводы по индикаторам
-        self._update_indicator_summary(record)
+        if summary_update:
+            self._update_indicator_summary(record)
 
-    def _check_competitors_with_price_ids_qty(self, record):
+    def _check_competitors_with_price_ids_qty(self, record, summary_update=True):
         if len(record.competitors_with_price_ids) >= 3:
             for indicator in record.ozon_products_indicator_ids:
                 if (
@@ -892,9 +898,10 @@ class Product(models.Model):
                 )
 
         # обновить выводы по индикаторам
-        self._update_indicator_summary(record)
+        if summary_update:
+            self._update_indicator_summary(record)
 
-    def _update_in_out_stock_indicators(self, record):
+    def _update_in_out_stock_indicators(self, record, summary_update=True):
         if record.is_selling:
             found = 0
             for indicator in record.ozon_products_indicator_ids:
@@ -932,7 +939,8 @@ class Product(models.Model):
                     }
                 )
         # обновить выводы по индикаторам
-        self._update_indicator_summary(record)
+        if summary_update:
+            self._update_indicator_summary(record)
 
     def _automated_daily_action_by_cron(self):
         types_for_report = [
@@ -949,8 +957,6 @@ class Product(models.Model):
                     if indicator.expiration_date <= datetime.now().date():
                         indicator.end_date = datetime.now().date()
                         indicator.active = False
-            # проверяет есть ли 3 конкурента и если нет вешает индикатор
-            self._check_competitors_with_price_ids_qty(record)
 
             summary_types = defaultdict()
             for summary in record.ozon_products_indicators_summary_ids:
@@ -1354,10 +1360,24 @@ class Product(models.Model):
             else:
                 rec.is_button_create_mass_pricing_shown = True
 
-    # def _run_checks(self):
-    #     for record in self:
-    #         if record.hidden_trigger_for_checking_fields:
-    #             pass
+    def action_run_indicators_checks(self):
+        schedules = self.env["ozon.schedule"].search([])
+        if not schedules:
+            schedules = self.env["ozon.schedule"].create({'ozon_products_checking_last_time': datetime.now()})
+        if schedules[0].ozon_products_checking_last_time + timedelta(minutes=5) > datetime.now():
+            return True
+
+        products = self.env['ozon.products'].search([])
+        for product in products:
+            product._check_investment_expenses(product, summary_update=False)
+            product._check_profitability_norm(product, summary_update=False)
+            product._check_cost_price(product, summary_update=False)
+            product._check_competitors_with_price_ids_qty(product, summary_update=False)
+            product._update_in_out_stock_indicators(product, summary_update=False)
+
+            product._update_indicator_summary(product)
+
+        schedules[0].ozon_products_checking_last_time = datetime.now()
 
 
 class ProductNameGetExtension(models.Model):
