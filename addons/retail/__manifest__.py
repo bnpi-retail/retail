@@ -19,7 +19,6 @@
         "security/seller/ir.model.access.csv",
         "security/cost_price/ir.model.access.csv",
         "security/categories/ir.model.access.csv",
-        "security/settings/ir.model.access.csv",
         
         # views
         "views/menu.xml",
@@ -31,7 +30,6 @@
         "views/import/import.xml",
         "views/products/products.xml",
         "views/seller/seller.xml",
-        "views/settings/settings.xml",
     ],
     "demo": [
         "demo/demo.xml",

@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
 from .import_file import import_file
-from .settings import settings
 
 from . import categories
 from . import unique_product
