@@ -592,8 +592,6 @@ class Product(models.Model):
                 print(f'{i} - Fix expense "Себестоимость товара" was created')
 
     def write(self, values, **kwargs):
-        self.calculate_calculated_pricing_strategy_ids()
-        self.update_current_product_all_expenses()
         if isinstance(values, dict) and values.get("fix_expenses"):
             fix_exp_cost_price = self.fix_expenses.filtered(
                 lambda r: r.name == "Себестоимость товара"
@@ -1226,7 +1224,7 @@ class Product(models.Model):
 
     @api.onchange("calculated_pricing_strategy_ids")
     def calculate_calculated_pricing_strategy_ids(self):
-        if not self.calculated_pricing_strategy_ids:
+        if not self.calculated_pricing_strategy_ids.pricing_strategy_id:
             return
         self._compute_product_calculator_ids()
         prices = []
@@ -1360,9 +1358,6 @@ class Product(models.Model):
     #     for record in self:
     #         if record.hidden_trigger_for_checking_fields:
     #             pass
-
-
-
 
 
 class ProductNameGetExtension(models.Model):
@@ -1664,9 +1659,9 @@ class ProductGraphExtension(models.Model):
             payload["current"] = graph_data
 
             if rec.categories.img_data_sale_this_year:
-                payload[
-                    "average_graph_this_year"
-                ] = rec.categories.img_data_sale_this_year
+                payload["average_graph_this_year"] = (
+                    rec.categories.img_data_sale_this_year
+                )
 
             records = model_sale.search(
                 [
@@ -1683,9 +1678,9 @@ class ProductGraphExtension(models.Model):
             payload["last"] = graph_data
 
             if rec.categories.img_data_sale_last_year:
-                payload[
-                    "average_graph_last_year"
-                ] = rec.categories.img_data_sale_last_year
+                payload["average_graph_last_year"] = (
+                    rec.categories.img_data_sale_last_year
+                )
 
             self._send_request(payload)
 
@@ -1803,9 +1798,9 @@ class ProductGraphExtension(models.Model):
             payload["hits_tocart"] = graph_data
 
             if rec.categories.img_data_analysis_data_this_year:
-                payload[
-                    "average_data"
-                ] = rec.categories.img_data_analysis_data_this_year
+                payload["average_data"] = (
+                    rec.categories.img_data_analysis_data_this_year
+                )
 
             self._send_request(payload)
 
