@@ -101,7 +101,7 @@ class ActionCreateOzonProducts(models.Model):
                 "product": record.product.id,
                 "name": record.name,
                 "url": record.url,
-                "retail_seller_id": competitor_seller_id.id,
+                "competitor_seller_id": record_seller.id,
             })
 
         return record_product_competitors
