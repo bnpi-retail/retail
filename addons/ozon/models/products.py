@@ -773,21 +773,27 @@ class Product(models.Model):
                     )
             elif out_of_stock_indicator:
                 days = (datetime.now() - out_of_stock_indicator.create_date).days
+                lost_revenue_per_day = self._calculate_a_lost_revenue(self, out_of_stock_indicator.create_date)
+                lost_revenue = round(lost_revenue_per_day * days, 2)
+
                 if in_stock_summary:
                     record.ozon_products_indicators_summary_ids = [
                         (2, in_stock_summary.id, 0)
                     ]
                 if out_of_stock_summary:
-                    out_of_stock_summary.name = f"Товар отсутствует дней: {days}."
+                    out_of_stock_summary.name = f"Товар отсутствует дней: {days}. " \
+                                                f"Упущенная выручка: {lost_revenue} руб."
                 else:
                     self.env["ozon.products.indicator.summary"].create(
                         {
-                            "name": f"Товар отсутствует дней: {days}.",
+                            "name": f"Товар отсутствует дней: {days}. "
+                                    f"Упущенная выручка: {lost_revenue} руб.",
                             "type": "out_of_stock",
                             "ozon_product_id": record.id,
                         }
                     )
 
+    @api.depends('ozon_products_indicators_summary_ids')
     def _compute_ozon_products_indicator_tag_ids(self):
         for record in self:
             need_actions = 0
@@ -982,6 +988,20 @@ class Product(models.Model):
         # обновить выводы по индикаторам
         if summary_update:
             self._update_indicator_summary(record)
+
+    def _calculate_a_lost_revenue(self, record, period_to: datetime.date) -> float:
+        avg_revenue_per_day = 0
+        period_from = period_to - timedelta(days=60)
+        sales_last_3_month = self.env['ozon.sale'].search([
+            ('product', '=', record.id),
+            ('date', '>', period_from),
+            ('date', '<', period_to),
+        ])
+        total_revenue = sum(sale.revenue for sale in sales_last_3_month)
+        if total_revenue:
+            avg_revenue_per_day = total_revenue / 60
+
+        return avg_revenue_per_day
 
     def _automated_daily_action_by_cron(self):
         types_for_report = [
