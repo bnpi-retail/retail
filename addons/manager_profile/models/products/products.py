@@ -8,8 +8,8 @@ class ParserProductCompetitors(models.Model):
 
     is_processed = fields.Selection(
         [
-            ("complete", "Товар назначен"),
-            ("not_complete", "Ждет назначения товара")
+            ("complete", "Товар обработан"),
+            ("not_complete", "Ждет обработки товара")
         ],
         string="Статус",
         readonly=True,
@@ -51,11 +51,13 @@ class ActionCreateOzonProducts(models.Model):
     def create_ozon_product(self):
         for record in self:
             if not record.product \
-            or record.is_our_product is True \
             or record.is_processed == "complete":
                 continue
-                    
+            
             record.is_processed = "complete"
+
+            if record.is_our_product is True:
+                continue
 
             record_seller = self.get_or_create_seller(
                 record=record,
