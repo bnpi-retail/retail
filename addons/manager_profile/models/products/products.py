@@ -6,9 +6,11 @@ class ParserProductCompetitors(models.Model):
     _name = "parser.products_competitors"
     _description = "Товары конкуренты"
 
-    is_processed = fields.Selection([
-        ("complete", "Товар назначен"),
-        ("not_complete", "Ждет назначения товара")],
+    is_processed = fields.Selection(
+        [
+            ("complete", "Товар обработан"),
+            ("not_complete", "Ждет обработки товара")
+        ],
         string="Статус",
         readonly=True,
         default="not_complete",
@@ -49,11 +51,13 @@ class ActionCreateOzonProducts(models.Model):
     def create_ozon_product(self):
         for record in self:
             if not record.product \
-            or record.is_our_product is True \
             or record.is_processed == "complete":
                 continue
-                    
+            
             record.is_processed = "complete"
+
+            if record.is_our_product is True:
+                continue
 
             record_seller = self.get_or_create_seller(
                 record=record,
@@ -68,15 +72,15 @@ class ActionCreateOzonProducts(models.Model):
             )
 
     def get_or_create_seller(self, record):
-        model_seller = self.env["retail.seller"]
+        model_competitor_seller = self.env["ozon.competitor_seller"]
 
-        record_seller = model_seller \
-            .search([("name", "=", record.seller)], limit=1)
+        record_seller = model_competitor_seller \
+            .search([("trade_name", "=", record.seller)], limit=1)
 
         if not record_seller:
-            record_seller = model_seller \
+            record_seller = model_competitor_seller \
                 .create({
-                    "name": record.name,
+                    "trade_name": record.seller,
                 })
             
         return record_seller
@@ -99,7 +103,7 @@ class ActionCreateOzonProducts(models.Model):
                 "product": record.product.id,
                 "name": record.name,
                 "url": record.url,
-                "retail_seller_id": record_seller.id,
+                "competitor_seller_id": record_seller.id,
             })
 
         return record_product_competitors
