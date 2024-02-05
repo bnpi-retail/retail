@@ -1363,7 +1363,7 @@ class Product(models.Model):
     def action_run_indicators_checks(self):
         schedules = self.env["ozon.schedule"].search([])
         if not schedules:
-            schedules = self.env["ozon.schedule"].create({'ozon_products_checking_last_time': datetime.now})
+            schedules = self.env["ozon.schedule"].create({'ozon_products_checking_last_time': datetime.now()})
         if schedules[0].ozon_products_checking_last_time + timedelta(minutes=5) > datetime.now():
             return True
 
