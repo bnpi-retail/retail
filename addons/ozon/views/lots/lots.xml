@@ -30,7 +30,8 @@
                         </button>
                     </div>
                     <group>
-                        <field name="mass_pricing_ids">
+                        <field name="mass_pricing_ids"
+                            attrs="{'invisible': [('mass_pricing_ids', '=', [])]}">
                             <tree limit="1">
                                 <field name="price" />
                                 <field name="new_price" />
