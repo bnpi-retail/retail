@@ -555,6 +555,7 @@ class PromotionExpenses(models.Model):
     _name = "ozon.promotion_expenses"
     _description = "Расходы на продвижение товара Ozon"
 
+    ad_campaign = fields.Char(string="Номер рекламной кампании", readonly=True)
     date = fields.Date(string="Дата", readonly=True)
     promotion_type = fields.Selection(
         [("search", "Продвижение в поиске")],
@@ -566,7 +567,7 @@ class PromotionExpenses(models.Model):
     transaction_id = fields.Many2one(
         "ozon.transaction", string="Транзакция", readonly=True
     )
-    t_id = fields.Char(string="Номер транзакции", readonly=True)
+    t_id = fields.Char(string="ID заказа (номер транзакции)", readonly=True)
     posting_id = fields.Many2one("ozon.posting", string="Отправление", readonly=True)
     p_id = fields.Char(string="Номер отправления", readonly=True)
     price = fields.Float(string="Цена продажи", readonly=True)

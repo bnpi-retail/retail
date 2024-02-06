@@ -757,7 +757,12 @@ class ImportFile(models.Model):
         with open(f_path, "w") as f:
             f.write(content)
         with open(f_path) as csvfile:
-            next(csvfile)
+            first_row = next(csvfile)
+            ad_campaign = first_row[first_row.find("№") + 2 : first_row.find(",")]
+            if not ad_campaign.isdigit():
+                raise UserError(
+                    """Файл должен содержать номер рекламной кампании в первой строке"""
+                )
             reader = csv.DictReader(csvfile, delimiter=";")
             if reader.fieldnames != [
                 "Дата",
