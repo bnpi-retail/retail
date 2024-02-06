@@ -317,13 +317,10 @@ class Product(models.Model):
     ozon_products_indicators_summary_ids = fields.One2many(
         "ozon.products.indicator.summary", inverse_name="ozon_product_id"
     )
-    ozon_products_indicator_tag_id = fields.Many2one(
-        'ozon.products.indicator.tag', compute='_compute_ozon_products_indicator_tag_ids'
-    )
+    ozon_products_indicator_qty = fields.Integer(compute='_compute_ozon_products_indicator_qty')
     retail_product_total_cost_price = fields.Float(
         compute="_compute_total_cost_price", store=True
     )
-    urgency_indicators = fields.Selection([('a', 'A'), ('b', 'B'), ('c', 'C')])
     # ABC analysis
     revenue_share_temp = fields.Float()
     revenue_cumulative_share_temp = fields.Float()
@@ -792,11 +789,10 @@ class Product(models.Model):
                         }
                     )
 
-    @api.depends('ozon_products_indicators_summary_ids')
-    def _compute_ozon_products_indicator_tag_ids(self):
+    @api.depends('ozon_products_indicator_qty')
+    def _compute_ozon_products_indicator_qty(self):
         for record in self:
             need_actions = 0
-            not_need_actions = 0
             # calculate qty per type
             for summary in record.ozon_products_indicators_summary_ids:
                 if summary.type in (
@@ -804,32 +800,12 @@ class Product(models.Model):
                     'out_of_stock',
                 ):
                     need_actions += 1
-                elif summary.type in (
-                    'no_competitor_manager',
-                ):
-                    not_need_actions += 1
+
             # set tags
             if need_actions:
-                name = f"Требует действий: {need_actions}"
-                tag = self.env['ozon.products.indicator.tag'].search([('name', '=', name)])
-                if not tag:
-                    tag = self.env['ozon.products.indicator.tag'].create({'name': name})
-                record.ozon_products_indicator_tag_id = tag
-                record.urgency_indicators = 'a'
-            elif not_need_actions:
-                name = f"Несрочных действий: {not_need_actions}"
-                tag = self.env['ozon.products.indicator.tag'].search([('name', '=', name)])
-                if not tag:
-                    tag = self.env['ozon.products.indicator.tag'].create({'name': name})
-                record.ozon_products_indicator_tag_id = tag
-                record.urgency_indicators = 'b'
+                record.ozon_products_indicator_qty = need_actions
             else:
-                name = f"Ok"
-                tag = self.env['ozon.products.indicator.tag'].search([('name', '=', name)])
-                if not tag:
-                    tag = self.env['ozon.products.indicator.tag'].create({'name': name})
-                record.ozon_products_indicator_tag_id = tag
-                record.urgency_indicators = 'c'
+                record.ozon_products_indicator_qty = 0
 
     def _check_investment_expenses(self, record, summary_update=True):
         if not record.investment_expenses_id:
