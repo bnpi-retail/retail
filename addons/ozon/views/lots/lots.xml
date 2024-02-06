@@ -259,6 +259,16 @@
                                         <field name="name" />
                                     </tree>
                                 </field>
+                                <field name="promotion_expenses_ids">
+                                    <tree>
+                                        <field name="date" />
+                                        <field name="promotion_type" />
+                                        <field name="qty" />
+                                        <field name="total_price" />
+                                        <field name="expense" />
+                                    </tree>
+                                </field>
+
                             </group>
                         </page>
                         <page id="page_lot_competitors_info" string="Конкуренты">
@@ -447,11 +457,11 @@
                         decoration-success="abc_group=='A'"
                         decoration-danger="abc_group=='C'"
                     />
-                    <field name="urgency_indicators" invisible="1"/>
+                    <field name="urgency_indicators" invisible="1" />
                     <field name="ozon_products_indicator_tag_id" string="Индикаторы"
-                           decoration-success="urgency_indicators=='c'"
-                           decoration-warning="urgency_indicators=='b'"
-                           decoration-danger="urgency_indicators=='a'"
+                        decoration-success="urgency_indicators=='c'"
+                        decoration-warning="urgency_indicators=='b'"
+                        decoration-danger="urgency_indicators=='a'"
                     />
                 </tree>
             </field>
@@ -520,7 +530,7 @@
             </field>
         </record>
 
-         <record model="ir.actions.server" id="action_run_indicators_checks">
+        <record model="ir.actions.server" id="action_run_indicators_checks">
             <field name="name">Обновить индикаторы</field>
             <field name="model_id" ref="model_ozon_products" />
             <field name="binding_model_id" ref="model_ozon_products" />
