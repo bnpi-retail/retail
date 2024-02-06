@@ -22,8 +22,8 @@
                         </group>
 
                         <notebook>
-                            <page string="Продукты">
-
+                            <page string="Грфик">
+                                <field name="plot" widget="image" attrs="{'invisible':[('plot','=',False)]}"/>
                             </page>
                         </notebook>
                     </sheet>

@@ -1,6 +1,13 @@
+import base64
+import io
+from collections import defaultdict
 from odoo import models, fields
 from odoo.exceptions import UserError
 import logging
+import matplotlib.pyplot as plt
+import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 class OzonReport(models.Model):
@@ -81,6 +88,8 @@ class OzonReportCompetitorBCGMatrix(models.Model):
     period_prev = fields.Many2one("ozon.report_category_market_share")
     period_curr = fields.Many2one("ozon.report_category_market_share")
 
+    plot = fields.Binary()
+
     def action_run_bcg_matrix_calculation(self):
         for record in self:
             if not record.ozon_categories_id:
@@ -97,3 +106,94 @@ class OzonReportCompetitorBCGMatrix(models.Model):
             ):
                 raise UserError('Проверьте даты выбранных периодов')
 
+            # Market growth rate
+            # common
+            total_category_growth_rate = 0
+            period_prev_category_market_turnover = 0
+            seller_prev = record.period_prev.ozon_report_competitor_category_share_ids[0]
+            if seller_prev.category_share != 0:
+                period_prev_category_market_turnover = (100 * seller_prev.turnover) / seller_prev.category_share
+
+            period_curr_category_market_turnover = 0
+            seller_curr = record.period_curr.ozon_report_competitor_category_share_ids[0]
+            if seller_curr.category_share != 0:
+                period_curr_category_market_turnover = (100 * seller_curr.turnover) / seller_curr.category_share
+
+            if period_prev_category_market_turnover == 0:
+                raise UserError('Оборот за предыдущий период равен 0- '
+                                'нельзя посчитать темп роста рынка категории.')
+            total_category_growth_rate = ((period_curr_category_market_turnover * 100) /
+                                          period_prev_category_market_turnover) - 100
+
+            # products growth rate
+            products_with_turnovers = defaultdict(lambda: {
+                'prev_turnover': 0,
+                'curr_turnover': 0,
+                'curr_market_share': 0,
+                'product_growth_rate': 0,
+                'in_both_periods': 0
+            })
+            for sale in record.period_prev.ozon_products_competitors_sale_ids:
+                if sale.ozon_products_id:
+                    products_with_turnovers[sale.ozon_products_id]['prev_turnover'] = sale.orders_sum
+                    products_with_turnovers[sale.ozon_products_id]['in_both_periods'] += 1
+            for sale in record.period_curr.ozon_products_competitors_sale_ids:
+                if sale.ozon_products_id:
+                    products_with_turnovers[sale.ozon_products_id]['curr_turnover'] = sale.orders_sum
+                    products_with_turnovers[sale.ozon_products_id]['in_both_periods'] += 1
+                    products_with_turnovers[sale.ozon_products_id]['curr_market_share'] = sale.revenue_share_percentage
+
+            for product, turnovers in products_with_turnovers.items():
+                if turnovers.get('in_both_periods'):
+                    prev_value = turnovers.get('prev_turnover')
+                    curr_value = turnovers.get('curr_turnover')
+                    if prev_value:
+                        product_growth_rate = ((100 * curr_value) / prev_value) - 100
+                        turnovers['product_growth_rate'] = product_growth_rate
+                    else:
+                        logger.warning("Can't calculate product_growth_rate because zero division")
+
+            self._create_plot_and_save(products_with_turnovers)
+
+    def _create_plot_and_save(self, products_data: defaultdict):
+        # Classify products into quadrants based on growth rate and market share
+        quadrants = {
+            'Star': [],
+            'Question Mark': [],
+            'Cash Cow': [],
+            'Dog': []
+        }
+
+        for product, data in products_data.items():
+            if data['product_growth_rate'] >= 10 and data['curr_market_share'] >= 10:
+                quadrants['Star'].append((product, data))
+            elif data['product_growth_rate'] >= 10 and data['curr_market_share'] < 10:
+                quadrants['Question Mark'].append((product, data))
+            elif data['product_growth_rate'] < 10 and data['curr_market_share'] >= 10:
+                quadrants['Cash Cow'].append((product, data))
+            else:
+                quadrants['Dog'].append((product, data))
+
+        # Plot the BCG matrix
+        fig, ax = plt.subplots()
+
+        for quadrant, products in quadrants.items():
+            x = [data['curr_market_share'] for _, data in products]
+            y = [data['product_growth_rate'] for _, data in products]
+            ax.scatter(x, y, label=quadrant)
+
+        # Add labels and legend
+        ax.set_xlabel('Market Share (%)')
+        ax.set_ylabel('Market Growth Rate (%)')
+        ax.set_title('BCG Matrix')
+        ax.legend()
+
+        buffer = io.BytesIO()
+        fig.savefig(buffer, format='png')
+        buffer.seek(0)
+        # Convert plot to a byte string
+        binary_data = base64.b64encode(buffer.read())
+        # Save the byte string to the binary field
+        self.plot = binary_data
+        # Close the plot to prevent displaying it
+        plt.close(fig)
