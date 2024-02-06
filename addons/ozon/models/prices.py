@@ -26,11 +26,9 @@ class FixExpenses(models.Model):
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
 
     def create_from_ozon_product_fee(self, product_fee):
-        field_names = [
-            field
-            for field in product_fee.fields_get_keys()
-            if field
-            not in [
+        data = []
+        for k, v in product_fee._fields.items():
+            if k in [
                 "product",
                 "sales_percent_fbo",
                 "sales_percent_fbs",
@@ -42,22 +40,16 @@ class FixExpenses(models.Model):
                 "create_date",
                 "write_uid",
                 "write_date",
-            ]
-        ]
-        fieldnames_and_strings = [
-            (k, v.string) for k, v in product_fee._fields.items() if k in field_names
-        ]
-        data = []
-        for field, string in fieldnames_and_strings:
-            rec = {
-                "name": string,
-                "price": product_fee[field],
-                "discription": "",
-            }
-            data.append(rec)
-
+            ]:
+                continue
+            data.append(
+                {
+                    "name": v.string,
+                    "price": product_fee[k],
+                    "discription": "",
+                }
+            )
         recs = self.create(data)
-
         return recs
 
 
@@ -72,29 +64,17 @@ class Costs(models.Model):
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
 
     def create_from_ozon_product_fee(self, product_fee, price):
-        field_names = [
-            field
-            for field in product_fee.fields_get_keys()
-            if field
-            in [
-                "sales_percent_fbo",
-                "sales_percent_fbs",
-            ]
-        ]
-        fieldnames_and_strings = [
-            (k, v.string) for k, v in product_fee._fields.items() if k in field_names
-        ]
         data = []
-        for field, string in fieldnames_and_strings:
-            rec = {
-                "name": string,
-                "price": round(price * product_fee[field] / 100, 2),
-                "discription": f"{product_fee[field]}%",
-            }
-            data.append(rec)
-
+        for k, v in product_fee._fields.items():
+            if k in ["sales_percent_fbo", "sales_percent_fbs"]:
+                data.append(
+                    {
+                        "name": v.string,
+                        "price": round(price * product_fee[k] / 100, 2),
+                        "discription": f"{product_fee[k]}%",
+                    }
+                )
         recs = self.create(data)
-
         return recs
 
 
