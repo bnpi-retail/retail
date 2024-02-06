@@ -52,6 +52,10 @@ class ImportFile(models.Model):
             ("ozon_fbo_supply_orders", "Поставки FBO"),
             ("ozon_actions", "Акции Ozon"),
             ("ozon_competitors_goods", "Товары ближайших конкурентов Ozon с продажами"),
+            (
+                "ozon_ad_campgaign_search_promotion_report",
+                "Отчёт о рекламной кампании (продвижение в поиске)",
+            ),
         ],
         string="Данные для загрузки",
     )
@@ -126,6 +130,9 @@ class ImportFile(models.Model):
 
         if values["data_for_download"] == "ozon_successful_products_competitors":
             self.import_successful_products_competitors(content)
+
+        if values["data_for_download"] == "ozon_ad_campgaign_search_promotion_report":
+            self.import_ad_campgaign_search_promotion_report(content)
 
         if "csv" in mime_type:
             if values["data_for_download"] == "ozon_products":
@@ -744,6 +751,38 @@ class ImportFile(models.Model):
             )
 
         # TODO: if different products in one transaction
+
+    def import_ad_campgaign_search_promotion_report(self, content):
+        f_path = "/mnt/extra-addons/ozon/__pycache__/ad_campgaign_search_promotion_report.csv"
+        with open(f_path, "w") as f:
+            f.write(content)
+        with open(f_path) as csvfile:
+            next(csvfile)
+            reader = csv.DictReader(csvfile, delimiter=";")
+            if reader.fieldnames != [
+                "Дата",
+                "ID заказа",
+                "Номер заказа",
+                "Ozon ID",
+                "Ozon ID продвигаемого товара",
+                "Артикул",
+                "Наименование",
+                "Количество",
+                "Цена продажи",
+                "Стоимость, ₽",
+                "Ставка, %",
+                "Ставка, ₽",
+                "Расход, ₽",
+            ]:
+                raise UserError(
+                    """Неправильный файл. Файл должен содержать столбцы:\n'Дата', 'ID заказа', 'Номер заказа', 'Ozon ID', 'Ozon ID продвигаемого товара', 'Артикул', 'Наименование', 'Количество', 'Цена продажи', 'Стоимость, ₽', 'Ставка, %', 'Ставка, ₽', 'Расход, ₽'"""
+                )
+            for i, row in enumerate(reader):
+                # TODO
+                # if i < 10:
+                #     print(row)
+                pass
+        os.remove(f_path)
 
     def import_images_sale(self, content):
         model_products = self.env["ozon.products"]

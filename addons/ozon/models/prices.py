@@ -549,3 +549,29 @@ class AllExpenses(models.Model):
 
         products.all_expenses_ids.unlink()
         self.create(data)
+
+
+class PromotionExpenses(models.Model):
+    _name = "ozon.promotion_expenses"
+    _description = "Расходы на продвижение товара Ozon"
+
+    date = fields.Date(string="Дата", readonly=True)
+    promotion_type = fields.Selection(
+        [("search", "Продвижение в поиске")],
+        string="Тип",
+        readonly=True,
+    )
+    product_id = fields.Many2one("ozon.products", string="Товар Ozon", readonly=True)
+    product_id_on_platform = fields.Char(string="Product ID", readonly=True)
+    transaction_id = fields.Many2one(
+        "ozon.transaction", string="Транзакция", readonly=True
+    )
+    t_id = fields.Char(string="Номер транзакции", readonly=True)
+    posting_id = fields.Many2one("ozon.posting", string="Отправление", readonly=True)
+    p_id = fields.Char(string="Номер отправления", readonly=True)
+    price = fields.Float(string="Цена продажи", readonly=True)
+    qty = fields.Float(string="Кол-во единиц товара", readonly=True)
+    total_price = fields.Float(string="Стоимость", readonly=True)
+    percent_rate = fields.Float(string="Ставка, %", readonly=True)
+    abs_rate = fields.Float(string="Ставка, ₽", readonly=True)
+    expense = fields.Float(string="Расход, ₽", readonly=True)
