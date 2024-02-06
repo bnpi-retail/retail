@@ -787,24 +787,26 @@ class ImportFile(models.Model):
             for i, row in enumerate(reader):
                 sku = row["Ozon ID продвигаемого товара"]
                 order_id = row["ID заказа"]
-                post_id = row["Номер заказа"]
                 if self.env["ozon.promotion_expenses"].search(
                     [
                         ("ad_campaign", "=", ad_campaign),
                         ("order_id", "=", order_id),
-                        ("p_id", "=", post_id),
                     ]
                 ):
                     continue
                 if ozon_product := self.is_ozon_product_exists_by_sku(sku):
                     if (
-                        posting_id := self.env["ozon.posting"]
-                        .search([("posting_number", "=", post_id)])
-                        .id
+                        posting_ids := self.env["ozon.posting"]
+                        .search(
+                            [
+                                ("order_id", "=", order_id),
+                            ]
+                        )
+                        .ids
                     ):
                         pass
                     else:
-                        posting_id = None
+                        posting_ids = None
                     data.append(
                         {
                             "ad_campaign": ad_campaign,
@@ -813,8 +815,7 @@ class ImportFile(models.Model):
                             "product_id": ozon_product.id,
                             "sku": sku,
                             "order_id": order_id,
-                            "posting_id": posting_id,
-                            "p_id": post_id,
+                            "posting_ids": posting_ids,
                             "price": row["Цена продажи"].replace(",", "."),
                             "qty": row["Количество"],
                             "total_price": row["Стоимость, ₽"].replace(",", "."),
