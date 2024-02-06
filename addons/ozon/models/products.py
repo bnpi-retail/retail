@@ -247,6 +247,9 @@ class Product(models.Model):
         string="Итого общих затрат без налогов, ROE, ROI, исходя из актуальной цены",
         compute="_compute_total_all_expenses_ids_except_tax_roe_roi",
     )
+    promotion_expenses_ids=fields.One2many(
+        "ozon.promotion_expenses", "product_id", string="Затраты на продвижение", readonly=True
+    )
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
     posting_ids = fields.Many2many("ozon.posting", string="Отправления Ozon")
     postings_count = fields.Integer(compute="_compute_count_postings")
