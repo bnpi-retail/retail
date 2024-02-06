@@ -1,0 +1,8 @@
+<odoo>
+    <data>
+        <menuitem name="Транзакции"
+            id="menu_transaction"
+            parent="ozon.menu_root"
+            sequence="35" />
+    </data>
+</odoo>

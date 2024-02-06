@@ -56,10 +56,10 @@
 
         <!-- Menu -->
         <menuitem name="Транзакции"
-            id="menu_transaction"
-            parent="ozon.menu_root"
+            id="submenu_transactions"
+            parent="ozon.menu_transaction"
             action="action_transaction"
-            sequence="35" />
+            sequence="1" />
 
     </data>
 </odoo>

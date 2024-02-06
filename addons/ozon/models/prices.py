@@ -553,7 +553,7 @@ class AllExpenses(models.Model):
 
 class PromotionExpenses(models.Model):
     _name = "ozon.promotion_expenses"
-    _description = "Расходы на продвижение товара Ozon"
+    _description = "Затраты на продвижение товара Ozon"
 
     ad_campaign = fields.Char(string="Номер рекламной кампании", readonly=True)
     date = fields.Date(string="Дата", readonly=True)
