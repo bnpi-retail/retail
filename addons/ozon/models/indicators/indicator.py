@@ -22,9 +22,3 @@ class Indicator(models.Model):
     # next_check_date
     user_id = fields.Many2one('res.users')
 
-
-class IndicatorTag(models.Model):
-    _name = 'ozon.products.indicator.tag'
-    _description = 'Tags for products tree view'
-
-    name = fields.Char(size=50)

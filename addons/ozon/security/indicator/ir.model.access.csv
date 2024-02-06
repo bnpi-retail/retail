@@ -1,4 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_ozon_products_indicator,access_ozon_products_indicator,model_ozon_products_indicator,base.group_user,1,1,1,1
 access_ozon_products_indicator_summary,access_ozon_products_indicator_summary,model_ozon_products_indicator_summary,base.group_user,1,1,1,1
-access_ozon_products_indicator_tag,access_ozon_products_indicator_tag,model_ozon_products_indicator_tag,base.group_user,1,1,1,1
