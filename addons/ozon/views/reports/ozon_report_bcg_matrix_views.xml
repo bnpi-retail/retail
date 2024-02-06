@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ozon_report_bcg_matrix_view_form" model="ir.ui.view">
+            <field name="name">ozon_report_bcg_matrix.form</field>
+            <field name="model">ozon.report.bcg_matrix</field>
+            <field name="arch" type="xml">
+                <form string="Report">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="ozon_categories_id" string="Категория"/>
+                                <field name="period_prev" string="Предыдущий период"
+                                       attrs="{'invisible':[('ozon_categories_id','=',False)]}"
+                                       domain="[('ozon_categories_id', '=', ozon_categories_id)]"
+                                />
+                                <field name="period_curr" string="Последний период"
+                                       attrs="{'invisible':[('ozon_categories_id','=',False)]}"
+                                       domain="[('ozon_categories_id', '=', ozon_categories_id)]"
+                                />
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Продукты">
+
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="ozon_report_bcg_matrix_view_tree" model="ir.ui.view">
+            <field name="name">ozon_report_bcg_matrix.tree</field>
+            <field name="model">ozon.report.bcg_matrix</field>
+            <field name="arch" type="xml">
+                <tree string="Отчеты" default_order="create_date desc">
+                    <field name="create_date" string="Дата создания" readonly="1"/>
+                    <field name="ozon_categories_id" string="Категория" readonly="1"/>
+                    <field name="period_prev" string="Предыдущий период" readonly="1"/>
+                    <field name="period_curr" string="Последний период" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_open_ozon_report_bcg_matrix" model="ir.actions.act_window">
+            <field name="name">Отчеты</field>
+            <field name="res_model">ozon.report.bcg_matrix</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_indicators_reports_bcg_matrix" name="BCG матрицы" parent="ozon.menu_categories"
+                  action="action_open_ozon_report_bcg_matrix" sequence="37"/>
+
+    </data>
+</odoo>

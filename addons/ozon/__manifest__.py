@@ -102,6 +102,7 @@
         "views/settings/settings.xml",
         "views/reports/ozon_report_category_market_share_views.xml",
         "views/competitors/competitor_seller_view.xml",
+        "views/reports/ozon_report_bcg_matrix_views.xml",
         # cron
         "crone/ir_cron_data.xml",
     ],

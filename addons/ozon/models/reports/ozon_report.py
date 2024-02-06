@@ -65,3 +65,11 @@ class OzonReportCompetitorCategoryShare(models.Model):
 
     ozon_report_category_market_share = fields.Many2one("ozon.report_category_market_share")
 
+
+class OzonReportCompetitorBCGmatrix(models.Model):
+    _name = "ozon.report.bcg_matrix"
+    _description = "Модель для создания BCG матрицы по категории"
+
+    ozon_categories_id = fields.Many2one('ozon.categories')
+    period_prev = fields.Many2one("ozon.report_category_market_share")
+    period_curr = fields.Many2one("ozon.report_category_market_share")
