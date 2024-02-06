@@ -13,10 +13,12 @@
                                        attrs="{'invisible':[('ozon_categories_id','=',False)]}"
                                        domain="[('ozon_categories_id', '=', ozon_categories_id)]"
                                 />
-                                <field name="period_curr" string="Последний период"
+                                <field name="period_curr" string="Период"
                                        attrs="{'invisible':[('ozon_categories_id','=',False)]}"
                                        domain="[('ozon_categories_id', '=', ozon_categories_id)]"
                                 />
+                                <button string="DO" type="object"
+                                        name="action_run_bcg_matrix_calculation" class="btn-primary"/>
                         </group>
 
                         <notebook>
@@ -37,7 +39,7 @@
                     <field name="create_date" string="Дата создания" readonly="1"/>
                     <field name="ozon_categories_id" string="Категория" readonly="1"/>
                     <field name="period_prev" string="Предыдущий период" readonly="1"/>
-                    <field name="period_curr" string="Последний период" readonly="1"/>
+                    <field name="period_curr" string="Период" readonly="1"/>
                 </tree>
             </field>
         </record>

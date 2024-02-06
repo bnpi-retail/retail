@@ -73,10 +73,27 @@ class OzonReportCompetitorCategoryShare(models.Model):
     ozon_report_category_market_share = fields.Many2one("ozon.report_category_market_share")
 
 
-class OzonReportCompetitorBCGmatrix(models.Model):
+class OzonReportCompetitorBCGMatrix(models.Model):
     _name = "ozon.report.bcg_matrix"
     _description = "Модель для создания BCG матрицы по категории"
 
     ozon_categories_id = fields.Many2one('ozon.categories')
     period_prev = fields.Many2one("ozon.report_category_market_share")
     period_curr = fields.Many2one("ozon.report_category_market_share")
+
+    def action_run_bcg_matrix_calculation(self):
+        for record in self:
+            if not record.ozon_categories_id:
+                raise UserError('Выберите категорию')
+            if not record.period_prev:
+                raise UserError('Выберите период')
+            if not record.period_curr:
+                raise UserError('Выберите период')
+            if record.period_prev == record.period_curr:
+                raise UserError('Выберите разные периоды')
+            if (
+                    record.period_prev.period_from > record.period_curr.period_from or
+                    record.period_prev.period_to > record.period_curr.period_to
+            ):
+                raise UserError('Проверьте даты выбранных периодов')
+
