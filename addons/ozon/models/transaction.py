@@ -42,9 +42,3 @@ class Transactions(models.Model):
         string="Номер отправления",
         readonly=True,
     )
-    promotion_expenses_ids = fields.One2many(
-        "ozon.promotion_expenses",
-        "transaction_id",
-        string="Затраты на продвижение",
-        readonly=True,
-    )

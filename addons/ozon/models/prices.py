@@ -564,10 +564,7 @@ class PromotionExpenses(models.Model):
     )
     product_id = fields.Many2one("ozon.products", string="Товар Ozon", readonly=True)
     sku = fields.Char(string="SKU", readonly=True)
-    transaction_id = fields.Many2one(
-        "ozon.transaction", string="Транзакция", readonly=True
-    )
-    t_id = fields.Char(string="ID заказа (номер транзакции)", readonly=True)
+    order_id = fields.Char(string="ID заказа", readonly=True)
     posting_id = fields.Many2one("ozon.posting", string="Отправление", readonly=True)
     p_id = fields.Char(string="Номер отправления", readonly=True)
     price = fields.Float(string="Цена продажи", readonly=True)
