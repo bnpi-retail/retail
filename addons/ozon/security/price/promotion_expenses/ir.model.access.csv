@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ozon_promotion_expenses,Access Ozon Promotion Expenses,model_ozon_promotion_expenses,base.group_user,1,1,1,1

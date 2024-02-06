@@ -10,7 +10,7 @@ import timeit
 
 from io import BytesIO
 from typing import Any
-from datetime import date
+from datetime import date, datetime
 from collections import defaultdict
 from multiprocessing import Value
 from odoo import models, fields, api, exceptions
@@ -52,6 +52,10 @@ class ImportFile(models.Model):
             ("ozon_fbo_supply_orders", "Поставки FBO"),
             ("ozon_actions", "Акции Ozon"),
             ("ozon_competitors_goods", "Товары ближайших конкурентов Ozon с продажами"),
+            (
+                "ozon_ad_campgaign_search_promotion_report",
+                "Отчёт о рекламной кампании (продвижение в поиске)",
+            ),
         ],
         string="Данные для загрузки",
     )
@@ -126,6 +130,9 @@ class ImportFile(models.Model):
 
         if values["data_for_download"] == "ozon_successful_products_competitors":
             self.import_successful_products_competitors(content)
+
+        if values["data_for_download"] == "ozon_ad_campgaign_search_promotion_report":
+            self.import_ad_campgaign_search_promotion_report(content)
 
         if "csv" in mime_type:
             if values["data_for_download"] == "ozon_products":
@@ -744,6 +751,82 @@ class ImportFile(models.Model):
             )
 
         # TODO: if different products in one transaction
+
+    def import_ad_campgaign_search_promotion_report(self, content):
+        f_path = "/mnt/extra-addons/ozon/__pycache__/ad_campgaign_search_promotion_report.csv"
+        with open(f_path, "w") as f:
+            f.write(content)
+        with open(f_path) as csvfile:
+            first_row = next(csvfile)
+            ad_campaign = first_row[first_row.find("№") + 2 : first_row.find(",")]
+            if not ad_campaign.isdigit():
+                raise UserError(
+                    """Файл должен содержать номер рекламной кампании в первой строке"""
+                )
+            reader = csv.DictReader(csvfile, delimiter=";")
+            if reader.fieldnames != [
+                "Дата",
+                "ID заказа",
+                "Номер заказа",
+                "Ozon ID",
+                "Ozon ID продвигаемого товара",
+                "Артикул",
+                "Наименование",
+                "Количество",
+                "Цена продажи",
+                "Стоимость, ₽",
+                "Ставка, %",
+                "Ставка, ₽",
+                "Расход, ₽",
+            ]:
+                raise UserError(
+                    """Неправильный файл. Файл должен содержать столбцы:\n'Дата', 'ID заказа', 'Номер заказа', 'Ozon ID', 'Ozon ID продвигаемого товара', 'Артикул', 'Наименование', 'Количество', 'Цена продажи', 'Стоимость, ₽', 'Ставка, %', 'Ставка, ₽', 'Расход, ₽'"""
+                )
+            promo_type = "search"
+            data = []
+            for i, row in enumerate(reader):
+                sku = row["Ozon ID продвигаемого товара"]
+                order_id = row["ID заказа"]
+                if self.env["ozon.promotion_expenses"].search(
+                    [
+                        ("ad_campaign", "=", ad_campaign),
+                        ("order_id", "=", order_id),
+                    ]
+                ):
+                    continue
+                if ozon_product := self.is_ozon_product_exists_by_sku(sku):
+                    if (
+                        posting_ids := self.env["ozon.posting"]
+                        .search(
+                            [
+                                ("order_id", "=", order_id),
+                            ]
+                        )
+                        .ids
+                    ):
+                        pass
+                    else:
+                        posting_ids = None
+                    data.append(
+                        {
+                            "ad_campaign": ad_campaign,
+                            "date": datetime.strptime(row["Дата"], "%d.%m.%Y").date(),
+                            "promotion_type": promo_type,
+                            "product_id": ozon_product.id,
+                            "sku": sku,
+                            "order_id": order_id,
+                            "posting_ids": posting_ids,
+                            "price": row["Цена продажи"].replace(",", "."),
+                            "qty": row["Количество"],
+                            "total_price": row["Стоимость, ₽"].replace(",", "."),
+                            "percent_rate": row["Ставка, %"].replace(",", "."),
+                            "abs_rate": row["Ставка, ₽"].replace(",", "."),
+                            "expense": row["Расход, ₽"].replace(",", "."),
+                        }
+                    )
+                    print(f"{i} - Product (SKU: {sku}) promotion expenses were added")
+            self.env["ozon.promotion_expenses"].create(data)
+        os.remove(f_path)
 
     def import_images_sale(self, content):
         model_products = self.env["ozon.products"]

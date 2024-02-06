@@ -247,6 +247,12 @@ class Product(models.Model):
         string="Итого общих затрат без налогов, ROE, ROI, исходя из актуальной цены",
         compute="_compute_total_all_expenses_ids_except_tax_roe_roi",
     )
+    promotion_expenses_ids = fields.One2many(
+        "ozon.promotion_expenses",
+        "product_id",
+        string="Затраты на продвижение",
+        readonly=True,
+    )
     product_fee = fields.Many2one("ozon.product_fee", string="Комиссии товара Ozon")
     posting_ids = fields.Many2many("ozon.posting", string="Отправления Ozon")
     postings_count = fields.Integer(compute="_compute_count_postings")
@@ -317,6 +323,7 @@ class Product(models.Model):
     ozon_products_indicators_summary_ids = fields.One2many(
         "ozon.products.indicator.summary", inverse_name="ozon_product_id"
     )
+
     ozon_products_indicator_qty = fields.Integer(compute='_compute_ozon_products_indicator_qty')
     retail_product_total_cost_price = fields.Float(
         compute="_compute_total_cost_price", store=True
@@ -611,8 +618,8 @@ class Product(models.Model):
         if values.get("not_enough_competitors"):
             self._not_enough_competitors_write(self)
         if (
-                values.get("competitors_with_price_ids") or
-                values.get("competitors_with_price_ids") is False
+            values.get("competitors_with_price_ids")
+            or values.get("competitors_with_price_ids") is False
         ):
             self._check_competitors_with_price_ids_qty(self)
         if (
@@ -769,7 +776,9 @@ class Product(models.Model):
                     )
             elif out_of_stock_indicator:
                 days = (datetime.now() - out_of_stock_indicator.create_date).days
-                lost_revenue_per_day = self._calculate_a_lost_revenue(self, out_of_stock_indicator.create_date)
+                lost_revenue_per_day = self._calculate_a_lost_revenue(
+                    self, out_of_stock_indicator.create_date
+                )
                 lost_revenue = round(lost_revenue_per_day * days, 2)
 
                 if in_stock_summary:
@@ -777,17 +786,20 @@ class Product(models.Model):
                         (2, in_stock_summary.id, 0)
                     ]
                 if out_of_stock_summary:
-                    out_of_stock_summary.name = f"Товар отсутствует дней: {days}. " \
-                                                f"Упущенная выручка: {lost_revenue} руб."
+                    out_of_stock_summary.name = (
+                        f"Товар отсутствует дней: {days}. "
+                        f"Упущенная выручка: {lost_revenue} руб."
+                    )
                 else:
                     self.env["ozon.products.indicator.summary"].create(
                         {
                             "name": f"Товар отсутствует дней: {days}. "
-                                    f"Упущенная выручка: {lost_revenue} руб.",
+                            f"Упущенная выручка: {lost_revenue} руб.",
                             "type": "out_of_stock",
                             "ozon_product_id": record.id,
                         }
                     )
+
 
     @api.depends('ozon_products_indicator_qty')
     def _compute_ozon_products_indicator_qty(self):
@@ -796,11 +808,11 @@ class Product(models.Model):
             # calculate qty per type
             for summary in record.ozon_products_indicators_summary_ids:
                 if summary.type in (
-                    'no_competitor_robot', 'cost_not_calculated',
-                    'out_of_stock',
+                    "no_competitor_robot",
+                    "cost_not_calculated",
+                    "out_of_stock",
                 ):
                     need_actions += 1
-
             # set tags
             if need_actions:
                 record.ozon_products_indicator_qty = need_actions
@@ -967,11 +979,13 @@ class Product(models.Model):
     def _calculate_a_lost_revenue(self, record, period_to: datetime.date) -> float:
         avg_revenue_per_day = 0
         period_from = period_to - timedelta(days=60)
-        sales_last_3_month = self.env['ozon.sale'].search([
-            ('product', '=', record.id),
-            ('date', '>', period_from),
-            ('date', '<', period_to),
-        ])
+        sales_last_3_month = self.env["ozon.sale"].search(
+            [
+                ("product", "=", record.id),
+                ("date", ">", period_from),
+                ("date", "<", period_to),
+            ]
+        )
         total_revenue = sum(sale.revenue for sale in sales_last_3_month)
         if total_revenue:
             avg_revenue_per_day = total_revenue / 60
@@ -1399,13 +1413,19 @@ class Product(models.Model):
     def action_run_indicators_checks(self):
         schedules = self.env["ozon.schedule"].search([])
         if not schedules:
-            schedules = self.env["ozon.schedule"].create({
-                'ozon_products_checking_last_time': datetime.now() - timedelta(minutes=5)
-            })
-        if schedules[0].ozon_products_checking_last_time + timedelta(minutes=5) > datetime.now():
+            schedules = self.env["ozon.schedule"].create(
+                {
+                    "ozon_products_checking_last_time": datetime.now()
+                    - timedelta(minutes=5)
+                }
+            )
+        if (
+            schedules[0].ozon_products_checking_last_time + timedelta(minutes=5)
+            > datetime.now()
+        ):
             return True
 
-        products = self.env['ozon.products'].search([])
+        products = self.env["ozon.products"].search([])
         for product in products:
             product._check_investment_expenses(product, summary_update=False)
             product._check_profitability_norm(product, summary_update=False)

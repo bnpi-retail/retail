@@ -51,6 +51,7 @@
         "security/price/investment_expenses/investment_expenses/ir.model.access.csv",
         "security/price/investment_expenses/investment_expenses_wizard/ir.model.access.csv",
         "security/price/all_expenses/ir.model.access.csv",
+        "security/price/promotion_expenses/ir.model.access.csv",
         "security/ir.model.access.csv",
         ### views
         "views/menu.xml",
@@ -80,7 +81,9 @@
         "views/competitors/price_competitors.xml",
         "views/competitors/analysis_competitors.xml",
         "views/competitors/successful_products_competitors.xml",
-        "views/indirect_percent_expenses/indirect_percent_expenses.xml",
+        "views/expenses/menu.xml",
+        "views/expenses/indirect_percent_expenses.xml",
+        "views/expenses/promotion_expenses.xml",
         "views/actions/assign_an_insurance_coefficient.xml",
         "views/issue_report/menu.xml",
         "views/search_queries/search_queries.xml",

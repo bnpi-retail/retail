@@ -90,9 +90,9 @@
         <!-- Menu -->
         <menuitem name="Косвенные затраты"
             id="menu_indirect_percent_expenses"
-            parent="ozon.menu_root"
+            parent="ozon.menu_expenses"
             action="action_indirect_percent_expenses"
-            sequence="36" />
+            sequence="1" />
 
 
     </data>
