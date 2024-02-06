@@ -1,7 +1,7 @@
 <odoo>
     <data>
-        <menuitem name="Транзакции"
-            id="menu_transaction"
+        <menuitem name="Затраты"
+            id="menu_expenses"
             parent="ozon.menu_root"
             sequence="35" />
     </data>

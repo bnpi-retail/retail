@@ -54,12 +54,11 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
         <menuitem name="Транзакции"
-            id="submenu_transactions"
-            parent="ozon.menu_transaction"
+            id="menu_transactions"
+            parent="ozon.menu_root"
             action="action_transaction"
-            sequence="1" />
+            sequence="38" />
 
     </data>
 </odoo>

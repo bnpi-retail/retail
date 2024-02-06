@@ -53,13 +53,11 @@
         </record>
 
         <!-- Menu -->
-        <menuitem name="Расходы на продвижение"
+        <menuitem name="Затраты на продвижение"
             id="menu_promotion_expenses"
-            parent="ozon.menu_transaction"
+            parent="ozon.menu_expenses"
             action="action_promotion_expenses"
-            sequence="1" />
-
-
+            sequence="2" />
     </data>
 
 </odoo>
