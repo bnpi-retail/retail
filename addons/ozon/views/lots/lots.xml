@@ -264,7 +264,7 @@
                                         <field name="date" />
                                         <field name="promotion_type" />
                                         <field name="qty" />
-                                        <field name="total_price" />
+                                        <field name="percent_rate" />
                                         <field name="expense" />
                                     </tree>
                                 </field>
