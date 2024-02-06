@@ -29,6 +29,13 @@ class OzonReportCategoryMarketShare(models.Model):
         "ozon.report.competitor_category_share", 'ozon_report_category_market_share'
     )
 
+    def name_get(self):
+        res = []
+        for record in self:
+            res.append((record.id, f"Доля рынка: {record.ozon_categories_id.name_categories} с "
+                       f"{record.period_from} по {record.period_to}"))
+        return res
+
     def action_do_report_category_market_share(self):
         for record in self:
             known_share_percentage = 0

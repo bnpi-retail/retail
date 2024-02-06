@@ -8,7 +8,6 @@
                 <form string="Report">
                     <sheet>
                         <group>
-                            <group>
                                 <field name="ozon_categories_id" string="Категория"/>
                                 <field name="period_prev" string="Предыдущий период"
                                        attrs="{'invisible':[('ozon_categories_id','=',False)]}"
@@ -18,7 +17,6 @@
                                        attrs="{'invisible':[('ozon_categories_id','=',False)]}"
                                        domain="[('ozon_categories_id', '=', ozon_categories_id)]"
                                 />
-                            </group>
                         </group>
 
                         <notebook>
