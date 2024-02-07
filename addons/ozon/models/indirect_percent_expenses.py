@@ -46,6 +46,7 @@ COEF_FIELDNAMES_STRINGS_WITHOUT_ACQUIRING = {
 class IndirectPercentExpenses(models.Model):
     _name = "ozon.indirect_percent_expenses"
     _description = "Косвенные затраты"
+    _order = "create_date desc"
 
     timestamp = fields.Date(
         string="Дата расчета", default=fields.Date.today, readonly=True

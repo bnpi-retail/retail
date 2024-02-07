@@ -4,6 +4,7 @@ from odoo import models, fields, api
 class ProductSale(models.Model):
     _name = "ozon.sale"
     _description = "Продажи товаров"
+    _order = "date desc"
 
     product = fields.Many2one("ozon.products", string="Товар Ozon")
     product_id_on_platform = fields.Char(

@@ -9,6 +9,7 @@ from ..helpers import split_list_into_chunks_of_size_n
 class Action(models.Model):
     _name = "ozon.action"
     _description = "Акции Ozon"
+    _order = "datetime_start desc"
 
     a_id = fields.Integer(string="Идентификатор", readonly=True)
     name = fields.Char(string="Название", readonly=True)

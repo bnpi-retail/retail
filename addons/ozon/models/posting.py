@@ -6,6 +6,7 @@ from odoo import models, fields, api
 class Posting(models.Model):
     _name = "ozon.posting"
     _description = "Отправление Ozon"
+    _order = "in_process_at desc"
 
     posting_number = fields.Char(string="Номер отправления", index=True)
     in_process_at = fields.Date(string="Дата начала обработки отправления")

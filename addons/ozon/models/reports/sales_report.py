@@ -6,6 +6,7 @@ from odoo import models, fields, api
 class SalesReportByCategory(models.Model):
     _name = "ozon.sales_report_by_category"
     _description = "Отчёт по продажам категории"
+    _order = "create_date desc"
 
     category_id = fields.Many2one(
         "ozon.categories", string="Категория товаров", required=True

@@ -41,7 +41,8 @@
             <field name="name">sales_report_by_category.tree</field>
             <field name="model">ozon.sales_report_by_category</field>
             <field name="arch" type="xml">
-                <tree default_order="create_date desc">
+                <tree>
+                    <field name="category_id" />
                     <field name="date_from" />
                     <field name="date_to" />
                 </tree>
