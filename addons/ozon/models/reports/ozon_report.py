@@ -200,7 +200,7 @@ class OzonReportCompetitorBCGMatrix(models.Model):
             if data.get('in_both_periods') == 2:
                 if data['product_growth_rate'] >= threshold_growth and data['curr_market_share'] >= threshold_market_share:
                     quadrants['Звезды'].append((product, data))
-                    data['quadrant'] = 'Заезда'
+                    data['quadrant'] = 'Звезда'
                 elif data['product_growth_rate'] >= threshold_growth and data['curr_market_share'] < threshold_market_share:
                     quadrants['Проблемы'].append((product, data))
                     data['quadrant'] = 'Проблема'
