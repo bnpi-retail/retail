@@ -24,20 +24,16 @@
                                 <field name="threshold_market_share" string="Пороговое значение для доли рынка"
                                        help="Продукты выше этого значения будут либо звездами, либо дойными коровами."
                                 />
-
-                                <button string="DO" type="object"
-                                        name="action_run_bcg_matrix_calculation" class="btn-primary"/>
-
                             </group>
 
                             <notebook>
-                                <page string="Грфик">
+                                <page string="Аналитические данные">
                                     <field name="plot" widget="image" attrs="{'invisible':[('plot','=',False)]}"/>
                                     <field name="ozon_report_bcg_matrix_product_data_ids"
                                            attrs="{'invisible':[('plot','=',False)]}">
                                         <tree>
                                             <field name="ozon_products_id" string="Продукт" readonly="1"/>
-                                            <field name="prev_daily_share" string="Доля рынка/день в пред. периоде"
+                                            <field name="prev_daily_share" string="Доля рынка/день в предыдущем периоде"
                                                    readonly="1"/>
                                             <field name="curr_daily_share" string="Доля рынка/день в последнем периоде"
                                                    readonly="1"/>
@@ -45,8 +41,8 @@
                                                    readonly="1"/>
                                             <field name="product_growth_rate" string="Темп роста продукта"
                                                    readonly="1"/>
-                                            <field name="in_both_periods"
-                                                   string="Кол-во периодов в которых есть продукт" readonly="1"/>
+<!--                                            <field name="in_both_periods"-->
+<!--                                                   string="Кол-во периодов в которых есть продукт" readonly="1"/>-->
                                             <field name="quadrant" string="BCG группа" readonly="1"/>
                                         </tree>
                                     </field>

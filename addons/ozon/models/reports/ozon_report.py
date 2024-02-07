@@ -154,75 +154,65 @@ class OzonReportCompetitorBCGMatrix(models.Model):
                             max_curr_market_share = turnovers.get('curr_market_share')
                     else:
                         logger.warning("Can't calculate product_growth_rate because zero division")
-                        # prev_value += 0.00000001
-                        # product_growth_rate = ((curr_value - prev_value) / prev_value) * 100
-                        # turnovers['product_growth_rate'] = product_growth_rate
-
-            # growth rate to standard values
-            # max_growth_value = float('-inf')
-            # min_growth_value = float('inf')
-            # for product, turnovers in products_with_turnovers.items():
-            #     product_growth_rate = turnovers.get('product_growth_rate')
-            #     if product_growth_rate > max_growth_value:
-            #         max_growth_value = product_growth_rate
-            #     if product_growth_rate < min_growth_value:
-            #         min_growth_value = product_growth_rate
-            #
-            # for product, turnovers in products_with_turnovers.items():
-            #     product_growth_rate = turnovers.get('product_growth_rate')
-            #     turnovers['product_growth_rate'] = (product_growth_rate * 10) / max_growth_value
-
-            # curr_market_share to standard values
-            # max_curr_market_share = float('-inf')
-            # for product, turnovers in products_with_turnovers.items():
-            #     curr_market_share = turnovers.get('curr_market_share')
-            #     if curr_market_share > max_curr_market_share:
-            #         max_curr_market_share = curr_market_share
-            #
-            # for product, turnovers in products_with_turnovers.items():
-            #     curr_market_share = turnovers.get('curr_market_share')
-            #     turnovers['curr_market_share'] = curr_market_share / max_curr_market_share
 
             self._create_plot_and_save(products_with_turnovers, max_growth_value, max_curr_market_share, record)
 
     def _create_plot_and_save(self, products_data: defaultdict, max_growth, max_share, record):
-        quadrants = {
-            'Звезды': [],
-            'Проблемы': [],
-            'Дойные коровы': [],
-            'Собаки': []
-        }
-
         threshold_growth = (record.threshold_growth * max_growth) / 100
         threshold_market_share = (record.threshold_market_share * max_share) / 100
 
+        quadrants = {
+            'Звезды': [],
+            'Дойные коровы': [],
+            'Проблемы': [],
+            'Собаки': []
+        }
+
+        stars_qty = 0
+        questions_qty = 0
+        cows_qty = 0
+        dogs_qty = 0
         for product, data in products_data.items():
             if data.get('in_both_periods') >= 2:
-                if data['product_growth_rate'] >= threshold_growth and data['curr_market_share'] >= threshold_market_share:
+                if data['product_growth_rate'] >= threshold_growth and \
+                        data['curr_market_share'] >= threshold_market_share:
                     quadrants['Звезды'].append((product, data))
                     data['quadrant'] = 'Звезда'
-                elif data['product_growth_rate'] >= threshold_growth and data['curr_market_share'] < threshold_market_share:
+                    stars_qty += 1
+                elif data['product_growth_rate'] >= threshold_growth and \
+                        data['curr_market_share'] < threshold_market_share:
                     quadrants['Проблемы'].append((product, data))
                     data['quadrant'] = 'Проблема'
-                elif data['product_growth_rate'] < threshold_growth and data['curr_market_share'] >= threshold_market_share:
+                    questions_qty += 1
+                elif data['product_growth_rate'] < threshold_growth and \
+                        data['curr_market_share'] >= threshold_market_share:
                     quadrants['Дойные коровы'].append((product, data))
                     data['quadrant'] = 'Дойная корова'
+                    cows_qty += 1
                 else:
                     quadrants['Собаки'].append((product, data))
                     data['quadrant'] = 'Собака'
+                    dogs_qty += 1
 
         # Plot the BCG matrix
         fig, ax = plt.subplots()
 
+        colors = {
+            'Звезды': 'blue',
+            'Проблемы': 'orange',
+            'Дойные коровы': 'green',
+            'Собаки': 'red'
+        }
+
         for quadrant, products in quadrants.items():
             x = [data['curr_market_share'] for _, data in products]
             y = [data['product_growth_rate'] for _, data in products]
-            ax.scatter(x, y, label=quadrant)
+            ax.scatter(x, y, label=quadrant, color=colors[quadrant])
 
         # Add labels and legend
         ax.set_xlabel('Доля рынка (%)')
         ax.set_ylabel('Темпы роста (%)')
-        ax.set_title('BCG Матрица')
+        ax.set_title(f'BCG Матрица')
         ax.legend()
 
         buffer = io.BytesIO()
@@ -236,16 +226,16 @@ class OzonReportCompetitorBCGMatrix(models.Model):
             record.ozon_report_bcg_matrix_product_data_ids = [(2, data.id, 0)]
 
         for product, data in products_data.items():
-            self.env["ozon.report.bcg_matrix.product_data"].create({
-                'ozon_report_bcg_matrix_id': record.id,
-                'ozon_products_id': product.id,
-                'prev_daily_share': data.get('prev_daily_share'),
-                'curr_daily_share': data.get('curr_daily_share'),
-                'curr_market_share': data.get('curr_market_share'),
-                'product_growth_rate': data.get('product_growth_rate'),
-                'in_both_periods': data.get('in_both_periods'),
-                'quadrant': data.get('quadrant'),
-            })
+            if data.get('in_both_periods') > 1:
+                self.env["ozon.report.bcg_matrix.product_data"].create({
+                    'ozon_report_bcg_matrix_id': record.id,
+                    'ozon_products_id': product.id,
+                    'prev_daily_share': data.get('prev_daily_share'),
+                    'curr_daily_share': data.get('curr_daily_share'),
+                    'curr_market_share': data.get('curr_market_share'),
+                    'product_growth_rate': data.get('product_growth_rate'),
+                    'quadrant': data.get('quadrant'),
+                })
 
 
 class OzonReportBcgMatrixProductData(models.Model):
@@ -258,5 +248,4 @@ class OzonReportBcgMatrixProductData(models.Model):
     curr_daily_share = fields.Float(digits=(12, 5))
     curr_market_share = fields.Float(digits=(12, 5))
     product_growth_rate = fields.Float(digits=(12, 5))
-    in_both_periods = fields.Integer()
     quadrant = fields.Char(size=30)
