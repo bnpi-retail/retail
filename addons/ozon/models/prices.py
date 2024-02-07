@@ -315,11 +315,11 @@ class AllExpenses(models.Model):
     expected_value = fields.Float(string="Ожидаемое значение")
 
     def create_update_all_product_expenses(self, products, latest_indirect_expenses):
-        tax = products[0].seller.tax
-        tax_percent = products[0].seller.tax_percent
-        tax_description = products[0].seller.tax_description
         data = []
         for idx, prod in enumerate(products):
+            tax = prod.seller.tax
+            tax_percent = prod.seller.tax_percent
+            tax_description = prod.seller.tax_description
             total_expenses = 0
             price = prod.price
             expected_price = prod.expected_price
