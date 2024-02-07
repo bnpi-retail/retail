@@ -244,6 +244,8 @@ class OzonReportCompetitorBCGMatrix(models.Model):
                 'product_growth_rate': data.get('product_growth_rate'),
                 'bcg_group': data.get('quadrant'),
             })
+            product.bcg_group = data.get('quadrant')
+            product.bcg_group_is_computed = True
 
 
 class OzonReportBcgMatrixProductData(models.Model):
