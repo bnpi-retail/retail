@@ -126,21 +126,21 @@ class OzonReportCompetitorBCGMatrix(models.Model):
             for sale in record.period_prev.ozon_products_competitors_sale_ids:
                 if sale.ozon_products_id:
                     products_with_turnovers[sale.ozon_products_id][
-                        'prev_daily_share'] = sale.revenue_share_percentage / days_prev
+                        'prev_daily_share'] += sale.revenue_share_percentage / days_prev
                     products_with_turnovers[sale.ozon_products_id]['in_both_periods'] += 1
 
             days_curr = (record.period_curr.period_to - record.period_curr.period_from).days
             for sale in record.period_curr.ozon_products_competitors_sale_ids:
                 if sale.ozon_products_id:
                     products_with_turnovers[sale.ozon_products_id][
-                        'curr_daily_share'] = sale.revenue_share_percentage / days_curr
+                        'curr_daily_share'] += sale.revenue_share_percentage / days_curr
                     products_with_turnovers[sale.ozon_products_id]['in_both_periods'] += 1
                     products_with_turnovers[sale.ozon_products_id]['curr_market_share'] = sale.revenue_share_percentage
 
             max_growth_value = float('-inf')
             max_curr_market_share = float('-inf')
             for product, turnovers in products_with_turnovers.items():
-                if turnovers.get('in_both_periods') == 2:
+                if turnovers.get('in_both_periods') >= 2:
                     prev_value = turnovers.get('prev_daily_share')
                     curr_value = turnovers.get('curr_daily_share')
                     if prev_value:
@@ -197,7 +197,7 @@ class OzonReportCompetitorBCGMatrix(models.Model):
         threshold_market_share = (record.threshold_market_share * max_share) / 100
 
         for product, data in products_data.items():
-            if data.get('in_both_periods') == 2:
+            if data.get('in_both_periods') >= 2:
                 if data['product_growth_rate'] >= threshold_growth and data['curr_market_share'] >= threshold_market_share:
                     quadrants['Звезды'].append((product, data))
                     data['quadrant'] = 'Звезда'
