@@ -1,0 +1,5 @@
+<odoo>
+  <data>
+    <menuitem name="Парсер" id="parser.menu_root"  sequence="3" />
+  </data>
+</odoo>

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 {
     "name": "Ozon",
     "summary": """
@@ -14,6 +13,7 @@
     "depends": ["base", "retail"],
     # always loaded
     "data": [
+
         ### security
         "security/price/price_history/ir.model.access.csv",
         "security/price/fix_expenses/ir.model.access.csv",
@@ -52,6 +52,7 @@
         "security/price/investment_expenses/investment_expenses_wizard/ir.model.access.csv",
         "security/price/all_expenses/ir.model.access.csv",
         "security/ir.model.access.csv",
+
         ### views
         "views/menu.xml",
         "views/price/menu.xml",
