@@ -14,6 +14,7 @@ class OzonServices(models.Model):
 class Transactions(models.Model):
     _name = "ozon.transaction"
     _description = "Транзакции"
+    _order = "transaction_date desc"
 
     transaction_id = fields.Char(string="Идентификатор транзакции")
     transaction_date = fields.Date(string="Дата транзакции", readonly=True)

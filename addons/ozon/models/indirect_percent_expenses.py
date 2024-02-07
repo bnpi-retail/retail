@@ -46,6 +46,7 @@ COEF_FIELDNAMES_STRINGS_WITHOUT_ACQUIRING = {
 class IndirectPercentExpenses(models.Model):
     _name = "ozon.indirect_percent_expenses"
     _description = "Косвенные затраты"
+    _order = "create_date desc"
 
     timestamp = fields.Date(
         string="Дата расчета", default=fields.Date.today, readonly=True
@@ -55,7 +56,6 @@ class IndirectPercentExpenses(models.Model):
 
     # values
     revenue = fields.Float(string="Выручка", readonly=True)
-    promotion = fields.Float(string="Услуги продвижения товаров", readonly=True)
     refund = fields.Float(
         string="Получение возврата, отмены, невыкупа от покупателя", readonly=True
     )
@@ -101,7 +101,6 @@ class IndirectPercentExpenses(models.Model):
     other = fields.Float(string="Прочее", readonly=True)
 
     # coefs: expenses/revenue
-    coef_promotion = fields.Float(string="Услуги продвижения товаров", readonly=True)
     coef_refund = fields.Float(
         string="Получение возврата, отмены, невыкупа от покупателя", readonly=True
     )
@@ -179,6 +178,8 @@ class IndirectPercentExpenses(models.Model):
 
         for tran in transactions:
             name = tran["name"]
+            if name in ["Услуги продвижения товаров"]:
+                continue
             fieldname = STRING_FIELDNAMES.get(name)
             amount = tran["amount"]
             if amount > 0:
@@ -198,6 +199,11 @@ class IndirectPercentExpenses(models.Model):
                 data["coef_total"] += v
 
         self.create(data)
+
+    # TODO: убрать после тестов
+    def calculate(self):
+        self.calculate_indirect_expenses_prev_month()
+        self.env["ozon.products"].update_all_expenses()
 
     def name_get(self):
         """
