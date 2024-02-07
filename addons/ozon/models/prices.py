@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 from email.policy import default
+from statistics import mean
+
 from odoo import models, fields, api
 
 from .indirect_percent_expenses import (
@@ -312,18 +314,6 @@ class AllExpenses(models.Model):
     value = fields.Float(string="Абсолютное значение в руб, исходя из текущей цены")
     expected_value = fields.Float(string="Ожидаемое значение")
 
-    # def _compute_expected_value(self):
-    #     # TODO: как рассчитываем затраты исходя из РРЦ?
-    #     for rec in self:
-    #         if rec.kind == "fix":
-    #             rec.expected_value = rec.value
-    #         else:
-    #             if rec.category == "Investment":
-    #                 rec.percent = rec.product_id.investment_expenses_id.value
-    #             elif rec.category == "Рентабельность":
-    #                 rec.percent = rec.product_id.profitability_norm.value
-    #             rec.expected_value = rec.product_id.expected_price * rec.percent
-
     def create_update_all_product_expenses(self, products, latest_indirect_expenses):
         tax = products[0].seller.tax
         tax_percent = products[0].seller.tax_percent
@@ -345,23 +335,23 @@ class AllExpenses(models.Model):
                 }
             )
             total_expenses += prod.products.total_cost_price
+            # продвижение товара
+            all_time_promo_expenses = prod.promotion_expenses_ids.mapped("expense")
+            if all_time_promo_expenses:
+                mean_promo_expense = mean(prod.promotion_expenses_ids.mapped("expense"))
+            else:
+                mean_promo_expense = 0
+            data.append(
+                {
+                    "product_id": prod.id,
+                    "name": "Средняя стоимость продвижения товара",
+                    "kind": "fix",
+                    "category": "Продвижение товара",
+                    "value": mean_promo_expense,
+                    "expected_value": mean_promo_expense,
+                }
+            )
             # услуги озон
-            # category = "Услуги Ozon"
-            # for k, v in COEF_FIELDNAMES_STRINGS_WITHOUT_ACQUIRING.items():
-            #     percent = latest_indirect_expenses[k] / 100
-            #     value = price * percent
-            #     data.append(
-            #         {
-            # "product_id": prod.id,
-            # "name": v,
-            # "description": f"{latest_indirect_expenses[k]}%",
-            # "kind": "percent",
-            # "category": category,
-            # "percent": percent,
-            # "value": value,
-            #         }
-            #     )
-            #     total_expenses += value
             coef_total = latest_indirect_expenses.coef_total
             data.append(
                 {

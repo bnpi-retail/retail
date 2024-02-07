@@ -199,7 +199,11 @@ class IndirectPercentExpenses(models.Model):
                 data["coef_total"] += v
 
         self.create(data)
-        self.env["ozon.products"].update_percent_expenses()
+
+    # TODO: убрать после тестов
+    def calculate(self):
+        self.calculate_indirect_expenses_prev_month()
+        self.env["ozon.products"].update_all_expenses()
 
     def name_get(self):
         """

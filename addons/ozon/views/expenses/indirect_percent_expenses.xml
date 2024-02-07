@@ -70,7 +70,7 @@
             <field name="model">ozon.indirect_percent_expenses</field>
             <field name="arch" type="xml">
                 <tree>
-                    <button type="object" name="calculate_indirect_expenses_prev_month"
+                    <button type="object" name="calculate"
                         string="Рассчитать"
                         class="btn-outline-primary" />
                     <field name="timestamp" />
