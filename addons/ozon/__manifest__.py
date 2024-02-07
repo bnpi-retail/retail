@@ -13,7 +13,6 @@
     "depends": ["base", "retail"],
     # always loaded
     "data": [
-
         ### security
         "security/price/price_history/ir.model.access.csv",
         "security/price/fix_expenses/ir.model.access.csv",
@@ -53,7 +52,6 @@
         "security/price/all_expenses/ir.model.access.csv",
         "security/price/promotion_expenses/ir.model.access.csv",
         "security/ir.model.access.csv",
-
         ### views
         "views/menu.xml",
         "views/price/menu.xml",
@@ -105,6 +103,7 @@
         "views/categories/abs_analysis_views.xml",
         "views/settings/settings.xml",
         "views/reports/ozon_report_category_market_share_views.xml",
+        "views/reports/sales_report_by_category.xml",
         "views/competitors/competitor_seller_view.xml",
         # cron
         "crone/ir_cron_data.xml",
