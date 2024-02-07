@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ozon_report_bcg_matrix_view_form" model="ir.ui.view">
+            <field name="name">ozon_report_bcg_matrix.form</field>
+            <field name="model">ozon.report.bcg_matrix</field>
+            <field name="arch" type="xml">
+                <form string="Report">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="ozon_categories_id" string="Категория"/>
+                                <field name="period_prev" string="Предыдущий период"
+                                       attrs="{'invisible':[('ozon_categories_id','=',False)]}"
+                                       domain="[('ozon_categories_id', '=', ozon_categories_id)]"
+                                />
+                                <field name="period_curr" string="Период"
+                                       attrs="{'invisible':[('ozon_categories_id','=',False)]}"
+                                       domain="[('ozon_categories_id', '=', ozon_categories_id)]"
+                                />
+                                <field name="threshold_growth" string="Пороговое значение для темпов роста"
+                                       help="Продукты выше этого значения будут либо звездами, либо проблемами."
+                                />
+                                <field name="threshold_market_share" string="Пороговое значение для доли рынка"
+                                       help="Продукты выше этого значения будут либо звездами, либо дойными коровами."
+                                />
+
+                                <button string="DO" type="object"
+                                        name="action_run_bcg_matrix_calculation" class="btn-primary"/>
+
+                            </group>
+
+                            <notebook>
+                                <page string="Грфик">
+                                    <field name="plot" widget="image" attrs="{'invisible':[('plot','=',False)]}"/>
+                                    <field name="ozon_report_bcg_matrix_product_data_ids"
+                                           attrs="{'invisible':[('plot','=',False)]}">
+                                        <tree>
+                                            <field name="ozon_products_id" string="Продукт" readonly="1"/>
+                                            <field name="prev_daily_share" string="Доля рынка/день в пред. периоде"
+                                                   readonly="1"/>
+                                            <field name="curr_daily_share" string="Доля рынка/день в последнем периоде"
+                                                   readonly="1"/>
+                                            <field name="curr_market_share" string="Доля рынка в последнем периоде"
+                                                   readonly="1"/>
+                                            <field name="product_growth_rate" string="Темп роста продукта"
+                                                   readonly="1"/>
+                                            <field name="in_both_periods"
+                                                   string="Кол-во периодов в которых есть продукт" readonly="1"/>
+                                            <field name="quadrant" string="BCG группа" readonly="1"/>
+                                        </tree>
+                                    </field>
+                                </page>
+                            </notebook>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="ozon_report_bcg_matrix_view_tree" model="ir.ui.view">
+            <field name="name">ozon_report_bcg_matrix.tree</field>
+            <field name="model">ozon.report.bcg_matrix</field>
+            <field name="arch" type="xml">
+                <tree string="Отчеты" default_order="create_date desc">
+                    <field name="create_date" string="Дата создания" readonly="1"/>
+                    <field name="ozon_categories_id" string="Категория" readonly="1"/>
+                    <field name="period_prev" string="Предыдущий период" readonly="1"/>
+                    <field name="period_curr" string="Период" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.server" id="action_do_abc_analysis">
+            <field name="name">Создать BCG Матрицу</field>
+            <field name="model_id" ref="model_ozon_report_bcg_matrix"/>
+            <field name="binding_model_id" ref="model_ozon_report_bcg_matrix"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = records.action_run_bcg_matrix_calculation()
+            </field>
+        </record>
+
+        <record id="action_open_ozon_report_bcg_matrix" model="ir.actions.act_window">
+            <field name="name">Отчеты</field>
+            <field name="res_model">ozon.report.bcg_matrix</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_indicators_reports_bcg_matrix" name="BCG матрицы" parent="ozon.menu_categories"
+                  action="action_open_ozon_report_bcg_matrix" sequence="37"/>
+
+    </data>
+</odoo>

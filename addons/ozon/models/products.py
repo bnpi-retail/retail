@@ -1294,33 +1294,6 @@ class Product(models.Model):
             strategy_value = price_strategy.value
             strategy_id = price_strategy.pricing_strategy_id.strategy_id
 
-            # общие условия для всех стратегий
-            # TODO: включить, когда будет исправлен индикатор себестоимости
-            # if ind_sum := self.ozon_products_indicators_summary_ids.filtered(
-            #     lambda r: r.type == "cost_not_calculated"
-            # ):
-            #     errors = True
-            #     price_strategy.message = (
-            #         "Невозможно рассчитать цену. Не задана себестоимость"
-            #     )
-            if not self.retail_product_total_cost_price:
-                errors = True
-                price_strategy.message = (
-                    "Невозможно рассчитать цену. Не задана себестоимость"
-                )
-            # TODO: переделать, когда появятся соотв. индикаторы
-            if not self.profitability_norm:
-                errors = True
-                price_strategy.message = (
-                    "Невозможно рассчитать цену. Не задана ожидаемая доходность"
-                )
-
-            if not self.investment_expenses_id:
-                errors = True
-                price_strategy.message = (
-                    "Невозможно рассчитать цену. Не задан Investment"
-                )
-
             if strategy_id == "lower_min_competitor":
                 if ind_sum := self.ozon_products_indicators_summary_ids.filtered(
                     lambda r: r.type.startswith("no_competitor")
@@ -1335,6 +1308,23 @@ class Product(models.Model):
                     new_price = round(min_comp_price * (1 - strategy_value), 2)
 
             if strategy_id == "expected_price":
+                if not self.retail_product_total_cost_price:
+                    errors = True
+                    price_strategy.message = (
+                        "Невозможно рассчитать цену. Не задана себестоимость"
+                    )
+                # TODO: переделать, когда появятся соотв. индикаторы
+                if not self.profitability_norm:
+                    errors = True
+                    price_strategy.message = (
+                        "Невозможно рассчитать цену. Не задана ожидаемая доходность"
+                    )
+
+                if not self.investment_expenses_id:
+                    errors = True
+                    price_strategy.message = (
+                        "Невозможно рассчитать цену. Не задан Investment"
+                    )
                 new_price = self.expected_price
 
             self.calculated_pricing_strategy_ids.timestamp = fields.Date.today()
