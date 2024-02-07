@@ -30,7 +30,8 @@
                         </button>
                     </div>
                     <group>
-                        <field name="mass_pricing_ids">
+                        <field name="mass_pricing_ids"
+                            attrs="{'invisible': [('mass_pricing_ids', '=', [])]}">
                             <tree limit="1">
                                 <field name="price" />
                                 <field name="new_price" />
@@ -259,6 +260,16 @@
                                         <field name="name" />
                                     </tree>
                                 </field>
+                                <field name="promotion_expenses_ids">
+                                    <tree>
+                                        <field name="date" />
+                                        <field name="promotion_type" />
+                                        <field name="qty" />
+                                        <field name="percent_rate" />
+                                        <field name="expense" />
+                                    </tree>
+                                </field>
+
                             </group>
                         </page>
                         <page id="page_lot_competitors_info" string="Конкуренты">
@@ -517,7 +528,7 @@
             </field>
         </record>
 
-         <record model="ir.actions.server" id="action_run_indicators_checks">
+        <record model="ir.actions.server" id="action_run_indicators_checks">
             <field name="name">Обновить индикаторы</field>
             <field name="model_id" ref="model_ozon_products" />
             <field name="binding_model_id" ref="model_ozon_products" />

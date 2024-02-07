@@ -25,3 +25,8 @@ class Posting(models.Model):
     warehouse_id = fields.Many2one("ozon.warehouse", string="Склад Ozon")
     cluster_from = fields.Char(string="Код региона, откуда отправляется заказ")
     cluster_to = fields.Char(string="Код региона, куда отправляется заказ")
+    promotion_expenses_id = fields.Many2one(
+        "ozon.promotion_expenses",
+        string="Затраты на продвижение",
+        readonly=True,
+    )

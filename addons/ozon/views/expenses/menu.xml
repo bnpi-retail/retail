@@ -1,0 +1,8 @@
+<odoo>
+    <data>
+        <menuitem name="Затраты"
+            id="menu_expenses"
+            parent="ozon.menu_root"
+            sequence="35" />
+    </data>
+</odoo>

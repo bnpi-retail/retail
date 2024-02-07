@@ -26,11 +26,9 @@ class FixExpenses(models.Model):
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
 
     def create_from_ozon_product_fee(self, product_fee):
-        field_names = [
-            field
-            for field in product_fee.fields_get_keys()
-            if field
-            not in [
+        data = []
+        for k, v in product_fee._fields.items():
+            if k in [
                 "product",
                 "sales_percent_fbo",
                 "sales_percent_fbs",
@@ -42,22 +40,16 @@ class FixExpenses(models.Model):
                 "create_date",
                 "write_uid",
                 "write_date",
-            ]
-        ]
-        fieldnames_and_strings = [
-            (k, v.string) for k, v in product_fee._fields.items() if k in field_names
-        ]
-        data = []
-        for field, string in fieldnames_and_strings:
-            rec = {
-                "name": string,
-                "price": product_fee[field],
-                "discription": "",
-            }
-            data.append(rec)
-
+            ]:
+                continue
+            data.append(
+                {
+                    "name": v.string,
+                    "price": product_fee[k],
+                    "discription": "",
+                }
+            )
         recs = self.create(data)
-
         return recs
 
 
@@ -72,29 +64,17 @@ class Costs(models.Model):
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
 
     def create_from_ozon_product_fee(self, product_fee, price):
-        field_names = [
-            field
-            for field in product_fee.fields_get_keys()
-            if field
-            in [
-                "sales_percent_fbo",
-                "sales_percent_fbs",
-            ]
-        ]
-        fieldnames_and_strings = [
-            (k, v.string) for k, v in product_fee._fields.items() if k in field_names
-        ]
         data = []
-        for field, string in fieldnames_and_strings:
-            rec = {
-                "name": string,
-                "price": round(price * product_fee[field] / 100, 2),
-                "discription": f"{product_fee[field]}%",
-            }
-            data.append(rec)
-
+        for k, v in product_fee._fields.items():
+            if k in ["sales_percent_fbo", "sales_percent_fbs"]:
+                data.append(
+                    {
+                        "name": v.string,
+                        "price": round(price * product_fee[k] / 100, 2),
+                        "discription": f"{product_fee[k]}%",
+                    }
+                )
         recs = self.create(data)
-
         return recs
 
 
@@ -549,3 +529,28 @@ class AllExpenses(models.Model):
 
         products.all_expenses_ids.unlink()
         self.create(data)
+
+
+class PromotionExpenses(models.Model):
+    _name = "ozon.promotion_expenses"
+    _description = "Затраты на продвижение товара Ozon"
+
+    ad_campaign = fields.Char(string="Номер рекламной кампании", readonly=True)
+    date = fields.Date(string="Дата", readonly=True)
+    promotion_type = fields.Selection(
+        [("search", "Продвижение в поиске")],
+        string="Тип",
+        readonly=True,
+    )
+    product_id = fields.Many2one("ozon.products", string="Товар Ozon", readonly=True)
+    sku = fields.Char(string="SKU", readonly=True)
+    order_id = fields.Char(string="ID заказа", readonly=True)
+    posting_ids = fields.One2many(
+        "ozon.posting", "promotion_expenses_id", string="Отправления", readonly=True
+    )
+    price = fields.Float(string="Цена продажи", readonly=True)
+    qty = fields.Float(string="Кол-во единиц товара", readonly=True)
+    total_price = fields.Float(string="Стоимость", readonly=True)
+    percent_rate = fields.Float(string="Ставка, %", readonly=True)
+    abs_rate = fields.Float(string="Ставка, ₽", readonly=True)
+    expense = fields.Float(string="Расход, ₽", readonly=True)
