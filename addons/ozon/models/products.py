@@ -247,6 +247,11 @@ class Product(models.Model):
         string="Итого общих затрат без налогов, ROE, ROI, исходя из актуальной цены",
         compute="_compute_total_all_expenses_ids_except_tax_roe_roi",
     )
+    total_all_expenses_ids_except_roe_roi = fields.Float(
+        string="Итого общих затрат без ROE, ROI, исходя из актуальной цены",
+        compute="_compute_total_all_expenses_ids_except_roe_roi",
+    )
+    
     promotion_expenses_ids = fields.One2many(
         "ozon.promotion_expenses",
         "product_id",
@@ -493,6 +498,13 @@ class Product(models.Model):
             )
             total_expenses = sum(all_expenses_except_tax_roe_roi.mapped("value"))
             rec.total_all_expenses_ids_except_tax_roe_roi = total_expenses
+    
+    def _compute_total_all_expenses_ids_except_roe_roi(self):
+        for rec in self:
+            all_expenses_except_roe_roi = rec.all_expenses_ids.filtered(
+                lambda r: r.category not in ["Рентабельность", "Investment"]
+            )
+            rec.total_all_expenses_except_roe_roi = sum(all_expenses_except_roe_roi.mapped("value"))
 
     @api.depends("price_our_history_ids.price")
     def _compute_price_history_values(self):
