@@ -18,6 +18,8 @@
                                        attrs="{'invisible':[('ozon_categories_id','=',False)]}"
                                        domain="[('ozon_categories_id', '=', ozon_categories_id)]"
                                 />
+                            </group>
+                            <group>
                                 <field name="threshold_growth" string="Пороговое значение для темпов роста"
                                        help="Продукты выше этого значения будут либо звездами, либо проблемами."
                                 />
@@ -27,11 +29,20 @@
                             </group>
 
                             <notebook>
-                                <page string="Аналитические данные">
+                                <page string="Графические данные">
                                     <field name="plot" widget="image" attrs="{'invisible':[('plot','=',False)]}"/>
+                                </page>
+                            </notebook>
+                            <notebook>
+                                <page string="Аналитические данные">
                                     <field name="ozon_report_bcg_matrix_product_data_ids"
                                            attrs="{'invisible':[('plot','=',False)]}">
-                                        <tree>
+                                        <tree default_order="quadrant, curr_market_share desc"
+                                              decoration-info="quadrant=='a'"
+                                              decoration-success="quadrant=='b'"
+                                              decoration-warning="quadrant=='c'"
+                                              decoration-danger="quadrant=='d'"
+                                        >
                                             <field name="ozon_products_id" string="Продукт" readonly="1"/>
                                             <field name="prev_daily_share" string="Доля рынка/день в предыдущем периоде"
                                                    readonly="1"/>
@@ -41,8 +52,6 @@
                                                    readonly="1"/>
                                             <field name="product_growth_rate" string="Темп роста продукта"
                                                    readonly="1"/>
-<!--                                            <field name="in_both_periods"-->
-<!--                                                   string="Кол-во периодов в которых есть продукт" readonly="1"/>-->
                                             <field name="quadrant" string="BCG группа" readonly="1"/>
                                         </tree>
                                     </field>
