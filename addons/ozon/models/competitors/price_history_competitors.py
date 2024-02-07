@@ -39,22 +39,22 @@ class PriceHistoryCompetitors(models.Model):
         if not record.product_competitors.product.id:
             return record
 
-        product = model_products.search(
-            [("id", "=", record.product_competitors.product.id)]
-        )
+        # product = model_products.search(
+        #     [("id", "=", record.product_competitors.product.id)]
+        # )
 
-        new = True
-        for price_history_id in product.competitors_with_price_ids:
-            price_history_record = model_price_history_competitors.browse(price_history_id)
-            if (
-                record.product_competitors.id == price_history_record.product_competitors.id
-            ):
-                product.write({"competitors_with_price_ids": [(3, price_history_id)]})
-                product.write({"competitors_with_price_ids": [(4, record.id)]})
-                new = False
+        # new = True
+        # for price_history_id in product.competitors_with_price_ids:
+        #     price_history_record = model_price_history_competitors.browse(price_history_id)
+        #     if (
+        #         record.product_competitors.id == price_history_record.product_competitors.id
+        #     ):
+        #         product.write({"competitors_with_price_ids": [(3, price_history_id)]})
+        #         product.write({"competitors_with_price_ids": [(4, record.id)]})
+        #         new = False
 
-        if new == True:
-            product.write({"competitors_with_price_ids": [(4, record.id)]})
+        # if new == True:
+        #     product.write({"competitors_with_price_ids": [(4, record.id)]})
 
         return record
 
