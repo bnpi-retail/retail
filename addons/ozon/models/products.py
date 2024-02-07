@@ -325,7 +325,8 @@ class Product(models.Model):
     )
 
     ozon_products_indicator_qty = fields.Integer(
-        compute="_compute_ozon_products_indicator_qty"
+        compute="_compute_ozon_products_indicator_qty",
+        store=True
     )
     retail_product_total_cost_price = fields.Float(
         compute="_compute_total_cost_price", store=True
@@ -334,7 +335,11 @@ class Product(models.Model):
     revenue_share_temp = fields.Float()
     revenue_cumulative_share_temp = fields.Float()
     abc_group = fields.Char(size=3)
+    # BCG matrix
     market_share = fields.Float(string="Доля рынка", digits=(12, 5))
+    market_share_is_computed = fields.Boolean()
+    bcg_group = fields.Selection([('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака')])
+    bcg_group_is_computed = fields.Boolean()
 
     def _compute_expected_price(self):
         for rec in self:
@@ -802,7 +807,7 @@ class Product(models.Model):
                         }
                     )
 
-    @api.depends("ozon_products_indicator_qty")
+    @api.depends("ozon_products_indicator_ids", "ozon_products_indicators_summary_ids")
     def _compute_ozon_products_indicator_qty(self):
         for record in self:
             need_actions = 0

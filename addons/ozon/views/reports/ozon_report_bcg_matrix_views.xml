@@ -37,11 +37,11 @@
                                 <page string="Аналитические данные">
                                     <field name="ozon_report_bcg_matrix_product_data_ids"
                                            attrs="{'invisible':[('plot','=',False)]}">
-                                        <tree default_order="quadrant, curr_market_share desc"
-                                              decoration-info="quadrant=='a'"
-                                              decoration-success="quadrant=='b'"
-                                              decoration-warning="quadrant=='c'"
-                                              decoration-danger="quadrant=='d'"
+                                        <tree default_order="bcg_group, curr_market_share desc"
+                                              decoration-info="bcg_group=='a'"
+                                              decoration-success="bcg_group=='b'"
+                                              decoration-warning="bcg_group=='c'"
+                                              decoration-danger="bcg_group=='d'"
                                         >
                                             <field name="ozon_products_id" string="Продукт" readonly="1"/>
                                             <field name="prev_daily_share" string="Доля рынка/день в предыдущем периоде"
@@ -52,7 +52,7 @@
                                                    readonly="1"/>
                                             <field name="product_growth_rate" string="Темп роста продукта"
                                                    readonly="1"/>
-                                            <field name="quadrant" string="BCG группа" readonly="1"/>
+                                            <field name="bcg_group" string="BCG группа" readonly="1"/>
                                         </tree>
                                     </field>
                                 </page>

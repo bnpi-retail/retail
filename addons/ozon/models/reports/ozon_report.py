@@ -242,7 +242,7 @@ class OzonReportCompetitorBCGMatrix(models.Model):
                 'curr_daily_share': data.get('curr_daily_share'),
                 'curr_market_share': data.get('curr_market_share'),
                 'product_growth_rate': data.get('product_growth_rate'),
-                'quadrant': data.get('quadrant'),
+                'bcg_group': data.get('quadrant'),
             })
 
 
@@ -256,4 +256,4 @@ class OzonReportBcgMatrixProductData(models.Model):
     curr_daily_share = fields.Float(digits=(12, 5))
     curr_market_share = fields.Float(digits=(12, 5))
     product_growth_rate = fields.Float(digits=(12, 5))
-    quadrant = fields.Selection([('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака')])
+    bcg_group = fields.Selection([('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака')])
