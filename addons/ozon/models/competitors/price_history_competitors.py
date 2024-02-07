@@ -45,11 +45,7 @@ class PriceHistoryCompetitors(models.Model):
 
         new = True
         for price_history_id in product.competitors_with_price_ids:
-            # price_history_record = model_price_history_competitors.browse(price_history_id)
-            raise ValueError(price_history_id.product_competitors.id)
-            price_history_record = model_price_history_competitors.search([("id", "=", price_history_id)])
-
-            if record.product_competitors.id == price_history_record.product_competitors.id:
+            if record.product_competitors.id == price_history_id.product_competitors.id:
                 product.write({"competitors_with_price_ids": [(3, price_history_id)]})
                 product.write({"competitors_with_price_ids": [(4, record.id)]})
                 new = False
