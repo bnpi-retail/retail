@@ -34,7 +34,6 @@ class PriceHistoryCompetitors(models.Model):
         record = super(PriceHistoryCompetitors, self).create(values)
 
         model_products = self.env["ozon.products"]
-        model_price_history_competitors = self.env["ozon.price_history_competitors"]
 
         if not record.product_competitors.product.id:
             return record
@@ -44,9 +43,9 @@ class PriceHistoryCompetitors(models.Model):
         )
 
         new = True
-        for price_history_id in product.competitors_with_price_ids:
-            if record.product_competitors.id == price_history_id.product_competitors.id:
-                product.write({"competitors_with_price_ids": [(3, price_history_id)]})
+        for price_history in product.competitors_with_price_ids:
+            if record.product_competitors.id == price_history.product_competitors.id:
+                product.write({"competitors_with_price_ids": [(3, price_history.id)]})
                 product.write({"competitors_with_price_ids": [(4, record.id)]})
                 new = False
                 break
