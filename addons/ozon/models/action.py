@@ -75,6 +75,7 @@ class Action(models.Model):
 class ActionCandidate(models.Model):
     _name = "ozon.action_candidate"
     _description = "Кандидат для участия в акции"
+    _order = "action_start desc"
 
     action_id = fields.Many2one("ozon.action", string="Акция Ozon", readonly=True)
     product_id = fields.Many2one("ozon.products", string="Товар Ozon", readonly=True)
