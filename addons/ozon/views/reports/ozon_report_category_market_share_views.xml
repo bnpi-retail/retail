@@ -11,7 +11,7 @@
                             <group>
                                 <field name="period_from" string="Период с" class="oe_inline" widget="date"
                                        readonly="1"/>
-                                <field name="ozon_categories_id" string="Категория" class="oe_inline" readonly="1"/>
+                                <field name="ozon_categories_id" string="Категория" readonly="1"/>
                             </group>
                             <group>
                                 <field name="period_to" string="по" class="oe_inline" widjet="date" readonly="1"/>
