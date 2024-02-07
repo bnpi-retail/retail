@@ -33,6 +33,8 @@ from ..helpers import convert_ozon_datetime_str_to_odoo_datetime_str
 class ImportFile(models.Model):
     _name = "ozon.import_file"
     _description = "Импорт"
+    _order = "timestamp desc"
+
     timestamp = fields.Date(
         string="Дата импорта", default=fields.Date.today, readonly=True
     )
