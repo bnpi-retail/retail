@@ -2,7 +2,7 @@
     <data>
         <menuitem name="API Токены"
             id="main_menu_parser_api_tokens"
-            parent="parser.menu_root"
+            parent="manager_profile.menu_root"
             sequence="25" />
     </data>
 </odoo>

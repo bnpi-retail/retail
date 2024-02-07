@@ -71,7 +71,7 @@
     <!-- Menu -->
     <menuitem name="Собранные товары" 
         id="parser_menu_product_competitors"
-        parent="parser.menu_root"
+        parent="manager_profile.menu_root"
         action="action_parser_products_competitors"
         sequence="35"/>
 

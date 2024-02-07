@@ -25,7 +25,7 @@
     <!-- Menu -->
     <menuitem name="Очередь поисковых запросов" 
       id="parser_search_query_queue"
-      parent="parser.menu_root"
+      parent="manager_profile.menu_root"
       action="action_parser_search_query_queue"
       sequence="50"/>
 

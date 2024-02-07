@@ -39,7 +39,7 @@
     <!-- Menu -->
     <menuitem name="Импорт файлов" 
       id="parser_import_file_button"
-      parent="parser.menu_root"
+      parent="manager_profile.menu_root"
       action="action_parser_import_file"
       sequence="100"/>
 

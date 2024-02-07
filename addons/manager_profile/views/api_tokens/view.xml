@@ -49,7 +49,7 @@
         <!-- Menu -->
         <menuitem name="API токены"
             id="menu_parser_api_tokens"
-            parent="parser.menu_root"
+            parent="manager_profile.menu_root"
             action="action_parser_api_tokens"
             sequence="25" />
 
