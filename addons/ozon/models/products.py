@@ -251,7 +251,7 @@ class Product(models.Model):
         string="Итого общих затрат без ROE, ROI, исходя из актуальной цены",
         compute="_compute_total_all_expenses_ids_except_roe_roi",
     )
-    
+
     promotion_expenses_ids = fields.One2many(
         "ozon.promotion_expenses",
         "product_id",
@@ -329,7 +329,9 @@ class Product(models.Model):
         "ozon.products.indicator.summary", inverse_name="ozon_product_id"
     )
 
-    ozon_products_indicator_qty = fields.Integer(compute='_compute_ozon_products_indicator_qty')
+    ozon_products_indicator_qty = fields.Integer(
+        compute="_compute_ozon_products_indicator_qty"
+    )
     retail_product_total_cost_price = fields.Float(
         compute="_compute_total_cost_price", store=True
     )
@@ -498,13 +500,15 @@ class Product(models.Model):
             )
             total_expenses = sum(all_expenses_except_tax_roe_roi.mapped("value"))
             rec.total_all_expenses_ids_except_tax_roe_roi = total_expenses
-    
+
     def _compute_total_all_expenses_ids_except_roe_roi(self):
         for rec in self:
             all_expenses_except_roe_roi = rec.all_expenses_ids.filtered(
                 lambda r: r.category not in ["Рентабельность", "Investment"]
             )
-            rec.total_all_expenses_except_roe_roi = sum(all_expenses_except_roe_roi.mapped("value"))
+            rec.total_all_expenses_except_roe_roi = sum(
+                all_expenses_except_roe_roi.mapped("value")
+            )
 
     @api.depends("price_our_history_ids.price")
     def _compute_price_history_values(self):
@@ -812,8 +816,7 @@ class Product(models.Model):
                         }
                     )
 
-
-    @api.depends('ozon_products_indicator_qty')
+    @api.depends("ozon_products_indicator_qty")
     def _compute_ozon_products_indicator_qty(self):
         for record in self:
             need_actions = 0
@@ -1178,34 +1181,24 @@ class Product(models.Model):
 
         all_products = self.env["ozon.products"].search([])
         for i, product in enumerate(all_products):
-            percent_expenses_records = []
-            per_exp_record = self.env["ozon.cost"].create(
-                {
-                    "name": "Общий коэффициент косвенных затрат",
-                    "price": round(product.price * coef_total, 2),
-                    "discription": coef_total_percentage_string,
-                    "product_id": product.id,
-                }
-            )
-            percent_expenses_records.append(per_exp_record.id)
-            sale_percent_com_recs = product.percent_expenses.search(
-                [
-                    ("product_id", "=", product.id),
-                    (
-                        "name",
-                        "in",
-                        [
-                            "Процент комиссии за продажу (FBO)",
-                            "Процент комиссии за продажу (FBS)",
-                        ],
-                    ),
-                ],
-            )
-            if sale_percent_com_recs:
-                percent_expenses_records.extend(sale_percent_com_recs.ids)
-
-            product.percent_expenses = [(6, 0, percent_expenses_records)]
-
+            if coef_total_record := product.percent_expenses.filtered(
+                lambda r: r.name == "Общий коэффициент косвенных затрат"
+            ):
+                coef_total_record.write(
+                    {
+                        "price": round(product.price * coef_total, 2),
+                        "discription": coef_total_percentage_string,
+                    }
+                )
+            else:
+                self.env["ozon.cost"].create(
+                    {
+                        "name": "Общий коэффициент косвенных затрат",
+                        "price": round(product.price * coef_total, 2),
+                        "discription": coef_total_percentage_string,
+                        "product_id": product.id,
+                    }
+                )
             print(
                 f"{i} - Product {product.id_on_platform} percent expenses were updated."
             )
