@@ -48,7 +48,7 @@ class PriceHistoryCompetitors(models.Model):
             price_history_record = model_price_history_competitors.browse(price_history_id)
 
             price_record_id_now = record.product_competitors.id
-            raise ValueError(price_record_now)
+            raise ValueError(price_record_id_now)
             if (
                 record.product_competitors.id == price_history_record.product_competitors.id
             ):
