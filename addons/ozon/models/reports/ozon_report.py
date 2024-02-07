@@ -118,13 +118,13 @@ class OzonReportCompetitorBCGMatrix(models.Model):
             days_prev = (record.period_prev.period_to - record.period_prev.period_from).days
             for sale in record.period_prev.ozon_products_competitors_sale_ids:
                 if sale.ozon_products_id:
-                    products_with_turnovers[sale.ozon_products_id]['prev_turnover'] = sale.orders_sum / days_prev
+                    products_with_turnovers[sale.ozon_products_id]['prev_turnover'] = sale.revenue_share_percentage / days_prev
                     products_with_turnovers[sale.ozon_products_id]['in_both_periods'] += 1
 
             days_curr = (record.period_curr.period_to - record.period_curr.period_from).days
             for sale in record.period_curr.ozon_products_competitors_sale_ids:
                 if sale.ozon_products_id:
-                    products_with_turnovers[sale.ozon_products_id]['curr_turnover'] = sale.orders_sum / days_curr
+                    products_with_turnovers[sale.ozon_products_id]['curr_turnover'] = sale.revenue_share_percentage / days_curr
                     products_with_turnovers[sale.ozon_products_id]['in_both_periods'] += 1
                     products_with_turnovers[sale.ozon_products_id]['curr_market_share'] = sale.revenue_share_percentage
 
