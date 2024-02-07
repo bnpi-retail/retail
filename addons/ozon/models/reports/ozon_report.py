@@ -138,6 +138,10 @@ class OzonReportCompetitorBCGMatrix(models.Model):
                         # product_growth_rate = ((100 * curr_value) / prev_value) - 100
                         product_growth_rate = ((curr_value - prev_value) / prev_value) * 100
                         turnovers['product_growth_rate'] = product_growth_rate
+                        if product_growth_rate > max_growth_value:
+                            max_growth_value = product_growth_rate
+                        if turnovers.get('curr_market_share') > max_curr_market_share:
+                            max_curr_market_share = turnovers.get('curr_market_share')
                     else:
                         logger.warning("Can't calculate product_growth_rate because zero division")
                         # prev_value += 0.00000001
@@ -169,10 +173,9 @@ class OzonReportCompetitorBCGMatrix(models.Model):
             #     curr_market_share = turnovers.get('curr_market_share')
             #     turnovers['curr_market_share'] = curr_market_share / max_curr_market_share
 
-            self._create_plot_and_save(products_with_turnovers)
+            self._create_plot_and_save(products_with_turnovers, max_growth_value, max_curr_market_share)
 
-    def _create_plot_and_save(self, products_data: defaultdict):
-        # Classify products into quadrants based on growth rate and market share
+    def _create_plot_and_save(self, products_data: defaultdict, max_growth, max_share):
         quadrants = {
             'Звезды': [],
             'Проблемы': [],
@@ -180,12 +183,15 @@ class OzonReportCompetitorBCGMatrix(models.Model):
             'Собаки': []
         }
 
+        threshold_growth = (20 * max_growth) / 100
+        threshold_market_share = (10 * max_share) / 100
+
         for product, data in products_data.items():
-            if data['product_growth_rate'] >= 10 and data['curr_market_share'] >= 10:
+            if data['product_growth_rate'] >= threshold_growth and data['curr_market_share'] >= threshold_market_share:
                 quadrants['Звезды'].append((product, data))
-            elif data['product_growth_rate'] >= 10 and data['curr_market_share'] < 10:
+            elif data['product_growth_rate'] >= threshold_growth and data['curr_market_share'] < threshold_market_share:
                 quadrants['Проблемы'].append((product, data))
-            elif data['product_growth_rate'] < 10 and data['curr_market_share'] >= 10:
+            elif data['product_growth_rate'] < threshold_growth and data['curr_market_share'] >= threshold_market_share:
                 quadrants['Дойные коровы'].append((product, data))
             else:
                 quadrants['Собаки'].append((product, data))
