@@ -1,8 +1,8 @@
 import traceback
+import logging
 
 from odoo import models, fields
 from odoo.exceptions import UserError
-import logging
 from datetime import datetime
 from collections import defaultdict
 
@@ -88,4 +88,5 @@ class AbcAnalysis(models.Model):
                 product[0].revenue_cumulative_share_temp = product[1][1]
                 product[0].abc_group = product[1][2]
 
+            record.ozon_categories_id.abc_group_last_update = datetime.now()
 
