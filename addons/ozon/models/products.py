@@ -843,7 +843,7 @@ class Product(models.Model):
         bcg_group_indicator = None
         for indicator in record.ozon_products_indicator_ids:
             if indicator.type == "bcg_group":
-                if record.bcg_group != indicator.name:
+                if record.bcg_group != indicator.value:
                     indicator.end_date = datetime.now().date()
                     indicator.active = False
                 else:
@@ -859,6 +859,32 @@ class Product(models.Model):
             )
         else:
             bcg_group_indicator.write_date = datetime.now()
+
+        # обновить выводы по индикаторам
+        if summary_update:
+            self._update_indicator_summary(record)
+
+    def _touch_abc_group_indicator(self, record, summary_update=True):
+        abc_group_indicator = None
+        for indicator in record.ozon_products_indicator_ids:
+            if indicator.type == "abc_group":
+                if record.abc_group != indicator.value:
+                    indicator.end_date = datetime.now().date()
+                    indicator.active = False
+                else:
+                    abc_group_indicator = indicator
+        if not abc_group_indicator:
+            self.env["ozon.products.indicator"].create(
+                {
+                    "ozon_product_id": record.id,
+                    "source": "robot",
+                    "type": "abc_group",
+                    "value": record.abc_group,
+                }
+            )
+        else:
+            abc_group_indicator.write_date = datetime.now()
+            logger.warning(abc_group_indicator.write_date)
 
         # обновить выводы по индикаторам
         if summary_update:
