@@ -6,3 +6,4 @@ ozon.access_sales_report_by_category,access_ozon_sales_report_by_category,model_
 ozon.access_expenses_by_category,access_ozon_expenses_by_category,model_ozon_expenses_by_category,base.group_user,1,1,1,1
 ozon.access_ozon_report_bcg_matrix,access_ozon_report_bcg_matrix,ozon.model_ozon_report_bcg_matrix,base.group_user,1,1,1,1
 ozon.access_ozon_report_bcg_matrix_product_data,access_ozon_report_bcg_matrix_product_data,ozon.model_ozon_report_bcg_matrix_product_data,base.group_user,1,1,1,1
+ozon.access_ozon_report_task,access_ozon_report_task,ozon.model_ozon_report_task,base.group_user,1,1,1,1

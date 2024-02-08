@@ -1,11 +1,11 @@
 import base64
+from datetime import datetime
 import io
 from collections import defaultdict
 from odoo import models, fields
 from odoo.exceptions import UserError
 import logging
 import matplotlib.pyplot as plt
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +20,16 @@ class OzonReport(models.Model):
     lots_quantity = fields.Integer()
     ozon_products_ids = fields.Many2many("ozon.products")
     type = fields.Selection([('indicators', 'Indicators')])
+    ozon_report_task_ids = fields.One2many("ozon.report.task", "ozon_report_id")
+
+
+class OzonReportTask(models.Model):
+    _name = "ozon.report.task"
+    _description = "Напоминания и задачи в отчете для менеджера"
+
+    task = fields.Char(string="Задача")
+    ozon_report_id = fields.Many2one("ozon.report")
+    sequence = fields.Integer()
 
 
 class OzonReportCategoryMarketShare(models.Model):
@@ -169,6 +179,8 @@ class OzonReportCompetitorBCGMatrix(models.Model):
             products_data = self._create_plot_and_save(quadrants, products_data, colors, record)
 
             self._write_bcg_data_to_models(record, products_data)
+            # update
+            record.ozon_categories_id.bcg_matrix_last_update = datetime.now()
 
     @staticmethod
     def _get_quadrants__products_data__colors(
@@ -263,6 +275,7 @@ class OzonReportCompetitorBCGMatrix(models.Model):
             product.bcg_group = data.get('quadrant')
             if not product.bcg_group_is_computed:
                 product.bcg_group_is_computed = True
+            product._touch_bcg_group_indicator(product)
 
 
 class OzonReportBcgMatrixProductData(models.Model):
