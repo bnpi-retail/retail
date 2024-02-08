@@ -5,6 +5,7 @@ from odoo import models, fields, api
 class ProductStock(models.Model):
     _name = "ozon.stock"
     _description = "Остатки товаров"
+    _order = "timestamp desc"
 
     product = fields.Many2one("ozon.products", string="Товар Ozon")
     id_on_platform = fields.Char(string="Product ID", readonly=True)

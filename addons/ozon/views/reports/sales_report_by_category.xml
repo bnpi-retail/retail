@@ -1,0 +1,63 @@
+<odoo>
+    <data>
+        <record id="sales_report_by_category_view_form" model="ir.ui.view">
+            <field name="name">sales_report_by_category.form</field>
+            <field name="model">ozon.sales_report_by_category</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="date_from" attrs="{'readonly':[('id','>', 0)]}" />
+                                <field name="date_to" attrs="{'readonly':[('id','>', 0)]}" />
+                                <field name="category_id" attrs="{'readonly':[('id','>', 0)]}" />
+                            </group>
+                            <group>
+                                <field name="revenue" attrs="{'invisible':[('id','=',False)]}"
+                                    decoration-bf="True" />
+                                <field name="total_expenses"
+                                    attrs="{'invisible':[('id','=',False)]}"
+                                    decoration-bf="True" />
+                                <field name="profit" attrs="{'invisible':[('id','=',False)]}"
+                                    decoration-success="profit>0"
+                                    decoration-danger="total_expenses>revenue"
+                                    decoration-bf="True" />
+                            </group>
+                            <field name="expenses_by_category_ids"
+                                attrs="{'invisible':[('id','=',False)]}">
+                                <tree>
+                                    <field name="name" />
+                                    <field name="expense" />
+                                </tree>
+                            </field>
+
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="sales_report_by_category_view_tree" model="ir.ui.view">
+            <field name="name">sales_report_by_category.tree</field>
+            <field name="model">ozon.sales_report_by_category</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="category_id" />
+                    <field name="date_from" />
+                    <field name="date_to" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_sales_report_by_category" model="ir.actions.act_window">
+            <field name="name">Отчёт по продажам категории</field>
+            <field name="res_model">ozon.sales_report_by_category</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_sales_report_by_category" name="Отчеты по продажам категории"
+            parent="ozon.menu_reports"
+            action="action_sales_report_by_category" sequence="2" />
+
+    </data>
+</odoo>

@@ -418,6 +418,16 @@
                                         <field name="self_marketplaces_min_price" />
                                     </group>
                                 </page>
+                                 <page id="page_analysis_data_abc_analysis" string="BCG Матрица">
+                                     <group>
+                                         <field name="bcg_group_is_computed" invisible="1"/>
+                                         <field name="bcg_group"
+                                                string="BCG группа"
+                                                readonly="1"
+                                                attrs="{'invisible': [('bcg_group_is_computed', '=', False)]}"
+                                         />
+                                     </group>
+                                 </page>
                             </notebook>
                         </page>
                         <page id="page_ozon_actions" string="Акции">
@@ -458,8 +468,10 @@
                         decoration-success="abc_group=='A'"
                         decoration-danger="abc_group=='C'"
                     />
-                    <field name="ozon_products_indicator_qty" decoration-danger="ozon_products_indicator_qty>0"
-                           attrs="{'invisible': [('ozon_products_indicator_qty', '=', 0)]}" string="Индикаторы"
+                    <field name="ozon_products_indicator_qty"
+                        decoration-danger="ozon_products_indicator_qty>0"
+                        attrs="{'invisible': [('ozon_products_indicator_qty', '=', 0)]}"
+                        string="Индикаторы"
                     />
                 </tree>
             </field>

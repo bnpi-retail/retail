@@ -2,6 +2,28 @@
     <data>
 
         <!-- Form -->
+         <record id="retail_seller_view_form" model="ir.ui.view">
+            <field name="name">retail.seller.form</field>
+            <field name="model">retail.seller</field>
+            <field name="arch" type="xml">
+                <form string="">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="trade_name"/>
+                                <field name="ogrn"/>
+                            </group>
+                            <group>
+                                <field name="tax"/>
+                                <field name="tax_percent"/>
+                                <field name="tax_description"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
 
         <!-- Tree -->
         <record id="view_seller_tree" model="ir.ui.view">
