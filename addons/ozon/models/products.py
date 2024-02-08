@@ -839,6 +839,31 @@ class Product(models.Model):
             else:
                 record.ozon_products_indicator_qty = 0
 
+    def _touch_bcg_group_indicator(self, record, summary_update=True):
+        bcg_group_indicator = None
+        for indicator in record.ozon_products_indicator_ids:
+            if indicator.type == "bcg_group":
+                if record.bcg_group != indicator.name:
+                    indicator.end_date = datetime.now().date()
+                    indicator.active = False
+                else:
+                    bcg_group_indicator = indicator
+        if not bcg_group_indicator:
+            self.env["ozon.products.indicator"].create(
+                {
+                    "ozon_product_id": record.id,
+                    "source": "robot",
+                    "type": "bcg_group",
+                    "value": record.bcg_group,
+                }
+            )
+        else:
+            bcg_group_indicator.write_date = datetime.now()
+
+        # обновить выводы по индикаторам
+        if summary_update:
+            self._update_indicator_summary(record)
+
     def _check_investment_expenses(self, record, summary_update=True):
         if not record.investment_expenses_id:
             found = 0
@@ -1013,6 +1038,10 @@ class Product(models.Model):
         return avg_revenue_per_day
 
     def _automated_daily_action_by_cron(self):
+        # проверить если прошел срок создания ABC, BCG отчетов и подготовить списки для тасков
+        # или списки для напоминания
+        categories_to_tasks = self._get_categories_lists_for_managers_report()
+
         types_for_report = [
             "no_competitor_robot",
             "cost_not_calculated",
@@ -1039,12 +1068,14 @@ class Product(models.Model):
                     )
                     break
 
-        self._create_manager_indicator_report(lots_with_indicators)
+        self._create_manager_indicator_report(lots_with_indicators, categories_to_tasks)
 
-    def _create_manager_indicator_report(self, lots_with_indicators):
+    def _create_manager_indicator_report(self, lots_with_indicators, categories_to_tasks):
+        # deactivate old reports
         reports = self.env["ozon.report"].search([("type", "=", "indicators")])
         for report in reports:
             report.active = False
+
         for manager_id, lots_ids in lots_with_indicators.items():
             if manager_id:
                 report = self.env["ozon.report"].create(
@@ -1055,6 +1086,75 @@ class Product(models.Model):
                         "lots_quantity": len(lots_ids),
                     }
                 )
+                # tasks and reminders
+                if categories_to_tasks.get(manager_id):
+                    tasks_dict = categories_to_tasks.pop(manager_id)
+                    self._create_tasks_to_managers_report(tasks_dict, report)
+
+        # create reports with remaining tasks
+        for manager_id, tasks_dict in categories_to_tasks.items():
+            report = self.env["ozon.report"].create(
+                {
+                    "type": "indicators",
+                    "res_users_id": manager_id,
+                }
+            )
+            self._create_tasks_to_managers_report(tasks_dict, report)
+
+    def _get_categories_lists_for_managers_report(self) -> defaultdict[dict]:
+        categories = self.env["ozon.categories"].search([])
+        categories_dict = defaultdict(
+            lambda: {
+                'to_do_reminder_abc_categories': [],
+                'overdue_abc_categories': [],
+                'to_do_reminder_bcg_categories': [],
+                'overdue_bcg_categories': [],
+            }
+        )
+        for cat in categories:
+            if cat.abc_group_last_update and cat.category_manager:
+                if (datetime.now() - timedelta(days=5)).date() >= cat.abc_group_last_update.date() > (
+                        datetime.now() - timedelta(days=10)).date():
+                    categories_dict[cat.category_manager.id]['to_do_reminder_abc_categories'].append(cat)
+                elif (datetime.now() - timedelta(days=10)).date() >= cat.abc_group_last_update.date():
+                    categories_dict[cat.category_manager.id]['overdue_abc_categories'].append(cat)
+            if cat.bcg_matrix_last_update and cat.category_manager:
+                if (datetime.now() - timedelta(days=5)).date() >= cat.bcg_matrix_last_update.date() > (
+                        datetime.now() - timedelta(days=10)).date():
+                    categories_dict[cat.category_manager.id]['to_do_reminder_bcg_categories'].append(cat)
+                elif (datetime.now() - timedelta(days=10)).date() >= cat.bcg_matrix_last_update.date():
+                    categories_dict[cat.category_manager.id]['overdue_bcg_categories'].append(cat)
+        return categories_dict
+
+    def _create_tasks_to_managers_report(self, categories_to_tasks, report):
+        for cat in categories_to_tasks.get('to_do_reminder_abc_categories'):
+            self.env["ozon.report.task"].create({
+                "task": f"Не забудьте провести ABC анализ категории {cat.name_categories}",
+                "ozon_report_id": report.id,
+                "sequence": 2
+            })
+        for cat in categories_to_tasks.get('overdue_abc_categories'):
+            self.env["ozon.report.task"].create({
+                "task": f"Срочно проведите ABC анализ категории {cat.name_categories} за новый период. "
+                        f"Время проведения просрочено!",
+                "ozon_report_id": report.id,
+                "sequence": 1
+            })
+        for cat in categories_to_tasks.get('to_do_reminder_bcg_categories'):
+            self.env["ozon.report.task"].create({
+                "task": f"Не забудьте загрузить данные о продажах конкурентов категории {cat.name_categories} "
+                        f"за новый период, рассчитать долю рынка и создать BCG матрицу.",
+                "ozon_report_id": report.id,
+                "sequence": 2
+            })
+        for cat in categories_to_tasks.get('overdue_bcg_categories'):
+            self.env["ozon.report.task"].create({
+                "task": f"Срочно загрузите данные о продажах конкурентов категории {cat.name_categories} "
+                        f"за новый период, рассчитайте долю рынка и создайте BCG матрицу. "
+                        f"Время проведения просрочено!",
+                "ozon_report_id": report.id,
+                "sequence": 1
+            })
 
     def _not_enough_competitors_write(self, record):
         if (
