@@ -162,7 +162,7 @@ services:
     labels:
       kompose.volume.type: configMap
     volumes:
-      - ./temporalio/dynamicconfig:/etc/temporal/config/dynamicconfig
+      - ./temporalio-config/dynamicconfig:/etc/temporal/config/dynamicconfig
 
   temporal-admin-tools:
     container_name: temporal-admin-tools
