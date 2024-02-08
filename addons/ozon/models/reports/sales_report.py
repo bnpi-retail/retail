@@ -31,7 +31,8 @@ class SalesReportByCategory(models.Model):
         date_to = fields.Date.to_date(values["date_to"])
         cat_id = values["category_id"]
         # Взять все товары из категории
-        products = self.env["ozon.products"].search([("categories", "=", cat_id)])
+        products = self.env["ozon.products"].search([("categories", "=", cat_id),("sales","!=",False)])
+        print(len(products))
         total_revenue = 0
         total_expenses = {}
         # взять все затраты (all_expenses) по всем продуктам
@@ -44,6 +45,7 @@ class SalesReportByCategory(models.Model):
             expenses = p.all_expenses_ids.filtered(
                 lambda r: r.category not in ["Рентабельность", "Investment"]
             )
+            # TODO: FIX когда себестоимость - не нужно умножать
             for e in expenses:
                 total_expenses.update(
                     {

@@ -499,7 +499,6 @@ class AllExpenses(models.Model):
             )
             total_expenses += inv_exp_value
             # налог
-            print(prod.id, prod.seller, tax)
             if tax.startswith("earnings_minus_expenses"):
                 tax_value = abs((price - total_expenses) * tax_percent)
             else:
