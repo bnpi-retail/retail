@@ -14,6 +14,8 @@ class Categories(models.Model):
     insurance = fields.Float(string="Страховой коэффициент, %")
 
     category_manager = fields.Many2one("res.users")
+    bcg_matrix_last_update = fields.Datetime()
+    abc_group_last_update = fields.Datetime()
 
 
 class GenerateUrlForDownloadGrpahData(models.Model):
