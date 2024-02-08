@@ -1,5 +1,6 @@
 import json
 
+from os import getenv
 from odoo import http
 
 
@@ -9,7 +10,8 @@ class GetDataForOzonProducts(http.Controller):
                 csrf=False,
                 methods=["POST"])
     def get_data_for_ozon_products(self, **kwargs):
-        unique_id = "896f131a-7cc5-4d30-96d9-ada43c84eeb1" # From odoo
+        # unique_id = getenv("ID_KEY_OZON_PRODUCT_TASK")
+        unique_id = "038d3d39-b778-499d-bceb-12fbcb40b092"
 
         model_ozon_temporal_tasks = http.request.env["ozon.temporal_tasks"]
         record = model_ozon_temporal_tasks.search([("unique_id", "=", unique_id)])
