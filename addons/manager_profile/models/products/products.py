@@ -110,8 +110,7 @@ class ActionCreateOzonProducts(models.Model):
 
     def create_price_history_competitors(self, record, record_product_competitors):
         model_price_history_competitors = self.env["ozon.price_history_competitors"]
-
-        record_price_history_competitors = model_price_history_competitors \
+        model_price_history_competitors \
             .create({
                 "price": record.price,
                 "price_with_card": record.price_with_card,
@@ -119,7 +118,3 @@ class ActionCreateOzonProducts(models.Model):
                 "product_competitors": record_product_competitors.id,
             })
 
-        # record_price_history_competitors \
-            # .write({
-                # "product_competitors": record_product_competitors.id,
-            # })

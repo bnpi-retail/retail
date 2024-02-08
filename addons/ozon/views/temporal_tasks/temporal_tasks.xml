@@ -1,0 +1,48 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_ozon_temporal_tasks_form" model="ir.ui.view">
+            <field name="name">Информация о задачах</field>
+            <field name="model">ozon.temporal_tasks</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="unique_id" />
+                        <field name="description" />
+                        <field name="numbers_products_in_query" />
+                        <field name="numbers_workers" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_ozon_temporal_tasks_tree" model="ir.ui.view">
+            <field name="name">Информация о задачах</field>
+            <field name="model">ozon.temporal_tasks</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="unique_id" />
+                    <field name="description" />
+                    <field name="numbers_products_in_query" />
+                    <field name="numbers_workers" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_ozon_temporal_tasks">
+            <field name="name">Информация о задачах</field>
+            <field name="res_model">ozon.temporal_tasks</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem name="Информация о задачах"
+            id="menu_ozon_temporal_tasks"
+            parent="ozon.menu_root"
+            action="action_ozon_temporal_tasks"
+            sequence="40" />
+
+    </data>
+</odoo>

@@ -52,6 +52,7 @@
         "security/price/investment_expenses/investment_expenses_wizard/ir.model.access.csv",
         "security/price/all_expenses/ir.model.access.csv",
         "security/price/promotion_expenses/ir.model.access.csv",
+        "security/temporal_tasks/ir.model.access.csv",
         "security/ir.model.access.csv",
 
         ### views
@@ -106,6 +107,7 @@
         "views/settings/settings.xml",
         "views/reports/ozon_report_category_market_share_views.xml",
         "views/competitors/competitor_seller_view.xml",
+        "views/temporal_tasks/temporal_tasks.xml",
         # cron
         "crone/ir_cron_data.xml",
     ],
