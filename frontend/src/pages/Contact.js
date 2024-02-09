@@ -124,14 +124,9 @@ const Contact = () => {
       <ul style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', padding: 0, listStyle: 'none' }}>
       {data.map((item) => (
         <li key={item.number} style={{ flexBasis: '23%', marginBottom: '20px', borderBottom: '1px solid #ccc', paddingBottom: '20px' }}>
-          {/* Переход по ссылке при клике на изображение */}
-          <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => { 
-            window.open(item.href, '_blank'); 
-            window.location.href = item.href;
-          }}>
+          <a href={item.href} target="_blank" rel="noopener noreferrer">
             <Image src={item.pictures} style={{ maxWidth: 250, height: 250, margin: '0 auto' }} />
-          </div>
-          {/* Выбор чекбокса */}
+          </a>
           <div style={{ textAlign: 'center' }}>
             <label
               htmlFor={`checkbox-${item.number}`}
