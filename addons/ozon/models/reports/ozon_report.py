@@ -105,6 +105,11 @@ class OzonReportCompetitorBCGMatrix(models.Model):
     ozon_report_bcg_matrix_product_data_ids = fields.One2many(
         "ozon.report.bcg_matrix.product_data", 'ozon_report_bcg_matrix_id'
     )
+    is_applied = fields.Boolean()
+
+    @api.onchange('ozon_report_bcg_matrix_product_data_ids')
+    def _onchange_ozon_report_bcg_matrix_product_data_ids(self):
+        self.is_applied = False
 
     def action_run_bcg_matrix_calculation(self):
         for record in self:
@@ -282,6 +287,7 @@ class OzonReportCompetitorBCGMatrix(models.Model):
                 'product_growth_rate': new_product_data.get('product_growth_rate') if new_product_data else False,
                 'bcg_group': bcg_group_val
             })
+        record.is_applied = False
 
     def action_write_updated_bcg_group_to_products(self):
         for product_data in self.ozon_report_bcg_matrix_product_data_ids:
@@ -293,6 +299,8 @@ class OzonReportCompetitorBCGMatrix(models.Model):
                     product_data.ozon_products_id.bcg_group_is_computed = True
                 product_data.bcg_group_curr = product_data.bcg_group
             product._touch_bcg_group_indicator(product, summary_update=False)
+
+        self.is_applied = True
 
 
 class OzonReportBcgMatrixProductData(models.Model):
@@ -311,4 +319,5 @@ class OzonReportBcgMatrixProductData(models.Model):
     bcg_group = fields.Selection([
         ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', '')
     ])
+
 
