@@ -849,8 +849,8 @@ class Product(models.Model):
                     indicator.end_date = datetime.now().date()
                     indicator.active = False
                 else:
-                    bcg_group_indicator = indicator
-        if not bcg_group_indicator:
+                    indicator.write_date = datetime.now()
+        if not bcg_group_indicator and record.bcg_group != 'e':
             self.env["ozon.products.indicator"].create(
                 {
                     "ozon_product_id": record.id,
@@ -859,9 +859,6 @@ class Product(models.Model):
                     "value": record.bcg_group,
                 }
             )
-        else:
-            bcg_group_indicator.write_date = datetime.now()
-
         # обновить выводы по индикаторам
         if summary_update:
             self._update_indicator_summary(record)
@@ -874,8 +871,8 @@ class Product(models.Model):
                     indicator.end_date = datetime.now().date()
                     indicator.active = False
                 else:
-                    abc_group_indicator = indicator
-        if not abc_group_indicator:
+                    indicator.write_date = datetime.now()
+        if not abc_group_indicator and record.abc_group:
             self.env["ozon.products.indicator"].create(
                 {
                     "ozon_product_id": record.id,
@@ -884,10 +881,6 @@ class Product(models.Model):
                     "value": record.abc_group,
                 }
             )
-        else:
-            abc_group_indicator.write_date = datetime.now()
-            logger.warning(abc_group_indicator.write_date)
-
         # обновить выводы по индикаторам
         if summary_update:
             self._update_indicator_summary(record)
@@ -1552,14 +1545,17 @@ class Product(models.Model):
 
         products = self.env["ozon.products"].search([])
         for product in products:
-            product._check_investment_expenses(product, summary_update=False)
-            product._check_profitability_norm(product, summary_update=False)
-            product._check_cost_price(product, summary_update=False)
-            product._check_competitors_with_price_ids_qty(product, summary_update=False)
-            product._update_in_out_stock_indicators(product, summary_update=False)
+            try:
+                product._check_investment_expenses(product, summary_update=False)
+                product._check_profitability_norm(product, summary_update=False)
+                product._check_cost_price(product, summary_update=False)
+                product._check_competitors_with_price_ids_qty(product, summary_update=False)
+                product._update_in_out_stock_indicators(product, summary_update=False)
 
-            product._update_indicator_summary(product)
-            product.bcg_group = 'e'
+                product._update_indicator_summary(product)
+                product.bcg_group = 'e'
+            except:
+                logger.warning('action_run_indicators_checks exception')
 
         schedules[0].ozon_products_checking_last_time = datetime.now()
 
