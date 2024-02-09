@@ -1,3 +1,4 @@
+from collections import namedtuple
 from datetime import timedelta
 
 from odoo import models, fields, api
@@ -33,6 +34,7 @@ class SalesReportByCategory(models.Model):
         # Взять все товары из категории
         products = self.env["ozon.products"].search([("categories", "=", cat_id),("sales","!=",False)])
         print(len(products))
+        Expense = namedtuple('Expense', ['name', 'category'])
         total_revenue = 0
         total_expenses = {}
         # взять все затраты (all_expenses) по всем продуктам
@@ -45,11 +47,12 @@ class SalesReportByCategory(models.Model):
             expenses = p.all_expenses_ids.filtered(
                 lambda r: r.category not in ["Рентабельность", "Investment"]
             )
-            # TODO: FIX когда себестоимость - не нужно умножать
+
             for e in expenses:
+                exp = Expense(name=e.name, category=e.category)
                 total_expenses.update(
                     {
-                        e.category: total_expenses.get(e.category, 0)
+                        exp: total_expenses.get(exp, 0)
                         + e.value * sales_qty
                     }
                 )
@@ -58,7 +61,7 @@ class SalesReportByCategory(models.Model):
         sum_total_expenses = sum(total_expenses.values())
         # рассчитываем profit
         profit = total_revenue - sum_total_expenses
-
+        
         values.update(
             {
                 "revenue": total_revenue,
@@ -69,7 +72,12 @@ class SalesReportByCategory(models.Model):
         record = super(SalesReportByCategory, self).create(values)
         expenses_by_category = self.env["ozon.expenses_by_category"].create(
             [
-                {"name": k, "expense": v, "sales_report_by_category_id": record.id}
+                {
+                    "name": k.name, 
+                    "category": k.category, 
+                    "expense": v, 
+                    "sales_report_by_category_id": record.id,
+                 }
                 for k, v in total_expenses.items()
             ]
         )
@@ -92,6 +100,7 @@ class ExpensesByCategory(models.Model):
     _description = "Затраты по категории за период"
 
     name = fields.Char(string="Статья затрат")
+    category = fields.Char(string="Категория", readonly=True)
     expense = fields.Float(string="Сумма")
     sales_report_by_category_id = fields.Many2one(
         "ozon.sales_report_by_category", string="Отчет по продажам категории"
