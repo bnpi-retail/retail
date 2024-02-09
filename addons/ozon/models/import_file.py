@@ -1083,13 +1083,9 @@ class ImportFile(models.Model):
             existed_category = self.env["ozon.categories"].search(
                 [("name_categories", "=", category)]
             )
-            if not existed_category:
-                existed_category = self.env["ozon.categories"].create(
-                    {"name_categories": category}
-                )
             report = self.env["ozon.report_category_market_share"].create(
                 {
-                    "ozon_categories_id": existed_category.id,
+                    "ozon_categories_id": existed_category.id if existed_category else False,
                     "period_from": period_from,
                     "period_to": period_to,
                 }
