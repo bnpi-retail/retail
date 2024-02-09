@@ -23,8 +23,14 @@
                                     decoration-danger="total_expenses>revenue"
                                     decoration-bf="True" />
                             </group>
+                            <button type="object" name="show_expenses"
+                                string="Затраты подробнее"
+                                class="btn-outline-primary"
+                                attrs="{'invisible':[('id','=',False)]}"
+                            />
                             <field name="expenses_by_category_ids"
                                 attrs="{'invisible':[('id','=',False)]}" />
+
                         </group>
                     </sheet>
                 </form>

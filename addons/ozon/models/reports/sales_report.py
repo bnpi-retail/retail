@@ -93,11 +93,22 @@ class SalesReportByCategory(models.Model):
                 )
             )
         return result
-
+    
+    def show_expenses(self):
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Затраты",
+            "view_mode": "tree",
+            "res_model": "ozon.expenses_by_category",
+            "domain": [("sales_report_by_category_id", "=", self.id)],
+            "context": {"group_by": "category"},
+            "target": "new",
+        }
 
 class ExpensesByCategory(models.Model):
     _name = "ozon.expenses_by_category"
     _description = "Затраты по категории за период"
+    _order= "expense desc"
 
     name = fields.Char(string="Статья затрат")
     category = fields.Char(string="Категория", readonly=True)
