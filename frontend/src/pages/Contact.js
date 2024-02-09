@@ -122,34 +122,31 @@ const Contact = () => {
         DemoSecond()
       ) : DemoFirst()}
       <ul style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', padding: 0, listStyle: 'none' }}>
-        {data.map((item) => (
-          <li key={item.number} style={{ flexBasis: '23%', marginBottom: '20px', borderBottom: '1px solid #ccc', paddingBottom: '20px' }}>
+      {data.map((item) => (
+        <li key={item.number} style={{ flexBasis: '23%', marginBottom: '20px', borderBottom: '1px solid #ccc', paddingBottom: '20px' }}>
+          {/* Переход по ссылке при клике на изображение */}
+          <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => window.location.href = item.url}>
+            <Image src={item.pictures} style={{ maxWidth: 250, height: 250, margin: '0 auto' }} />
+          </div>
+          {/* Выбор чекбокса */}
+          <div style={{ textAlign: 'center' }}>
             <label
               htmlFor={`checkbox-${item.number}`}
-              style={{
-                textAlign: 'center',
-                height: '450px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                cursor: 'pointer',
-              }}
+              style={{ display: 'block', marginTop: '10px' }}
             >
-              <Image src={item.pictures} style={{ maxWidth: 250, height: 250, margin: '0 auto' }} />
-              <div>
-                <strong>{item.name}</strong>
-                <p>Цена: {item.price} руб.</p>
-              </div>
-              <input
-                type="checkbox"
-                id={`checkbox-${item.number}`}
-                checked={selectedItems.includes(item)}
-                onChange={() => handleCheckboxChange(item)}
-                style={{ display: showCheckboxes ? 'block' : 'none' }}
-              />
+              <strong>{item.name}</strong>
+              <p>Цена: {item.price} руб.</p>
             </label>
-          </li>
-        ))}
+            <input
+              type="checkbox"
+              id={`checkbox-${item.number}`}
+              checked={selectedItems.includes(item)}
+              onChange={() => handleCheckboxChange(item)}
+              style={{ display: showCheckboxes ? 'block' : 'none' }}
+            />
+          </div>
+        </li>
+      ))}
       </ul>
       <Button 
         style={{ 
