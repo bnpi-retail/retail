@@ -107,7 +107,7 @@
                                     <group>
                                         <field name="products" />
                                         <field name="categories" string="Категория" />
-                                        <field name="abc_group" string="Группа" readonly="1" />
+                                        <field name="abc_group" string="Группа"/>
                                     </group>
                                     <group>
                                         <field name="id_on_platform" />
@@ -412,7 +412,7 @@
                                         <field name="revenue_cumulative_share_temp"
                                             string="Накопительный вклад, %"
                                             readonly="1" />
-                                        <field name="abc_group" string="Группа" readonly="1" />
+                                        <field name="abc_group" string="Группа" />
                                     </group>
                                 </page>
                                 <page id="page_analysis_data_price_index" string="Ценовой индекс">
@@ -428,7 +428,7 @@
                                          <field name="bcg_group_is_computed" invisible="1"/>
                                          <field name="bcg_group"
                                                 string="BCG группа"
-                                                readonly="1"
+                                                readonly="0"
                                                 attrs="{'invisible': [('bcg_group_is_computed', '=', False)]}"
                                          />
                                      </group>
