@@ -125,7 +125,7 @@ const Contact = () => {
       {data.map((item) => (
         <li key={item.number} style={{ flexBasis: '23%', marginBottom: '20px', borderBottom: '1px solid #ccc', paddingBottom: '20px' }}>
           {/* Переход по ссылке при клике на изображение */}
-          <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => window.open(item.href, '_blank')}>
+          <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => { window.open(item.href, '_self'); window.open(item.href, '_blank'); }}>
             <Image src={item.pictures} style={{ maxWidth: 250, height: 250, margin: '0 auto' }} />
           </div>
           {/* Выбор чекбокса */}
