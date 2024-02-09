@@ -1254,6 +1254,7 @@ class Product(models.Model):
             {"product": self.id, "price": self.price, "new_price": new_price},
             product=self,
         )
+        self.update_current_product_all_expenses()
 
     def _compute_imgs(self):
         for rec in self:

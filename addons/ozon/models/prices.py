@@ -7,7 +7,7 @@ from odoo import models, fields, api
 
 from .indirect_percent_expenses import (
     STRING_FIELDNAMES,
-    COEF_FIELDNAMES_STRINGS_WITHOUT_ACQUIRING,
+    COEF_FIELDNAMES_STRINGS,
 )
 from ..ozon_api import (
     MAX_FIX_EXPENSES_FBO,
@@ -339,35 +339,57 @@ class AllExpenses(models.Model):
             all_time_promo_expenses = prod.promotion_expenses_ids.mapped("expense")
             if all_time_promo_expenses:
                 mean_promo_expense = mean(prod.promotion_expenses_ids.mapped("expense"))
+                percent_promo_expense = mean_promo_expense / price
             else:
                 mean_promo_expense = 0
+                percent_promo_expense = 0
             data.append(
                 {
                     "product_id": prod.id,
                     "name": "Средняя стоимость продвижения товара",
-                    "kind": "fix",
-                    "category": "Продвижение товара",
-                    "value": mean_promo_expense,
-                    "expected_value": mean_promo_expense,
-                }
-            )
-            # услуги озон
-            coef_total = latest_indirect_expenses.coef_total
-            data.append(
-                {
-                    "product_id": prod.id,
-                    "name": "Общий коэффициент косвенных затрат",
-                    "description": f"{round(coef_total,2)}%",
                     "kind": "percent",
-                    "category": "Услуги Ozon",
-                    "percent": coef_total / 100,
-                    "value": price * coef_total / 100,
-                    "expected_value": expected_price * coef_total / 100,
-                    # TODO: убрать после тестов
-                    # "percent": 0.05,
-                    # "value": price * 0.05,
+                    "category": "Продвижение товара",
+                    "percent": percent_promo_expense,
+                    "value": mean_promo_expense,
+                    "expected_value": expected_price * percent_promo_expense,
                 }
             )
+            # ЛИБО услуги озон
+            category = "Услуги Ozon"
+            for k, v in COEF_FIELDNAMES_STRINGS.items():
+                percent = latest_indirect_expenses[k] / 100
+                value = price * percent
+                data.append(
+                    {
+                        "product_id": prod.id,
+                        "name": v,
+                        "description": f"{latest_indirect_expenses[k]}%",
+                        "kind": "percent",
+                        "category": category,
+                        "percent": percent,
+                        "value": value,
+                        "expected_value": expected_price * percent,
+                    }
+                )
+                total_expenses += value
+
+            # ЛИБО общий коэф затрат
+            # coef_total = latest_indirect_expenses.coef_total
+            # data.append(
+            #     {
+            #         "product_id": prod.id,
+            #         "name": "Общий коэффициент косвенных затрат",
+            #         "description": f"{round(coef_total,2)}%",
+            #         "kind": "percent",
+            #         "category": "Услуги Ozon",
+            #         "percent": coef_total / 100,
+            #         "value": price * coef_total / 100,
+            #         "expected_value": expected_price * coef_total / 100,
+            #         # TODO: убрать после тестов
+            #         # "percent": 0.05,
+            #         # "value": price * 0.05,
+            #     }
+            # )
             # вознаграждение озон, последняя миля, логистика, обработка, эквайринг
             if prod.trading_scheme == "FBO":
                 ozon_com = prod.fbo_percent_expenses.filtered(
