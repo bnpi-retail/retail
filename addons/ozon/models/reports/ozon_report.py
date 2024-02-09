@@ -262,19 +262,33 @@ class OzonReportCompetitorBCGMatrix(models.Model):
         for data in record.ozon_report_bcg_matrix_product_data_ids:
             record.ozon_report_bcg_matrix_product_data_ids = [(2, data.id, 0)]
 
-        for product, data in products_data.items():
+        products_of_category = self.env['ozon.products'].search([
+            ('categories', '=', record.ozon_categories_id.id)
+        ])
+
+        for product in products_of_category:
+            new_product_data = products_data.get(product)
+            is_same_vals = False
+            if new_product_data and new_product_data.get('quadrant') == product.bcg_group:
+                is_same_vals = True
             self.env["ozon.report.bcg_matrix.product_data"].create({
                 'ozon_report_bcg_matrix_id': record.id,
                 'ozon_products_id': product.id,
-                'prev_daily_share': data.get('prev_daily_share'),
-                'curr_daily_share': data.get('curr_daily_share'),
-                'curr_market_share': data.get('curr_market_share'),
-                'product_growth_rate': data.get('product_growth_rate'),
-                'bcg_group': data.get('quadrant'),
+                'bcg_group_curr': product.bcg_group,
+                'prev_daily_share': new_product_data.get('prev_daily_share') if new_product_data else False,
+                'curr_daily_share': new_product_data.get('curr_daily_share') if new_product_data else False,
+                'curr_market_share': new_product_data.get('curr_market_share') if new_product_data else False,
+                'product_growth_rate': new_product_data.get('product_growth_rate') if new_product_data else False,
+                'bcg_group': new_product_data.get('quadrant') if new_product_data else 'e',
+                'is_same_bcg_group_values': True if is_same_vals else False
             })
-            product.bcg_group = data.get('quadrant')
+
+    def action_write_updated_bcg_group_to_products(self):
+        for product_data in self.ozon_report_bcg_matrix_product_data_ids:
+            product = product_data.ozon_products_id
+            product.bcg_group = product_data.bcg_group
             if not product.bcg_group_is_computed:
-                product.bcg_group_is_computed = True
+                product_data.ozon_products_id.bcg_group_is_computed = True
             product._touch_bcg_group_indicator(product)
 
 
@@ -288,4 +302,10 @@ class OzonReportBcgMatrixProductData(models.Model):
     curr_daily_share = fields.Float(digits=(12, 5))
     curr_market_share = fields.Float(digits=(12, 5))
     product_growth_rate = fields.Float(digits=(12, 5))
-    bcg_group = fields.Selection([('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака')])
+    bcg_group_curr = fields.Selection([
+        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', '')
+    ])
+    bcg_group = fields.Selection([
+        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', '')
+    ])
+    is_same_bcg_group_values = fields.Boolean()

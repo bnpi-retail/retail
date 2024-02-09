@@ -31,18 +31,27 @@
                             <notebook>
                                 <page string="Графические данные">
                                     <field name="plot" widget="image" attrs="{'invisible':[('plot','=',False)]}"/>
+                                    <div style="position: relative;">
+                                        <div style="position: absolute; bottom: 10px; right: 10px;">
+                                            <button name="action_write_updated_bcg_group_to_products" type="object"
+                                                    string="Применить" class="oe_highlight"
+                                                    attrs="{'invisible': [('ozon_report_bcg_matrix_product_data_ids', '=', [])]}"
+                                            />
+                                        </div>
+                                    </div>
                                 </page>
                             </notebook>
                             <notebook>
                                 <page string="Аналитические данные">
                                     <field name="ozon_report_bcg_matrix_product_data_ids"
                                            attrs="{'invisible':[('plot','=',False)]}">
-                                        <tree default_order="bcg_group, curr_market_share desc"
+                                        <tree default_order="bcg_group"
                                               decoration-info="bcg_group=='a'"
                                               decoration-success="bcg_group=='b'"
                                               decoration-warning="bcg_group=='c'"
                                               decoration-danger="bcg_group=='d'"
                                         >
+                                            <field name="is_same_bcg_group_values" invisible="1"/>
                                             <field name="ozon_products_id" string="Продукт" readonly="1"/>
                                             <field name="prev_daily_share" string="Доля рынка/день в предыдущем периоде"
                                                    readonly="1"/>
@@ -52,7 +61,10 @@
                                                    readonly="1"/>
                                             <field name="product_growth_rate" string="Темп роста продукта"
                                                    readonly="1"/>
-                                            <field name="bcg_group" string="BCG группа" readonly="1"/>
+                                            <field name="bcg_group_curr" string="Текущая BCG группа" readonly="1"/>
+                                            <field name="bcg_group" string="Новая BCG группа"
+                                                   attrs="{'invisible': [('is_same_bcg_group_values', '=', True)]}"
+                                            />
                                         </tree>
                                     </field>
                                 </page>
@@ -83,6 +95,24 @@
             <field name="state">code</field>
             <field name="code">
                 action = records.action_run_bcg_matrix_calculation()
+            </field>
+        </record>
+
+         <record id="ozon_report_bcg_matrix_product_data_view_form" model="ir.ui.view">
+            <field name="name">ozon_report_bcg_matrix_product_data.form</field>
+            <field name="model">ozon.report.bcg_matrix.product_data</field>
+            <field name="arch" type="xml">
+                <form string="Данные BCG">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="ozon_products_id" string="Продукт" readonly="1"/>
+                                <field name="bcg_group_curr" string="Текущая BCG группа" readonly="1"/>
+                                <field name="bcg_group" string="Новая BCG группа"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
             </field>
         </record>
 

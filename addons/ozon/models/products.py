@@ -343,7 +343,9 @@ class Product(models.Model):
     # BCG matrix
     market_share = fields.Float(string="Доля рынка", digits=(12, 5))
     market_share_is_computed = fields.Boolean()
-    bcg_group = fields.Selection([('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака')])
+    bcg_group = fields.Selection([
+        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', '')
+    ])
     bcg_group_is_computed = fields.Boolean()
 
     def _compute_expected_price(self):
