@@ -1562,6 +1562,12 @@ class Product(models.Model):
             product._update_indicator_summary(product)
 
         schedules[0].ozon_products_checking_last_time = datetime.now()
+        categories = self.env['ozon.categories'].search([])
+        for cat in categories:
+            if not cat.abc_group_last_update:
+                cat.abc_group_last_update = datetime.now() - timedelta(days=5)
+            if not cat.bcg_matrix_last_update:
+                cat.bcg_matrix_last_update = datetime.now() - timedelta(days=5)
 
 
 class ProductNameGetExtension(models.Model):
