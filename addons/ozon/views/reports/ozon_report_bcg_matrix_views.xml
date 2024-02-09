@@ -76,7 +76,7 @@
             </field>
         </record>
 
-        <record model="ir.actions.server" id="action_do_abc_analysis">
+        <record model="ir.actions.server" id="action_run_bcg_matrix_calculation">
             <field name="name">Создать BCG Матрицу</field>
             <field name="model_id" ref="model_ozon_report_bcg_matrix"/>
             <field name="binding_model_id" ref="model_ozon_report_bcg_matrix"/>

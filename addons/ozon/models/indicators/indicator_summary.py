@@ -16,3 +16,22 @@ class IndicatorSummary(models.Model):
         ('in_stock', 'Товар в наличии'),
     ])
 
+    color = fields.Integer('Color', compute='_get_color')
+
+    def _get_color(self):
+        """Compute Color value according to the conditions"""
+        for rec in self:
+            if rec.type in (
+                    'cost_not_calculated',
+                    'no_competitor_robot',
+                    'out_of_stock',
+            ):
+                rec.color = 1
+            elif rec.type in (
+                    'no_competitor_manager',
+            ):
+                rec.color = 2
+            elif rec.type in (
+                    'in_stock',
+            ):
+                rec.color = 4

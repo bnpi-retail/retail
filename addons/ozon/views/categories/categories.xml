@@ -12,7 +12,9 @@
                             <group>
                                 <field name="c_id" />
                                 <field name="name_categories" />
-                                <field name="category_manager" />
+                                <field name="category_manager" string="Ответственный менеджер"/>
+                                <field name="abc_group_last_update" readonly="0" string="Последний ABC Анализ"/>
+                                <field name="bcg_matrix_last_update" readonly="0" string="Последний расчет BCG Матрицы"/>
                             </group>
                         </page>
 

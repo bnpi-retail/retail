@@ -41,21 +41,24 @@
                     </group>
 
                     <field name="ozon_products_indicators_summary_ids"
-                        readonly="1"
-                        attrs="{'invisible': [('ozon_products_indicators_summary_ids', '=', [])]}">
-                        <tree
-                            decoration-danger="type in (
-                                'cost_not_calculated',
-                                'no_competitor_robot',
-                                'out_of_stock',
-                                )"
-                            decoration-warning="type=='no_competitor_manager'"
-                            decoration-success="type in ('in_stock', )"
-                        >
-                            <field name="name" string="Индикаторы" />
-                            <field name="type" optional="Hide" />
-                        </tree>
+                           readonly="1"
+                           attrs="{'invisible': [('ozon_products_indicators_summary_ids', '=', [])]}"
+                           create="0"
+                    >
+                        <kanban>
+                            <field name="name" string="Индикаторы"/>
+                            <field name="type"/>
+                            <field name="color"/>
+                            <templates>
+                                <t t-name="kanban-box">
+                                    <div t-attf-class="{{'oe_kanban_color_' + kanban_getcolor(record.color.raw_value) }} oe_kanban_card oe_kanban_global_click oe_semantic_html_override">
+                                         <field name="name"/>
+                                    </div>
+                                </t>
+                            </templates>
+                        </kanban>
                     </field>
+
                     <field name="ozon_products_indicator_ids" invisible="1" />
                     <field name="retail_product_total_cost_price" invisible="1" />
 
@@ -89,7 +92,6 @@
                                 class="btn-outline-primary"
                                 attrs="{'invisible':[('is_button_create_mass_pricing_shown','=',False)]}"
                             />
-                            <!-- <button type="object" name="calculate" string="Рассчитать" /> -->
                         </group>
                     </div>
 
@@ -135,6 +137,7 @@
                                 <field name="investment_expenses_id" />
                                 <field name="all_expenses_ids">
                                     <tree>
+                                        <field name="name" />
                                         <field name="category" />
                                         <!-- <field name="kind" />
                                         <field name="percent" />

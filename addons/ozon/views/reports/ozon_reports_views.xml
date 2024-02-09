@@ -35,6 +35,13 @@
                                         </tree>
                                     </field>
                                 </page>
+                                <page string="Напоминания и задачи">
+                                    <field name="ozon_report_task_ids">
+                                        <tree string="">
+                                            <field name="task"/>
+                                        </tree>
+                                    </field>
+                                </page>
                             </notebook>
                         </group>
                     </sheet>

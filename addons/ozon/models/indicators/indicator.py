@@ -16,9 +16,12 @@ class Indicator(models.Model):
         ('in_stock', 'Товар в наличии'),
         ('no_investment_expenses', 'Investment не установлена'),
         ('no_profitability_norm', 'Не установлена ожидаемая доходность'),
+        ('bcg_group', 'BCG группа'),
+        ('abc_group', 'ABC группа'),
     ])
     end_date = fields.Date()
     expiration_date = fields.Date()
     # next_check_date
     user_id = fields.Many2one('res.users')
+    value = fields.Char()
 
