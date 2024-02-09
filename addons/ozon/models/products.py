@@ -1339,7 +1339,7 @@ class Product(models.Model):
             [], limit=1, order="id desc"
         )
         all_products = self.env["ozon.products"].search([])
-        all_products.create_update_fix_exp_cost_price()
+        # all_products.create_update_fix_exp_cost_price()
         self.env["ozon.all_expenses"].create_update_all_product_expenses(
             all_products, latest_indirect_expenses
         )

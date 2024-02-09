@@ -25,6 +25,8 @@ class SalesReportByCategory(models.Model):
     revenue = fields.Float(string="Выручка за период", readonly=True)
     total_expenses = fields.Float(string="Затраты за период", readonly=True)
     profit = fields.Float(string="Прибыль за период", readonly=True)
+    products_count = fields.Integer(string="Кол-во товаров, у которых были продажи", readonly=True)
+    sales_count = fields.Integer(string="Кол-во продаж", readonly=True)
 
     @api.model
     def create(self, values):
@@ -32,22 +34,24 @@ class SalesReportByCategory(models.Model):
         date_to = fields.Date.to_date(values["date_to"])
         cat_id = values["category_id"]
         # Взять все товары из категории
-        products = self.env["ozon.products"].search([("categories", "=", cat_id),("sales","!=",False)])
-        print(len(products))
+        products = self.env["ozon.products"].search([("categories", "=", cat_id), ("sales", "!=", False)])
         Expense = namedtuple('Expense', ['name', 'category'])
         total_revenue = 0
         total_expenses = {}
+        total_products_count = 0
+        total_sales_count = 0
         # взять все затраты (all_expenses) по всем продуктам
         for p in products:
             sales = p.mapped("sales").filtered(lambda r: date_from <= r.date <= date_to)
             sales_qty = len(sales)
             if sales_qty == 0:
                 continue
+            total_products_count += 1
+            total_sales_count += sales_qty
             total_revenue += sum(sales.mapped("revenue"))
             expenses = p.all_expenses_ids.filtered(
                 lambda r: r.category not in ["Рентабельность", "Investment"]
             )
-
             for e in expenses:
                 exp = Expense(name=e.name, category=e.category)
                 total_expenses.update(
@@ -67,6 +71,8 @@ class SalesReportByCategory(models.Model):
                 "revenue": total_revenue,
                 "total_expenses": sum_total_expenses,
                 "profit": profit,
+                "products_count": total_products_count,
+                "sales_count": total_sales_count,
             }
         )
         record = super(SalesReportByCategory, self).create(values)

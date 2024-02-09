@@ -13,25 +13,38 @@
                                 <field name="category_id" attrs="{'readonly':[('id','>', 0)]}" />
                             </group>
                             <group>
-                                <field name="revenue" attrs="{'invisible':[('id','=',False)]}"
-                                    decoration-bf="True" />
-                                <field name="total_expenses"
-                                    attrs="{'invisible':[('id','=',False)]}"
-                                    decoration-bf="True" />
-                                <field name="profit" attrs="{'invisible':[('id','=',False)]}"
-                                    decoration-success="profit>0"
-                                    decoration-danger="total_expenses>revenue"
-                                    decoration-bf="True" />
+                                <group>
+                                    <field name="revenue" attrs="{'invisible':[('id','=',False)]}"
+                                        decoration-bf="True" />
+                                    <field name="total_expenses"
+                                        attrs="{'invisible':[('id','=',False)]}"
+                                        decoration-bf="True" />
+                                    <field name="profit" attrs="{'invisible':[('id','=',False)]}"
+                                        decoration-success="profit>0"
+                                        decoration-danger="total_expenses>revenue"
+                                        decoration-bf="True" />
+                                </group>
+                                <group>
+                                    <field name="products_count"
+                                        attrs="{'invisible':[('id','=',False)]}" />
+                                    <field name="sales_count"
+                                        attrs="{'invisible':[('id','=',False)]}" />
+                                </group>
                             </group>
+                        </group>
+
+                        <group>
                             <button type="object" name="show_expenses"
                                 string="Подробнее"
                                 class="btn-outline-primary"
                                 attrs="{'invisible':[('id','=',False)]}"
                             />
-                            <field name="expenses_by_category_ids"
-                                attrs="{'invisible':[('id','=',False)]}" />
-
                         </group>
+
+                        <field name="expenses_by_category_ids"
+                            attrs="{'invisible':[('id','=',False)]}" />
+
+
                     </sheet>
                 </form>
             </field>
