@@ -40,6 +40,8 @@
                         </field>
                     </group>
 
+                    <field name="write_date"/>
+
                     <field name="ozon_products_indicators_summary_ids"
                            readonly="1"
                            attrs="{'invisible': [('ozon_products_indicators_summary_ids', '=', [])]}"

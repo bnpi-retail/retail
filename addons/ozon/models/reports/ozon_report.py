@@ -2,7 +2,7 @@ import base64
 from datetime import datetime
 import io
 from collections import defaultdict
-from odoo import models, fields
+from odoo import models, fields, api
 from odoo.exceptions import UserError
 import logging
 import matplotlib.pyplot as plt
@@ -286,10 +286,12 @@ class OzonReportCompetitorBCGMatrix(models.Model):
     def action_write_updated_bcg_group_to_products(self):
         for product_data in self.ozon_report_bcg_matrix_product_data_ids:
             product = product_data.ozon_products_id
-            product.bcg_group = product_data.bcg_group
-            if not product.bcg_group_is_computed:
-                product_data.ozon_products_id.bcg_group_is_computed = True
-            product._touch_bcg_group_indicator(product)
+            if product.bcg_group != product_data.bcg_group:
+                product.bcg_group = product_data.bcg_group
+                if not product.bcg_group_is_computed:
+                    product_data.ozon_products_id.bcg_group_is_computed = True
+                product_data.bcg_group_curr = product_data.bcg_group
+            product._touch_bcg_group_indicator(product, summary_update=False)
 
 
 class OzonReportBcgMatrixProductData(models.Model):
@@ -308,4 +310,16 @@ class OzonReportBcgMatrixProductData(models.Model):
     bcg_group = fields.Selection([
         ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', '')
     ])
-    is_same_bcg_group_values = fields.Boolean()
+    is_same_bcg_group_values = fields.Boolean(compute="is_same_vals")
+
+    @api.depends('bcg_group', 'bcg_group_curr')
+    def is_same_vals(self):
+        for record in self:
+            record.is_same_bcg_group_values = True if record.bcg_group_curr == record.bcg_group else False
+
+    # @api.onchange('bcg_group')
+    # def onchange_bcg_group(self):
+    #     id_ = str(self.id).split('_')[1]
+    #     if isinstance(id_, str) and id_.isnumeric():
+    #         record = self.env["ozon.report.bcg_matrix.product_data"].browse(int(id_))
+    #         record.is_same_bcg_group_values = True if self.bcg_group_curr == self.bcg_group else False

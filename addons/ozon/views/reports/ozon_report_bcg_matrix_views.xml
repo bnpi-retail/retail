@@ -45,7 +45,7 @@
                                 <page string="Аналитические данные">
                                     <field name="ozon_report_bcg_matrix_product_data_ids"
                                            attrs="{'invisible':[('plot','=',False)]}">
-                                        <tree default_order="bcg_group"
+                                        <tree default_order="bcg_group, is_same_bcg_group_values"
                                               decoration-info="bcg_group=='a'"
                                               decoration-success="bcg_group=='b'"
                                               decoration-warning="bcg_group=='c'"
