@@ -22,8 +22,8 @@ STRING_FIELDNAMES = {
     "Услуга по бронированию места и персонала для поставки с неполным составом": "booking_incomplete",
     "Прочее": "other",
 }
-COEF_FIELDNAMES_STRINGS_WITHOUT_ACQUIRING = {
-    "coef_promotion": "Услуги продвижения товаров",
+COEF_FIELDNAMES_STRINGS = {
+    # "coef_promotion": "Услуги продвижения товаров",
     "coef_refund": "Получение возврата, отмены, невыкупа от покупателя",
     "coef_refund_delivery": "Доставка и обработка возврата, отмены, невыкупа",
     "coef_pickup": "Обработка отправления «Pick-up» (отгрузка курьеру)",
