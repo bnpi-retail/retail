@@ -101,6 +101,7 @@ class ImportProductsPlugin(models.Model):
             record = model_products.search([("fbs_sku", "=", sku)])
             if record: return sku, record
 
+        return None, None
 
 class NameGet(models.Model):
     _inherit = "parser.import_file"
