@@ -122,9 +122,8 @@ const Contact = () => {
         DemoSecond()
       ) : DemoFirst()}
       <ul style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', padding: 0, listStyle: 'none' }}>
-      {data.map((item) => (
-        <li key={item.number} style={{ flexBasis: '23%', marginBottom: '20px', borderBottom: '1px solid #ccc', paddingBottom: '20px' }}>
-          <a href={item.url} style={{ textDecoration: 'none', color: 'inherit' }} onClick={(e) => { e.preventDefault(); }}>
+        {data.map((item) => (
+          <li key={item.number} style={{ flexBasis: '23%', marginBottom: '20px', borderBottom: '1px solid #ccc', paddingBottom: '20px' }}>
             <label
               htmlFor={`checkbox-${item.number}`}
               style={{
@@ -149,9 +148,8 @@ const Contact = () => {
                 style={{ display: showCheckboxes ? 'block' : 'none' }}
               />
             </label>
-          </a>
-        </li>
-      ))}
+          </li>
+        ))}
       </ul>
       <Button 
         style={{ 
