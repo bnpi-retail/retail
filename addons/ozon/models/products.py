@@ -1341,7 +1341,7 @@ class Product(models.Model):
             [], limit=1, order="id desc"
         )
         all_products = self.env["ozon.products"].search([])
-        all_products.create_update_fix_exp_cost_price()
+        # all_products.create_update_fix_exp_cost_price()
         self.env["ozon.all_expenses"].create_update_all_product_expenses(
             all_products, latest_indirect_expenses
         )
@@ -1474,9 +1474,6 @@ class Product(models.Model):
             if prod_calc_rec.name == "Ожидаемая цена по всем стратегиям":
                 prod_calc_rec.new_value = mean(prices)
 
-    def calculate(self):
-        self._compute_product_calculator_ids()
-        return super(Product, self).write({})
 
     @api.depends("posting_ids")
     def _compute_count_postings(self):
