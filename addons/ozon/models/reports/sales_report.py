@@ -101,7 +101,7 @@ class SalesReportByCategory(models.Model):
             "view_mode": "tree",
             "res_model": "ozon.expenses_by_category",
             "domain": [("sales_report_by_category_id", "=", self.id)],
-            "context": {"group_by": "category"},
+            "context": {"group_by": "category", "create": False},
             "target": "new",
         }
 

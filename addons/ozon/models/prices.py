@@ -500,7 +500,7 @@ class AllExpenses(models.Model):
                     "expected_value": expected_prof_norm_value,
                 },
             )
-            total_expenses += prof_norm_value
+            
             # инвест.затраты
             if prod.investment_expenses_id:
                 inv_exp_percent = prod.investment_expenses_id.value
@@ -519,12 +519,21 @@ class AllExpenses(models.Model):
                     "expected_value": expected_inv_exp_value,
                 },
             )
-            total_expenses += inv_exp_value
+            
             # налог
+            total_ozon_expenses = total_expenses - prod.products.total_cost_price
+            # TODO: как считать налог при налогообложении "Доходы минус расходы"? Что считать расходами?
             if tax.startswith("earnings_minus_expenses"):
-                tax_value = abs((price - total_expenses) * tax_percent)
+                if (price - total_expenses) > 0:
+                    tax_value = (price - total_expenses) * tax_percent
+                else:
+                    tax_value = 0
             else:
-                tax_value = price * tax_percent
+                if (price - total_ozon_expenses) > 0:
+                    tax_value = (price - total_ozon_expenses) * tax_percent
+                else:
+                    tax_value = 0
+                    
             data.append(
                 {
                     "product_id": prod.id,
@@ -534,7 +543,7 @@ class AllExpenses(models.Model):
                     "category": "Налоги",
                     "percent": tax_value / price,
                     "value": tax_value,
-                    "expected_value": expected_price * tax_value / price,
+                    "expected_value": tax_value, #TODO: непонятно как считать
                 },
             )
             print(f"{idx} - All expenses were updated.")

@@ -89,7 +89,6 @@
                                 class="btn-outline-primary"
                                 attrs="{'invisible':[('is_button_create_mass_pricing_shown','=',False)]}"
                             />
-                            <!-- <button type="object" name="calculate" string="Рассчитать" /> -->
                         </group>
                     </div>
 
@@ -137,9 +136,9 @@
                                     <tree>
                                         <field name="name" />
                                         <field name="category" />
-                                        <field name="kind" />
+                                        <!-- <field name="kind" />
                                         <field name="percent" />
-                                        <field name="value" />
+                                        <field name="value" /> -->
                                         <field name="expected_value" />
                                     </tree>
                                 </field>

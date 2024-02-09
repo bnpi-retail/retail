@@ -24,7 +24,7 @@
                                     decoration-bf="True" />
                             </group>
                             <button type="object" name="show_expenses"
-                                string="Затраты подробнее"
+                                string="Подробнее"
                                 class="btn-outline-primary"
                                 attrs="{'invisible':[('id','=',False)]}"
                             />
