@@ -268,9 +268,10 @@ class OzonReportCompetitorBCGMatrix(models.Model):
 
         for product in products_of_category:
             new_product_data = products_data.get(product)
-            is_same_vals = False
-            if new_product_data and new_product_data.get('quadrant') == product.bcg_group:
-                is_same_vals = True
+            bcg_group_val = 'e'
+            if new_product_data and new_product_data.get('quadrant'):
+                if new_product_data.get('quadrant') != product.bcg_group:
+                    bcg_group_val = new_product_data.get('quadrant')
             self.env["ozon.report.bcg_matrix.product_data"].create({
                 'ozon_report_bcg_matrix_id': record.id,
                 'ozon_products_id': product.id,
@@ -279,14 +280,14 @@ class OzonReportCompetitorBCGMatrix(models.Model):
                 'curr_daily_share': new_product_data.get('curr_daily_share') if new_product_data else False,
                 'curr_market_share': new_product_data.get('curr_market_share') if new_product_data else False,
                 'product_growth_rate': new_product_data.get('product_growth_rate') if new_product_data else False,
-                'bcg_group': new_product_data.get('quadrant') if new_product_data else 'e',
-                'is_same_bcg_group_values': True if is_same_vals else False
+                'bcg_group': bcg_group_val
             })
 
     def action_write_updated_bcg_group_to_products(self):
         for product_data in self.ozon_report_bcg_matrix_product_data_ids:
+            logger.warning(product_data.bcg_group)
             product = product_data.ozon_products_id
-            if product.bcg_group != product_data.bcg_group:
+            if product_data.bcg_group != 'e':
                 product.bcg_group = product_data.bcg_group
                 if not product.bcg_group_is_computed:
                     product_data.ozon_products_id.bcg_group_is_computed = True
@@ -310,16 +311,4 @@ class OzonReportBcgMatrixProductData(models.Model):
     bcg_group = fields.Selection([
         ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', '')
     ])
-    is_same_bcg_group_values = fields.Boolean(compute="is_same_vals")
 
-    @api.depends('bcg_group', 'bcg_group_curr')
-    def is_same_vals(self):
-        for record in self:
-            record.is_same_bcg_group_values = True if record.bcg_group_curr == record.bcg_group else False
-
-    # @api.onchange('bcg_group')
-    # def onchange_bcg_group(self):
-    #     id_ = str(self.id).split('_')[1]
-    #     if isinstance(id_, str) and id_.isnumeric():
-    #         record = self.env["ozon.report.bcg_matrix.product_data"].browse(int(id_))
-    #         record.is_same_bcg_group_values = True if self.bcg_group_curr == self.bcg_group else False

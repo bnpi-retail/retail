@@ -44,15 +44,15 @@
                             <notebook>
                                 <page string="Аналитические данные">
                                     <field name="ozon_report_bcg_matrix_product_data_ids"
-                                           attrs="{'invisible':[('plot','=',False)]}">
-                                        <tree default_order="bcg_group, is_same_bcg_group_values"
+                                           attrs="{'invisible':[('ozon_report_bcg_matrix_product_data_ids','=',[])]}">
+                                        <tree default_order="bcg_group, bcg_group_curr"
                                               decoration-info="bcg_group=='a'"
                                               decoration-success="bcg_group=='b'"
                                               decoration-warning="bcg_group=='c'"
                                               decoration-danger="bcg_group=='d'"
+                                              editable="bottom"
                                         >
-                                            <field name="is_same_bcg_group_values" invisible="1"/>
-                                            <field name="ozon_products_id" string="Продукт" readonly="1"/>
+                                            <field name="ozon_products_id" string="Продукт"/>
                                             <field name="prev_daily_share" string="Доля рынка/день в предыдущем периоде"
                                                    readonly="1"/>
                                             <field name="curr_daily_share" string="Доля рынка/день в последнем периоде"
@@ -61,10 +61,13 @@
                                                    readonly="1"/>
                                             <field name="product_growth_rate" string="Темп роста продукта"
                                                    readonly="1"/>
-                                            <field name="bcg_group_curr" string="Текущая BCG группа" readonly="1"/>
-                                            <field name="bcg_group" string="Новая BCG группа"
-                                                   attrs="{'invisible': [('is_same_bcg_group_values', '=', True)]}"
+                                            <field name="bcg_group_curr" string="Текущая BCG группа" readonly="1"
+                                                   decoration-info="bcg_group_curr=='a'"
+                                                   decoration-success="bcg_group_curr=='b'"
+                                                   decoration-warning="bcg_group_curr=='c'"
+                                                   decoration-danger="bcg_group_curr=='d'"
                                             />
+                                            <field name="bcg_group" string="Новая BCG группа"/>
                                         </tree>
                                     </field>
                                 </page>
@@ -98,7 +101,7 @@
             </field>
         </record>
 
-         <record id="ozon_report_bcg_matrix_product_data_view_form" model="ir.ui.view">
+        <record id="ozon_report_bcg_matrix_product_data_view_form" model="ir.ui.view">
             <field name="name">ozon_report_bcg_matrix_product_data.form</field>
             <field name="model">ozon.report.bcg_matrix.product_data</field>
             <field name="arch" type="xml">
