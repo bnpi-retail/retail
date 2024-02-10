@@ -598,7 +598,7 @@ class Product(models.Model):
             self._check_competitors_with_price_ids_qty(record, summary_update=False)
             self._update_in_out_stock_indicators(record, summary_update=False)
 
-            self._update_indicator_summary(record)
+            self.update_indicator_summary(record)
 
         return records
 
@@ -658,7 +658,8 @@ class Product(models.Model):
 
         return res
 
-    def _update_indicator_summary(self, record):
+    @staticmethod
+    def _get_indicators_and_summaries_types(record) -> tuple:
         self_indicators = record.ozon_products_indicator_ids
         if self_indicators:
             indicator_types = defaultdict()
@@ -668,160 +669,194 @@ class Product(models.Model):
             for summary in record.ozon_products_indicators_summary_ids:
                 summary_types[summary.type] = summary
 
+            return indicator_types, summary_types
+
+    def update_indicator_summary(self, record):
+        indicator_types, summary_types = self._get_indicators_and_summaries_types(record)
+        if indicator_types and summary_types:
             # cost price, investment, profitability_norm
-            indicator_cost_price = indicator_types.get("cost_not_calculated")
-            indicator_investment = indicator_types.get("no_investment_expenses")
-            indicator_profitability_norm = indicator_types.get("no_profitability_norm")
-            common_indicator = False
-            words = []
-            days = 0
-            for ind in (
+            self._update_cost_price_investment_profitability_norm_indicators_summary(
+                record, indicator_types, summary_types
+            )
+            # less 3 competitors
+            self._update_less_3_competitors_indicator_summary(record, indicator_types, summary_types)
+            # остатки
+            self._update_in_out_indicator_summary(record, indicator_types, summary_types)
+
+    def _update_cost_price_investment_profitability_norm_indicators_summary(
+            self, record, indicator_types=None, summary_types=None
+    ):
+        if not indicator_types or not summary_types:
+            indicator_types, summary_types = self._get_indicators_and_summaries_types(record)
+        if not indicator_types or not summary_types:
+            logger.warning("Can't do _update_cost_price_investment_profitability_norm_indicators_summary")
+            return
+
+        indicator_cost_price = indicator_types.get("cost_not_calculated")
+        indicator_investment = indicator_types.get("no_investment_expenses")
+        indicator_profitability_norm = indicator_types.get("no_profitability_norm")
+        common_indicator = False
+        words = []
+        days = 0
+        for ind in (
                 indicator_investment,
                 indicator_cost_price,
                 indicator_profitability_norm,
-            ):
-                if ind:
-                    common_indicator = True
-                    ind_days = (datetime.now() - ind.create_date).days
-                    if days < ind_days:
-                        days = ind_days
-            if indicator_cost_price:
-                words.append("себестоимость не подсчитана, ")
-            if indicator_investment:
-                words.append("investment не установлен, ")
-            if indicator_profitability_norm:
-                words.append("ожидаемая доходность не установлена, ")
+        ):
+            if ind:
+                common_indicator = True
+                ind_days = (datetime.now() - ind.create_date).days
+                if days < ind_days:
+                    days = ind_days
+        if indicator_cost_price:
+            words.append("себестоимость не подсчитана, ")
+        if indicator_investment:
+            words.append("investment не установлен, ")
+        if indicator_profitability_norm:
+            words.append("ожидаемая доходность не установлена, ")
 
-            if common_indicator:
-                text = "".join(words)
-                text = text.capitalize()[:-2]
-                summary = summary_types.get("cost_not_calculated")
-                if summary:
-                    summary.name = (
-                        f"{text} дней: {days}. "
-                        f"Точность расчета цены может быть снижена."
-                    )
-                else:
-                    self.env["ozon.products.indicator.summary"].create(
-                        {
-                            "name": f"{text} дней: {days}. "
-                            f"Точность расчета цены может быть снижена.",
-                            "type": "cost_not_calculated",
-                            "ozon_product_id": record.id,
-                        }
-                    )
-
+        if common_indicator:
+            text = "".join(words)
+            text = text.capitalize()[:-2]
+            summary = summary_types.get("cost_not_calculated")
+            if summary:
+                summary.name = (
+                    f"{text} дней: {days}. "
+                    f"Точность расчета цены может быть снижена."
+                )
             else:
-                summary = summary_types.get("cost_not_calculated")
-                if summary:
-                    record.ozon_products_indicators_summary_ids = [(2, summary.id, 0)]
-
-            # less 3 competitors
-            indicator_no_competitor_r = indicator_types.get("no_competitor_robot")
-            indicator_no_competitor_m = indicator_types.get("no_competitor_manager")
-            if indicator_no_competitor_r and not indicator_no_competitor_m:
-                days = (datetime.now() - indicator_no_competitor_r.create_date).days
-                summary = summary_types.get("no_competitor_robot")
-                if summary:
-                    summary.name = (
-                        f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
-                        f"Цена не может быть рассчитана. Добавьте товары конкурентов."
-                    )
-                else:
-                    self.env["ozon.products.indicator.summary"].create(
-                        {
-                            "name": f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
-                            f"Цена не может быть рассчитана. Добавьте товары конкурентов.",
-                            "type": "no_competitor_robot",
-                            "ozon_product_id": record.id,
-                        }
-                    )
-
-            elif indicator_no_competitor_r and indicator_no_competitor_m:
-                manager = indicator_no_competitor_m.user_id
-                expiration_date = indicator_no_competitor_m.expiration_date.strftime(
-                    "%d.%m.%Y"
+                self.env["ozon.products.indicator.summary"].create(
+                    {
+                        "name": f"{text} дней: {days}. "
+                                f"Точность расчета цены может быть снижена.",
+                        "type": "cost_not_calculated",
+                        "ozon_product_id": record.id,
+                    }
                 )
-                create_date = indicator_no_competitor_m.create_date.strftime("%d.%m.%Y")
-                summary_m = summary_types.get("no_competitor_manager")
-                if summary_m:
-                    summary_m.name = (
-                        f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
-                        f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
-                        f"что снизит точность прогнозирования правильной ценовой стратегии. "
-                        f"Этот индикатор будет действовать до {expiration_date}"
-                    )
-                else:
-                    self.env["ozon.products.indicator.summary"].create(
-                        {
-                            "name": f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
-                            f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
-                            f"что снизит точность прогнозирования правильной ценовой стратегии. "
-                            f"Этот индикатор будет действовать до {expiration_date}",
-                            "type": "no_competitor_manager",
-                            "ozon_product_id": record.id,
-                        }
-                    )
 
-                # delete robot's summary
-                summary_r = summary_types.get("no_competitor_robot")
-                if summary_r:
-                    record.ozon_products_indicators_summary_ids = [(2, summary_r.id, 0)]
-            elif not indicator_no_competitor_r:
-                summary_r = summary_types.get("no_competitor_robot")
-                summary_m = summary_types.get("no_competitor_manager")
-                for summary in (summary_r, summary_m):
-                    if summary:
-                        record.ozon_products_indicators_summary_ids = [
-                            (2, summary.id, 0)
-                        ]
+        else:
+            summary = summary_types.get("cost_not_calculated")
+            if summary:
+                record.ozon_products_indicators_summary_ids = [(2, summary.id, 0)]
 
-            # остатки
-            in_stock_indicator = indicator_types.get("in_stock")
-            out_of_stock_indicator = indicator_types.get("out_of_stock")
-            in_stock_summary = summary_types.get("in_stock")
-            out_of_stock_summary = summary_types.get("out_of_stock")
-            if in_stock_indicator:
-                days = (datetime.now() - in_stock_indicator.create_date).days
-                if out_of_stock_summary:
-                    record.ozon_products_indicators_summary_ids = [
-                        (2, out_of_stock_summary.id, 0)
-                    ]
-                if in_stock_summary:
-                    in_stock_summary.name = f"Товар в продаже дней: {days}."
-                else:
-                    self.env["ozon.products.indicator.summary"].create(
-                        {
-                            "name": f"Товар в продаже дней: {days}.",
-                            "type": "in_stock",
-                            "ozon_product_id": record.id,
-                        }
-                    )
-            elif out_of_stock_indicator:
-                days = (datetime.now() - out_of_stock_indicator.create_date).days
-                lost_revenue_per_day = self._calculate_a_lost_revenue(
-                    self, out_of_stock_indicator.create_date
+    def _update_less_3_competitors_indicator_summary(self, record, indicator_types=None, summary_types=None):
+        if not indicator_types or not summary_types:
+            indicator_types, summary_types = self._get_indicators_and_summaries_types(record)
+        if not indicator_types or not summary_types:
+            logger.warning("Can't do _update_less_3_competitors_indicator_summary")
+            return
+
+        indicator_no_competitor_r = indicator_types.get("no_competitor_robot")
+        indicator_no_competitor_m = indicator_types.get("no_competitor_manager")
+        if indicator_no_competitor_r and not indicator_no_competitor_m:
+            days = (datetime.now() - indicator_no_competitor_r.create_date).days
+            summary = summary_types.get("no_competitor_robot")
+            if summary:
+                summary.name = (
+                    f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
+                    f"Цена не может быть рассчитана. Добавьте товары конкурентов."
                 )
-                lost_revenue = round(lost_revenue_per_day * days, 2)
+            else:
+                self.env["ozon.products.indicator.summary"].create(
+                    {
+                        "name": f"Продукт имеет менее 3х конкурентов в течение дней: {days}. "
+                                f"Цена не может быть рассчитана. Добавьте товары конкурентов.",
+                        "type": "no_competitor_robot",
+                        "ozon_product_id": record.id,
+                    }
+                )
+        elif indicator_no_competitor_r and indicator_no_competitor_m:
+            manager = indicator_no_competitor_m.user_id
+            expiration_date = indicator_no_competitor_m.expiration_date.strftime(
+                "%d.%m.%Y"
+            )
+            create_date = indicator_no_competitor_m.create_date.strftime("%d.%m.%Y")
+            summary_m = summary_types.get("no_competitor_manager")
+            if summary_m:
+                summary_m.name = (
+                    f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
+                    f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
+                    f"что снизит точность прогнозирования правильной ценовой стратегии. "
+                    f"Этот индикатор будет действовать до {expiration_date}"
+                )
+            else:
+                self.env["ozon.products.indicator.summary"].create(
+                    {
+                        "name": f"{manager.name} {create_date} подтвердил, что у продукта менее 3х "
+                                f"товаров- конкурентов. Цена может быть рассчитана без их учета, "
+                                f"что снизит точность прогнозирования правильной ценовой стратегии. "
+                                f"Этот индикатор будет действовать до {expiration_date}",
+                        "type": "no_competitor_manager",
+                        "ozon_product_id": record.id,
+                    }
+                )
 
-                if in_stock_summary:
+            # delete robot's summary
+            summary_r = summary_types.get("no_competitor_robot")
+            if summary_r:
+                record.ozon_products_indicators_summary_ids = [(2, summary_r.id, 0)]
+
+        elif not indicator_no_competitor_r:
+            summary_r = summary_types.get("no_competitor_robot")
+            summary_m = summary_types.get("no_competitor_manager")
+            for summary in (summary_r, summary_m):
+                if summary:
                     record.ozon_products_indicators_summary_ids = [
-                        (2, in_stock_summary.id, 0)
+                        (2, summary.id, 0)
                     ]
-                if out_of_stock_summary:
-                    out_of_stock_summary.name = (
-                        f"Товар отсутствует дней: {days}. "
-                        f"Упущенная выручка: {lost_revenue} руб."
-                    )
-                else:
-                    self.env["ozon.products.indicator.summary"].create(
-                        {
-                            "name": f"Товар отсутствует дней: {days}. "
-                            f"Упущенная выручка: {lost_revenue} руб.",
-                            "type": "out_of_stock",
-                            "ozon_product_id": record.id,
-                        }
-                    )
+
+    def _update_in_out_indicator_summary(self, record, indicator_types=None, summary_types=None):
+        if not indicator_types or not summary_types:
+            indicator_types, summary_types = self._get_indicators_and_summaries_types(record)
+        if not indicator_types or not summary_types:
+            logger.warning("Can't do _update_in_out_indicator_summary")
+            return
+
+        in_stock_indicator = indicator_types.get("in_stock")
+        out_of_stock_indicator = indicator_types.get("out_of_stock")
+        in_stock_summary = summary_types.get("in_stock")
+        out_of_stock_summary = summary_types.get("out_of_stock")
+        if in_stock_indicator:
+            days = (datetime.now() - in_stock_indicator.create_date).days
+            if out_of_stock_summary:
+                record.ozon_products_indicators_summary_ids = [
+                    (2, out_of_stock_summary.id, 0)
+                ]
+            if in_stock_summary:
+                in_stock_summary.name = f"Товар в продаже дней: {days}."
+            else:
+                self.env["ozon.products.indicator.summary"].create(
+                    {
+                        "name": f"Товар в продаже дней: {days}.",
+                        "type": "in_stock",
+                        "ozon_product_id": record.id,
+                    }
+                )
+        elif out_of_stock_indicator:
+            days = (datetime.now() - out_of_stock_indicator.create_date).days
+            lost_revenue_per_day = self._calculate_a_lost_revenue(
+                self, out_of_stock_indicator.create_date
+            )
+            lost_revenue = round(lost_revenue_per_day * days, 2)
+
+            if in_stock_summary:
+                record.ozon_products_indicators_summary_ids = [
+                    (2, in_stock_summary.id, 0)
+                ]
+            if out_of_stock_summary:
+                out_of_stock_summary.name = (
+                    f"Товар отсутствует дней: {days}. "
+                    f"Упущенная выручка: {lost_revenue} руб."
+                )
+            else:
+                self.env["ozon.products.indicator.summary"].create(
+                    {
+                        "name": f"Товар отсутствует дней: {days}. "
+                        f"Упущенная выручка: {lost_revenue} руб.",
+                        "type": "out_of_stock",
+                        "ozon_product_id": record.id,
+                    }
+                )
 
     @api.depends("ozon_products_indicator_ids", "ozon_products_indicators_summary_ids")
     def _compute_ozon_products_indicator_qty(self):
@@ -861,7 +896,7 @@ class Product(models.Model):
             )
         # обновить выводы по индикаторам
         if summary_update:
-            self._update_indicator_summary(record)
+            self.update_indicator_summary(record)
 
     def _touch_abc_group_indicator(self, record, summary_update=True):
         abc_group_indicator = None
@@ -883,7 +918,7 @@ class Product(models.Model):
             )
         # обновить выводы по индикаторам
         if summary_update:
-            self._update_indicator_summary(record)
+            self.update_indicator_summary(record)
 
     def _check_investment_expenses(self, record, summary_update=True):
         if not record.investment_expenses_id:
@@ -909,7 +944,7 @@ class Product(models.Model):
                     indicator.active = False
         # обновить выводы по индикаторам
         if summary_update:
-            self._update_indicator_summary(record)
+            self.update_indicator_summary(record)
 
     def _check_profitability_norm(self, record, summary_update=True):
         if not record.profitability_norm:
@@ -935,7 +970,7 @@ class Product(models.Model):
                     indicator.active = False
         # обновить выводы по индикаторам
         if summary_update:
-            self._update_indicator_summary(record)
+            self.update_indicator_summary(record)
 
     def _check_cost_price(self, record, summary_update=True):
         cost_price = 0
@@ -969,7 +1004,7 @@ class Product(models.Model):
 
         # обновить выводы по индикаторам
         if summary_update:
-            self._update_indicator_summary(record)
+            self.update_indicator_summary(record)
 
     def _check_competitors_with_price_ids_qty(self, record, summary_update=True):
         if len(record.competitors_with_price_ids) >= 3:
@@ -999,7 +1034,7 @@ class Product(models.Model):
 
         # обновить выводы по индикаторам
         if summary_update:
-            self._update_indicator_summary(record)
+            self.update_indicator_summary(record)
 
     def _update_in_out_stock_indicators(self, record, summary_update=True):
         if record.is_selling:
@@ -1040,7 +1075,7 @@ class Product(models.Model):
                 )
         # обновить выводы по индикаторам
         if summary_update:
-            self._update_indicator_summary(record)
+            self.update_indicator_summary(record)
 
     def _calculate_a_lost_revenue(self, record, period_to: datetime.date) -> float:
         avg_revenue_per_day = 0
@@ -1202,7 +1237,7 @@ class Product(models.Model):
         )
 
         # обновить выводы по индикаторам
-        self._update_indicator_summary(record)
+        self.update_indicator_summary(record)
 
     @api.depends("stocks_fbs", "stocks_fbo")
     def _get_is_selling(self):
@@ -1552,7 +1587,7 @@ class Product(models.Model):
                 product._check_competitors_with_price_ids_qty(product, summary_update=False)
                 product._update_in_out_stock_indicators(product, summary_update=False)
 
-                product._update_indicator_summary(product)
+                product.update_indicator_summary(product)
                 product.bcg_group = 'e'
             except:
                 logger.warning('action_run_indicators_checks exception')
