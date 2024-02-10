@@ -34,11 +34,14 @@
                                     <div style="position: relative;">
                                         <div style="position: absolute; bottom: 10px; right: 10px;">
                                             <group>
-                                                <field name="is_applied" string="Применено" readonly="1"/>
+                                                <field name="is_applied" string="Применено" invisible="1"/>
+                                                <h5 attrs="{'invisible': [('is_applied', '=', False)]}">
+                                                    Применено
+                                                </h5>
                                             </group>
                                             <button name="action_write_updated_bcg_group_to_products" type="object"
                                                     string="Применить" class="oe_highlight"
-                                                    attrs="{'invisible': [('ozon_report_bcg_matrix_product_data_ids', '=', [])]}"
+                                                    attrs="{'invisible': [('is_applied', '=', True)]}"
                                             />
                                         </div>
                                     </div>
