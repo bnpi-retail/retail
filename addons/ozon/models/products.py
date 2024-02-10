@@ -661,19 +661,18 @@ class Product(models.Model):
     @staticmethod
     def _get_indicators_and_summaries_types(record) -> tuple:
         self_indicators = record.ozon_products_indicator_ids
-        if self_indicators:
-            indicator_types = defaultdict()
-            for indicator in self_indicators:
-                indicator_types[indicator.type] = indicator
-            summary_types = defaultdict()
-            for summary in record.ozon_products_indicators_summary_ids:
-                summary_types[summary.type] = summary
+        indicator_types = defaultdict()
+        for indicator in self_indicators:
+            indicator_types[indicator.type] = indicator
+        summary_types = defaultdict()
+        for summary in record.ozon_products_indicators_summary_ids:
+            summary_types[summary.type] = summary
 
-            return indicator_types, summary_types
+        return indicator_types, summary_types
 
     def update_indicator_summary(self, record):
         indicator_types, summary_types = self._get_indicators_and_summaries_types(record)
-        if indicator_types and summary_types:
+        if indicator_types:
             # cost price, investment, profitability_norm
             self._update_cost_price_investment_profitability_norm_indicators_summary(
                 record, indicator_types, summary_types
@@ -682,15 +681,16 @@ class Product(models.Model):
             self._update_less_3_competitors_indicator_summary(record, indicator_types, summary_types)
             # остатки
             self._update_in_out_indicator_summary(record, indicator_types, summary_types)
+            # bcg
+            self._update_bcg_group_indicator_summary(record, indicator_types, summary_types)
+            # abc
+            self._update_abc_group_indicator_summary(record, indicator_types, summary_types)
 
     def _update_cost_price_investment_profitability_norm_indicators_summary(
             self, record, indicator_types=None, summary_types=None
     ):
-        if not indicator_types or not summary_types:
+        if not indicator_types and not summary_types:
             indicator_types, summary_types = self._get_indicators_and_summaries_types(record)
-        if not indicator_types or not summary_types:
-            logger.warning("Can't do _update_cost_price_investment_profitability_norm_indicators_summary")
-            return
 
         indicator_cost_price = indicator_types.get("cost_not_calculated")
         indicator_investment = indicator_types.get("no_investment_expenses")
@@ -740,11 +740,8 @@ class Product(models.Model):
                 record.ozon_products_indicators_summary_ids = [(2, summary.id, 0)]
 
     def _update_less_3_competitors_indicator_summary(self, record, indicator_types=None, summary_types=None):
-        if not indicator_types or not summary_types:
+        if not indicator_types:
             indicator_types, summary_types = self._get_indicators_and_summaries_types(record)
-        if not indicator_types or not summary_types:
-            logger.warning("Can't do _update_less_3_competitors_indicator_summary")
-            return
 
         indicator_no_competitor_r = indicator_types.get("no_competitor_robot")
         indicator_no_competitor_m = indicator_types.get("no_competitor_manager")
@@ -806,11 +803,8 @@ class Product(models.Model):
                     ]
 
     def _update_in_out_indicator_summary(self, record, indicator_types=None, summary_types=None):
-        if not indicator_types or not summary_types:
+        if not indicator_types:
             indicator_types, summary_types = self._get_indicators_and_summaries_types(record)
-        if not indicator_types or not summary_types:
-            logger.warning("Can't do _update_in_out_indicator_summary")
-            return
 
         in_stock_indicator = indicator_types.get("in_stock")
         out_of_stock_indicator = indicator_types.get("out_of_stock")
@@ -857,6 +851,70 @@ class Product(models.Model):
                         "ozon_product_id": record.id,
                     }
                 )
+
+    def _update_bcg_group_indicator_summary(self, record, indicator_types=None, summary_types=None):
+        if not indicator_types:
+            indicator_types, summary_types = self._get_indicators_and_summaries_types(record)
+
+        bcg_indicator = indicator_types.get('bcg_group')
+        bcg_summary = summary_types.get('bcg_group_expired')
+        if bcg_indicator:
+            if bcg_indicator.write_date >= datetime.now() - timedelta(days=10):
+                days = (datetime.now() - bcg_indicator.write_date).days
+                if bcg_summary:
+                    bcg_summary.name = (f"BCG группа не рассчитана дней: {days}. Рекомендации по продвижению "
+                                        f"продукта могут быть не верны. Постройте BCG матрицу категории.")
+                else:
+                    self.env["ozon.products.indicator.summary"].create(
+                        {
+                            "name": f"BCG группа не рассчитана дней: {days}. Рекомендации по продвижению "
+                                        f"продукта могут быть не верны. Постройте BCG матрицу категории.",
+                            "type": "bcg_group_expired",
+                            "ozon_product_id": record.id,
+                        }
+                    )
+            else:
+                if bcg_summary:
+                    record.ozon_products_indicators_summary_ids = [
+                        (2, bcg_summary.id, 0)
+                    ]
+        else:
+            if bcg_summary:
+                record.ozon_products_indicators_summary_ids = [
+                    (2, bcg_summary.id, 0)
+                ]
+
+    def _update_abc_group_indicator_summary(self, record, indicator_types=None, summary_types=None):
+        if not indicator_types:
+            indicator_types, summary_types = self._get_indicators_and_summaries_types(record)
+
+        abc_indicator = indicator_types.get('abc_group')
+        abc_summary = summary_types.get('abc_group_expired')
+        if abc_indicator:
+            if abc_indicator.write_date >= datetime.now() - timedelta(days=10):
+                days = (datetime.now() - abc_indicator.write_date).days
+                if abc_summary:
+                    abc_summary.name = (f"ABC группа не рассчитана дней: {days}. Информация о товаре "
+                                        f"может быть неверна. Проведите ABC анализ категории.")
+                else:
+                    self.env["ozon.products.indicator.summary"].create(
+                        {
+                            "name": f"ABC группа не рассчитана дней: {days}. Информация о товаре "
+                                    f"может быть неверна. Проведите ABC анализ категории.",
+                            "type": "abc_group_expired",
+                            "ozon_product_id": record.id,
+                        }
+                    )
+            else:
+                if abc_summary:
+                    record.ozon_products_indicators_summary_ids = [
+                        (2, abc_summary.id, 0)
+                    ]
+        else:
+            if abc_summary:
+                record.ozon_products_indicators_summary_ids = [
+                    (2, abc_summary.id, 0)
+                ]
 
     @api.depends("ozon_products_indicator_ids", "ozon_products_indicators_summary_ids")
     def _compute_ozon_products_indicator_qty(self):

@@ -14,6 +14,8 @@ class IndicatorSummary(models.Model):
         ('cost_not_calculated', 'Себестоимость не подсчитана'),
         ('out_of_stock', 'Товара нет в наличии'),
         ('in_stock', 'Товар в наличии'),
+        ('bcg_group_expired', 'BCG группа устарела'),
+        ('abc_group_expired', 'ABC группа устарела'),
     ])
 
     color = fields.Integer('Color', compute='_get_color')
@@ -25,6 +27,8 @@ class IndicatorSummary(models.Model):
                     'cost_not_calculated',
                     'no_competitor_robot',
                     'out_of_stock',
+                    'bcg_group_expired',
+                    'abc_group_expired',
             ):
                 rec.color = 1
             elif rec.type in (
