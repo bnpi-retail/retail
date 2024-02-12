@@ -11,7 +11,7 @@ from lxml import etree
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 from .indirect_percent_expenses import STRING_FIELDNAMES
 from ..ozon_api import (
@@ -673,6 +673,7 @@ class Product(models.Model):
     def update_indicator_summary(self, record):
         indicator_types, summary_types = self._get_indicators_and_summaries_types(record)
         if indicator_types:
+            ids_to_delete = []
             # cost price, investment, profitability_norm
             self._update_cost_price_investment_profitability_norm_indicators_summary(
                 record, indicator_types, summary_types
@@ -682,9 +683,21 @@ class Product(models.Model):
             # остатки
             self._update_in_out_indicator_summary(record, indicator_types, summary_types)
             # bcg
-            self._update_bcg_group_indicator_summary(record, indicator_types, summary_types)
+            summary_id = self._update_bcg_group_indicator_summary(record, indicator_types, summary_types)
+            if summary_id:
+                ids_to_delete.append(summary_id)
             # abc
-            self._update_abc_group_indicator_summary(record, indicator_types, summary_types)
+            summary_id = self._update_abc_group_indicator_summary(record, indicator_types, summary_types)
+            if summary_id:
+                ids_to_delete.append(summary_id)
+
+            query = """
+                        DELETE FROM ozon_products_indicator_summary
+                        WHERE id IN %s
+                    """
+            if ids_to_delete:
+                self.env.cr.execute(query, (tuple(ids_to_delete),))
+                logger.warning(f"delete from ozon_products_indicator_summary records with ids {ids_to_delete}")
 
     def _update_cost_price_investment_profitability_norm_indicators_summary(
             self, record, indicator_types=None, summary_types=None
@@ -859,7 +872,7 @@ class Product(models.Model):
         bcg_indicator = indicator_types.get('bcg_group')
         bcg_summary = summary_types.get('bcg_group_expired')
         if bcg_indicator:
-            if bcg_indicator.write_date >= datetime.now() - timedelta(days=10):
+            if bcg_indicator.write_date.date() <= (datetime.now() - timedelta(days=10)).date():
                 days = (datetime.now() - bcg_indicator.write_date).days
                 if bcg_summary:
                     bcg_summary.name = (f"BCG группа не рассчитана дней: {days}. Рекомендации по продвижению "
@@ -875,14 +888,10 @@ class Product(models.Model):
                     )
             else:
                 if bcg_summary:
-                    record.ozon_products_indicators_summary_ids = [
-                        (2, bcg_summary.id, 0)
-                    ]
+                    return bcg_summary.id
         else:
             if bcg_summary:
-                record.ozon_products_indicators_summary_ids = [
-                    (2, bcg_summary.id, 0)
-                ]
+                return bcg_summary.id
 
     def _update_abc_group_indicator_summary(self, record, indicator_types=None, summary_types=None):
         if not indicator_types:
@@ -891,7 +900,7 @@ class Product(models.Model):
         abc_indicator = indicator_types.get('abc_group')
         abc_summary = summary_types.get('abc_group_expired')
         if abc_indicator:
-            if abc_indicator.write_date >= datetime.now() - timedelta(days=10):
+            if abc_indicator.write_date.date() <= (datetime.now() - timedelta(days=10)).date():
                 days = (datetime.now() - abc_indicator.write_date).days
                 if abc_summary:
                     abc_summary.name = (f"ABC группа не рассчитана дней: {days}. Информация о товаре "
@@ -907,14 +916,10 @@ class Product(models.Model):
                     )
             else:
                 if abc_summary:
-                    record.ozon_products_indicators_summary_ids = [
-                        (2, abc_summary.id, 0)
-                    ]
+                    return abc_summary.id
         else:
             if abc_summary:
-                record.ozon_products_indicators_summary_ids = [
-                    (2, abc_summary.id, 0)
-                ]
+                return abc_summary.id
 
     @api.depends("ozon_products_indicator_ids", "ozon_products_indicators_summary_ids")
     def _compute_ozon_products_indicator_qty(self):
@@ -1169,6 +1174,34 @@ class Product(models.Model):
 
         return avg_revenue_per_day
 
+    # cron
+    def _automated_daily_action_by_cron_check_indicators_time(self):
+        products = self.env["ozon.products"].search([])
+        ids_to_delete = []
+        for record in products:
+            # проверяет не устарел ли индикатор и архивирует если да
+            for indicator in record.ozon_products_indicator_ids:
+                if indicator.type == "no_competitor_manager":
+                    if indicator.expiration_date <= datetime.now().date():
+                        indicator.end_date = datetime.now().date()
+                        indicator.active = False
+
+            summary_id = self._update_bcg_group_indicator_summary(record)
+            if summary_id:
+                ids_to_delete.append(summary_id)
+            summary_id = self._update_abc_group_indicator_summary(record)
+            if summary_id:
+                ids_to_delete.append(summary_id)
+
+        query = """
+                    DELETE FROM ozon_products_indicator_summary
+                    WHERE id IN %s
+                """
+        if ids_to_delete:
+            self.env.cr.execute(query, (tuple(ids_to_delete),))
+            logger.warning(f"delete from ozon_products_indicator_summary records with ids {ids_to_delete}")
+
+    # cron
     def _automated_daily_action_by_cron_manager_report(self):
         # проверить если прошел срок создания ABC, BCG отчетов и подготовить списки для тасков
         # или списки для напоминания
@@ -1178,16 +1211,12 @@ class Product(models.Model):
             "no_competitor_robot",
             "cost_not_calculated",
             "out_of_stock",
+            "bcg_group_expired",
+            "abc_group_expired",
         ]
         products = self.env["ozon.products"].search([])
         lots_with_indicators = defaultdict(list)
         for record in products:
-            # проверяет не устарел ли индикатор и архивирует если да
-            for indicator in record.ozon_products_indicator_ids:
-                if indicator.type == "no_competitor_manager":
-                    if indicator.expiration_date <= datetime.now().date():
-                        indicator.end_date = datetime.now().date()
-                        indicator.active = False
 
             summary_types = defaultdict()
             for summary in record.ozon_products_indicators_summary_ids:
