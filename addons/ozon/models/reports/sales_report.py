@@ -16,9 +16,8 @@ class SalesReportByCategory(models.Model):
         string="Начало периода", default=fields.Date.today() - timedelta(days=30)
     )
     date_to = fields.Date(string="Конец периода", default=fields.Date.today)
-    expenses_by_category_ids = fields.One2many(
+    expenses_by_category_ids = fields.Many2many(
         "ozon.expenses_by_category",
-        "sales_report_by_category_id",
         string="Статьи затрат",
         readonly=True,
     )
@@ -65,7 +64,16 @@ class SalesReportByCategory(models.Model):
         sum_total_expenses = sum(total_expenses.values())
         # рассчитываем profit
         profit = total_revenue - sum_total_expenses
-        
+        expenses_by_category = self.env["ozon.expenses_by_category"].create(
+            [
+                {
+                    "name": k.name, 
+                    "category": k.category, 
+                    "expense": v, 
+                 }
+                for k, v in total_expenses.items()
+            ]
+        )
         values.update(
             {
                 "revenue": total_revenue,
@@ -73,20 +81,11 @@ class SalesReportByCategory(models.Model):
                 "profit": profit,
                 "products_count": total_products_count,
                 "sales_count": total_sales_count,
+                "expenses_by_category_ids": expenses_by_category.ids, 
             }
         )
         record = super(SalesReportByCategory, self).create(values)
-        expenses_by_category = self.env["ozon.expenses_by_category"].create(
-            [
-                {
-                    "name": k.name, 
-                    "category": k.category, 
-                    "expense": v, 
-                    "sales_report_by_category_id": record.id,
-                 }
-                for k, v in total_expenses.items()
-            ]
-        )
+        
         return record
 
     def name_get(self):
@@ -111,6 +110,17 @@ class SalesReportByCategory(models.Model):
             "target": "new",
         }
 
+    def open_pivot_view(self):
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Подробнее",
+            "view_mode": "pivot",
+            "res_model": "ozon.sales_report_by_category",
+            "domain": [("id", "=", self.id)],
+            "context": {},
+            "target": "new",
+        }
+
 class ExpensesByCategory(models.Model):
     _name = "ozon.expenses_by_category"
     _description = "Затраты по категории за период"
@@ -122,3 +132,11 @@ class ExpensesByCategory(models.Model):
     sales_report_by_category_id = fields.Many2one(
         "ozon.sales_report_by_category", string="Отчет по продажам категории"
     )
+
+class ProductsInExpensesByCategory(models.Model):
+    _name = "ozon.prod_in_expenses_by_cat"
+    _description = "Затраты по продуктам в затратах по категории за период"
+    _order= "expense desc"
+
+    product_id = fields.Many2one("ozon.products", string="Товар Ozon")
+    expense = fields.Float(string="Сумма")

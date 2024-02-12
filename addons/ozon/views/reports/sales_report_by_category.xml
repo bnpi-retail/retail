@@ -6,6 +6,13 @@
             <field name="arch" type="xml">
                 <form>
                     <sheet>
+                        <div name="button_box" position="inside">
+                            <button class="oe_stat_button" type="object" name="open_pivot_view"
+                                string="Подробнее">
+                                <!-- <field string="Подробнее" name="price_history_count"
+                                widget="statinfo" /> -->
+                            </button>
+                        </div>
                         <group>
                             <group>
                                 <field name="date_from" attrs="{'readonly':[('id','>', 0)]}" />
@@ -62,10 +69,20 @@
             </field>
         </record>
 
+        <record id="sales_report_by_category_view_pivot" model="ir.ui.view">
+            <field name="name">sales_report_by_category.pivot</field>
+            <field name="model">ozon.sales_report_by_category</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="expenses_by_category_ids" type="row" />
+                </pivot>
+            </field>
+        </record>
+
         <record id="action_sales_report_by_category" model="ir.actions.act_window">
             <field name="name">Отчёт по продажам категории</field>
             <field name="res_model">ozon.sales_report_by_category</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">tree,form,pivot</field>
         </record>
 
         <menuitem id="menu_sales_report_by_category" name="Отчеты по продажам категории"
