@@ -9,7 +9,7 @@ class PriceHistoryCompetitors(models.Model):
 
     timestamp = fields.Date(string="Дата", default=fields.Date.today)
     last_update = fields.Integer(
-        string="Последнее обновление, дни", 
+        string="Последнее обновление цены, дни", 
         compute='_compute_last_update',
         store=False,
     )
