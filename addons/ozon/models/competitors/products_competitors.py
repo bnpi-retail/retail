@@ -26,6 +26,7 @@ class ProductCompetitors(models.Model):
     product = fields.Many2one("ozon.products", string="Лот")
 
     market_share = fields.Float(string='Доля рынка', digits=(12, 5))
+    market_share_is_computed = fields.Boolean()
 
     price_competitors_count = fields.One2many(
         "ozon.price_history_competitors",
