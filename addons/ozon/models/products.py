@@ -351,7 +351,7 @@ class Product(models.Model):
 
     def _compute_expected_price(self):
         for rec in self:
-            rec.expected_price = sum(rec.all_expenses_ids.mapped("expected_value"))
+            rec.expected_price = rec.price
         # TODO: откуда берем ожидаемую цену?
         # ожид.цена=фикс.затраты/(1-процент_затрат-ожид.ROS-проц.налог-ожид.ROI)
         # for rec in self:
@@ -624,6 +624,8 @@ class Product(models.Model):
                 print(f'{i} - Fix expense "Себестоимость товара" was created')
 
     def write(self, values, **kwargs):
+        if values.get("profitability_norm") or values.get("investment_expenses_id"):
+            self.update_current_product_all_expenses()
         if isinstance(values, dict) and values.get("fix_expenses"):
             fix_exp_cost_price = self.fix_expenses.filtered(
                 lambda r: r.name == "Себестоимость товара"
