@@ -29,7 +29,15 @@ class OzonReportTask(models.Model):
 
     task = fields.Char(string="Задача")
     ozon_report_id = fields.Many2one("ozon.report")
+    ozon_categories_id = fields.Many2one("ozon.categories")
+    type = fields.Selection([
+        ('abc_reminder', 'Напоминание провести ABC анализ'),
+        ('abc_expired', 'ABC анализ просрочен'),
+        ('bcg_reminder', 'Напоминание создать BCG матрицу'),
+        ('bcg_expired', 'BCG матрица просрочена'),
+    ])
     sequence = fields.Integer()
+    active = fields.Boolean(default=True)
 
 
 class OzonReportCategoryMarketShare(models.Model):
