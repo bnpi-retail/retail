@@ -934,7 +934,7 @@ class Product(models.Model):
             else:
                 record.ozon_products_indicator_qty = 0
 
-    def _touch_bcg_group_indicator(self, record, summary_update=True):
+    def _touch_bcg_group_indicator(self, record):
         bcg_group_indicator = None
         for indicator in record.ozon_products_indicator_ids:
             if indicator.type == "bcg_group":
@@ -952,11 +952,8 @@ class Product(models.Model):
                     "value": record.bcg_group,
                 }
             )
-        # обновить выводы по индикаторам
-        if summary_update:
-            self.update_indicator_summary(record)
 
-    def _touch_abc_group_indicator(self, record, summary_update=True):
+    def _touch_abc_group_indicator(self, record):
         abc_group_indicator = None
         for indicator in record.ozon_products_indicator_ids:
             if indicator.type == "abc_group":
@@ -974,9 +971,6 @@ class Product(models.Model):
                     "value": record.abc_group,
                 }
             )
-        # обновить выводы по индикаторам
-        if summary_update:
-            self.update_indicator_summary(record)
 
     def _check_investment_expenses(self, record, summary_update=True):
         if not record.investment_expenses_id:
@@ -1002,7 +996,7 @@ class Product(models.Model):
                     indicator.active = False
         # обновить выводы по индикаторам
         if summary_update:
-            self.update_indicator_summary(record)
+            self._update_cost_price_investment_profitability_norm_indicators_summary(record)
 
     def _check_profitability_norm(self, record, summary_update=True):
         if not record.profitability_norm:
@@ -1028,7 +1022,7 @@ class Product(models.Model):
                     indicator.active = False
         # обновить выводы по индикаторам
         if summary_update:
-            self.update_indicator_summary(record)
+            self._update_cost_price_investment_profitability_norm_indicators_summary(record)
 
     def _check_cost_price(self, record, summary_update=True):
         cost_price = 0
@@ -1062,7 +1056,7 @@ class Product(models.Model):
 
         # обновить выводы по индикаторам
         if summary_update:
-            self.update_indicator_summary(record)
+            self._update_cost_price_investment_profitability_norm_indicators_summary(record)
 
     def _check_competitors_with_price_ids_qty(self, record, summary_update=True):
         if len(record.competitors_with_price_ids) >= 3:
@@ -1092,7 +1086,7 @@ class Product(models.Model):
 
         # обновить выводы по индикаторам
         if summary_update:
-            self.update_indicator_summary(record)
+            self._update_less_3_competitors_indicator_summary(record)
 
     def _update_in_out_stock_indicators(self, record, summary_update=True):
         if record.is_selling:
@@ -1133,7 +1127,7 @@ class Product(models.Model):
                 )
         # обновить выводы по индикаторам
         if summary_update:
-            self.update_indicator_summary(record)
+            self._update_in_out_indicator_summary(record)
 
     def _calculate_a_lost_revenue(self, record, period_to: datetime.date) -> float:
         avg_revenue_per_day = 0
@@ -1282,7 +1276,6 @@ class Product(models.Model):
                 indicator.active = False
 
         user_id = self.env.uid
-        user_name = self.env["res.users"].browse(user_id).name
         exp_date = datetime.now() + timedelta(days=30)
         self.env["ozon.products.indicator"].create(
             {
@@ -1295,7 +1288,7 @@ class Product(models.Model):
         )
 
         # обновить выводы по индикаторам
-        self.update_indicator_summary(record)
+        self._update_less_3_competitors_indicator_summary(record)
 
     @api.depends("stocks_fbs", "stocks_fbo")
     def _get_is_selling(self):

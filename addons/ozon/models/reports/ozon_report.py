@@ -298,7 +298,7 @@ class OzonReportCompetitorBCGMatrix(models.Model):
                 if not product.bcg_group_is_computed:
                     product_data.ozon_products_id.bcg_group_is_computed = True
                 product_data.bcg_group_curr = product_data.bcg_group
-            product._touch_bcg_group_indicator(product, summary_update=False)
+            product._touch_bcg_group_indicator(product)
 
         self.is_applied = True
 
