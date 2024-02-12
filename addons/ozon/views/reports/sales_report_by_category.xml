@@ -7,11 +7,12 @@
                 <form>
                     <sheet>
                         <div name="button_box" position="inside">
-                            <button class="oe_stat_button" type="object" name="open_pivot_view"
-                                string="Подробнее">
-                                <!-- <field string="Подробнее" name="price_history_count"
-                                widget="statinfo" /> -->
-                            </button>
+                            <button class="oe_stat_button" type="object"
+                                name="open_pivot_view_revenue_by_product"
+                                string="Выручка" />
+                            <button class="oe_stat_button" type="object"
+                                name="open_pivot_view_expenses_by_product"
+                                string="Затраты" />
                         </div>
                         <group>
                             <group>
@@ -69,25 +70,24 @@
             </field>
         </record>
 
-        <!-- <record id="prod_in_expenses_by_cat_view_pivot" model="ir.ui.view">
-            <field name="name">prod_in_expenses_by_cat.pivot</field>
-            <field name="model">ozon.prod_in_expenses_by_cat</field>
+        <record id="prod_in_expenses_by_cat_view_pivot" model="ir.ui.view">
+            <field name="name">prod_expenses_in_sales_report.pivot</field>
+            <field name="model">ozon.prod_expenses_in_sales_report</field>
             <field name="arch" type="xml">
-                <pivot>
-                    <field name="product_id" type="col" />
-                    <field name="expenses_item_id" type="row" />
+                <pivot disable_linking="1">
+                    <field name="product_id" type="row" />
+                    <field name="expenses_item_id" type="col" />
                     <field name="expense" type="measure" />
                 </pivot>
             </field>
-        </record> -->
+        </record>
 
         <record id="product_in_sales_report_view_pivot" model="ir.ui.view">
             <field name="name">product_in_sales_report.pivot</field>
             <field name="model">ozon.product_in_sales_report</field>
             <field name="arch" type="xml">
-                <pivot>
-                    <field name="product_id" type="col" />
-                    <field name="prod_in_expenses_by_cat_ids" type="row" />
+                <pivot disable_linking="1">
+                    <field name="product_id" type="row" />
                     <field name="sales_count" type="measure" />
                     <field name="revenue" type="measure" />
                     <field name="total_expenses" type="measure" />
