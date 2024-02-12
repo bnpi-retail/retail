@@ -47,7 +47,8 @@ class Product(models.Model):
     fbo_sku = fields.Char(string="FBO SKU", readonly=True)
     fbs_sku = fields.Char(string="FBS SKU", readonly=True)
     article = fields.Char(string="Артикул", readonly=True)
-
+    search_query = fields.Many2one("ozon.search_queries_parser", string="Поисковый запрос")
+    
     supplementary_categories = fields.Many2many(
         "ozon.supplementary_categories",
         string="Вспомогательные категории",

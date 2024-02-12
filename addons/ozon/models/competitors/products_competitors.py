@@ -11,7 +11,8 @@ class ProductCompetitors(models.Model):
 
     id_product = fields.Char(string="Id товара на Ozon")
     article = fields.Char(string="Артикул", unique=True)
-    
+    search_query = fields.Many2one("ozon.search_queries_parser", string="Поисковый запрос")
+
     name = fields.Char(string="Наименование товара")
 
     competitor_seller_id = fields.Many2one("ozon.competitor_seller", string="Продавец")

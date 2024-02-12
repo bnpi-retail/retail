@@ -1,0 +1,42 @@
+<odoo>
+  <data>
+
+    <!-- Form -->
+    <record id="view_search_queries_parser_form" model="ir.ui.view">
+        <field name="name">Поисковый запрос</field>
+        <field name="model">ozon.search_queries_parser</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="search_query"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree -->
+    <record id="view_search_queries_parser_tree" model="ir.ui.view">
+        <field name="name">Поисковые запросы</field>
+        <field name="model">ozon.search_queries_parser</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="search_query"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_search_queries_parser">
+        <field name="name">Поисковые запросы</field>
+        <field name="res_model">ozon.search_queries_parser</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem name="Поисковые запросы"
+        id="menu_search_queries_parser"
+        parent="ozon.menu_issue"
+        action="action_search_queries_parser"
+        sequence="30"/>
+  </data>
+</odoo>

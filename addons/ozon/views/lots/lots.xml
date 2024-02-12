@@ -102,6 +102,7 @@
                             <group>
                                 <group>
                                     <group>
+                                        <field name="search_query"/>
                                         <field name="products" />
                                         <field name="categories" string="Категория" />
                                         <field name="abc_group" string="Группа" readonly="1" />
