@@ -9,7 +9,7 @@
         <field name="interval_type">days</field>
         <field name="numbercall">-1</field>
         <field name="doall" eval="True"/>
-        <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="nextcall" eval="(DateTime.now() + timedelta(hour=8)).strftime('%Y-%m-%d %H:%M:%S')"/>
     </record>
 
     <record id="ir_cron_ozon_product_automated_daily_action_check_indicators_time" model="ir.cron">
@@ -21,7 +21,7 @@
         <field name="interval_type">days</field>
         <field name="numbercall">-1</field>
         <field name="doall" eval="True"/>
-        <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="nextcall" eval="(DateTime.now() + timedelta(hour=6)).strftime('%Y-%m-%d %H:%M:%S')"/>
     </record>
 
 </odoo>
