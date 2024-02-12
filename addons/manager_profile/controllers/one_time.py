@@ -80,15 +80,15 @@ class ParserPlugin(http.Controller):
     def append_search_query_to_product(self, record, record_search_query_parser) -> None:
         model_products = http.request.env["ozon.products"]
 
-        record = model_products.search([("sku", "=", record.id_product)])
+        product_record = model_products.search([("sku", "=", record.id_product)])
 
-        if not record:
-            record = model_products.search([("fbo_sku", "=", record.id_product)])
+        if not product_record:
+            product_record = model_products.search([("fbo_sku", "=", record.id_product)])
         
-        if not record:
-            record = model_products.search([("fbs_sku", "=", record.id_product)])
+        if not product_record:
+            product_record = model_products.search([("fbs_sku", "=", record.id_product)])
 
-        record.write({
+        product_record.write({
             "search_query": record_search_query_parser.id
         })
 
