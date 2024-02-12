@@ -111,6 +111,7 @@ class ActionCreateOzonProducts(models.Model):
             record_product_competitors = model_products_competitors \
                 .create({
                     "id_product": record.id_product,
+                    "search_query": record_search_query_parser.id,
                 })
                 
         record_product_competitors \
@@ -171,4 +172,3 @@ class ActionCreateOzonProducts(models.Model):
                 "price_without_sale": record.price_without_sale,
                 "product_competitors": record_product_competitors.id,
             })
-
