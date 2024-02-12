@@ -1,14 +1,27 @@
 <?xml version='1.0' encoding='utf-8'?>
 <odoo>
-    <record id="ir_cron_ozon_product_automated_daily_action" model="ir.cron">
-        <field name="name">Ozon Reports</field>
+    <record id="ir_cron_ozon_product_automated_daily_action_manager_report" model="ir.cron">
+        <field name="name">Ozon Reports Managers</field>
         <field name="model_id" ref="model_ozon_products"/>
-        <field name="code">model._automated_daily_action_by_cron()</field>
+        <field name="code">model._automated_daily_action_by_cron_manager_report()</field>
         <field name="user_id" ref="base.user_root"/>
         <field name="interval_number">1</field>
         <field name="interval_type">days</field>
         <field name="numbercall">-1</field>
         <field name="doall" eval="True"/>
-        <field name="nextcall" eval="(DateTime.now() + timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="nextcall" eval="(DateTime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')"/>
     </record>
+
+    <record id="ir_cron_ozon_product_automated_daily_action_check_indicators_time" model="ir.cron">
+        <field name="name">Ozon Indicators Time Check</field>
+        <field name="model_id" ref="model_ozon_products"/>
+        <field name="code">model._automated_daily_action_by_cron_check_indicators_time()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="True"/>
+        <field name="nextcall" eval="(DateTime.now() + timedelta(hours=6)).strftime('%Y-%m-%d %H:%M:%S')"/>
+    </record>
+
 </odoo>

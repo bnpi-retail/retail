@@ -29,7 +29,15 @@ class OzonReportTask(models.Model):
 
     task = fields.Char(string="Задача")
     ozon_report_id = fields.Many2one("ozon.report")
+    ozon_categories_id = fields.Many2one("ozon.categories")
+    type = fields.Selection([
+        ('abc_reminder', 'Напоминание провести ABC анализ'),
+        ('abc_expired', 'ABC анализ просрочен'),
+        ('bcg_reminder', 'Напоминание создать BCG матрицу'),
+        ('bcg_expired', 'BCG матрица просрочена'),
+    ])
     sequence = fields.Integer()
+    active = fields.Boolean(default=True)
 
 
 class OzonReportCategoryMarketShare(models.Model):
@@ -73,9 +81,12 @@ class OzonReportCategoryMarketShare(models.Model):
                 ozon_products_id = sale.ozon_products_id
                 if ozon_products_id:
                     sale.ozon_products_id.market_share = revenue_share_percentage
+                    if not sale.ozon_products_id.market_share_is_computed:
+                        sale.ozon_products_id.market_share_is_computed = True
                 elif ozon_products_competitors_id:
                     sale.ozon_products_competitors_id.market_share = revenue_share_percentage
-
+                    if not sale.ozon_products_competitors_id.market_share_is_computed:
+                        sale.ozon_products_competitors_id.market_share_is_computed = True
 
 class OzonReportCompetitorCategoryShare(models.Model):
     _name = "ozon.report.competitor_category_share"
@@ -298,7 +309,7 @@ class OzonReportCompetitorBCGMatrix(models.Model):
                 if not product.bcg_group_is_computed:
                     product_data.ozon_products_id.bcg_group_is_computed = True
                 product_data.bcg_group_curr = product_data.bcg_group
-            product._touch_bcg_group_indicator(product, summary_update=False)
+            product._touch_bcg_group_indicator(product)
 
         self.is_applied = True
 

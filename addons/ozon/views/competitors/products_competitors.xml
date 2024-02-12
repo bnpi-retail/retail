@@ -25,7 +25,10 @@
                             <field name="name"/>
                             <field name="product"/>
                             <field name="url"/>
-                            <field name="market_share" readonly="1"/>
+                            <field name="market_share" readonly="1"
+                                   attrs="{'invisible': [('market_share_is_computed', '=', False)]}"
+                            />
+                            <field name="market_share_is_computed" invisible="1"/>
                         </group>
                     </page>
                     <page id="page_graph_history" string="Аналитические данные">

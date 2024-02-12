@@ -37,8 +37,12 @@
                                 </page>
                                 <page string="Напоминания и задачи">
                                     <field name="ozon_report_task_ids">
-                                        <tree string="">
+                                        <tree string=""
+                                              decoration-danger="sequence==1"
+                                              decoration-info="sequence==3"
+                                        >
                                             <field name="task"/>
+                                            <field name="sequence" invisible="1"/>
                                         </tree>
                                     </field>
                                 </page>
