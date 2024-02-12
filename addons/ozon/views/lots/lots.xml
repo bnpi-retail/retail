@@ -284,6 +284,7 @@
                                         <field name="price_with_card" />
                                         <field name="price" />
                                         <field name="price_without_sale" />
+                                        <field name="last_update"/>
                                     </tree>
                                 </field>
                                 <field name="not_enough_competitors"

@@ -118,6 +118,7 @@ class Product(models.Model):
         "product_id",
         string="Актуальные цены конкурентов",
     )
+
     not_enough_competitors = fields.Boolean()
     commentary_not_enough_competitors = fields.Char()
 
