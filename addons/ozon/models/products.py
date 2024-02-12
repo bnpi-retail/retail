@@ -344,7 +344,9 @@ class Product(models.Model):
     # BCG matrix
     market_share = fields.Float(string="Доля рынка", digits=(12, 5))
     market_share_is_computed = fields.Boolean()
-    bcg_group = fields.Selection([('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака')])
+    bcg_group = fields.Selection([
+        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', '')
+    ], default='e')
     bcg_group_is_computed = fields.Boolean()
 
     def _compute_expected_price(self):
@@ -1558,6 +1560,7 @@ class Product(models.Model):
             product._update_in_out_stock_indicators(product, summary_update=False)
 
             product._update_indicator_summary(product)
+            product.bcg_group = 'e'
 
         schedules[0].ozon_products_checking_last_time = datetime.now()
 
