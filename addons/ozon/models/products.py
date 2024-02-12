@@ -1083,10 +1083,34 @@ class Product(models.Model):
                         "user_id": False,
                     }
                 )
-
         # обновить выводы по индикаторам
         if summary_update:
             self._update_less_3_competitors_indicator_summary(record)
+
+    def _not_enough_competitors_write(self, record):
+        if (
+                record.not_enough_competitors
+                and not record.commentary_not_enough_competitors
+        ):
+            raise UserError("Напишите комментарий")
+        for indicator in record.ozon_products_indicator_ids:
+            if indicator.type == "no_competitor_manager":
+                indicator.end_date = datetime.now().date()
+                indicator.active = False
+
+        user_id = self.env.uid
+        exp_date = datetime.now() + timedelta(days=30)
+        self.env["ozon.products.indicator"].create(
+            {
+                "ozon_product_id": record.id,
+                "source": "manager",
+                "type": "no_competitor_manager",
+                "expiration_date": exp_date.date(),
+                "user_id": user_id if user_id else False,
+            }
+        )
+        # обновить выводы по индикаторам
+        self._update_less_3_competitors_indicator_summary(record)
 
     def _update_in_out_stock_indicators(self, record, summary_update=True):
         if record.is_selling:
@@ -1145,7 +1169,7 @@ class Product(models.Model):
 
         return avg_revenue_per_day
 
-    def _automated_daily_action_by_cron(self):
+    def _automated_daily_action_by_cron_manager_report(self):
         # проверить если прошел срок создания ABC, BCG отчетов и подготовить списки для тасков
         # или списки для напоминания
         categories_to_tasks = self._get_categories_lists_for_managers_report()
@@ -1263,32 +1287,6 @@ class Product(models.Model):
                 "ozon_report_id": report.id,
                 "sequence": 1
             })
-
-    def _not_enough_competitors_write(self, record):
-        if (
-            record.not_enough_competitors
-            and not record.commentary_not_enough_competitors
-        ):
-            raise UserError("Напишите комментарий")
-        for indicator in record.ozon_products_indicator_ids:
-            if indicator.type == "no_competitor_manager":
-                indicator.end_date = datetime.now().date()
-                indicator.active = False
-
-        user_id = self.env.uid
-        exp_date = datetime.now() + timedelta(days=30)
-        self.env["ozon.products.indicator"].create(
-            {
-                "ozon_product_id": record.id,
-                "source": "manager",
-                "type": "no_competitor_manager",
-                "expiration_date": exp_date.date(),
-                "user_id": user_id if user_id else False,
-            }
-        )
-
-        # обновить выводы по индикаторам
-        self._update_less_3_competitors_indicator_summary(record)
 
     @api.depends("stocks_fbs", "stocks_fbo")
     def _get_is_selling(self):
