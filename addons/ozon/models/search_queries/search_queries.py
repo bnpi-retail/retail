@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
-
 from odoo import models, fields, api
 
 
 class SearchQueries(models.Model):
     _name = 'ozon.search_queries'
-    _description = 'Поисковые запросы'
+    _description = 'Ключевые слова'
 
     words = fields.Char(string='Запрос')
     product_id = fields.Many2one('ozon.products', string='Продукт')

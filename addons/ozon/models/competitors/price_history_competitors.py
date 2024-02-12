@@ -8,6 +8,11 @@ class PriceHistoryCompetitors(models.Model):
     product_id = fields.Many2one("ozon.products", string="Лот")
 
     timestamp = fields.Date(string="Дата", default=fields.Date.today)
+    last_update = fields.Integer(
+        string="Последнее обновление цены, дни", 
+        compute='_compute_last_update',
+        store=False,
+    )
 
     product_competitors = fields.Many2one(
         "ozon.products_competitors", string="Товар конкурента"
@@ -23,6 +28,12 @@ class PriceHistoryCompetitors(models.Model):
 
     rating = fields.Integer(string="Рейтинг")
     comments = fields.Integer(string="Комментарии")
+
+    def _compute_last_update(self):
+        for record in self:
+            today = fields.Date.today()
+            delta = today - record.timestamp
+            record.last_update = delta.days
 
     @api.depends("price_with_card", "sales")
     def _compute_revenue(self):

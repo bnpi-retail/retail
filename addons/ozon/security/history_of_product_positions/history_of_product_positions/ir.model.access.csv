@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ozon_history_of_product_positions,Access Ozon History of Product Positions,model_ozon_history_of_product_positions,base.group_user,1,1,1,1

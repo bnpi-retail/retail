@@ -47,7 +47,8 @@ class Product(models.Model):
     fbo_sku = fields.Char(string="FBO SKU", readonly=True)
     fbs_sku = fields.Char(string="FBS SKU", readonly=True)
     article = fields.Char(string="Артикул", readonly=True)
-
+    search_query = fields.Many2one("ozon.search_queries_parser", string="Поисковый запрос")
+    
     supplementary_categories = fields.Many2many(
         "ozon.supplementary_categories",
         string="Вспомогательные категории",
@@ -55,9 +56,7 @@ class Product(models.Model):
     )
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
-    expected_price = fields.Float(
-        string="Ожидаемая цена", readonly=True, compute="_compute_expected_price"
-    )
+    expected_price = fields.Float(string="Ожидаемая цена", readonly=True)
     price_delta = fields.Float(
         string="Разница между актуальной и ожидаемой ценой",
         readonly=True,
@@ -117,6 +116,7 @@ class Product(models.Model):
         "product_id",
         string="Актуальные цены конкурентов",
     )
+
     not_enough_competitors = fields.Boolean()
     commentary_not_enough_competitors = fields.Char()
 
@@ -351,19 +351,23 @@ class Product(models.Model):
     ], default='e')
     bcg_group_is_computed = fields.Boolean()
 
-    def _compute_expected_price(self):
-        for rec in self:
-            rec.expected_price = sum(rec.all_expenses_ids.mapped("expected_value"))
+    def calculate_expected_price(self):
         # TODO: откуда берем ожидаемую цену?
         # ожид.цена=фикс.затраты/(1-процент_затрат-ожид.ROS-проц.налог-ожид.ROI)
-        # for rec in self:
-        #     all_fix_expenses = rec.all_expenses_ids.filtered(lambda r: r.kind == "fix")
-        #     sum_fix_expenses = sum(all_fix_expenses.mapped("value"))
-        #     all_per_expenses = rec.all_expenses_ids.filtered(
-        #         lambda r: r.kind == "percent"
-        #     )
-        #     total_percent = sum(all_per_expenses.mapped("percent"))
-        #     rec.expected_price = sum_fix_expenses / (1 - total_percent)
+        for rec in self:
+            all_fix_expenses = rec.all_expenses_ids.filtered(lambda r: r.kind == "fix")
+            sum_fix_expenses = sum(all_fix_expenses.mapped("value"))
+            all_per_expenses = rec.all_expenses_ids.filtered(
+                lambda r: r.kind == "percent"
+            )
+            total_percent = sum(all_per_expenses.mapped("percent"))
+            if total_percent <= 1:
+                rec.expected_price = sum_fix_expenses / (1 - total_percent)
+            else:
+                raise UserError("Невозможно рассчитать ожидаемую цену. "
+                                "Задайте другое значение "
+                                "ожидаемой доходности и/или Investment.")
+            
 
     def _compute_price_delta(self):
         for rec in self:
@@ -626,6 +630,10 @@ class Product(models.Model):
                 print(f'{i} - Fix expense "Себестоимость товара" was created')
 
     def write(self, values, **kwargs):
+        if values.get("profitability_norm") or values.get("investment_expenses_id"):
+            self.update_current_product_all_expenses()
+            self.calculate_expected_price()
+            self.update_current_product_all_expenses()
         if isinstance(values, dict) and values.get("fix_expenses"):
             fix_exp_cost_price = self.fix_expenses.filtered(
                 lambda r: r.name == "Себестоимость товара"
