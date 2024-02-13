@@ -57,6 +57,7 @@ class Product(models.Model):
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
     expected_price = fields.Float(string="Ожидаемая цена", readonly=True)
+    expected_price_error = fields.Text(string="Комментарий к ожидаемой цене", readonly=True)
     price_delta = fields.Float(
         string="Разница между актуальной и ожидаемой ценой",
         readonly=True,
@@ -364,10 +365,11 @@ class Product(models.Model):
             if total_percent <= 1:
                 rec.expected_price = sum_fix_expenses / (1 - total_percent)
             else:
-                raise UserError("Невозможно рассчитать ожидаемую цену. "
+                rec.expected_price = 0
+                rec.expected_price_error = ("Невозможно рассчитать ожидаемую цену. "
                                 "Задайте другое значение "
                                 "ожидаемой доходности и/или Investment.")
-            
+            print(f"Product {rec.id} expected price was calculated")
 
     def _compute_price_delta(self):
         for rec in self:
