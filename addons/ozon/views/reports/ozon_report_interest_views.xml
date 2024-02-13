@@ -8,28 +8,27 @@
                 <form string="Report">
                     <sheet>
                         <group>
-                            <group string="Первый период">
-                                <group>
-                                    <field name="first_period_from" string="С" widget="date"/>
-                                </group>
-                                <group>
-                                    <field name="first_period_to" string="по" widjet="date"/>
-                                </group>
-                            </group>
-                            <group></group>
-                            <group string="Второй период">
-                                <group>
-                                    <field name="second_period_from" string="С" widget="date"/>
-                                </group>
-                                <group>
-                                    <field name="second_period_to" string="по" widjet="date"/>
-                                </group>
-                            </group>
-                            <group></group>
-                            <separator/>
                             <group>
                                 <field name="ozon_categories_id" string="Категория"/>
                             </group>
+                            <group></group>
+                            <group
+                                   attrs="{'invisible':[('ozon_categories_id','=',False)]}"
+                            >
+                                <group>
+                                    <field name="first_period" string="Первый период"/>
+                                </group>
+                            </group>
+                            <group></group>
+                            <group
+                                   attrs="{'invisible':[('ozon_categories_id','=',False)]}"
+                            >
+                                <group>
+                                    <field name="second_period" string="Второй период"/>
+                                </group>
+                            </group>
+                            <button name="action_calculate_interest_report" string="do"
+                                    type="object" class="btn btn-primary me-1"/>
                             <notebook>
                                 <page string="Товары конкурентов">
 
@@ -48,11 +47,8 @@
                 <tree string="Отчеты" default_order="create_date desc">
                     <field name="create_date" string="Дата создания" readonly="1"/>
                     <field name="ozon_categories_id" string="Категория" readonly="1"/>
-                    <field name="first_period_from" string="Первый период с" readonly="1"/>
-                    <field name="first_period_to" string="по" readonly="1"/>
-
-                    <field name="second_period_from" string="Второй период с" readonly="1"/>
-                    <field name="second_period_to" string="по" readonly="1"/>
+                    <field name="first_period" string="Первый период с" readonly="1"/>
+                    <field name="first_period" string="по" readonly="1"/>
                 </tree>
             </field>
         </record>

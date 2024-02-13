@@ -28,8 +28,8 @@ class AnalysysDataLotsController(http.Controller):
             )
 
             model_analysis_data_values.append({
-                "timestamp_from": today,
-                "timestamp_to": one_week_ago,
+                "timestamp_from": one_week_ago,
+                "timestamp_to": today,
                 "product": product.id,
                 "hits_view": info["hits_view"],
                 "hits_tocart": info["hits_tocart"],
