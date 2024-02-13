@@ -134,7 +134,6 @@ class SalesReportByCategory(models.Model):
             "res_model": "ozon.expenses_by_category",
             "domain": [("sales_report_by_category_id", "=", self.id)],
             "context": {"group_by": "category", "create": False},
-            "target": "new",
         }
 
     def open_pivot_view_expenses_by_product(self):
@@ -145,7 +144,6 @@ class SalesReportByCategory(models.Model):
             "res_model": "ozon.prod_expenses_in_sales_report",
             "domain": [("sales_report_by_category_id", "=", self.id)],
             "context": {},
-            "target": "new",
         }
     
 
