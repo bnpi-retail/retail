@@ -284,10 +284,12 @@ class OzonReportCompetitorBCGMatrix(models.Model):
 
         for product in products_of_category:
             new_product_data = products_data.get(product)
-            bcg_group_val = 'e'
+            bcg_group_val = 'f'
             if new_product_data and new_product_data.get('quadrant'):
                 if new_product_data.get('quadrant') != product.bcg_group:
                     bcg_group_val = new_product_data.get('quadrant')
+            if not new_product_data and product.bcg_group != 'e':
+                bcg_group_val = 'e'
             self.env["ozon.report.bcg_matrix.product_data"].create({
                 'ozon_report_bcg_matrix_id': record.id,
                 'ozon_products_id': product.id,
@@ -304,7 +306,7 @@ class OzonReportCompetitorBCGMatrix(models.Model):
         for product_data in self.ozon_report_bcg_matrix_product_data_ids:
             logger.warning(product_data.bcg_group)
             product = product_data.ozon_products_id
-            if product_data.bcg_group != 'e':
+            if product_data.bcg_group != 'f':
                 product.bcg_group = product_data.bcg_group
                 if not product.bcg_group_is_computed:
                     product_data.ozon_products_id.bcg_group_is_computed = True
@@ -325,10 +327,10 @@ class OzonReportBcgMatrixProductData(models.Model):
     curr_market_share = fields.Float(digits=(12, 5))
     product_growth_rate = fields.Float(digits=(12, 5))
     bcg_group_curr = fields.Selection([
-        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', '')
+        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', 'Нет данных'), ('f', '')
     ])
     bcg_group = fields.Selection([
-        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', '')
+        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', 'Нет данных'), ('f', '')
     ])
 
 

@@ -347,7 +347,7 @@ class Product(models.Model):
     market_share = fields.Float(string="Доля рынка", digits=(12, 5))
     market_share_is_computed = fields.Boolean()
     bcg_group = fields.Selection([
-        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', '')
+        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', 'Нет данных')
     ], default='e')
     bcg_group_is_computed = fields.Boolean()
 
