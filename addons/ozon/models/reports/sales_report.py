@@ -113,6 +113,7 @@ class SalesReportByCategory(models.Model):
         record = super(SalesReportByCategory, self).create(values)
         prod_expenses.sales_report_by_category_id = record.id
         prods_in_sales_report.sales_report_by_category_id = record.id
+        expenses_by_category.sales_report_by_category_id = record.id
         return record
 
     def name_get(self):
@@ -126,16 +127,6 @@ class SalesReportByCategory(models.Model):
             )
         return result
     
-    def show_expenses(self):
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Затраты",
-            "view_mode": "tree",
-            "res_model": "ozon.expenses_by_category",
-            "domain": [("sales_report_by_category_id", "=", self.id)],
-            "context": {"group_by": "category", "create": False},
-        }
-
     def open_pivot_view_expenses_by_product(self):
         return {
             "type": "ir.actions.act_window",
@@ -155,7 +146,6 @@ class SalesReportByCategory(models.Model):
             "res_model": "ozon.product_in_sales_report",
             "domain": [("sales_report_by_category_id", "=", self.id)],
             "context": {},
-            "target": "new",
         }
     
     def get_or_create_expenses_item(self, name, category):
