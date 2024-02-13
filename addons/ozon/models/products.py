@@ -641,11 +641,11 @@ class Product(models.Model):
                 print(f'{i} - Fix expense "Себестоимость товара" was created')
 
     def write(self, values, **kwargs):
-        if (values.get("profitability_norm") 
-            or values.get("investment_expenses_id") 
-            or values.get("expected_price")):
+        if values.get("profitability_norm") or values.get("investment_expenses_id"):
             self.update_current_product_all_expenses()
             self.calculate_expected_price()
+            self.update_current_product_all_expenses()
+        elif values.get("expected_price"):
             self.update_current_product_all_expenses()
         if isinstance(values, dict) and values.get("fix_expenses"):
             fix_exp_cost_price = self.fix_expenses.filtered(
@@ -1626,8 +1626,11 @@ class Product(models.Model):
 
     def _compute_calculator_profit_norm(self):
         for r in self:
-            r.calculator_profit_norm = round(r.calculator_delta / r.expected_price, 2)
-
+            if r.expected_price != 0:
+                r.calculator_profit_norm = round(r.calculator_delta / r.expected_price, 2)
+            else:
+                r.calculator_profit_norm = 0
+                
     def _compute_calculator_investment(self):
         for r in self:
             r.calculator_investment = round(r.calculator_profit_norm / 2, 2)
