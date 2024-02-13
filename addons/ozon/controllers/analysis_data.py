@@ -20,17 +20,22 @@ class AnalysysDataLotsController(http.Controller):
         model_products = http.request.env["ozon.products"]
         model_analysis_data = http.request.env["ozon.analysis_data"]
 
+        model_analysis_data_values = []
         for sku, info in data.items():
-            product = model_products \
-                .search([("id_on_platform", "=", sku)], limit=1)
-            
-            model_analysis_data.create({
+            product = model_products.search(
+                ['|', '|', ("sku", "=", sku), ('fbo_sku', '=', sku), ('fbs_sku', '=', sku)]
+                , limit=1
+            )
+
+            model_analysis_data_values.append({
                 "timestamp_from": today,
                 "timestamp_to": one_week_ago,
                 "product": product.id,
                 "hits_view": info["hits_view"],
                 "hits_tocart": info["hits_tocart"],
             })
+            
+        model_analysis_data.create(model_analysis_data_values)
 
         response_data = {"response": "success", "message": "Processed successfully"}
         response_json = json.dumps(response_data)

@@ -5,7 +5,7 @@ from odoo import models, fields, api
 
 class AnalysisData(models.Model):
     _name = "ozon.analysis_data"
-    _description = "Аналитические данные"
+    _description = "Данные интереса к продуктам"
 
     timestamp_from = fields.Date(string="Начало периода", readonly=True)
     timestamp_to = fields.Date(string="Конец периода", readonly=True)
