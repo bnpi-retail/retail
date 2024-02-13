@@ -65,6 +65,7 @@
         "views/price/profitability_norm.xml",
         "views/price/pricing_strategy.xml",
         "views/price/investment_expenses.xml",
+        "views/price/all_expenses.xml",
         "views/lots/menu.xml",
         "views/lots/wizards.xml",
         "views/lots/lots.xml",
