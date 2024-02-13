@@ -88,6 +88,7 @@ class OzonReportCategoryMarketShare(models.Model):
                     if not sale.ozon_products_competitors_id.market_share_is_computed:
                         sale.ozon_products_competitors_id.market_share_is_computed = True
 
+
 class OzonReportCompetitorCategoryShare(models.Model):
     _name = "ozon.report.competitor_category_share"
     _description = "Место и доля продаж конкурентов в категории"
