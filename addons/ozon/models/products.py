@@ -56,7 +56,13 @@ class Product(models.Model):
     )
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
-    expected_price = fields.Float(string="Ожидаемая цена", readonly=True)
+    calculator_delta = fields.Float(string="Дельта", compute="_compute_calculator_delta")
+    calculator_profit_norm = fields.Float(string="Расчётная ожидаемая доходность", 
+                                                 compute="_compute_calculator_profit_norm")
+    calculator_investment = fields.Float(string="Расчётный ожидаемый Investment", 
+                                                 compute="_compute_calculator_investment")
+    expected_price = fields.Float(string="Ожидаемая цена")
+    expected_price_error = fields.Text(string="Комментарий к ожидаемой цене", readonly=True)
     price_delta = fields.Float(
         string="Разница между актуальной и ожидаемой ценой",
         readonly=True,
@@ -235,6 +241,10 @@ class Product(models.Model):
     all_expenses_ids = fields.One2many(
         "ozon.all_expenses", "product_id", string="Все затраты", readonly=True
     )
+    all_expenses_except_roi_roe_ids = fields.One2many(
+        "ozon.all_expenses", "product_id", string="Все затраты", readonly=True,
+        domain=[("name", "not in", ["Ожидаемая доходность", "Investment"])]
+    )
     total_all_expenses_ids = fields.Float(
         string="Итого общих затрат, исходя из актуальной цены",
         compute="_compute_total_all_expenses_ids",
@@ -364,10 +374,11 @@ class Product(models.Model):
             if total_percent <= 1:
                 rec.expected_price = sum_fix_expenses / (1 - total_percent)
             else:
-                raise UserError("Невозможно рассчитать ожидаемую цену. "
+                rec.expected_price = 0
+                rec.expected_price_error = ("Невозможно рассчитать ожидаемую цену. "
                                 "Задайте другое значение "
                                 "ожидаемой доходности и/или Investment.")
-            
+            print(f"Product {rec.id} expected price was calculated")
 
     def _compute_price_delta(self):
         for rec in self:
@@ -520,7 +531,7 @@ class Product(models.Model):
             all_expenses_except_roe_roi = rec.all_expenses_ids.filtered(
                 lambda r: r.category not in ["Рентабельность", "Investment"]
             )
-            rec.total_all_expenses_except_roe_roi = sum(
+            rec.total_all_expenses_ids_except_roe_roi = sum(
                 all_expenses_except_roe_roi.mapped("value")
             )
 
@@ -630,7 +641,9 @@ class Product(models.Model):
                 print(f'{i} - Fix expense "Себестоимость товара" was created')
 
     def write(self, values, **kwargs):
-        if values.get("profitability_norm") or values.get("investment_expenses_id"):
+        if (values.get("profitability_norm") 
+            or values.get("investment_expenses_id") 
+            or values.get("expected_price")):
             self.update_current_product_all_expenses()
             self.calculate_expected_price()
             self.update_current_product_all_expenses()
@@ -1605,6 +1618,19 @@ class Product(models.Model):
             if prod_calc_rec.name == "Ожидаемая цена по всем стратегиям":
                 prod_calc_rec.new_value = mean(prices)
 
+
+    def _compute_calculator_delta(self):
+        for r in self:
+            r.calculator_delta = (r.expected_price 
+                                  - sum(r.all_expenses_except_roi_roe_ids.mapped("expected_value")))
+
+    def _compute_calculator_profit_norm(self):
+        for r in self:
+            r.calculator_profit_norm = round(r.calculator_delta / r.expected_price, 2)
+
+    def _compute_calculator_investment(self):
+        for r in self:
+            r.calculator_investment = round(r.calculator_profit_norm / 2, 2)
 
     @api.depends("posting_ids")
     def _compute_count_postings(self):

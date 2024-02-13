@@ -41,18 +41,19 @@
                     </group>
 
                     <field name="ozon_products_indicators_summary_ids"
-                           readonly="1"
-                           attrs="{'invisible': [('ozon_products_indicators_summary_ids', '=', [])]}"
-                           create="0"
+                        readonly="1"
+                        attrs="{'invisible': [('ozon_products_indicators_summary_ids', '=', [])]}"
+                        create="0"
                     >
                         <kanban>
-                            <field name="name" string="Индикаторы"/>
-                            <field name="type"/>
-                            <field name="color"/>
+                            <field name="name" string="Индикаторы" />
+                            <field name="type" />
+                            <field name="color" />
                             <templates>
                                 <t t-name="kanban-box">
-                                    <div t-attf-class="{{'oe_kanban_color_' + kanban_getcolor(record.color.raw_value) }} oe_kanban_card oe_kanban_global_click oe_semantic_html_override">
-                                         <field name="name"/>
+                                    <div
+                                        t-attf-class="{{'oe_kanban_color_' + kanban_getcolor(record.color.raw_value) }} oe_kanban_card oe_kanban_global_click oe_semantic_html_override">
+                                        <field name="name" />
                                     </div>
                                 </t>
                             </templates>
@@ -102,10 +103,10 @@
                             <group>
                                 <group>
                                     <group>
-                                        <field name="search_query"/>
+                                        <field name="search_query" />
                                         <field name="products" />
                                         <field name="categories" string="Категория" />
-                                        <field name="abc_group" string="Группа"/>
+                                        <field name="abc_group" string="Группа" />
                                     </group>
                                     <group>
                                         <field name="id_on_platform" />
@@ -132,17 +133,32 @@
                                 </group>
                             </group>
                         </page>
-                        <page id="page_all_expenses_info" string="Структура затрат">
-                            <group string="Структура затрат">
+                        <page id="page_price_calculator" string="Калькулятор цены">
+                            <group>
+                                <field name="expected_price" />
+                            </group>
+                            <group>
+                                <field name="all_expenses_except_roi_roe_ids">
+                                    <tree>
+                                        <field name="name" />
+                                        <field name="expected_value" sum="1" />
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="calculator_delta" />
+                                <field name="calculator_profit_norm" />
+                                <field name="calculator_investment" />
+                            </group>
+                        </page>
+                        <page id="page_all_expenses_info" string="Ожидаемая структура затрат">
+                            <group>
                                 <field name="profitability_norm" />
                                 <field name="investment_expenses_id" />
                                 <field name="all_expenses_ids">
                                     <tree>
                                         <field name="name" />
-                                        <field name="category" />
-                                        <!-- <field name="kind" />
-                                        <field name="percent" />
-                                        <field name="value" /> -->
+                                        <field name="comment" optional="hide" />
                                         <field name="expected_value" />
                                     </tree>
                                 </field>
@@ -152,7 +168,9 @@
                             </group>
                             <group>
                                 <group>
-                                    <field name="expected_price" />
+                                    <field name="expected_price" readonly="1" />
+                                    <field name="expected_price_error"
+                                        attrs="{'invisible': [('expected_price', '!=', 0)]}" />
                                 </group>
                                 <group>
                                     <field name="price_delta" />
@@ -284,7 +302,7 @@
                                         <field name="price_with_card" />
                                         <field name="price" />
                                         <field name="price_without_sale" />
-                                        <field name="last_update"/>
+                                        <field name="last_update" />
                                     </tree>
                                 </field>
                                 <field name="not_enough_competitors"
@@ -423,16 +441,16 @@
                                         <field name="self_marketplaces_min_price" />
                                     </group>
                                 </page>
-                                 <page id="page_analysis_data_abc_analysis" string="BCG Матрица">
-                                     <group>
-                                         <field name="bcg_group_is_computed" invisible="1"/>
-                                         <field name="bcg_group"
-                                                string="BCG группа"
-                                                readonly="0"
-                                                attrs="{'invisible': [('bcg_group_is_computed', '=', False)]}"
-                                         />
-                                     </group>
-                                 </page>
+                                <page id="page_analysis_data_abc_analysis" string="BCG Матрица">
+                                    <group>
+                                        <field name="bcg_group_is_computed" invisible="1" />
+                                        <field name="bcg_group"
+                                            string="BCG группа"
+                                            readonly="0"
+                                            attrs="{'invisible': [('bcg_group_is_computed', '=', False)]}"
+                                        />
+                                    </group>
+                                </page>
                             </notebook>
                         </page>
                         <page id="page_ozon_actions" string="Акции">
