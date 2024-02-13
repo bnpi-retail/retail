@@ -168,7 +168,7 @@
                             </group>
                             <group>
                                 <group>
-                                    <field name="expected_price" readonly="1" />
+                                    <field name="expected_price" />
                                     <field name="expected_price_error"
                                         attrs="{'invisible': [('expected_price', '!=', 0)]}" />
                                 </group>
