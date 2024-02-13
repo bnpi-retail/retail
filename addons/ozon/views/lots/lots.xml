@@ -133,6 +133,24 @@
                                 </group>
                             </group>
                         </page>
+                        <page id="page_price_calculator" string="Калькулятор цены">
+                            <group>
+                                <field name="expected_price" />
+                            </group>
+                            <group>
+                                <field name="all_expenses_except_roi_roe_ids">
+                                    <tree>
+                                        <field name="name" />
+                                        <field name="expected_value" sum="1" />
+                                    </tree>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="calculator_delta" />
+                                <field name="calculator_profit_norm" />
+                                <field name="calculator_investment" />
+                            </group>
+                        </page>
                         <page id="page_all_expenses_info" string="Ожидаемая структура затрат">
                             <group>
                                 <field name="profitability_norm" />
@@ -150,7 +168,7 @@
                             </group>
                             <group>
                                 <group>
-                                    <field name="expected_price" />
+                                    <field name="expected_price" readonly="1" />
                                     <field name="expected_price_error"
                                         attrs="{'invisible': [('expected_price', '!=', 0)]}" />
                                 </group>
