@@ -137,19 +137,26 @@
                             <group>
                                 <field name="expected_price" />
                             </group>
-                            <group>
-                                <field name="all_expenses_except_roi_roe_ids">
-                                    <tree>
-                                        <field name="name" />
-                                        <field name="expected_value" sum="1" />
-                                    </tree>
-                                </field>
-                            </group>
+
+                            <field name="all_expenses_except_roi_roe_ids">
+                                <tree>
+                                    <field name="name" />
+                                    <field name="expected_value" sum="1" />
+                                </tree>
+                            </field>
                             <group>
                                 <field name="calculator_delta" />
-                                <field name="calculator_profit_norm" />
-                                <field name="calculator_investment" />
+                                <!-- <field name="calculator_profit_norm" />
+                                <field name="calculator_investment" /> -->
                             </group>
+                            <field name="all_expenses_only_roi_roe_ids">
+                                <tree>
+                                    <field name="name" />
+                                    <field name="percent" />
+                                    <field name="expected_value" />
+                                </tree>
+                            </field>
+
                         </page>
                         <page id="page_all_expenses_info" string="Ожидаемая структура затрат">
                             <group>

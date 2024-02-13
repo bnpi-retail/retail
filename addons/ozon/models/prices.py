@@ -355,7 +355,7 @@ class AllExpenses(models.Model):
                              f"Ожидаемое значение: {per} * {exp_price} = {exp_val}")
             elif name == "Максимальная комиссия за обработку отправления (FBS) — 25 рублей":
                 r.comment = f"Фиксированное значение"
-            elif name in ["Ожидаемая доходность", "Investment"]:
+            elif name in ["Доходность", "Investment"]:
                 if r.value == 0:
                     r.comment = f"{name} не задан(а)."
                 else:
@@ -398,7 +398,7 @@ class AllExpenses(models.Model):
                              f"""Коэффициент * ожидаемая цена = ожидаемое значение\n"""
                              f"""{per} * {exp_price} = {exp_val}\n""")
 
-    def create_update_all_product_expenses(self, products, latest_indirect_expenses):
+    def create_update_all_product_expenses(self, products, latest_indirect_expenses, expected_price=None):
         data = []
         for idx, prod in enumerate(products):
             tax = prod.seller.tax
@@ -406,7 +406,10 @@ class AllExpenses(models.Model):
             tax_description = prod.seller.tax_description
             total_expenses = 0
             price = prod.price
-            expected_price = prod.expected_price
+            if expected_price:
+                pass
+            else:
+                expected_price = prod.expected_price
             # себестоимость
             data.append(
                 {
@@ -576,7 +579,7 @@ class AllExpenses(models.Model):
             data.append(
                 {
                     "product_id": prod.id,
-                    "name": "Ожидаемая доходность",
+                    "name": "Доходность",
                     "kind": "percent",
                     "category": "Рентабельность",
                     "percent": prof_norm_percent,
