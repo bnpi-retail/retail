@@ -304,6 +304,7 @@ class AllExpenses(models.Model):
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
     name = fields.Char(string="Название")
     description = fields.Char(string="Описание")
+    comment = fields.Text(string="Комментарий", readonly=True)
     kind = fields.Selection(
         [("fix", "Фиксированный"), ("percent", "Процентный")],
         string="Тип затрат",

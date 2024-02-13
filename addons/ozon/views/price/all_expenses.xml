@@ -7,12 +7,19 @@
             <field name="arch" type="xml">
                 <form>
                     <group>
-                        <field name="name" />
-                        <field name="kind" />
-                        <field name="category" />
-                        <field name="percent" />
-                        <field name="value" />
-                        <field name="expected_value" />
+                        <group>
+                            <field name="name" />
+                            <field name="kind" />
+                            <field name="category" />
+                        </group>
+                        <group>
+                            <field name="percent" />
+                            <field name="value" />
+                            <field name="expected_value" />
+                        </group>
+                        <group>
+                            <field name="comment" />
+                        </group>
                     </group>
                 </form>
             </field>
