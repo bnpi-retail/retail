@@ -350,21 +350,21 @@ class AllExpenses(models.Model):
                     f"кол-во заказов, полученных из рекламных кампаний по продвижению в поиске\n"
                     f"{total_promo_expenses} / {len(promo_expenses)} = {exp_val}")
             elif name == "Процент комиссии за продажу (FBS)":
-                r.comment = ("Процент комиссии за продажу (FBS) * ожидаемая цена = ожидаемое значение\n"
+                r.comment = ("Процент комиссии за продажу (FBS) * цена = значение\n"
                              f"{per} * {exp_price} = {exp_val}")
             elif name in ["Последняя миля (FBS)", "Магистраль до (FBS)", "Максимальная комиссия за эквайринг"]:
-                r.comment = ("Рассчитывается как процент от текущей цены, умноженный на ожидаемую цену.\n"
+                r.comment = ("Рассчитывается как процент от текущей цены, умноженный на цену.\n"
                              f"Текущая стоимость '{name}': {val}\n"
                              f"Текущая цена: {price}\n"
                              f"Процент от текущей цены: {val} / {price} = {per}\n"
-                             f"Ожидаемое значение: {per} * {exp_price} = {exp_val}")
+                             f"Значение: {per} * {exp_price} = {exp_val}")
             elif name == "Максимальная комиссия за обработку отправления (FBS) — 25 рублей":
                 r.comment = f"Фиксированное значение"
             elif name in ["Доходность", "Investment"]:
                 if exp_val == 0:
                     r.comment = f"{name} не задан(а)."
                 else:
-                    r.comment = (f"{name} * ожидаемая цена = ожидаемое значение\n"
+                    r.comment = (f"{name} * цена = значение\n"
                                  f"{per} * {exp_price} = {exp_val}")
             elif name == "Налог":
                 if not tax:
@@ -381,7 +381,7 @@ class AllExpenses(models.Model):
                                         f"({price} - {exp_except_tax_roe_roi}) * {tax_percent} = {val}\n"
                                         f"Текущий налог / текущая цена = процент от текущей цены\n"
                                         f"{val} / {price} = {per}\n"
-                                        f"Процент от текущей цены * ожидаемая цена = ожидаемое значение\n"
+                                        f"Процент от текущей цены * цена = значение\n"
                                         f"{per} * {exp_price} = {exp_val}")
                     else:
                         if val == 0:
@@ -392,7 +392,7 @@ class AllExpenses(models.Model):
                                         f"({price} - {ozon_exp}) * {tax_percent} = {val}\n"
                                         f"Текущий налог / текущая цена = процент от текущей цены\n"
                                         f"{val} / {price} = {per}\n"
-                                        f"Процент от текущей цены * ожидаемая цена = ожидаемое значение\n"
+                                        f"Процент от текущей цены * цена = значение\n"
                                         f"{per} * {exp_price} = {exp_val}")
                                     
             else:
@@ -403,8 +403,34 @@ class AllExpenses(models.Model):
                              f"""Общие затраты по "{name}" за период: {exp_amt}\n"""
                              f"""Затраты / выручка = коэффициент\n"""
                              f"""{abs(exp_amt)} / {rev} = {per}\n"""
-                             f"""Коэффициент * ожидаемая цена = ожидаемое значение\n"""
+                             f"""Коэффициент * цена = значение\n"""
                              f"""{per} * {exp_price} = {exp_val}\n""")
+                
+    def update_all_expenses(self, products, latest_indirect_expenses):
+        for idx, prod in enumerate(products):
+            exp_price = prod.expected_price
+            if exp_price == 0:
+                continue
+            if all_expenses := prod.all_expenses_ids:
+                # for e in all_expenses:
+                #     if e.kind == "fix":
+                #         continue
+                #     e.expected_value = e.percent * exp_price
+                all_exp_profit_norm = prod.all_expenses_only_roi_roe_ids.filtered(
+                        lambda r: r.name == "Доходность"
+                    )
+                all_exp_invest = prod.all_expenses_only_roi_roe_ids.filtered(
+                        lambda r: r.name == "Investment"
+                    )
+                delta = exp_price - sum(prod.all_expenses_except_roi_roe_ids.mapped("expected_value"))
+                all_exp_profit_norm.percent = delta / exp_price
+                all_exp_profit_norm.expected_value = all_exp_profit_norm.percent * exp_price
+                all_exp_invest.percent = all_exp_profit_norm.percent / 2
+                all_exp_invest.expected_value = all_exp_invest.percent * exp_price
+ 
+            else:
+                self.create_update_all_product_expenses(prod, latest_indirect_expenses, exp_price)
+            print(f"{idx}th product all expenses were updated")
 
     def create_update_all_product_expenses(self, products, latest_indirect_expenses, expected_price=None):
         data = []
@@ -425,6 +451,7 @@ class AllExpenses(models.Model):
                     "name": "Себестоимость товара",
                     "kind": "fix",
                     "category": "Себестоимость",
+                    "percent": prod.products.total_cost_price / price,
                     "value": prod.products.total_cost_price,
                     "expected_value": prod.products.total_cost_price,
                 }
@@ -557,6 +584,7 @@ class AllExpenses(models.Model):
                         "name": processing.name,
                         "kind": "fix",
                         "category": "Обработка",
+                        "percent": processing.price / price,
                         "value": processing.price,
                         "expected_value": processing.price,
                     },
