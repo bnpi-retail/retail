@@ -60,7 +60,7 @@ class Product(models.Model):
     )
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
-    calculator_delta = fields.Float(string="Дельта")
+    calculator_delta = fields.Float(string="Дельта", compute="_compute_calculator_delta")
     calculator_profit_norm = fields.Float(string="Доходность", 
                                                  compute="_compute_calculator_profit_norm")
     calculator_investment = fields.Float(string="Investment", 
@@ -1682,10 +1682,10 @@ class Product(models.Model):
                 prod_calc_rec.new_value = mean(prices)
 
 
-    # def _compute_calculator_delta(self):
-    #     for r in self:
-    #         r.calculator_delta = (r.expected_price 
-    #                               - sum(r.all_expenses_except_roi_roe_ids.mapped("expected_value")))
+    def _compute_calculator_delta(self):
+        for r in self:
+            r.calculator_delta = (r.expected_price 
+                                  - sum(r.all_expenses_except_roi_roe_ids.mapped("expected_value")))
 
     # def _compute_calculator_profit_norm(self):
     #     for r in self:
