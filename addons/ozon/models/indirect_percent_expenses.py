@@ -203,7 +203,10 @@ class IndirectPercentExpenses(models.Model):
     # TODO: убрать после тестов
     def calculate(self):
         self.calculate_indirect_expenses_prev_month()
+        # all_products = self.env["ozon.products"].search([])
+        # all_products.calculate_expected_price()
         self.env["ozon.products"].update_all_expenses()
+            
 
     def name_get(self):
         """

@@ -7,3 +7,12 @@ class CompetitorSeller(models.Model):
 
     trade_name = fields.Char(string='Торговое название')
     is_my_shop = fields.Char(default=False)
+
+    def name_get(self):
+        """
+        Rename name records
+        """
+        result = []
+        for record in self:
+            result.append((record.id, record.trade_name))
+        return result

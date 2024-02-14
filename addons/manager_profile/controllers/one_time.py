@@ -11,7 +11,6 @@ class ParserPlugin(http.Controller):
         records = model_products_competitors.search([])
         
         for record in records:
-
             record_search_query_parser = self.get_or_create_search_query_record(
                 record=record,
             )
@@ -28,18 +27,33 @@ class ParserPlugin(http.Controller):
                 )
                 continue
 
-            self.get_or_create_product_competitors(
+            record_seller = self.get_or_create_seller(
                 record=record,
+            )
+
+            record_product_competitors = self.get_or_create_product_competitors(
+                record=record,
+                record_seller=record_seller,
                 record_search_query_parser=record_search_query_parser
             )
 
-        return Response(
-            response=json.dumps({'response': 'success'}),
-            status=200,
-            content_type='application/json'
-        )
+        return "Success!"
     
-    def get_or_create_product_competitors(self, record, record_search_query_parser):
+    def get_or_create_seller(self, record):
+        model_competitor_seller = http.request.env["ozon.competitor_seller"]
+
+        record_seller = model_competitor_seller \
+            .search([("trade_name", "=", record.seller)], limit=1)
+
+        if not record_seller:
+            record_seller = model_competitor_seller \
+                .create({
+                    "trade_name": record.seller,
+                })
+            
+        return record_seller
+    
+    def get_or_create_product_competitors(self, record, record_seller, record_search_query_parser):
         model_products_competitors = http.request.env["ozon.products_competitors"]
     
         record_product_competitors = model_products_competitors \
@@ -49,30 +63,35 @@ class ParserPlugin(http.Controller):
             record_product_competitors = model_products_competitors \
                 .create({
                     "id_product": record.id_product,
-                    "search_query": record_search_query_parser.id,
                 })
-                
+            
+        if record_search_query_parser.id not in record_product_competitors.tracked_search_query_ids.ids:
+            record_product_competitors \
+                .write({
+                    'tracked_search_query_ids': [(4, record_search_query_parser.id)]
+                })
+
         record_product_competitors \
             .write({
                 "article": record.product.article,
                 "product": record.product.id,
                 "name": record.name,
                 "url": record.url,
-                "search_query": record_search_query_parser.id,
+                "competitor_seller_id": record_seller.id,
             })
 
         return record_product_competitors
 
     def get_or_create_search_query_record(self, record):
-        model_search_queries_parser = http.request.env["ozon.search_queries_parser"]
+        model_search_queries_parser = http.request.env["ozon.tracked_search_queries"]
 
         record_search_queries_parser = model_search_queries_parser \
-            .search([("search_query", "=", record.search_query)], limit=1)
+            .search([("name", "=", record.search_query)], limit=1)
 
         if not record_search_queries_parser:
             record_search_queries_parser = model_search_queries_parser \
                 .create({
-                    "search_query": record.search_query,
+                    "name": record.search_query,
                 })
         
         return record_search_queries_parser
@@ -88,15 +107,20 @@ class ParserPlugin(http.Controller):
         if not product_record:
             product_record = model_products.search([("fbs_sku", "=", record.id_product)])
 
-        product_record.write({
-            "search_query": record_search_query_parser.id
-        })
+        existing_record = product_record.tracked_search_query_ids.filtered(
+            lambda x: x.id == record_search_query_parser.id
+        )
+
+        if not existing_record:
+            product_record.write({
+                'tracked_search_query_ids': [(4, record_search_query_parser.id)]
+            })
 
     def create_history_of_products_position_record(self, record, record_search_query_parser):
         model_history_of_product_positions = http.request.env["ozon.history_of_product_positions"]
-        model_history_of_product_positions.create({
-            "number": record.number,
-            "id_product": record.id_product,
-            "search_query": record_search_query_parser.id,
-        })
-
+        model_history_of_product_positions \
+            .create({
+                "number": record.number,
+                "id_product": record.id_product,
+                "search_query": record_search_query_parser.id,
+            })

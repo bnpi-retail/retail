@@ -8,7 +8,7 @@ class HistoryOfProductPositions(models.Model):
 
     timestamp = fields.Date(string="Дата", default=fields.Date.today)
     id_product = fields.Char(string="Product ID", readonly=True)
-    search_query = fields.Many2one("ozon.search_queries_parser", string="Поисковый запрос")
+    search_query = fields.Many2one("ozon.tracked_search_queries", string="Поисковый запрос")
     number = fields.Char(string="Номер позиции карточки Ozon")
 
     def name_get(self):
@@ -19,6 +19,6 @@ class HistoryOfProductPositions(models.Model):
         for record in self:
             id = record.id
             result.append(
-                (id, f"{record.timestamp}, {record.search_query.search_query}")
+                (id, f"{record.timestamp}, {record.search_query.name}")
             )
         return result

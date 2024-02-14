@@ -2,20 +2,20 @@
     <data>
 
         <!-- Form -->
-        <record id="view_action_tracked_search_queries_form" model="ir.ui.view">
-            <field name="name">Отслеживаемые поисковые запросы</field>
+        <record id="view_tracked_search_queries_form" model="ir.ui.view">
+            <field name="name">Отслеживаемый поисковый запрос</field>
             <field name="model">ozon.tracked_search_queries</field>
             <field name="arch" type="xml">
                 <form>
                     <group>
-                        <field name="name"/>
+                        <field name="name" />
                     </group>
                 </form>
             </field>
         </record>
 
         <!-- Tree -->
-        <!-- <record id="view_action_tracked_search_queries_tree" model="ir.ui.view">
+        <record id="view_tracked_search_queries_tree" model="ir.ui.view">
             <field name="name">Отслеживаемые поисковые запросы</field>
             <field name="model">ozon.tracked_search_queries</field>
             <field name="arch" type="xml">
@@ -23,21 +23,21 @@
                     <field name="name" />
                 </tree>
             </field>
-        </record> -->
+        </record>
 
         <!-- Action -->
-        <!-- <record model="ir.actions.act_window" id="action_tracked_search_queries">
+        <record model="ir.actions.act_window" id="action_tracked_search_queries">
             <field name="name">Отслеживаемые поисковые запросы</field>
             <field name="res_model">ozon.tracked_search_queries</field>
             <field name="view_mode">tree,form</field>
-        </record> -->
+        </record>
 
         <!-- Menu -->
-        <!-- <menuitem name="Отслеживаемые поисковые запросы" 
-            id="menu_tracked_search_queries" 
-            parent="main_menu_products" 
-            action="action_tracked_search_queries" 
-            sequence="20"/> -->
+        <menuitem name="Отслеживаемые поисковые запросы"
+            id="menu_tracked_search_queries"
+            parent="ozon.technical"
+            action="action_tracked_search_queries"
+            sequence="37" />
 
     </data>
 </odoo>
