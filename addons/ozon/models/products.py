@@ -67,9 +67,6 @@ class Product(models.Model):
                                                  compute="_compute_calculator_investment")
     expected_price = fields.Float(string="Ожидаемая цена", compute="_compute_expected_price",
                                   readonly=False)
-    def _compute_expected_price(self):
-        for r in self:
-            r.expected_price = r.price
     expected_price_error = fields.Text(string="Комментарий к ожидаемой цене", readonly=True)
     price_delta = fields.Float(
         string="Разница между актуальной и ожидаемой ценой",
@@ -652,6 +649,10 @@ class Product(models.Model):
                     }
                 )
                 print(f'{i} - Fix expense "Себестоимость товара" was created')
+
+    def _compute_expected_price(self):
+        for r in self:
+            r.expected_price = r.price
 
     @api.onchange("expected_price")
     def onchange_expected_price(self):
