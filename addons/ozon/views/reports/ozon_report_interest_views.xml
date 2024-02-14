@@ -26,13 +26,26 @@
                                 </group>
                             </group>
                             <group></group>
-                            <separator/>
                             <group>
                                 <field name="ozon_categories_id" string="Категория"/>
+                                <field name="fp_revenue_per_hit_view_per_day"
+                                       string="Выручка/просмотр/день за первый период"/>
+                                <field name="sp_revenue_per_hit_view_per_day"
+                                       string="Выручка/просмотр/день за второй период"/>
                             </group>
                             <notebook>
-                                <page string="Товары конкурентов">
-
+                                <page string="Данные">
+                                    <field name="ozon_report_interest_data_ids">
+                                        <tree>
+                                            <field name="ozon_products_id" string="Продукт"/>
+                                            <field name="fp_hits_view" string="Просмотры период 1"/>
+                                            <field name="sp_hits_view" string="Просмотры период 2"/>
+                                            <field name="fp_revenue" string="Выручка период 1"/>
+                                            <field name="sp_revenue" string="Выручка период 2"/>
+                                            <field name="fp_share" string="%, Выручка/просмотр/день период 1"/>
+                                            <field name="sp_share" string="%, Выручка/просмотр/день период 2"/>
+                                        </tree>
+                                    </field>
                                 </page>
                             </notebook>
                         </group>
