@@ -34,7 +34,6 @@
         "security/competitors/competitor_sale/ir.model.access.csv",
         "security/competitors/competitor_seller/ir.model.access.csv",
         "security/search_queries/search_queries/ir.model.access.csv",
-        "security/search_queries/search_queries_parser/ir.model.access.csv",
         "security/transaction/ir.model.access.csv",
         "security/stock/ir.model.access.csv",
         "security/product_fee/ir.model.access.csv",
