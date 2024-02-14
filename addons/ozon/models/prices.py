@@ -326,24 +326,29 @@ class AllExpenses(models.Model):
         for r in self:
             name = r.name
             val = r.value
-            exp_val = r.expected_value
-            per = round(r.percent, 3)
+            exp_val = round(r.expected_value, 2)
+            per = round(r.percent, 6)
             price = r.product_id.price
             exp_price = r.product_id.expected_price
             tax = r.product_id.seller.tax
             tax_percent = r.product_id.seller.tax_percent
             tax_string = dict(r.product_id.seller._fields['tax'].selection).get(tax)
             if name == "Себестоимость товара":
-                if r.value == 0:
+                if val == 0:
                     r.comment = "Себестоимость товара не указана."
                 else:
                     r.comment = "Себестоимость из модуля 'Розничная торговля'"
             elif name == "Средняя стоимость продвижения товара":
-                if r.value == 0:
+                if val == 0:
                     r.comment = "Нет данных о продвижении товара."
                 else:
-                    r.comment = ("Cумма расходов на продвижение в поиске за всё время," 
-                    " делённая на кол-во заказов, полученных из рекламных кампаний по продвижению в поиске.")
+                    promo_expenses = r.product_id.promotion_expenses_ids.filtered(
+                        lambda r: exp.date_from <= r.date <= exp.date_to)
+                    total_promo_expenses = round(sum(promo_expenses.mapped("expense")), 2)
+                    r.comment = (f"Рассчитывается за период {period}\n"
+                        f"Cумма расходов на продвижение в поиске / " 
+                    f"кол-во заказов, полученных из рекламных кампаний по продвижению в поиске\n"
+                    f"{total_promo_expenses} / {len(promo_expenses)} = {exp_val}")
             elif name == "Процент комиссии за продажу (FBS)":
                 r.comment = ("Процент комиссии за продажу (FBS) * ожидаемая цена = ожидаемое значение\n"
                              f"{per} * {exp_price} = {exp_val}")
@@ -356,36 +361,39 @@ class AllExpenses(models.Model):
             elif name == "Максимальная комиссия за обработку отправления (FBS) — 25 рублей":
                 r.comment = f"Фиксированное значение"
             elif name in ["Доходность", "Investment"]:
-                if r.value == 0:
+                if exp_val == 0:
                     r.comment = f"{name} не задан(а)."
                 else:
                     r.comment = (f"{name} * ожидаемая цена = ожидаемое значение\n"
                                  f"{per} * {exp_price} = {exp_val}")
             elif name == "Налог":
-                exp_except_tax_roe_roi = r.product_id.total_all_expenses_ids_except_tax_roe_roi
-                ozon_exp = exp_except_tax_roe_roi - r.product_id.products.total_cost_price
-                if tax.startswith("earnings_minus_expenses"):
-                    if r.value == 0:
-                        r.comment = (f"Схема налогообложения: {tax_string}.\n"
-                                     f"Цена < все затраты. Налог = 0.")
+                if not tax:
+                    r.comment = f"{name} не задан у продавца."
+                else: 
+                    exp_except_tax_roe_roi = r.product_id.total_all_expenses_ids_except_tax_roe_roi
+                    ozon_exp = exp_except_tax_roe_roi - r.product_id.products.total_cost_price
+                    if tax.startswith("earnings_minus_expenses"):
+                        if r.value == 0:
+                            r.comment = (f"Схема налогообложения: {tax_string}.\n"
+                                        f"Цена < все затраты. Налог = 0.")
+                        else:
+                            r.comment = ("(Цена - все затраты) * процент налогообложения = текущий налог\n"
+                                        f"({price} - {exp_except_tax_roe_roi}) * {tax_percent} = {val}\n"
+                                        f"Текущий налог / текущая цена = процент от текущей цены\n"
+                                        f"{val} / {price} = {per}\n"
+                                        f"Процент от текущей цены * ожидаемая цена = ожидаемое значение\n"
+                                        f"{per} * {exp_price} = {exp_val}")
                     else:
-                        r.comment = ("(Цена - все затраты) * процент налогообложения = текущий налог\n"
-                                     f"({price} - {exp_except_tax_roe_roi}) * {tax_percent} = {val}\n"
-                                     f"Текущий налог / текущая цена = процент от текущей цены\n"
-                                     f"{val} / {price} = {per}\n"
-                                     f"Процент от текущей цены * ожидаемая цена = ожидаемое значение\n"
-                                     f"{per} * {exp_price} = {exp_val}")
-                else:
-                    if r.value == 0:
-                        r.comment = (f"Схема налогообложения: {tax_string}.\n"
-                                     f"Цена < затраты Ozon. Налог = 0.")
-                    else:
-                        r.comment = ("(Цена - затраты Ozon) * процент налогообложения = текущий налог\n"
-                                     f"({price} - {ozon_exp}) * {tax_percent} = {val}\n"
-                                     f"Текущий налог / текущая цена = процент от текущей цены\n"
-                                     f"{val} / {price} = {per}\n"
-                                     f"Процент от текущей цены * ожидаемая цена = ожидаемое значение\n"
-                                     f"{per} * {exp_price} = {exp_val}")
+                        if val == 0:
+                            r.comment = (f"Схема налогообложения: {tax_string}.\n"
+                                        f"Цена < затраты Ozon. Налог = 0.")
+                        else:
+                            r.comment = ("(Цена - затраты Ozon) * процент налогообложения = текущий налог\n"
+                                        f"({price} - {ozon_exp}) * {tax_percent} = {val}\n"
+                                        f"Текущий налог / текущая цена = процент от текущей цены\n"
+                                        f"{val} / {price} = {per}\n"
+                                        f"Процент от текущей цены * ожидаемая цена = ожидаемое значение\n"
+                                        f"{per} * {exp_price} = {exp_val}")
                                     
             else:
                 rev = round(exp.revenue)
@@ -423,9 +431,10 @@ class AllExpenses(models.Model):
             )
             total_expenses += prod.products.total_cost_price
             # продвижение товара
-            all_time_promo_expenses = prod.promotion_expenses_ids.mapped("expense")
-            if all_time_promo_expenses:
-                mean_promo_expense = mean(prod.promotion_expenses_ids.mapped("expense"))
+            promo_expenses = prod.promotion_expenses_ids.filtered(
+                lambda r: latest_indirect_expenses.date_from <= r.date <= latest_indirect_expenses.date_to)
+            if promo_expenses:
+                mean_promo_expense = mean(promo_expenses.mapped("expense"))
                 percent_promo_expense = mean_promo_expense / price
             else:
                 mean_promo_expense = 0
