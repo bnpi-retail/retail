@@ -12,10 +12,9 @@ class AnalysysDataLotsController(http.Controller):
                 type="http", 
                 csrf=False, 
                 methods=["POST"])
-    def save_analysys_data_lots(self, data, today, one_week_ago, **post):
+    def save_analysys_data_lots(self, data, date, **post):
         data = ast.literal_eval(data)
-        today = datetime.strptime(today, "%Y-%m-%d").date()
-        one_week_ago = datetime.strptime(one_week_ago, "%Y-%m-%d").date()
+        date = datetime.strptime(date, "%Y-%m-%d").date()
 
         model_products = http.request.env["ozon.products"]
         model_analysis_data = http.request.env["ozon.analysis_data"]
@@ -28,8 +27,7 @@ class AnalysysDataLotsController(http.Controller):
             )
 
             model_analysis_data_values.append({
-                "timestamp_from": one_week_ago,
-                "timestamp_to": today,
+                "date": date,
                 "product": product.id,
                 "hits_view": info["hits_view"],
                 "hits_tocart": info["hits_tocart"],

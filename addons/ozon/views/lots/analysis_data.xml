@@ -8,8 +8,7 @@
             <field name="arch" type="xml">
                 <form>
                     <group>
-                        <field name="timestamp_from"/>
-                        <field name="timestamp_to"/>
+                        <field name="date"/>
                         <field name="product"/>
                         <field name="hits_view"/>
                         <field name="hits_tocart"/>
@@ -24,8 +23,7 @@
             <field name="model">ozon.analysis_data</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="timestamp_from"/>
-                    <field name="timestamp_to"/>
+                    <field name="date"/>
                     <field name="product"/>
                     <field name="hits_view"/>
                     <field name="hits_tocart"/>
