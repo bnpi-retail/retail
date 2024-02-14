@@ -5,7 +5,7 @@ class SearchQueriesParser(models.Model):
     _name = 'ozon.search_queries_parser'
     _description = 'Поисковые запросы'
 
-    search_query = fields.Char(string='Поисковый запрос')
+    name = fields.Char(string='Поисковый запрос')
 
     def name_get(self):
         """
@@ -13,5 +13,5 @@ class SearchQueriesParser(models.Model):
         """
         result = []
         for record in self:
-            result.append((record.id, record.search_query))
+            result.append((record.id, record.name))
         return result

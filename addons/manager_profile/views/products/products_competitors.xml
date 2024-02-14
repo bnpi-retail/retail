@@ -11,6 +11,7 @@
                     <field name="is_processed" widget="badge"
                         decoration-success="is_processed=='complete'"
                         decoration-warning="is_processed=='not_complete'"
+                        decoration-danger="is_processed=='product_not_assigned'"
                     />
                     <field name="product"/>
                     <field name="is_our_product"/>
@@ -46,8 +47,22 @@
                 <field name="is_processed" widget="badge"
                     decoration-success="is_processed=='complete'"
                     decoration-warning="is_processed=='not_complete'"
+                    decoration-danger="is_processed=='product_not_assigned'"
                 />
             </tree>
+        </field>
+    </record>
+
+    <!-- Search -->
+    <record model="ir.ui.view" id="view_parser_products_competitors_search">
+        <field name="name">Собранные товары</field>
+        <field name="model">parser.products_competitors</field>
+        <field name="type">search</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter string="Товары без назначенного продукта" name="items_without_product" domain="[('is_processed','=','product_not_assigned')]"/>
+                <filter string="Необработанные товары" name="unprocessed_goods" domain="[('is_processed','=','not_complete')]"/>
+            </search>
         </field>
     </record>
 
@@ -55,7 +70,8 @@
     <record model="ir.actions.act_window" id="action_parser_products_competitors">
         <field name="name">Собранные товары</field>
         <field name="res_model">parser.products_competitors</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,search</field>
+        <field name="context">{'search_default_items_without_product': 1, 'search_default_unprocessed_goods': 1}</field>
     </record>
 
     <record model="ir.actions.server" id="action_create_ozon_products">

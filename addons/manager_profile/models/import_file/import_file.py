@@ -82,6 +82,9 @@ class ImportProductsPlugin(models.Model):
 
             if our_sku == str(sku):
                 value["is_our_product"] = True
+                value["is_processed"] = "not_complete"
+            else:
+                value["is_processed"] = "product_not_assigned"
             
             model_parser_products.create(value)
             
@@ -102,6 +105,7 @@ class ImportProductsPlugin(models.Model):
             if record: return sku, record
 
         return None, None
+
 
 class NameGet(models.Model):
     _inherit = "parser.import_file"

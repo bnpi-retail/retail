@@ -102,7 +102,6 @@
                             <group>
                                 <group>
                                     <group>
-                                        <field name="search_query"/>
                                         <field name="products" />
                                         <field name="categories" string="Категория" />
                                         <field name="abc_group" string="Группа"/>
@@ -257,36 +256,35 @@
                             </group>
                         </page>
                         <page id="page_lot_promotion_info" string="Продвижение">
-                            <group>
-                                <field name="tracked_search_queries" widget="one2many_list"
-                                    string="Отслеживаемые поисковые запросы по описанию">
-                                    <tree>
-                                        <field name="name" />
-                                    </tree>
-                                </field>
-                                <field name="promotion_expenses_ids">
-                                    <tree>
-                                        <field name="date" />
-                                        <field name="promotion_type" />
-                                        <field name="qty" />
-                                        <field name="percent_rate" />
-                                        <field name="expense" />
-                                    </tree>
-                                </field>
-
-                            </group>
+                            <separator string="Поисковые запросы" />
+                            <field name="tracked_search_query_ids">
+                                <tree>
+                                    <field name="name" />
+                                </tree>
+                            </field>
+                            <separator string="Затраты на продвижение" />
+                            <field name="promotion_expenses_ids">
+                                <tree>
+                                    <field name="date" />
+                                    <field name="promotion_type" />
+                                    <field name="qty" />
+                                    <field name="percent_rate" />
+                                    <field name="expense" />
+                                </tree>
+                            </field>
                         </page>
                         <page id="page_lot_competitors_info" string="Конкуренты">
-                            <group string="Конкуренты">
-                                <field name="competitors_with_price_ids" widget="one2many_list">
-                                    <tree limit="10">
-                                        <field name="product_competitors" />
-                                        <field name="price_with_card" />
-                                        <field name="price" />
-                                        <field name="price_without_sale" />
-                                        <field name="last_update"/>
-                                    </tree>
-                                </field>
+                            <separator string="Конкуренты" />
+                            <field name="competitors_with_price_ids" widget="one2many_list">
+                                <tree limit="10">
+                                    <field name="product_competitors" />
+                                    <field name="price_with_card" />
+                                    <field name="price" />
+                                    <field name="price_without_sale" />
+                                    <field name="last_update"/>
+                                </tree>
+                            </field>
+                            <group>
                                 <field name="not_enough_competitors"
                                     string="Конкурентов меньше трёх" />
                                 <field name="commentary_not_enough_competitors" string="Комментарий"

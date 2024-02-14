@@ -114,7 +114,21 @@ services:
     image: redis:7-alpine
     ports:
       - 6379:6379
-      
+
+  ### PgAdmin4
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - 5050:80
+    environment:
+      - "PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}"
+      - "PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}"
+    volumes:
+      - ./pgadmin-data:/var/lib/pgadmin
+    networks:
+      - odoo-network
+    user: "${UID}:${GID}"
+    
   ### Temporal
   elasticsearch:
     container_name: temporal-elasticsearch

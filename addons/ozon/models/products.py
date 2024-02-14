@@ -37,8 +37,13 @@ class Product(models.Model):
 
     # GPT
     description = fields.Text(string="Описание товара")
-    tracked_search_queries = fields.One2many(
-        "ozon.tracked_search_queries", "link_ozon_products", string="Поисковые запросы"
+    
+    tracked_search_query_ids = fields.Many2many(
+        'ozon.tracked_search_queries', 
+        'product_tracked_search_rel', 
+        'product_id', 
+        'tracked_search_query_id', 
+        string="Отслеживаемые поисковые запросы"
     )
 
     categories = fields.Many2one("ozon.categories", string="Название категории")
@@ -47,7 +52,6 @@ class Product(models.Model):
     fbo_sku = fields.Char(string="FBO SKU", readonly=True)
     fbs_sku = fields.Char(string="FBS SKU", readonly=True)
     article = fields.Char(string="Артикул", readonly=True)
-    search_query = fields.Many2one("ozon.search_queries_parser", string="Поисковый запрос")
     
     supplementary_categories = fields.Many2many(
         "ozon.supplementary_categories",
