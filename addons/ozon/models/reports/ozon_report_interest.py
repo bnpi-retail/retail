@@ -103,17 +103,14 @@ class OzonReportInterest(models.Model):
         if days == 0:
             raise UserError("Количество дней в периоде равно 0")
 
-        period_total_hits_view = 0
-        period_total_revenue = 0
-        for product_id, data in data_dict.items():
-            period_total_hits_view += data['hits_view']
-            period_total_revenue += data['revenue']
+        period_total_hits_view = sum(data['hits_view'] for data in data_dict.values())
+        period_total_revenue = sum(data['revenue'] for data in data_dict.values())
 
         period_total_hits_view /= days
         period_total_revenue /= days
 
         if period_total_hits_view == 0:
-            period_revenue_per_view_per_day = 0
+            period_revenue_per_view_per_day = 0.000001
         else:
             period_revenue_per_view_per_day = period_total_revenue / period_total_hits_view
 
