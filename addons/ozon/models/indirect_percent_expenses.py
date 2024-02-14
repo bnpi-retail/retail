@@ -198,14 +198,14 @@ class IndirectPercentExpenses(models.Model):
             if k.startswith("coef") and k not in ["coef_total", "coef_acquiring"]:
                 data["coef_total"] += v
 
-        self.create(data)
+        rec = self.create(data)
+        return rec
 
     # TODO: убрать после тестов
     def calculate(self):
-        self.calculate_indirect_expenses_prev_month()
-        # all_products = self.env["ozon.products"].search([])
-        # all_products.calculate_expected_price()
-        self.env["ozon.products"].update_all_expenses()
+        latest_indir_percent_expenses = self.calculate_indirect_expenses_prev_month()
+        all_products = self.env["ozon.products"].search([])
+        self.env["ozon.all_expenses"].update_all_expenses(all_products, latest_indir_percent_expenses)
             
 
     def name_get(self):

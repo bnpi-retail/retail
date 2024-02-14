@@ -405,6 +405,32 @@ class AllExpenses(models.Model):
                              f"""{abs(exp_amt)} / {rev} = {per}\n"""
                              f"""Коэффициент * цена = значение\n"""
                              f"""{per} * {exp_price} = {exp_val}\n""")
+                
+    def update_all_expenses(self, products, latest_indirect_expenses):
+        for idx, prod in enumerate(products):
+            exp_price = prod.expected_price
+            if exp_price == 0:
+                continue
+            if all_expenses := prod.all_expenses_ids:
+                # for e in all_expenses:
+                #     if e.kind == "fix":
+                #         continue
+                #     e.expected_value = e.percent * exp_price
+                all_exp_profit_norm = prod.all_expenses_only_roi_roe_ids.filtered(
+                        lambda r: r.name == "Доходность"
+                    )
+                all_exp_invest = prod.all_expenses_only_roi_roe_ids.filtered(
+                        lambda r: r.name == "Investment"
+                    )
+                delta = exp_price - sum(prod.all_expenses_except_roi_roe_ids.mapped("expected_value"))
+                all_exp_profit_norm.percent = delta / exp_price
+                all_exp_profit_norm.expected_value = all_exp_profit_norm.percent * exp_price
+                all_exp_invest.percent = all_exp_profit_norm.percent / 2
+                all_exp_invest.expected_value = all_exp_invest.percent * exp_price
+ 
+            else:
+                self.create_update_all_product_expenses(prod, latest_indirect_expenses, exp_price)
+            print(f"{idx}th product all expenses were updated")
 
     def create_update_all_product_expenses(self, products, latest_indirect_expenses, expected_price=None):
         data = []
