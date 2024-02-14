@@ -19,23 +19,6 @@ class OzonReportInterest(models.Model):
     second_period_from = fields.Date()
     second_period_to = fields.Date()
 
-    # @api.onchange('ozon_categories_id')
-    # def _onchange_ozon_categories_id(self):
-    #     if self.ozon_categories_id:
-    #         interests = self.env['ozon.analysis_data'].search([])
-    #         unique_periods = {rec.timestamp_from: rec.timestamp_to for rec in interests}
-    #         ozon_analysis_data_period_from = set(self.env["ozon.analysis_data.period"].search([]).mapped('period_from'))
-    #         for from_, to in unique_periods.items():
-    #             if from_ in ozon_analysis_data_period_from:
-    #                 pass
-    #             else:
-    #                 self.env["ozon.analysis_data.period"].create(
-    #                     {
-    #                         'period_from': from_,
-    #                         'period_to': to,
-    #                     }
-    #                 )
-
     def action_calculate_interest_report(self):
         for record in self:
             if not record.ozon_categories_id:
@@ -55,71 +38,84 @@ class OzonReportInterest(models.Model):
             if record.first_period_to > record.second_period_from:
                 raise UserError("Периоды не должны пересекаться")
 
-            first_period_analysis_data = self.env['ozon.analysis_data'].search(
-                domain=[
-                    ('product.categories', '=', record.ozon_categories_id.id),
-                    ('timestamp_from', '>=', record.first_period_from - timedelta(days=7)),
-                    ('timestamp_to', '<=', record.first_period_to + timedelta(days=7)),
-                ],
+            # collect data first period
+            first_period_analysis_data = self._get_period_analysis_data(
+                record.ozon_categories_id.id,
+                record.first_period_from,
+                record.first_period_to
+            )
+            fp_data, fp_product_ids = self._get_period_data_dict(first_period_analysis_data)
+            del first_period_analysis_data
+
+            self._add_sales_data(
+                record.first_period_from, record.first_period_to, fp_product_ids, fp_data
             )
 
-            first_period_data_per_day = defaultdict(lambda: defaultdict(dict))
-            for data in first_period_analysis_data:
-                day = data.timestamp_from
-                days_qty = (data.timestamp_to - data.timestamp_from).days
-                product_id = data.product.id
-                avg_hits_view = data.hits_view / days_qty
-                avg_hits_tocart = data.hits_tocart / days_qty
-                for i in range(days_qty):
-                    day += timedelta(days=i)
-                    first_period_data_per_day[day][product_id].append(
-                        {
-                            'product_id': product_id,
-                            'date': day,
-                            'hits_view': avg_hits_view,
-                            'hits_tocart': avg_hits_tocart,
-                            'sale_qty': 0,
-                            'revenue': 0,
-                        }
-                    )
-            del first_period_analysis_data
-            logger.warning(first_period_data_per_day)
+            # collect data second period
+            second_period_analysis_data = self._get_period_analysis_data(
+                record.ozon_categories_id.id,
+                record.second_period_from,
+                record.second_period_to
+            )
+            sp_data, sp_product_ids = self._get_period_data_dict(second_period_analysis_data)
+            del second_period_analysis_data
+
+            self._add_sales_data(record.second_period_from, record.second_period_to, sp_product_ids, sp_data)
+
+            logger.warning(fp_data)
+            # logger.warning(sp_data)
 
 
-            # first_period_data = {
-            #     entry['product'][0]: {
-            #         'hits_view': entry['hits_view'],
-            #         'hits_tocart': entry['hits_tocart'],
-            #         'qty': 0,
-            #         'revenue': 0,
-            #     } for entry in first_period_analysis_data
-            # }
+    def _get_period_analysis_data(self, category_id, period_from, period_to) -> dict:
+        period_analysis_data = self.env['ozon.analysis_data'].read_group(
+            domain=[
+                ('product.categories', '=', category_id),
+                ('date', '>=', period_from),
+                ('date', '<=', period_to),
+            ],
+            fields=['product', 'hits_view', 'hits_tocart'],
+            groupby=['product']
+        )
+        return period_analysis_data
 
-            # first_period_sales = self.env["ozon.sale"].read_group(
-            #     domain=[
-            #         ('product', 'in', list(first_period_data.keys()))
-            #     ],
-            #     fields=['product', 'qty', 'revenue'],
-            #     groupby=['product']
-            # )
-            # count = 0
-            # for entry in first_period_sales:
-            #     logger.warning(entry)
-            #     count += 1
-            #     if count == 2:
-            #         break
+    def _add_sales_data(self, period_from, period_to, ids_list, data_dict):
+        sales = self.env['ozon.sale'].read_group(
+            domain=[
+                ('product', 'in', ids_list),
+                ('date', '>=', period_from),
+                ('date', '<=', period_to),
+            ],
+            fields=['product', 'qty', 'revenue'],
+            groupby=['product']
+        )
+        for entry in sales:
+            product = entry.get('product')
+            if product:
+                product_id = product[0]
+                product_data = data_dict.get(product_id)
+                if product_data:
+                    product_data['sale_qty'] += entry['qty']
+                    product_data['revenue'] += entry['revenue']
 
+    @staticmethod
+    def _get_period_data_dict(period_raw_analysis_data) -> tuple:
+        data = defaultdict(
+            lambda: {
+                'hits_view': 0,
+                'hits_tocart': 0,
+                'sale_qty': 0,
+                'revenue': 0,
+            }
+        )
+        product_ids = []
+        for entry in period_raw_analysis_data:
+            product = entry.get('product')
+            if product:
+                product_id = product[0]
+                product_ids.append(product_id)
+                data[product_id]['hits_view'] += entry.get('hits_view')
+                data[product_id]['hits_tocart'] += entry.get('hits_tocart')
+            else:
+                logger.warning(f"Missing product while action_calculate_interest_report")
 
-            # second_period_analysis_data = self.env['ozon.analysis_data'].read_group(
-            #     domain=[
-            #         ('product.categories', '=', record.ozon_categories_id.id),
-            #         ('timestamp_from', '=', record.second_period.period_from),
-            #         ('timestamp_to', '=', record.second_period.period_to),
-            #     ],
-            #     fields=['product', 'hits_view', 'hits_tocart'],
-            #     groupby=['product']
-            # )
-            # second_period_data = {
-            #     entry['product'][0]: [entry['hits_view'], entry['hits_tocart']] for entry in second_period_analysis_data
-            # }
-
+        return data, product_ids
