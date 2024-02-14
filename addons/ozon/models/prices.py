@@ -546,8 +546,9 @@ class AllExpenses(models.Model):
                     {
                         "product_id": prod.id,
                         "name": logistics.name,
-                        "kind": "fix",
+                        "kind": "percent",
                         "category": "Логистика",
+                        "percent": logistics.price / price,
                         "value": logistics.price,
                         "expected_value": logistics.price,
                     },
