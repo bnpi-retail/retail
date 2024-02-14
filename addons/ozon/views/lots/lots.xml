@@ -139,11 +139,11 @@
 
                             <field name="all_expenses_except_roi_roe_ids">
                                 <tree>
+                                    <field name="ordinal_number" />
                                     <field name="name" />
-                                    <field name="kind" invisible="1" />
+                                    <field name="kind" />
                                     <field name="comment" optional="hide" />
-                                    <field name="percent" widget="percentage"
-                                        attrs="{'invisible':[('kind','=','fix')]}" />
+                                    <field name="percent" widget="percentage" />
                                     <field name="expected_value" sum="1" string="Значение" />
                                 </tree>
                             </field>
