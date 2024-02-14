@@ -107,6 +107,14 @@ services:
     networks:
       - odoo-network
 
+  ### Celery
+  celery-redis:
+    volumes:
+        - ./db/redis:/data
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+      
   ### Temporal
   elasticsearch:
     container_name: temporal-elasticsearch
