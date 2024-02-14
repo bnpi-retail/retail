@@ -23,24 +23,3 @@ class AnalysisData(models.Model):
             result.append(name)
         return result
 
-
-class AnalysisDataPeriod(models.Model):
-    _name = "ozon.analysis_data.period"
-    _description = "Cуществующие периоды для выбора в отчете"
-
-    name = fields.Char(size=50)
-    period_from = fields.Date()
-    period_to = fields.Date()
-
-    def name_get(self):
-        """
-        Rename name records
-        """
-        result = []
-        for record in self:
-            id = record.id
-            from_ = record.period_from.strftime('%d.%m.%Y')
-            to = record.period_to.strftime('%d.%m.%Y')
-            name = (id, f"{from_} - {to}")
-            result.append(name)
-        return result

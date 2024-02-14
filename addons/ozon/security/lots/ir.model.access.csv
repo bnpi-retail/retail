@@ -3,6 +3,5 @@ access_ozon_products,Access Ozon Products,model_ozon_products,base.group_user,1,
 access_ozon_tracked_search_queries,Access Ozon Tracked Search Queries,model_ozon_tracked_search_queries,base.group_user,1,1,1,1
 access_ozon_lots_for_gpt,Access Ozon Lots For Gpt,model_ozon_lots_for_gpt,base.group_user,1,1,1,1
 access_ozon_analysis_data,Access Ozon Analysis Data,model_ozon_analysis_data,base.group_user,1,1,1,1
-access_ozon_analysis_data_period,Access Ozon Analysis Data period,model_ozon_analysis_data_period,base.group_user,1,1,1,1
 access_ozon_product_calculator,Access Ozon Product Calculator,model_ozon_product_calculator,base.group_user,1,1,1,1
 access_ozon_products_mass_pricing_wizard,Access Ozon Products Mass Pricing Wizzard,model_ozon_products_mass_pricing_wizard,base.group_user,1,1,1,1
