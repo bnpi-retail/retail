@@ -657,6 +657,8 @@ class Product(models.Model):
     def onchange_expected_price(self):
         exp_price = self.expected_price
         for i in self.all_expenses_ids:
+            if i.kind == "fix":
+                continue
             i.expected_value = i.percent * exp_price
             i._compute_comment()
         all_exp_profit_norm = self.all_expenses_only_roi_roe_ids.filtered(
