@@ -5,6 +5,7 @@ from statistics import mean
 
 from odoo import models, fields, api
 
+from ..helpers import split_list_into_chunks_of_size_n
 from .indirect_percent_expenses import (
     STRING_FIELDNAMES,
     COEF_FIELDNAMES_STRINGS,
@@ -301,6 +302,7 @@ class AllExpenses(models.Model):
     _name = "ozon.all_expenses"
     _description = "Все затраты по товару Ozon"
 
+    ordinal_number = fields.Integer(string="Порядковый номер")
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
     name = fields.Char(string="Название")
     description = fields.Char(string="Описание")
@@ -345,7 +347,7 @@ class AllExpenses(models.Model):
                     promo_expenses = r.product_id.promotion_expenses_ids.filtered(
                         lambda r: exp.date_from <= r.date <= exp.date_to)
                     total_promo_expenses = round(sum(promo_expenses.mapped("expense")), 2)
-                    r.comment = (f"Рассчитывается за период {period}\n"
+                    r.comment = (f"Продвижение товара (Арт: {r.product_id.article}) за период {period}\n"
                         f"Cумма расходов на продвижение в поиске / " 
                     f"кол-во заказов, полученных из рекламных кампаний по продвижению в поиске\n"
                     f"{total_promo_expenses} / {len(promo_expenses)} = {exp_val}")
@@ -412,10 +414,6 @@ class AllExpenses(models.Model):
             if exp_price == 0:
                 continue
             if all_expenses := prod.all_expenses_ids:
-                # for e in all_expenses:
-                #     if e.kind == "fix":
-                #         continue
-                #     e.expected_value = e.percent * exp_price
                 all_exp_profit_norm = prod.all_expenses_only_roi_roe_ids.filtered(
                         lambda r: r.name == "Доходность"
                     )
@@ -435,6 +433,7 @@ class AllExpenses(models.Model):
     def create_update_all_product_expenses(self, products, latest_indirect_expenses, expected_price=None):
         data = []
         for idx, prod in enumerate(products):
+            ord_num = (_ for _ in range(1, 100))
             tax = prod.seller.tax
             tax_percent = prod.seller.tax_percent
             tax_description = prod.seller.tax_description
@@ -445,15 +444,17 @@ class AllExpenses(models.Model):
             else:
                 expected_price = prod.expected_price
             # себестоимость
+            cost_price = prod.products.total_cost_price
             data.append(
                 {
+                    "ordinal_number": next(ord_num) if cost_price else 0,
                     "product_id": prod.id,
                     "name": "Себестоимость товара",
                     "kind": "fix",
                     "category": "Себестоимость",
-                    "percent": prod.products.total_cost_price / price,
-                    "value": prod.products.total_cost_price,
-                    "expected_value": prod.products.total_cost_price,
+                    "percent": cost_price / price,
+                    "value": cost_price,
+                    "expected_value": cost_price,
                 }
             )
             total_expenses += prod.products.total_cost_price
@@ -468,6 +469,7 @@ class AllExpenses(models.Model):
                 percent_promo_expense = 0
             data.append(
                 {
+                    "ordinal_number": next(ord_num) if mean_promo_expense else 0,
                     "product_id": prod.id,
                     "name": "Средняя стоимость продвижения товара",
                     "kind": "percent",
@@ -484,6 +486,7 @@ class AllExpenses(models.Model):
                 value = price * percent
                 data.append(
                     {
+                        "ordinal_number": next(ord_num) if value else 0,
                         "product_id": prod.id,
                         "name": v,
                         "description": f"{latest_indirect_expenses[k]}%",
@@ -550,6 +553,7 @@ class AllExpenses(models.Model):
             data.extend(
                 [
                     {
+                        "ordinal_number": next(ord_num) if ozon_com.price else 0,
                         "product_id": prod.id,
                         "name": ozon_com.name,
                         "description": ozon_com.discription,
@@ -562,6 +566,7 @@ class AllExpenses(models.Model):
                         / 100,
                     },
                     {
+                        "ordinal_number": next(ord_num) if last_mile.price else 0,
                         "product_id": prod.id,
                         "name": last_mile.name,
                         "kind": "percent",
@@ -571,6 +576,7 @@ class AllExpenses(models.Model):
                         "expected_value": expected_price * last_mile.price / price,
                     },
                     {
+                        "ordinal_number": next(ord_num) if logistics.price else 0,
                         "product_id": prod.id,
                         "name": logistics.name,
                         "kind": "percent",
@@ -580,6 +586,7 @@ class AllExpenses(models.Model):
                         "expected_value": logistics.price,
                     },
                     {
+                        "ordinal_number": next(ord_num) if processing.price else 0,
                         "product_id": prod.id,
                         "name": processing.name,
                         "kind": "fix",
@@ -589,6 +596,7 @@ class AllExpenses(models.Model):
                         "expected_value": processing.price,
                     },
                     {
+                        "ordinal_number": next(ord_num) if acquiring.price else 0,
                         "product_id": prod.id,
                         "name": acquiring.name,
                         "kind": "percent",
@@ -606,44 +614,6 @@ class AllExpenses(models.Model):
                 + processing.price
                 + acquiring.price
             )
-
-            # рентабельность
-            if prod.profitability_norm:
-                prof_norm_percent = prod.profitability_norm.value
-            else:
-                prof_norm_percent = 0
-            prof_norm_value = price * prof_norm_percent
-            expected_prof_norm_value = expected_price * prof_norm_percent
-            data.append(
-                {
-                    "product_id": prod.id,
-                    "name": "Доходность",
-                    "kind": "percent",
-                    "category": "Рентабельность",
-                    "percent": prof_norm_percent,
-                    "value": prof_norm_value,
-                    "expected_value": expected_prof_norm_value,
-                },
-            )
-            
-            # инвест.затраты
-            if prod.investment_expenses_id:
-                inv_exp_percent = prod.investment_expenses_id.value
-            else:
-                inv_exp_percent = 0
-            inv_exp_value = price * inv_exp_percent
-            expected_inv_exp_value = expected_price * inv_exp_percent
-            data.append(
-                {
-                    "product_id": prod.id,
-                    "name": "Investment",
-                    "kind": "percent",
-                    "category": "Investment",
-                    "percent": inv_exp_percent,
-                    "value": inv_exp_value,
-                    "expected_value": expected_inv_exp_value,
-                },
-            )
             
             # налог
             total_ozon_expenses = total_expenses - prod.products.total_cost_price
@@ -658,9 +628,10 @@ class AllExpenses(models.Model):
                     tax_value = (price - total_ozon_expenses) * tax_percent
                 else:
                     tax_value = 0
-
+            expected_tax_value = (tax_value / price) * expected_price
             data.append(
                 {
+                    "ordinal_number": next(ord_num) if tax_value else 0,
                     "product_id": prod.id,
                     "name": "Налог",
                     "description": tax_description,
@@ -668,13 +639,56 @@ class AllExpenses(models.Model):
                     "category": "Налоги",
                     "percent": tax_value / price,
                     "value": tax_value,
-                    "expected_value": (tax_value / price) * expected_price,
+                    "expected_value": expected_tax_value,
+                },
+            )
+            
+            total_expenses += tax_value
+
+            # рентабельность
+            if prod.profitability_norm:
+                prof_norm_percent = prod.profitability_norm.value
+            else:
+                prof_norm_percent = (price - total_expenses) / price
+            prof_norm_value = price * prof_norm_percent
+            expected_prof_norm_value = expected_price * prof_norm_percent
+            data.append(
+                {
+                    "ordinal_number": next(ord_num) if prof_norm_value else 0,
+                    "product_id": prod.id,
+                    "name": "Доходность",
+                    "kind": "percent",
+                    "category": "Рентабельность",
+                    "percent": prof_norm_percent,
+                    "value": prof_norm_value,
+                    "expected_value": expected_prof_norm_value,
+                },
+            )
+            
+            # инвест.затраты
+            if prod.investment_expenses_id:
+                inv_exp_percent = prod.investment_expenses_id.value
+            else:
+                inv_exp_percent = prof_norm_percent / 2
+            inv_exp_value = price * inv_exp_percent
+            expected_inv_exp_value = expected_price * inv_exp_percent
+            data.append(
+                {
+                    "ordinal_number": next(ord_num) if inv_exp_value else 0,
+                    "product_id": prod.id,
+                    "name": "Investment",
+                    "kind": "percent",
+                    "category": "Investment",
+                    "percent": inv_exp_percent,
+                    "value": inv_exp_value,
+                    "expected_value": expected_inv_exp_value,
                 },
             )
             print(f"{idx} - All expenses were updated.")
 
         products.all_expenses_ids.unlink()
-        self.create(data)
+        for chunk in split_list_into_chunks_of_size_n(data, 1000):
+            self.create(chunk)
 
 
 class PromotionExpenses(models.Model):

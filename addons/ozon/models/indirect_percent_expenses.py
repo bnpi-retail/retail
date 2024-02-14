@@ -204,9 +204,9 @@ class IndirectPercentExpenses(models.Model):
     # TODO: убрать после тестов
     def calculate(self):
         latest_indir_percent_expenses = self.calculate_indirect_expenses_prev_month()
-        all_products = self.env["ozon.products"].search([])
-        self.env["ozon.all_expenses"].update_all_expenses(all_products, latest_indir_percent_expenses)
-            
+        # all_products = self.env["ozon.products"].search([])
+        # self.env["ozon.all_expenses"].update_all_expenses(all_products, latest_indir_percent_expenses)
+        self.env["ozon.products"].update_all_expenses()
 
     def name_get(self):
         """
