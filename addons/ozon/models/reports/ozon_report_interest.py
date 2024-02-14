@@ -129,8 +129,9 @@ class OzonReportInterest(models.Model):
                     DELETE FROM ozon_report_interest_data
                     WHERE id IN %s
                 """
-        self.env.cr.execute(query, (tuple(record.ozon_report_interest_data_ids.ids),))
-        logger.warning(f"delete from ozon_products_indicator_summary records with ids ")
+        if record.ozon_report_interest_data_ids.ids:
+            self.env.cr.execute(query, (tuple(record.ozon_report_interest_data_ids.ids),))
+            logger.warning(f"delete from ozon_products_indicator_summary records with ids ")
 
         all_category_product_ids = self.env["ozon.products"].search([
             ('categories', '=', record.ozon_categories_id.id)
