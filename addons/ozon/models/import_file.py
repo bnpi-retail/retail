@@ -496,53 +496,64 @@ class ImportFile(models.Model):
                 .mapped(lambda r: r.transaction_id)
             )
             all_transactions = dict.fromkeys(all_transactions, True)
-
+            transactions_data = []
             for i, row in enumerate(reader):
-                # if self.is_ozon_transaction_exists(
-                #     transaction_id=row["transaction_id"]
-                # ):
+                # tran = self.env["ozon_transaction"].filtered(
+                #     lambda r: r.transaction_id == row["transaction_id"])
+                # if tran:
+                #     tran.write({
+                #         "accruals_for_sale": row["accruals_for_sale"],
+                #         "sale_commission": row["sale_commission"],
+                #         "transaction_type": row["type"]
+                #     })
                 #     continue
                 if all_transactions.get(row["transaction_id"]):
                     print(f"{i} - Transaction already exists")
                     continue
                 ozon_products = []
+                ozon_products_ids = []
                 skus = ast.literal_eval(row["product_skus"])
                 for sku in skus:
                     if ozon_product := self.is_ozon_product_exists_by_sku(sku):
-                        ozon_products.append(ozon_product.id)
-
-                if len(skus) != len(ozon_products):
-                    print(f"{i} -")
-                    continue
+                        ozon_products.append(ozon_product)
+                        ozon_products_ids.append(ozon_product.id)
+                # TODO: как быть с транзакциями, где указанных sku нет в нашей системе? 
+                # или напр. в транзакции 2 sku, один из них есть у нас, другого нет.
+                # if len(skus) != len(ozon_products):
+                #     print(f"{i} -")
+                #     continue
 
                 ozon_services = []
                 service_list = ast.literal_eval(row["services"])
+                services_cost = 0
                 for name, price in service_list:
                     service = self.env["ozon.ozon_services"].create(
                         {"name": name, "price": price}
                     )
                     ozon_services.append(service.id)
-                data = {
+                    services_cost += price
+                tran_data = {
                     "transaction_id": str(row["transaction_id"]),
                     "transaction_date": row["transaction_date"],
                     "order_date": row["order_date"],
                     "name": row["name"],
+                    "accruals_for_sale": row["accruals_for_sale"],
+                    "sale_commission": row["sale_commission"],
+                    "transaction_type": row["type"],
                     "amount": row["amount"],
                     "skus": skus,
-                    "products": ozon_products,
+                    "products": ozon_products_ids,
                     "services": ozon_services,
                     "posting_number": row["posting_number"],
                 }
-                ozon_transaction = self.env["ozon.transaction"].create(data)
+                transactions_data.append(tran_data)
+
                 print(f"{i} - Transaction {row['transaction_id']} was created")
                 # creating ozon.sale records
                 if row["name"] == "Доставка покупателю":
-                    self.create_sale_from_transaction(
-                        products=ozon_products,
-                        date=row["order_date"],
-                        revenue=row["amount"],
-                    )
-
+                    self.create_sale_from_transaction(data=tran_data, 
+                        products=ozon_products, services_cost=services_cost)
+            self.env["ozon.transaction"].create(transactions_data)
         os.remove(f_path)
 
     def import_stocks(self, content):
@@ -744,13 +755,27 @@ class ImportFile(models.Model):
                 print(f"{i} - Supply order {supply_order_id} was imported")
         os.remove(f_path)
 
-    def create_sale_from_transaction(self, products: list, date: str, revenue: float):
+    def create_sale_from_transaction(self, data: dict, products: list, services_cost: float):
+        if len(products) == 0:
+            return
         # if all products are the same
-        product = products[0]
-        qty = len(products)
-        if products.count(product) == qty:
+        print(products)
+        print(data["products"])
+        product_id = data["products"][0]
+        qty = len(data["products"])
+        if data["products"].count(product_id) == qty:
             self.env["ozon.sale"].create(
-                {"product": product, "date": date, "qty": qty, "revenue": revenue}
+                {
+                    "transaction_identifier": data["transaction_id"],
+                    "product": product_id, 
+                    "product_id_on_platform": products[0].id_on_platform, 
+                    "date": data["order_date"], 
+                    "qty": qty, 
+                    "revenue": data["accruals_for_sale"],
+                    "sale_commission": data["sale_commission"],
+                    "services_cost": services_cost,
+                    "profit": data["amount"]
+                }
             )
 
         # TODO: if different products in one transaction
