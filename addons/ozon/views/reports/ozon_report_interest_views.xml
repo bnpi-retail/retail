@@ -16,7 +16,14 @@
                                     <field name="first_period_to" string="по" widjet="date"/>
                                 </group>
                             </group>
-                            <group></group>
+                            <group string="Пороговые значения">
+                                <field name="threshold_growth" string="Пороговое значение для темпов роста"
+                                       help="Продукты выше этого значения будут либо звездами, либо проблемами."
+                                />
+                                <field name="threshold_share" string="Пороговое значение для вклада"
+                                       help="Продукты выше этого значения будут либо звездами, либо дойными коровами."
+                                />
+                            </group>
                             <group string="Второй период">
                                 <group>
                                     <field name="second_period_from" string="С" widget="date"/>
@@ -50,6 +57,8 @@
                                             <field name="sp_revenue" string="Выручка период 2"/>
                                             <field name="fp_share" string="%, Выручка/просмотр/день период 1"/>
                                             <field name="sp_share" string="%, Выручка/просмотр/день период 2"/>
+                                            <field name="product_growth_rate"
+                                                   string="%, рост по отношению к периоду 1"/>
                                         </tree>
                                     </field>
                                 </page>
