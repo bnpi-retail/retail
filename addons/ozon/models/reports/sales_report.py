@@ -208,9 +208,13 @@ class ProductsInSalesReport(models.Model):
     sales_count = fields.Integer(string="Кол-во продаж", readonly=True)
     revenue = fields.Float(string="Выручка", readonly=True)
     total_expenses = fields.Float(string="Итого затрат", readonly=True)
+    profit = fields.Float(string="Прибыль", compute="_compute_profit")
     prod_expenses_in_sales_report_ids = fields.One2many("ozon.prod_expenses_in_sales_report",
         "product_in_sales_report_id", string="Затраты по товару")
     
+    def _compute_profit(self):
+        for r in self:
+            r.profit = r.revenue - r.total_expenses
 
 class ProductsExpensesInSalesReport(models.Model):
     _name = "ozon.prod_expenses_in_sales_report"

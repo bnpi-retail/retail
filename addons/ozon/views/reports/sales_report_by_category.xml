@@ -57,8 +57,9 @@
                                     <tree>
                                         <field name="product_id" />
                                         <field name="sales_count" sum="1" />
-                                        <field name="total_expenses" sum="1" />
                                         <field name="revenue" sum="1" />
+                                        <field name="total_expenses" sum="1" />
+                                        <field name="profit" sum="1" />
                                     </tree>
                                 </field>
                             </page>
