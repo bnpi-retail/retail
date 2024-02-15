@@ -31,7 +31,7 @@ class Transactions(models.Model):
     skus = fields.Char(string="Список SKU товаров", readonly=True)
     products = fields.Many2many(
         "ozon.products",
-        string="Лоты",
+        string="Товары",
         copy=True,
         readonly=True,
     )

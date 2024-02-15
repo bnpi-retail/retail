@@ -7,12 +7,26 @@
             <field name="model">ozon.transaction</field>
             <field name="arch" type="xml">
                 <form>
-                    <group string="Информация о транзакции">
-                        <field name="transaction_date" />
-                        <field name="order_date" />
-                        <field name="name" />
-                        <field name="amount" />
-                        <field name="skus" />
+                    <group string="Информация о транзакции" col="3">
+                        <group>
+                            <field name="name" />
+                            <field name="transaction_type" />
+                        </group>
+                        <group>
+                            <field name="transaction_date" />
+                            <field name="order_date" />
+                        </group>
+                        <group>
+                            <field name="accruals_for_sale" />
+                            <field name="sale_commission" />
+                            <field name="amount" />
+                        </group>
+                        <group>
+                            <field name="skus" />
+                            <field name="posting_number" />
+                        </group>
+                    </group>
+                    <group>
                         <field name="products">
                             <tree>
                                 <field name="products">
@@ -25,10 +39,9 @@
                         <field name="services">
                             <tree>
                                 <field name="name" />
-                                <field name="price" />
+                                <field name="price" sum="1" />
                             </tree>
                         </field>
-                        <field name="posting_number" />
                     </group>
                 </form>
             </field>
