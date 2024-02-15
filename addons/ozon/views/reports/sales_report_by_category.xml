@@ -54,7 +54,7 @@
                             </page>
                             <page id="page_products" string="Информация о товарах">
                                 <field name="product_in_sales_report_ids">
-                                    <tree>
+                                    <tree limit="3000">
                                         <field name="product_id" />
                                         <field name="sales_count" sum="1" />
                                         <field name="revenue" sum="1" />
@@ -113,11 +113,17 @@
             <field name="arch" type="xml">
                 <form>
                     <group>
-                        <field name="product_id" />
+                        <group>
+                            <field name="product_id" />
+                        </group>
+                        <group>
+                            <field name="sales_count" />
+                        </group>
                         <field name="prod_expenses_in_sales_report_ids">
                             <tree>
                                 <field name="expenses_item_id" />
                                 <field name="expense" sum="1" />
+                                <field name="total_expense" sum="1" />
                             </tree>
                         </field>
                     </group>

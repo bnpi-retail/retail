@@ -39,6 +39,8 @@ class SalesReportByCategory(models.Model):
         products = self.env["ozon.products"].search(
             [("categories", "=", cat_id), ("sales", "!=", False)]
         )
+        print(cat_id)
+        print(products)
         Expense = namedtuple('Expense', ['name', 'category'])
         total_revenue = 0
         total_expenses = {}
@@ -83,7 +85,8 @@ class SalesReportByCategory(models.Model):
                     {
                         "product_in_sales_report_id": prod_in_sales_report.id,
                         "expenses_item_id": exp_item.id,
-                        "expense": e.value * sales_qty,
+                        "expense": e.value,
+                        "total_expense": e.value * sales_qty,
                     }
                 )
 
@@ -224,4 +227,5 @@ class ProductsExpensesInSalesReport(models.Model):
     product_in_sales_report_id = fields.Many2one("ozon.product_in_sales_report", 
                                                  string="Товар в отчете")
     expenses_item_id = fields.Many2one("ozon.expenses_item", string="Статья затрат")
-    expense = fields.Float(string="Сумма")
+    expense = fields.Float(string="Затраты на ед. товара")
+    total_expense = fields.Float(string="Сумма")
