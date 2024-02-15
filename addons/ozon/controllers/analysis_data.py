@@ -1,5 +1,6 @@
 import json
 import ast
+import logging
 
 from odoo import http
 from odoo.http import Response, request
@@ -12,15 +13,15 @@ class AnalysysDataLotsController(http.Controller):
                 type="http", 
                 csrf=False, 
                 methods=["POST"])
-    def save_analysys_data_lots(self, data, date, **post):
+    def save_analysys_data_lots(self, data, **post):
         data = ast.literal_eval(data)
-        date = datetime.strptime(date, "%Y-%m-%d").date()
 
         model_products = http.request.env["ozon.products"]
         model_analysis_data = http.request.env["ozon.analysis_data"]
 
         model_analysis_data_values = []
-        for sku, info in data.items():
+        for sku_date, info in data.items():
+            sku, date = sku_date
             product = model_products.search(
                 ['|', '|', ("sku", "=", sku), ('fbo_sku', '=', sku), ('fbs_sku', '=', sku)]
                 , limit=1
