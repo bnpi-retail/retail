@@ -43,7 +43,12 @@
                             </group>
                         </group>
                         <field name="expenses_by_category_ids"
-                            attrs="{'invisible':[('id','=',False)]}" />
+                            attrs="{'invisible':[('id','=',False)]}">
+                            <tree>
+                                <field name="expenses_item_id" />
+                                <field name="expense" />
+                            </tree>
+                        </field>
                     </sheet>
                 </form>
             </field>
