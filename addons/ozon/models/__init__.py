@@ -34,6 +34,7 @@ from .search_queries import search_queries
 from .analysis_data import analysis_data
 from .reports import ozon_report
 from .reports import sales_report
+from .reports import ozon_report_interest
 from .indicators import indicator, indicator_summary
 from .abc_analize import abs_analysis
 from .temporal_tasks import temporal_tasks

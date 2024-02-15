@@ -5,11 +5,9 @@ from odoo import models, fields, api
 
 class AnalysisData(models.Model):
     _name = "ozon.analysis_data"
-    _description = "Аналитические данные"
+    _description = "Данные интереса к продуктам"
 
-    timestamp_from = fields.Date(string="Начало периода", readonly=True)
-    timestamp_to = fields.Date(string="Конец периода", readonly=True)
-
+    date = fields.Date(string="Дата", readonly=True)
     product = fields.Many2one("ozon.products", string="Товар Ozon")
     hits_view = fields.Integer(string="Всего показов")
     hits_tocart = fields.Integer(string="Всего добавлено в корзину")
@@ -24,3 +22,4 @@ class AnalysisData(models.Model):
             name = (id, f"{record.product.products.name}")
             result.append(name)
         return result
+

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ozon_report_interest_view_form" model="ir.ui.view">
+            <field name="name">ozon_report_interest.form</field>
+            <field name="model">ozon.report.interest</field>
+            <field name="arch" type="xml">
+                <form string="Report">
+                    <sheet>
+                        <group>
+                            <group string="Первый период">
+                                <group>
+                                    <field name="first_period_from" string="С" widget="date"/>
+                                </group>
+                                <group>
+                                    <field name="first_period_to" string="по" widjet="date"/>
+                                </group>
+                            </group>
+                            <group string="Пороговые значения">
+                                <group>
+                                    <field name="threshold_growth" string="Пороговое значение для темпов роста"
+                                           help="Продукты выше этого значения будут либо звездами, либо проблемами."
+                                    />
+                                </group>
+                                <group>
+                                    <field name="threshold_share" string="Пороговое значение для вклада"
+                                           help="Продукты выше этого значения будут либо звездами, либо дойными коровами."
+                                    />
+                                </group>
+                            </group>
+                            <group string="Второй период">
+                                <group>
+                                    <field name="second_period_from" string="С" widget="date"/>
+                                </group>
+                                <group>
+                                    <field name="second_period_to" string="по" widjet="date"/>
+                                </group>
+                            </group>
+                            <group></group>
+                            <separator/>
+                            <group>
+                                <field name="ozon_categories_id" string="Категория"/>
+                            </group>
+                            <group>
+
+                            </group>
+                            <notebook>
+                                <page string="Данные по продуктам">
+                                    <field name="ozon_report_interest_data_ids">
+                                        <tree default_order="interest_group">
+                                            <field name="ozon_products_id" string="Продукт"
+                                                   help="Наименование продукта"
+                                            />
+                                            <field name="fp_hits_view" string="Просмотры период 1"/>
+                                            <field name="sp_hits_view" string="Просмотры период 2"/>
+                                            <field name="fp_qty" string="Количество продаж 1"/>
+                                            <field name="sp_qty" string="Количество продаж 2"/>
+                                            <field name="fp_share" string="%, Продажи/просмотр/день период 1"/>
+                                            <field name="sp_share" string="%, Продажи/просмотр/день период 2"/>
+                                            <field name="product_growth_rate"
+                                                   string="%, Рост по отношению к периоду 1"/>
+                                            <field name="interest_group"
+                                                   string="Группа: Спрос"/>
+                                            <field name="bcg_group"
+                                                   string="Группа: Рынок"/>
+                                        </tree>
+                                    </field>
+                                </page>
+                                <page string="Данные по периодам">
+                                    <group>
+                                        <field name="fp_revenue_per_hit_view_per_day" readonly="1"
+                                               string="Выручка/просмотр/день за первый период"/>
+                                        <field name="sp_revenue_per_hit_view_per_day" readonly="1"
+                                               string="Выручка/просмотр/день за второй период"/>
+                                        <field name="fp_qty_per_hit_view_per_day" readonly="1"
+                                               string="Прождажи/просмотр/день за первый период"/>
+                                        <field name="sp_qty_per_hit_view_per_day" readonly="1"
+                                               string="Продажи/просмотр/день за второй период"/>
+                                        <field name="fp_to_cart_per_hit_view_per_day" readonly="1"
+                                               string="Добавления в корзину/просмотр/день за первый период"/>
+                                        <field name="sp_to_cart_per_hit_view_per_day" readonly="1"
+                                               string="Добавления в корзину/просмотр/день за второй период"/>
+                                    </group>
+                                </page>
+                                <page string="Графические данные">
+                                    <field name="plot" widget="image"/>
+                                </page>
+                            </notebook>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="ozon_report_interest_view_tree" model="ir.ui.view">
+            <field name="name">ozon_report_interest.tree</field>
+            <field name="model">ozon.report.interest</field>
+            <field name="arch" type="xml">
+                <tree string="Отчеты" default_order="create_date desc">
+                    <field name="create_date" string="Дата создания" readonly="1"/>
+                    <field name="ozon_categories_id" string="Категория" readonly="1"/>
+                    <field name="first_period_from" string="Первый период с" readonly="1"/>
+                    <field name="first_period_to" string="по" readonly="1"/>
+
+                    <field name="second_period_from" string="Второй период с" readonly="1"/>
+                    <field name="second_period_to" string="по" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.server" id="action_calculate_interest_report">
+            <field name="name">Рассчитать</field>
+            <field name="model_id" ref="model_ozon_report_interest"/>
+            <field name="binding_model_id" ref="model_ozon_report_interest"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = records.action_calculate_interest_report()
+            </field>
+        </record>
+
+        <record id="action_open_ozon_report_interest" model="ir.actions.act_window">
+            <field name="name">Отчеты по интересу к продуктам</field>
+            <field name="res_model">ozon.report.interest</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_ozon_report_interest" name="Отчеты по интересу к продуктам"
+                  parent="ozon.menu_categories"
+                  action="action_open_ozon_report_interest" sequence="40"/>
+
+    </data>
+</odoo>

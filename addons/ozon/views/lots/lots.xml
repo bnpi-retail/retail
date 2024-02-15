@@ -134,13 +134,17 @@
                         </page>
                         <page id="page_price_calculator" string="Калькулятор цены">
                             <group>
-                                <field name="expected_price" />
+                                <field name="expected_price" string="Цена" />
                             </group>
 
                             <field name="all_expenses_except_roi_roe_ids">
                                 <tree>
+                                    <field name="identifier" />
                                     <field name="name" />
-                                    <field name="expected_value" sum="1" />
+                                    <field name="kind" />
+                                    <field name="comment" optional="hide" />
+                                    <field name="percent" widget="percentage" />
+                                    <field name="expected_value" sum="1" string="Значение" />
                                 </tree>
                             </field>
                             <group>
@@ -151,8 +155,9 @@
                             <field name="all_expenses_only_roi_roe_ids">
                                 <tree>
                                     <field name="name" />
-                                    <field name="percent" />
-                                    <field name="expected_value" />
+                                    <field name="comment" optional="hide" />
+                                    <field name="percent" widget="percentage" />
+                                    <field name="expected_value" string="Значение" />
                                 </tree>
                             </field>
 
@@ -306,7 +311,7 @@
                                     <field name="price_with_card" />
                                     <field name="price" />
                                     <field name="price_without_sale" />
-                                    <field name="last_update"/>
+                                    <field name="last_update" />
                                 </tree>
                             </field>
                             <group>

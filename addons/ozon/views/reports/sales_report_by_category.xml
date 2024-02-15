@@ -6,7 +6,7 @@
             <field name="arch" type="xml">
                 <form>
                     <sheet>
-                        <div name="button_box" position="inside">
+                        <!-- <div name="button_box" position="inside">
                             <button class="oe_stat_button" type="object"
                                 name="open_pivot_view_revenue_by_product"
                                 string="Выручка"
@@ -15,7 +15,7 @@
                                 name="open_pivot_view_expenses_by_product"
                                 string="Затраты"
                                 attrs="{'invisible':[('id','=',False)]}" />
-                        </div>
+                        </div> -->
                         <group>
                             <group>
                                 <field name="date_from" attrs="{'readonly':[('id','>', 0)]}" />
@@ -42,8 +42,28 @@
                                 </group>
                             </group>
                         </group>
-                        <field name="expenses_by_category_ids"
-                            attrs="{'invisible':[('id','=',False)]}" />
+                        <notebook>
+                            <page id="page_total_expenses" string="Суммарные затраты">
+                                <field name="expenses_by_category_ids"
+                                    attrs="{'invisible':[('id','=',False)]}">
+                                    <tree>
+                                        <field name="expenses_item_id" />
+                                        <field name="expense" sum="1" />
+                                    </tree>
+                                </field>
+                            </page>
+                            <page id="page_products" string="Информация о товарах">
+                                <field name="product_in_sales_report_ids">
+                                    <tree limit="3000">
+                                        <field name="product_id" />
+                                        <field name="sales_count" sum="1" />
+                                        <field name="revenue" sum="1" />
+                                        <field name="total_expenses" sum="1" />
+                                        <field name="profit" sum="1" />
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
                     </sheet>
                 </form>
             </field>
@@ -61,12 +81,12 @@
             </field>
         </record>
 
-        <record id="prod_in_expenses_by_cat_view_pivot" model="ir.ui.view">
+        <!-- <record id="prod_in_expenses_by_cat_view_pivot" model="ir.ui.view">
             <field name="name">prod_expenses_in_sales_report.pivot</field>
             <field name="model">ozon.prod_expenses_in_sales_report</field>
             <field name="arch" type="xml">
                 <pivot disable_linking="1">
-                    <field name="product_id" type="row" />
+                    <field name="product_in_sales_report_id" type="row" />
                     <field name="expenses_item_id" type="col" />
                     <field name="expense" type="measure" />
                 </pivot>
@@ -84,7 +104,33 @@
                     <field name="total_expenses" type="measure" />
                 </pivot>
             </field>
+        </record> -->
+
+        <!-- Form - Product in sales report -->
+        <record id="product_in_sales_report_view_form" model="ir.ui.view">
+            <field name="name">product_in_sales_report.form</field>
+            <field name="model">ozon.product_in_sales_report</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <group>
+                            <field name="product_id" />
+                        </group>
+                        <group>
+                            <field name="sales_count" />
+                        </group>
+                        <field name="prod_expenses_in_sales_report_ids">
+                            <tree>
+                                <field name="expenses_item_id" />
+                                <field name="expense" sum="1" />
+                                <field name="total_expense" sum="1" />
+                            </tree>
+                        </field>
+                    </group>
+                </form>
+            </field>
         </record>
+
 
         <record id="action_sales_report_by_category" model="ir.actions.act_window">
             <field name="name">Отчёт по продажам категории</field>
@@ -95,7 +141,6 @@
         <menuitem id="menu_sales_report_by_category" name="Отчеты по продажам категории"
             parent="ozon.menu_reports"
             action="action_sales_report_by_category" sequence="2" />
-
 
     </data>
 </odoo>

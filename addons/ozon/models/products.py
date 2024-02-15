@@ -65,7 +65,8 @@ class Product(models.Model):
                                                  compute="_compute_calculator_profit_norm")
     calculator_investment = fields.Float(string="Investment", 
                                                  compute="_compute_calculator_investment")
-    expected_price = fields.Float(string="Ожидаемая цена")
+    expected_price = fields.Float(string="Ожидаемая цена", compute="_compute_expected_price",
+                                  readonly=False)
     expected_price_error = fields.Text(string="Комментарий к ожидаемой цене", readonly=True)
     price_delta = fields.Float(
         string="Разница между актуальной и ожидаемой ценой",
@@ -247,7 +248,8 @@ class Product(models.Model):
     )
     all_expenses_except_roi_roe_ids = fields.One2many(
         "ozon.all_expenses", "product_id", string="Все затраты", readonly=True,
-        domain=[("name", "not in", ["Доходность", "Investment"])]
+        domain=[("name", "not in", ["Доходность", "Investment"]),
+                ("expected_value", "!=", 0)]
     )
     all_expenses_only_roi_roe_ids = fields.One2many(
         "ozon.all_expenses", "product_id", string="Все затраты", readonly=True,
@@ -648,12 +650,47 @@ class Product(models.Model):
                 )
                 print(f'{i} - Fix expense "Себестоимость товара" was created')
 
+    def _compute_expected_price(self):
+        for r in self:
+            r.expected_price = r.price
+
+    @api.onchange("expected_price")
+    def onchange_expected_price(self):
+        exp_price = self.expected_price
+        for i in self.all_expenses_ids:
+            if i.kind == "fix":
+                continue
+            i.expected_value = i.percent * exp_price
+            i._compute_comment()
+        all_exp_profit_norm = self.all_expenses_only_roi_roe_ids.filtered(
+                lambda r: r.name == "Доходность"
+            )
+        all_exp_invest = self.all_expenses_only_roi_roe_ids.filtered(
+                lambda r: r.name == "Investment"
+            )
+        delta = exp_price - sum(self.all_expenses_except_roi_roe_ids.mapped("expected_value"))
+        self.calculator_delta = delta
+        if exp_price != 0:
+            all_exp_profit_norm.percent = delta / exp_price
+            all_exp_profit_norm.expected_value = all_exp_profit_norm.percent * exp_price
+            all_exp_invest.percent = all_exp_profit_norm.percent / 2
+            all_exp_invest.expected_value = all_exp_invest.percent * exp_price
+        else:
+            all_exp_profit_norm.percent = 0
+            all_exp_profit_norm.expected_value = 0
+            all_exp_invest.percent = 0
+            all_exp_invest.expected_value = 0
+
+        all_exp_profit_norm._compute_comment()
+        all_exp_invest._compute_comment()
+
     def write(self, values, **kwargs):
         if values.get("profitability_norm") or values.get("investment_expenses_id"):
             self.update_current_product_all_expenses(expected_price=self.expected_price)
             self.calculate_expected_price()
             self.update_current_product_all_expenses(expected_price=self.expected_price)
-        elif exp_price := values.get("expected_price"):
+        elif values.get("expected_price"):
+            exp_price = self.expected_price
             self.update_current_product_all_expenses(expected_price=exp_price)
             all_exp_profit_norm = self.all_expenses_only_roi_roe_ids.filtered(
                     lambda r: r.name == "Доходность"
@@ -661,9 +698,10 @@ class Product(models.Model):
             all_exp_invest = self.all_expenses_only_roi_roe_ids.filtered(
                     lambda r: r.name == "Investment"
                 )
+            delta = exp_price - sum(self.all_expenses_except_roi_roe_ids.mapped("expected_value"))
+            values["calculator_delta"] = delta
             if exp_price != 0:
-                delta = exp_price - sum(self.all_expenses_except_roi_roe_ids.mapped("expected_value"))
-                all_exp_profit_norm.percent = round(delta / exp_price, 2)
+                all_exp_profit_norm.percent = delta / exp_price
                 all_exp_profit_norm.expected_value = all_exp_profit_norm.percent * exp_price
                 all_exp_invest.percent = all_exp_profit_norm.percent / 2
                 all_exp_invest.expected_value = all_exp_invest.percent * exp_price
@@ -1650,16 +1688,16 @@ class Product(models.Model):
             r.calculator_delta = (r.expected_price 
                                   - sum(r.all_expenses_except_roi_roe_ids.mapped("expected_value")))
 
-    def _compute_calculator_profit_norm(self):
-        for r in self:
-            if r.expected_price != 0:
-                r.calculator_profit_norm = round(r.calculator_delta / r.expected_price, 2)
-            else:
-                r.calculator_profit_norm = 0
+    # def _compute_calculator_profit_norm(self):
+    #     for r in self:
+    #         if r.expected_price != 0:
+    #             r.calculator_profit_norm = round(r.calculator_delta / r.expected_price, 2)
+    #         else:
+    #             r.calculator_profit_norm = 0
                 
-    def _compute_calculator_investment(self):
-        for r in self:
-            r.calculator_investment = round(r.calculator_profit_norm / 2, 2)
+    # def _compute_calculator_investment(self):
+    #     for r in self:
+    #         r.calculator_investment = round(r.calculator_profit_norm / 2, 2)
 
     @api.depends("posting_ids")
     def _compute_count_postings(self):

@@ -1,5 +1,6 @@
 import json
 import ast
+import logging
 
 from odoo import http
 from odoo.http import Response, request
@@ -12,25 +13,28 @@ class AnalysysDataLotsController(http.Controller):
                 type="http", 
                 csrf=False, 
                 methods=["POST"])
-    def save_analysys_data_lots(self, data, today, one_week_ago, **post):
+    def save_analysys_data_lots(self, data, **post):
         data = ast.literal_eval(data)
-        today = datetime.strptime(today, "%Y-%m-%d").date()
-        one_week_ago = datetime.strptime(one_week_ago, "%Y-%m-%d").date()
 
         model_products = http.request.env["ozon.products"]
         model_analysis_data = http.request.env["ozon.analysis_data"]
 
-        for sku, info in data.items():
-            product = model_products \
-                .search([("id_on_platform", "=", sku)], limit=1)
-            
-            model_analysis_data.create({
-                "timestamp_from": today,
-                "timestamp_to": one_week_ago,
+        model_analysis_data_values = []
+        for sku_date, info in data.items():
+            sku, date = sku_date
+            product = model_products.search(
+                ['|', '|', ("sku", "=", sku), ('fbo_sku', '=', sku), ('fbs_sku', '=', sku)]
+                , limit=1
+            )
+
+            model_analysis_data_values.append({
+                "date": date,
                 "product": product.id,
                 "hits_view": info["hits_view"],
                 "hits_tocart": info["hits_tocart"],
             })
+            
+        model_analysis_data.create(model_analysis_data_values)
 
         response_data = {"response": "success", "message": "Processed successfully"}
         response_json = json.dumps(response_data)
