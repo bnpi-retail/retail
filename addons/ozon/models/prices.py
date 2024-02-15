@@ -298,11 +298,44 @@ class InvestmentExpensesWizard(models.TransientModel):
         products.write({"investment_expenses_id": self.investment_expenses_id})
 
 
+ALL_EXPENSES_NAMES_IDENTIFIERS = {
+    'Себестоимость товара': 1,
+    'Средняя стоимость продвижения товара': 2,
+    'Получение возврата, отмены, невыкупа от покупателя': 3, 
+    'Доставка и обработка возврата, отмены, невыкупа': 4, 
+    'Обработка отправления «Pick-up» (отгрузка курьеру)': 5, 
+    'Услуги доставки Партнерами Ozon на схеме realFBS': 6, 
+    'Агентское вознаграждение за доставку Партнерами Ozon на схеме realFBS': 7, 
+    'Услуга продвижения Бонусы продавца': 8, 
+    'Приобретение отзывов на платформе': 9, 
+    'Подписка Premium Plus': 10, 
+    'Услуга за обработку операционных ошибок продавца: отмена': 11, 
+    'Услуга за обработку операционных ошибок продавца: просроченная отгрузка': 12, 
+    'Обработка товара в составе грузоместа на FBO': 13, 
+    'Обработка сроков годности на FBO': 14, 
+    'Утилизация': 15, 
+    'Услуга по бронированию места и персонала для поставки с неполным составом': 16, 
+    'Прочее': 17,
+    'Процент комиссии за продажу (FBS)': 18,
+    'Процент комиссии за продажу (FBO)': 19,
+    'Процент комиссии за продажу (rFBS)': 20,
+    'Последняя миля (FBO)': 21,
+    'Магистраль до (FBO)': 22,
+    'Комиссия за сборку заказа (FBO)': 23,
+    'Последняя миля (FBS)': 24,
+    'Магистраль до (FBS)': 25,
+    'Максимальная комиссия за обработку отправления (FBS) — 25 рублей': 26,
+    'Максимальная комиссия за эквайринг': 27,
+    'Налог': 28,
+    'Доходность': 29,
+    'Investment': 30,
+}
+
 class AllExpenses(models.Model):
     _name = "ozon.all_expenses"
     _description = "Все затраты по товару Ozon"
 
-    ordinal_number = fields.Integer(string="Порядковый номер")
+    identifier = fields.Integer(string="Идентификатор", compute="_compute_identifier")
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
     name = fields.Char(string="Название")
     description = fields.Char(string="Описание")
@@ -316,6 +349,10 @@ class AllExpenses(models.Model):
     percent = fields.Float(string="Процент")
     value = fields.Float(string="Абсолютное значение в руб, исходя из текущей цены")
     expected_value = fields.Float(string="Ожидаемое значение")
+
+    def _compute_identifier(self):
+        for r in self:
+            r.identifier = ALL_EXPENSES_NAMES_IDENTIFIERS.get(r.name, 0)
 
     def _compute_comment(self):
         exp = self.env["ozon.indirect_percent_expenses"].search(
@@ -433,21 +470,19 @@ class AllExpenses(models.Model):
     def create_update_all_product_expenses(self, products, latest_indirect_expenses, expected_price=None):
         data = []
         for idx, prod in enumerate(products):
-            ord_num = (_ for _ in range(1, 100))
             tax = prod.seller.tax
             tax_percent = prod.seller.tax_percent
             tax_description = prod.seller.tax_description
             total_expenses = 0
             price = prod.price
             if expected_price:
-                pass
+                exp_price = expected_price
             else:
-                expected_price = prod.expected_price
+                exp_price = prod.expected_price
             # себестоимость
             cost_price = prod.products.total_cost_price
             data.append(
                 {
-                    "ordinal_number": next(ord_num) if cost_price else 0,
                     "product_id": prod.id,
                     "name": "Себестоимость товара",
                     "kind": "fix",
@@ -469,14 +504,13 @@ class AllExpenses(models.Model):
                 percent_promo_expense = 0
             data.append(
                 {
-                    "ordinal_number": next(ord_num) if mean_promo_expense else 0,
                     "product_id": prod.id,
                     "name": "Средняя стоимость продвижения товара",
                     "kind": "percent",
                     "category": "Продвижение товара",
                     "percent": percent_promo_expense,
                     "value": mean_promo_expense,
-                    "expected_value": expected_price * percent_promo_expense,
+                    "expected_value": exp_price * percent_promo_expense,
                 }
             )
             # ЛИБО услуги озон
@@ -486,7 +520,6 @@ class AllExpenses(models.Model):
                 value = price * percent
                 data.append(
                     {
-                        "ordinal_number": next(ord_num) if value else 0,
                         "product_id": prod.id,
                         "name": v,
                         "description": f"{latest_indirect_expenses[k]}%",
@@ -494,7 +527,7 @@ class AllExpenses(models.Model):
                         "category": category,
                         "percent": percent,
                         "value": value,
-                        "expected_value": expected_price * percent,
+                        "expected_value": exp_price * percent,
                     }
                 )
                 total_expenses += value
@@ -510,7 +543,7 @@ class AllExpenses(models.Model):
             #         "category": "Услуги Ozon",
             #         "percent": coef_total / 100,
             #         "value": price * coef_total / 100,
-            #         "expected_value": expected_price * coef_total / 100,
+            #         "expected_value": exp_price * coef_total / 100,
             #         # TODO: убрать после тестов
             #         # "percent": 0.05,
             #         # "value": price * 0.05,
@@ -553,7 +586,6 @@ class AllExpenses(models.Model):
             data.extend(
                 [
                     {
-                        "ordinal_number": next(ord_num) if ozon_com.price else 0,
                         "product_id": prod.id,
                         "name": ozon_com.name,
                         "description": ozon_com.discription,
@@ -561,22 +593,20 @@ class AllExpenses(models.Model):
                         "category": "Вознаграждение Ozon",
                         "percent": float(ozon_com.discription.replace("%", "")) / 100,
                         "value": ozon_com.price,
-                        "expected_value": expected_price
+                        "expected_value": exp_price
                         * float(ozon_com.discription.replace("%", ""))
                         / 100,
                     },
                     {
-                        "ordinal_number": next(ord_num) if last_mile.price else 0,
                         "product_id": prod.id,
                         "name": last_mile.name,
                         "kind": "percent",
                         "category": "Последняя миля",
                         "percent": last_mile.price / price,
                         "value": last_mile.price,
-                        "expected_value": expected_price * last_mile.price / price,
+                        "expected_value": exp_price * last_mile.price / price,
                     },
                     {
-                        "ordinal_number": next(ord_num) if logistics.price else 0,
                         "product_id": prod.id,
                         "name": logistics.name,
                         "kind": "percent",
@@ -586,7 +616,6 @@ class AllExpenses(models.Model):
                         "expected_value": logistics.price,
                     },
                     {
-                        "ordinal_number": next(ord_num) if processing.price else 0,
                         "product_id": prod.id,
                         "name": processing.name,
                         "kind": "fix",
@@ -596,14 +625,13 @@ class AllExpenses(models.Model):
                         "expected_value": processing.price,
                     },
                     {
-                        "ordinal_number": next(ord_num) if acquiring.price else 0,
                         "product_id": prod.id,
                         "name": acquiring.name,
                         "kind": "percent",
                         "category": "Эквайринг",
                         "percent": acquiring.price / price,
                         "value": acquiring.price,
-                        "expected_value": expected_price * acquiring.price / price,
+                        "expected_value": exp_price * acquiring.price / price,
                     },
                 ]
             )
@@ -628,10 +656,9 @@ class AllExpenses(models.Model):
                     tax_value = (price - total_ozon_expenses) * tax_percent
                 else:
                     tax_value = 0
-            expected_tax_value = (tax_value / price) * expected_price
+            expected_tax_value = (tax_value / price) * exp_price
             data.append(
                 {
-                    "ordinal_number": next(ord_num) if tax_value else 0,
                     "product_id": prod.id,
                     "name": "Налог",
                     "description": tax_description,
@@ -651,10 +678,9 @@ class AllExpenses(models.Model):
             else:
                 prof_norm_percent = (price - total_expenses) / price
             prof_norm_value = price * prof_norm_percent
-            expected_prof_norm_value = expected_price * prof_norm_percent
+            expected_prof_norm_value = exp_price * prof_norm_percent
             data.append(
                 {
-                    "ordinal_number": next(ord_num) if prof_norm_value else 0,
                     "product_id": prod.id,
                     "name": "Доходность",
                     "kind": "percent",
@@ -671,10 +697,9 @@ class AllExpenses(models.Model):
             else:
                 inv_exp_percent = prof_norm_percent / 2
             inv_exp_value = price * inv_exp_percent
-            expected_inv_exp_value = expected_price * inv_exp_percent
+            expected_inv_exp_value = exp_price * inv_exp_percent
             data.append(
                 {
-                    "ordinal_number": next(ord_num) if inv_exp_value else 0,
                     "product_id": prod.id,
                     "name": "Investment",
                     "kind": "percent",
@@ -687,7 +712,7 @@ class AllExpenses(models.Model):
             print(f"{idx} - All expenses were updated.")
 
         products.all_expenses_ids.unlink()
-        for chunk in split_list_into_chunks_of_size_n(data, 1000):
+        for chunk in split_list_into_chunks_of_size_n(data, 50000):
             self.create(chunk)
 
 

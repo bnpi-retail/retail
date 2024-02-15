@@ -139,7 +139,7 @@
 
                             <field name="all_expenses_except_roi_roe_ids">
                                 <tree>
-                                    <field name="ordinal_number" />
+                                    <field name="identifier" />
                                     <field name="name" />
                                     <field name="kind" />
                                     <field name="comment" optional="hide" />
