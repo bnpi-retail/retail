@@ -1,3 +1,5 @@
+import time
+
 from odoo import http
 
 
@@ -36,8 +38,10 @@ class OzonProductsImport(http.Controller):
             "data_for_download": "ozon_products",
             "file": f,
         }
-        model_ozon_import_file.create(values)
-
+        try:
+            model_ozon_import_file.create(values)
+        except Exception as e:
+            raise Exception(f"Controller error: {e}")
         return "Products csv file uploaded and processed successfully."
 
 
