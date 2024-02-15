@@ -17,12 +17,16 @@
                                 </group>
                             </group>
                             <group string="Пороговые значения">
-                                <field name="threshold_growth" string="Пороговое значение для темпов роста"
-                                       help="Продукты выше этого значения будут либо звездами, либо проблемами."
-                                />
-                                <field name="threshold_share" string="Пороговое значение для вклада"
-                                       help="Продукты выше этого значения будут либо звездами, либо дойными коровами."
-                                />
+                                <group>
+                                    <field name="threshold_growth" string="Пороговое значение для темпов роста"
+                                           help="Продукты выше этого значения будут либо звездами, либо проблемами."
+                                    />
+                                </group>
+                                <group>
+                                    <field name="threshold_share" string="Пороговое значение для вклада"
+                                           help="Продукты выше этого значения будут либо звездами, либо дойными коровами."
+                                    />
+                                </group>
                             </group>
                             <group string="Второй период">
                                 <group>
@@ -33,21 +37,15 @@
                                 </group>
                             </group>
                             <group></group>
+                            <separator/>
                             <group>
                                 <field name="ozon_categories_id" string="Категория"/>
-                                <field name="fp_revenue_per_hit_view_per_day"
-                                       string="Выручка/просмотр/день за первый период"/>
-                                <field name="sp_revenue_per_hit_view_per_day"
-                                       string="Выручка/просмотр/день за второй период"/>
                             </group>
                             <group>
-                                <field name="fp_to_cart_per_hit_view_per_day"
-                                       string="Добавления в корзину/просмотр/день за первый период"/>
-                                <field name="sp_to_cart_per_hit_view_per_day"
-                                       string="Добавления в корзину/просмотр/день за второй период"/>
+
                             </group>
                             <notebook>
-                                <page string="Данные">
+                                <page string="Данные по продуктам">
                                     <field name="ozon_report_interest_data_ids">
                                         <tree default_order="interest_group">
                                             <field name="ozon_products_id" string="Продукт"
@@ -55,16 +53,32 @@
                                             />
                                             <field name="fp_hits_view" string="Просмотры период 1"/>
                                             <field name="sp_hits_view" string="Просмотры период 2"/>
-                                            <field name="fp_revenue" string="Выручка период 1"/>
-                                            <field name="sp_revenue" string="Выручка период 2"/>
-                                            <field name="fp_share" string="%, Выручка/просмотр/день период 1"/>
-                                            <field name="sp_share" string="%, Выручка/просмотр/день период 2"/>
+                                            <field name="fp_qty" string="Количество продаж 1"/>
+                                            <field name="sp_qty" string="Количество продаж 2"/>
+                                            <field name="fp_share" string="%, Продажи/просмотр/день период 1"/>
+                                            <field name="sp_share" string="%, Продажи/просмотр/день период 2"/>
                                             <field name="product_growth_rate"
                                                    string="%, Рост по отношению к периоду 1"/>
                                             <field name="interest_group"
                                                    string="Группа"/>
                                         </tree>
                                     </field>
+                                </page>
+                                <page string="Данные по периодам">
+                                    <group>
+                                        <field name="fp_revenue_per_hit_view_per_day" readonly="1"
+                                               string="Выручка/просмотр/день за первый период"/>
+                                        <field name="sp_revenue_per_hit_view_per_day" readonly="1"
+                                               string="Выручка/просмотр/день за второй период"/>
+                                        <field name="fp_qty_per_hit_view_per_day" readonly="1"
+                                               string="Прождажи/просмотр/день за первый период"/>
+                                        <field name="sp_qty_per_hit_view_per_day" readonly="1"
+                                               string="Продажи/просмотр/день за второй период"/>
+                                        <field name="fp_to_cart_per_hit_view_per_day" readonly="1"
+                                               string="Добавления в корзину/просмотр/день за первый период"/>
+                                        <field name="sp_to_cart_per_hit_view_per_day" readonly="1"
+                                               string="Добавления в корзину/просмотр/день за второй период"/>
+                                    </group>
                                 </page>
                                 <page string="Графические данные">
                                     <field name="plot" widget="image"/>
