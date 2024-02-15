@@ -60,7 +60,9 @@
                                             <field name="product_growth_rate"
                                                    string="%, Рост по отношению к периоду 1"/>
                                             <field name="interest_group"
-                                                   string="Группа"/>
+                                                   string="Группа: Спрос"/>
+                                            <field name="bcg_group"
+                                                   string="Группа: Рынок"/>
                                         </tree>
                                     </field>
                                 </page>

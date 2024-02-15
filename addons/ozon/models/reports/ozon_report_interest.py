@@ -24,6 +24,9 @@ class OzonReportInterestData(models.Model):
     interest_group = fields.Selection([
         ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', 'Нет данных'), ('f', '')
     ])
+    bcg_group = fields.Selection([
+        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', 'Нет данных'), ('f', '')
+    ])
 
     ozon_report_interest_id = fields.Many2one("ozon.report.interest")
 
@@ -98,9 +101,9 @@ class OzonReportInterest(models.Model):
             self._add_sales_data(record.second_period_from, record.second_period_to, sp_product_ids, sp_data)
 
             category_id = record.ozon_categories_id.id
-            all_category_product_ids = self.env["ozon.products"].search([
+            all_category_product_ids_groups = self.env["ozon.products"].search([
                 ('categories', '=', category_id)
-            ]).ids
+            ]).mapped(lambda r: (r.id, r.bcg_group))
 
             # calculate data
             res_1 = self._calculate_qty_per_view_daily(
@@ -123,7 +126,7 @@ class OzonReportInterest(models.Model):
 
             # merge periods + all category products
             both_period_data, max_growth_value, max_curr_share = self._merge_fp_sp_data_and_calc_reminds_values(
-                fp_data, sp_data, all_category_product_ids
+                fp_data, sp_data, all_category_product_ids_groups
             )
 
             quadrants, colors = self._assign_groups(record, both_period_data, max_growth_value, max_curr_share)
@@ -185,11 +188,11 @@ class OzonReportInterest(models.Model):
 
     @staticmethod
     def _merge_fp_sp_data_and_calc_reminds_values(fp_data, sp_data, ids) -> tuple:
-        all_category_product_ids = ids
+        all_category_product_ids_groups = ids
         both_period_data = defaultdict(dict)
         max_growth_value = float('-inf')
         max_curr_share = float('-inf')
-        for product_id in all_category_product_ids:
+        for product_id, bcg_group in all_category_product_ids_groups:
             vals = {
                 "fp_hits_view": 0,
                 "sp_hits_view": 0,
@@ -199,6 +202,7 @@ class OzonReportInterest(models.Model):
                 "sp_qty_%_per_view_per_day": 0,
                 "product_growth_rate": 0,
                 "quadrant": None,
+                "bcg_group": bcg_group,
             }
             fp_product_data: dict = fp_data.get(product_id)
             fp_value = 0
@@ -297,6 +301,7 @@ class OzonReportInterest(models.Model):
                 "sp_share": data['sp_qty_%_per_view_per_day'],
                 "product_growth_rate": data['product_growth_rate'],
                 "interest_group": data['quadrant'],
+                "bcg_group": data['bcg_group'],
                 "ozon_report_interest_id": record_id
             }
             values.append(vals)
