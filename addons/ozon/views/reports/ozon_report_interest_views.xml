@@ -33,6 +33,12 @@
                                 <field name="sp_revenue_per_hit_view_per_day"
                                        string="Выручка/просмотр/день за второй период"/>
                             </group>
+                            <group>
+                                <field name="fp_to_cart_per_hit_view_per_day"
+                                       string="Добавления в корзину/просмотр/день за первый период"/>
+                                <field name="sp_to_cart_per_hit_view_per_day"
+                                       string="Добавления в корзину/просмотр/день за второй период"/>
+                            </group>
                             <notebook>
                                 <page string="Данные">
                                     <field name="ozon_report_interest_data_ids">

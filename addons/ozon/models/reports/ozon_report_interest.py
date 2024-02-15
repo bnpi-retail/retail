@@ -40,6 +40,8 @@ class OzonReportInterest(models.Model):
     )
     fp_revenue_per_hit_view_per_day = fields.Float(digits=(12, 5))
     sp_revenue_per_hit_view_per_day = fields.Float(digits=(12, 5))
+    fp_to_cart_per_hit_view_per_day = fields.Float(digits=(12, 5))
+    sp_to_cart_per_hit_view_per_day = fields.Float(digits=(12, 5))
 
     def action_calculate_interest_report(self):
         for record in self:
@@ -84,45 +86,59 @@ class OzonReportInterest(models.Model):
 
             self._add_sales_data(record.second_period_from, record.second_period_to, sp_product_ids, sp_data)
 
-            fp_revenue_per_view_per_day_relation = self._calc_product_revenue_per_view_per_day(
-                record.first_period_from, record.first_period_to, fp_data
-            )
+            # calculate data
+            fp_revenue_per_view_per_day_relation, fp_to_cart_per_view_per_day = self._calculate(
+                record.first_period_from, record.first_period_to, fp_data)
+            sp_revenue_per_view_per_day_relation, sp_to_cart_per_view_per_day = self._calculate(
+                record.second_period_from, record.second_period_to, sp_data)
 
-            sp_revenue_per_view_per_day_relation = self._calc_product_revenue_per_view_per_day(
-                record.second_period_from, record.second_period_to, sp_data
-            )
-
+            # record values
             record.fp_revenue_per_hit_view_per_day = fp_revenue_per_view_per_day_relation
+            record.fp_to_cart_per_hit_view_per_day = fp_to_cart_per_view_per_day
+
             record.sp_revenue_per_hit_view_per_day = sp_revenue_per_view_per_day_relation
+            record.sp_to_cart_per_hit_view_per_day = sp_to_cart_per_view_per_day
 
             self._record_data(record, fp_data, sp_data)
 
     @staticmethod
-    def _calc_product_revenue_per_view_per_day(period_from, period_to, data_dict: defaultdict) -> float:
+    def _calculate(period_from, period_to, data_dict: defaultdict) -> tuple:
         days = (period_to - period_from).days
         if days == 0:
             raise UserError("Количество дней в периоде равно 0")
 
-        period_total_hits_view = sum(data['hits_view'] for data in data_dict.values())
-        period_total_revenue = sum(data['revenue'] for data in data_dict.values())
+        period_total_hits_view = 0
+        period_total_revenue = 0
+        period_total_to_cart = 0
+        for product_id, data in data_dict.items():
+            period_total_hits_view += data['hits_view']
+            period_total_revenue += data['revenue']
+            period_total_to_cart += data['hits_tocart']
 
         period_total_hits_view /= days
         period_total_revenue /= days
+        period_total_to_cart /= days
 
         if period_total_hits_view == 0:
             period_revenue_per_view_per_day = 0.000001
+            period_to_cart_per_view_per_day = 0.000001
         else:
             period_revenue_per_view_per_day = period_total_revenue / period_total_hits_view
+            period_to_cart_per_view_per_day = period_total_to_cart / period_total_hits_view
 
+        # max_growth_value = float('-inf')
+        # max_curr_share = float('-inf')
         for product_id, data in data_dict.items():
             hits_view = data['hits_view']
             revenue = data['revenue']
             product_revenue_per_view = revenue / hits_view if hits_view != 0 else 0
             product_revenue_per_view_per_day = product_revenue_per_view / days
-            data['revenue_%_per_view_per_day'] = (
+            revenue_per_view_per_day_percent = (
                 product_revenue_per_view_per_day * 100) / period_revenue_per_view_per_day
+            data['revenue_%_per_view_per_day'] = revenue_per_view_per_day_percent
+            # max_curr_share = max(max_curr_share, revenue_per_view_per_day_percent)
 
-        return period_revenue_per_view_per_day
+        return period_revenue_per_view_per_day, period_to_cart_per_view_per_day
 
     def _record_data(self, record, fp_data, sp_data):
         query = """
@@ -171,7 +187,7 @@ class OzonReportInterest(models.Model):
                 ('date', '>=', period_from),
                 ('date', '<=', period_to),
             ],
-            fields=['product', 'hits_view'],
+            fields=['product', 'hits_view', 'hits_tocart'],
             groupby=['product']
         )
         return period_analysis_data
@@ -199,6 +215,7 @@ class OzonReportInterest(models.Model):
         data = defaultdict(
             lambda: {
                 'hits_view': 0,
+                'hits_tocart': 0,
                 'revenue': 0,
                 'revenue_%_per_view_per_day': 0,
             }
@@ -210,8 +227,8 @@ class OzonReportInterest(models.Model):
                 product_id = product[0]
                 product_ids.append(product_id)
                 data[product_id]['hits_view'] += entry.get('hits_view')
+                data[product_id]['hits_tocart'] += entry.get('hits_tocart')
             else:
                 logger.warning(f"Missing product while action_calculate_interest_report")
 
         return data, product_ids
-
