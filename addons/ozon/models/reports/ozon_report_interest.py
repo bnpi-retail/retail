@@ -1,7 +1,9 @@
+import base64
+import io
 import logging
-from odoo import models, fields, api
+import matplotlib.pyplot as plt
+from odoo import models, fields
 from odoo.exceptions import UserError
-from datetime import timedelta
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
@@ -19,6 +21,9 @@ class OzonReportInterestData(models.Model):
     fp_share = fields.Float(digits=(12, 5))
     sp_share = fields.Float(digits=(12, 5))
     product_growth_rate = fields.Float(digits=(12, 5))
+    interest_group = fields.Selection([
+        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', 'Нет данных'), ('f', '')
+    ])
 
     ozon_report_interest_id = fields.Many2one("ozon.report.interest")
 
@@ -46,6 +51,8 @@ class OzonReportInterest(models.Model):
     sp_revenue_per_hit_view_per_day = fields.Float(digits=(12, 5))
     fp_to_cart_per_hit_view_per_day = fields.Float(digits=(12, 5))
     sp_to_cart_per_hit_view_per_day = fields.Float(digits=(12, 5))
+
+    plot = fields.Binary()
 
     def action_calculate_interest_report(self):
         for record in self:
@@ -91,9 +98,9 @@ class OzonReportInterest(models.Model):
             self._add_sales_data(record.second_period_from, record.second_period_to, sp_product_ids, sp_data)
 
             # calculate data
-            fp_revenue_per_view_per_day_relation, fp_to_cart_per_view_per_day = self._calculate(
+            fp_revenue_per_view_per_day_relation, fp_to_cart_per_view_per_day = self._calculate_revenue_per_view_daily(
                 record.first_period_from, record.first_period_to, fp_data)
-            sp_revenue_per_view_per_day_relation, sp_to_cart_per_view_per_day = self._calculate(
+            sp_revenue_per_view_per_day_relation, sp_to_cart_per_view_per_day = self._calculate_revenue_per_view_daily(
                 record.second_period_from, record.second_period_to, sp_data)
 
             # record common values
@@ -107,8 +114,62 @@ class OzonReportInterest(models.Model):
             both_period_data, max_growth_value, max_curr_share = self._merge_fp_sp_data_and_calc_reminds_values(
                 record.ozon_categories_id.id, fp_data, sp_data)
 
+            quadrants, colors = self._assign_groups(record, both_period_data, max_growth_value, max_curr_share)
+
             # record values
             self._record_data(record, both_period_data)
+
+            # create plot
+            self._create_plot_and_save(quadrants, colors, record)
+
+    @staticmethod
+    def _assign_groups(record, both_period_data, max_growth_value, max_curr_share):
+        threshold_growth = (record.threshold_growth * max_growth_value) / 100
+        threshold_share = (record.threshold_share * max_curr_share) / 100
+        quadrants = {
+            'Звезды': [],
+            'Дойные коровы': [],
+            'Проблемы': [],
+            'Собаки': []
+        }
+
+        stars_qty = 0
+        questions_qty = 0
+        cows_qty = 0
+        dogs_qty = 0
+        for product, data in both_period_data.items():
+            if data['product_growth_rate'] >= threshold_growth and \
+                    data['sp_revenue_%_per_view_per_day'] >= threshold_share:
+                quadrants['Звезды'].append((product, data))
+                data['quadrant'] = 'a'
+                stars_qty += 1
+            elif data['product_growth_rate'] >= threshold_growth and \
+                    data['sp_revenue_%_per_view_per_day'] < threshold_share:
+                quadrants['Проблемы'].append((product, data))
+                data['quadrant'] = 'c'
+                questions_qty += 1
+            elif data['product_growth_rate'] < threshold_growth and \
+                    data['sp_revenue_%_per_view_per_day'] >= threshold_share:
+                quadrants['Дойные коровы'].append((product, data))
+                data['quadrant'] = 'b'
+                cows_qty += 1
+            else:
+                quadrants['Собаки'].append((product, data))
+                data['quadrant'] = 'd'
+                dogs_qty += 1
+
+        colors = {
+            f'Звезды ({stars_qty})': 'blue',
+            f'Проблемы ({questions_qty})': 'orange',
+            f'Дойные коровы ({cows_qty})': 'green',
+            f'Собаки ({dogs_qty})': 'red'
+        }
+        quadrants[f'Звезды ({stars_qty})'] = quadrants.pop('Звезды')
+        quadrants[f'Дойные коровы ({cows_qty})'] = quadrants.pop('Дойные коровы')
+        quadrants[f'Проблемы ({questions_qty})'] = quadrants.pop('Проблемы')
+        quadrants[f'Собаки ({dogs_qty})'] = quadrants.pop('Собаки')
+
+        return quadrants, colors
 
     def _merge_fp_sp_data_and_calc_reminds_values(self, category_id, fp_data, sp_data) -> tuple:
         all_category_product_ids = self.env["ozon.products"].search([
@@ -126,6 +187,7 @@ class OzonReportInterest(models.Model):
                 "fp_revenue_%_per_view_per_day": 0,
                 "sp_revenue_%_per_view_per_day": 0,
                 "product_growth_rate": 0,
+                "quadrant": None,
             }
             fp_product_data: dict = fp_data.get(product_id)
             fp_value = 0
@@ -161,7 +223,7 @@ class OzonReportInterest(models.Model):
         return both_period_data, max_growth_value, max_curr_share
 
     @staticmethod
-    def _calculate(period_from, period_to, data_dict: defaultdict) -> tuple:
+    def _calculate_revenue_per_view_daily(period_from, period_to, data_dict: defaultdict) -> tuple:
         days = (period_to - period_from).days
         if days == 0:
             raise UserError("Количество дней в периоде равно 0")
@@ -217,6 +279,7 @@ class OzonReportInterest(models.Model):
                 "fp_share": data['fp_revenue_%_per_view_per_day'],
                 "sp_share": data['sp_revenue_%_per_view_per_day'],
                 "product_growth_rate": data['product_growth_rate'],
+                "interest_group": data['quadrant'],
                 "ozon_report_interest_id": record_id
             }
             values.append(vals)
@@ -274,3 +337,25 @@ class OzonReportInterest(models.Model):
                 logger.warning(f"Missing product while action_calculate_interest_report")
 
         return data, product_ids
+
+    @staticmethod
+    def _create_plot_and_save(quadrants: dict, colors: dict, record):
+        # Plot the BCG matrix
+        fig, ax = plt.subplots()
+        for quadrant, products in quadrants.items():
+            x = [data['sp_revenue_%_per_view_per_day'] for _, data in products]
+            y = [data['product_growth_rate'] for _, data in products]
+            ax.scatter(x, y, label=quadrant, color=colors[quadrant])
+
+        # Add labels and legend
+        ax.set_xlabel('Доля в категории (%)')
+        ax.set_ylabel('Темпы роста (%)')
+        ax.set_title(f'BCG Матрица')
+        ax.legend()
+
+        buffer = io.BytesIO()
+        fig.savefig(buffer, format='png')
+        buffer.seek(0)
+        binary_data = base64.b64encode(buffer.read())
+        record.plot = binary_data
+        plt.close(fig)

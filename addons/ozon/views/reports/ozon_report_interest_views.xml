@@ -49,8 +49,10 @@
                             <notebook>
                                 <page string="Данные">
                                     <field name="ozon_report_interest_data_ids">
-                                        <tree>
-                                            <field name="ozon_products_id" string="Продукт"/>
+                                        <tree default_order="interest_group">
+                                            <field name="ozon_products_id" string="Продукт"
+                                                   help="Наименование продукта"
+                                            />
                                             <field name="fp_hits_view" string="Просмотры период 1"/>
                                             <field name="sp_hits_view" string="Просмотры период 2"/>
                                             <field name="fp_revenue" string="Выручка период 1"/>
@@ -58,9 +60,14 @@
                                             <field name="fp_share" string="%, Выручка/просмотр/день период 1"/>
                                             <field name="sp_share" string="%, Выручка/просмотр/день период 2"/>
                                             <field name="product_growth_rate"
-                                                   string="%, рост по отношению к периоду 1"/>
+                                                   string="%, Рост по отношению к периоду 1"/>
+                                            <field name="interest_group"
+                                                   string="Группа"/>
                                         </tree>
                                     </field>
+                                </page>
+                                <page string="Графические данные">
+                                    <field name="plot" widget="image"/>
                                 </page>
                             </notebook>
                         </group>
