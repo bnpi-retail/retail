@@ -7,6 +7,8 @@ import magic
 import json
 import os
 import timeit
+import uuid
+import time
 
 from io import BytesIO
 from typing import Any
@@ -138,24 +140,29 @@ class ImportFile(models.Model):
 
         if "csv" in mime_type:
             if values["data_for_download"] == "ozon_products":
-                f_path = "/mnt/extra-addons/ozon/products_from_ozon_api.csv"
+                
+                random_str = uuid.uuid4()
+                f_path = f"/mnt/extra-addons/ozon/{random_str}.csv"
+
                 with open(f_path, "w") as f:
                     f.write(content)
 
                 with open(f_path) as csvfile:
                     price_history_data_list = []
+                    
                     reader = csv.DictReader(csvfile)
+
                     for i, row in enumerate(reader):
                         row_id_on_platform = row["id_on_platform"]
                         row_price = row["price"]
                         row_old_price = row["old_price"]
                         row_name = row["name"]
                         row_description = row["description"]
-                        row_keywords = row["keywords"]
+                        keywords = row.get("keywords", None)
                         row_categories = row["categories"]
                         row_c_id = row["description_category_id"]
+                        trading_scheme = row["trading_scheme"].replace(",", "")
 
-                        # s0 = timeit.default_timer()
                         if ozon_product := self.is_ozon_product_exists(
                             id_on_platform=row_id_on_platform
                         ):
@@ -164,7 +171,7 @@ class ImportFile(models.Model):
                                     "sku": row["sku"],
                                     "fbo_sku": row["fbo_sku"],
                                     "fbs_sku": row["fbs_sku"],
-                                    "trading_scheme": row["trading_scheme"],
+                                    "trading_scheme": trading_scheme,
                                     "price": row["price"],
                                     "old_price": row["old_price"],
                                     "ext_comp_min_price": row["ext_comp_min_price"],
@@ -176,13 +183,17 @@ class ImportFile(models.Model):
                                     "imgs_urls": row["img_urls"],
                                 }
                             )
-                            ozon_product.products.write(
-                                {
+
+                            retail_product_value = {
                                     "name": row_name,
                                     "description": row_description,
-                                    "keywords": row_keywords,
                                 }
-                            )
+                            
+                            if keywords is not None:
+                                retail_product_value["keywords"] = keywords
+
+                            ozon_product.products.write(retail_product_value)
+
                             ozon_product.categories.write(
                                 {"name_categories": row_categories, "c_id": row_c_id}
                             )
@@ -211,18 +222,20 @@ class ImportFile(models.Model):
                                     }
                                 )
 
-                            retail_product = self.env["retail.products"].create(
-                                {
+                            retail_product_value = {
                                     "name": row_name,
                                     "description": row_description,
-                                    "keywords": row_keywords,
                                     "product_id": row["offer_id"],
                                     "length": float(row["length"]),
                                     "width": float(row["width"]),
                                     "height": float(row["height"]),
                                     "weight": float(row["weight"]),
                                 }
-                            )
+                            
+                            if keywords is not None:
+                                retail_product_value["keywords"] = keywords
+
+                            retail_product = self.env["retail.products"].create(retail_product_value)
 
                             ozon_product = self.env["ozon.products"].create(
                                 {
@@ -244,24 +257,23 @@ class ImportFile(models.Model):
                                     "price_index": row["price_index"],
                                     "imgs_urls": row["img_urls"],
                                     "seller": seller.id,
-                                    "trading_scheme": row["trading_scheme"],
+                                    "trading_scheme": trading_scheme,
                                 }
                             )
 
-                            print(f"product {row_id_on_platform} created")
-
                         ozon_product_id = ozon_product.id
-                        # s1 = timeit.default_timer()
-                        ozon_product.populate_search_queries(row_keywords)
+                            
+                        if keywords is not None:
+                            ozon_product.populate_search_queries(keywords)
+
                         ozon_product.populate_supplementary_categories(
                             row["full_categories"],
                             row["full_categories_id"],
                         )
-                        # s2 = timeit.default_timer()
+
                         all_fees = {k: row[k] for k in ALL_COMMISSIONS.keys()}
 
                         if product_fee := ozon_product.product_fee:
-                            # TODO: удалить, когда во всех комиссиях запишется product_id_on_platform
                             product_fee.write(
                                 {"product_id_on_platform": row_id_on_platform}
                             )
@@ -287,7 +299,6 @@ class ImportFile(models.Model):
                             )
                             ozon_product.write({"product_fee": product_fee.id})
 
-                        # s3 = timeit.default_timer()
                         if are_fees_the_same:
                             fix_expenses_ids = ozon_product.fix_expenses.ids
                             percent_expenses_ids = ozon_product.percent_expenses.ids
@@ -311,7 +322,6 @@ class ImportFile(models.Model):
                                 },
                                 percent_expenses=percent_expenses,
                             )
-                        # s4 = timeit.default_timer()
 
                         price_history_records = (
                             ozon_product.price_our_history_ids.sorted(
@@ -319,13 +329,11 @@ class ImportFile(models.Model):
                             )
                         )
 
-                        # s41 = timeit.default_timer()
                         if price_history_records:
                             previous_price = price_history_records[0].price
                         else:
                             previous_price = 0
 
-                        # s42 = timeit.default_timer()
                         price_history_data = {
                             "product": ozon_product_id,
                             "id_on_platform": row_id_on_platform,
@@ -336,22 +344,12 @@ class ImportFile(models.Model):
                             "costs": percent_expenses_ids,
                         }
                         price_history_data_list.append(price_history_data)
-                        print(
-                            f"{i} - Price history for product {row['id_on_platform']} added"
-                        )
-                        # s5 = timeit.default_timer()
-                        # print(f"total: {s5-s0}")
-                        # print(f"update ozon_product: {s1-s0}")
-                        # print(f"keywords & categories: {s2-s1}")
-                        # print(f"product_fee: {s3-s2}")
-                        # print(f"fix_&_percent_expenses: {s4-s3}")
-                        # print(f"price_history_total: {s5-s4}")
-                        # print(f"is_ozon_price_history_exists: {s41-s4}")
-                        # print(f"prev_price: {s42-s41}")
 
-                    ozon_price_history = self.env["ozon.price_history"].create(
-                        price_history_data_list
-                    )
+                        print(f"Product imported. Line: {i}")
+
+                    self.env["ozon.price_history"].create(price_history_data_list)
+
+
                 os.remove(f_path)
 
             elif values["data_for_download"] == "ozon_commissions":
@@ -542,7 +540,7 @@ class ImportFile(models.Model):
                         date=row["order_date"],
                         revenue=row["amount"],
                     )
-
+    
         os.remove(f_path)
 
     def import_stocks(self, content):

@@ -102,7 +102,7 @@ class Product(models.Model):
         "ozon.search_queries", "product_id", string="Ключевые слова"
     )
     trading_scheme = fields.Selection(
-        [("FBS", "FBS"), ("FBO", "FBO"), ("FBS, FBO", "FBS, FBO"), ("undefined", " ")],
+        [("FBS", "FBS"), ("FBO", "FBO"), ("FBS FBO", "FBS, FBO"), ("undefined", " ")],
         string="Схема торговли",
     )
 
