@@ -27,6 +27,9 @@ class OzonReportInterestData(models.Model):
     bcg_group = fields.Selection([
         ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', 'Нет данных'), ('f', '')
     ])
+    is_match = fields.Selection(
+        [('a', 'Не совпадает'), ('b', 'Совпадает'), ('c', 'Нет данных')]
+    )
 
     ozon_report_interest_id = fields.Many2one("ozon.report.interest")
 
@@ -154,17 +157,17 @@ class OzonReportInterest(models.Model):
         dogs_qty = 0
         for product, data in both_period_data.items():
             if data['product_growth_rate'] >= threshold_growth and \
-                    data['sp_qty_%_per_view_per_day'] >= threshold_share:
+                    data['sp_views_category_share_daily'] >= threshold_share:
                 quadrants['Звезды'].append((product, data))
                 data['quadrant'] = 'a'
                 stars_qty += 1
             elif data['product_growth_rate'] >= threshold_growth and \
-                    data['sp_qty_%_per_view_per_day'] < threshold_share:
+                    data['sp_views_category_share_daily'] < threshold_share:
                 quadrants['Проблемы'].append((product, data))
                 data['quadrant'] = 'c'
                 questions_qty += 1
             elif data['product_growth_rate'] < threshold_growth and \
-                    data['sp_qty_%_per_view_per_day'] >= threshold_share:
+                    data['sp_views_category_share_daily'] >= threshold_share:
                 quadrants['Дойные коровы'].append((product, data))
                 data['quadrant'] = 'b'
                 cows_qty += 1
@@ -198,8 +201,8 @@ class OzonReportInterest(models.Model):
                 "sp_hits_view": 0,
                 "fp_qty": 0,
                 "sp_qty": 0,
-                "fp_qty_%_per_view_per_day": 0,
-                "sp_qty_%_per_view_per_day": 0,
+                "fp_views_category_share_daily": 0,
+                "sp_views_category_share_daily": 0,
                 "product_growth_rate": 0,
                 "quadrant": None,
                 "bcg_group": bcg_group,
@@ -209,16 +212,16 @@ class OzonReportInterest(models.Model):
             if fp_product_data:
                 vals['fp_hits_view'] = fp_product_data['hits_view']
                 vals['fp_qty'] = fp_product_data['qty']
-                fp_value = fp_product_data['qty_%_per_view_per_day']
-                vals['fp_qty_%_per_view_per_day'] = fp_value
+                fp_value = fp_product_data['views_category_share_daily']
+                vals['fp_views_category_share_daily'] = fp_value
 
             sp_product_data: dict = sp_data.get(product_id)
             sp_value = 0
             if sp_product_data:
                 vals['sp_hits_view'] = sp_product_data['hits_view']
                 vals['sp_qty'] = sp_product_data['qty']
-                sp_value = sp_product_data['qty_%_per_view_per_day']
-                vals['sp_qty_%_per_view_per_day'] = sp_value
+                sp_value = sp_product_data['views_category_share_daily']
+                vals['sp_views_category_share_daily'] = sp_value
                 if max_curr_share < sp_value:
                     max_curr_share = sp_value
 
@@ -266,16 +269,8 @@ class OzonReportInterest(models.Model):
         period_to_cart_per_view_per_day = period_total_to_cart / period_total_hits_view
 
         for product_id, data in data_dict.items():
-            hits_view = data['hits_view']
-            qty = data['qty']
-            product_qty_per_view = qty / hits_view if hits_view != 0 else 0.000001
-            product_qty_per_view_per_day = product_qty_per_view / days
-            if period_qty_per_view_per_day:
-                qty_per_view_per_day_percent = (
-                    product_qty_per_view_per_day * 100) / period_qty_per_view_per_day
-            else:
-                qty_per_view_per_day_percent = 0
-            data['qty_%_per_view_per_day'] = qty_per_view_per_day_percent
+            hits_view = data['hits_view'] / days
+            data['views_category_share_daily'] = (hits_view * 100) / period_total_hits_view
 
         return period_revenue_per_view_per_day, period_to_cart_per_view_per_day, period_qty_per_view_per_day
 
@@ -291,17 +286,25 @@ class OzonReportInterest(models.Model):
         record_id = record.id
         values = []
         for product_id, data in both_period_data.items():
+            interest_group = data['quadrant']
+            bcg_group = data['bcg_group']
+            is_match = 'c'
+            if interest_group == bcg_group and bcg_group != 'e':
+                is_match = 'b'
+            elif interest_group != bcg_group and bcg_group != 'e':
+                is_match = 'a'
             vals = {
                 "ozon_products_id": product_id,
                 "fp_hits_view": data['fp_hits_view'],
                 "sp_hits_view": data['sp_hits_view'],
                 "fp_qty": data['fp_qty'],
                 "sp_qty": data['sp_qty'],
-                "fp_share": data['fp_qty_%_per_view_per_day'],
-                "sp_share": data['sp_qty_%_per_view_per_day'],
+                "fp_share": data['fp_views_category_share_daily'],
+                "sp_share": data['sp_views_category_share_daily'],
                 "product_growth_rate": data['product_growth_rate'],
-                "interest_group": data['quadrant'],
-                "bcg_group": data['bcg_group'],
+                "interest_group": interest_group,
+                "bcg_group": bcg_group,
+                "is_match": is_match,
                 "ozon_report_interest_id": record_id
             }
             values.append(vals)
@@ -346,7 +349,7 @@ class OzonReportInterest(models.Model):
                 'hits_tocart': 0,
                 'revenue': 0,
                 'qty': 0,
-                'qty_%_per_view_per_day': 0,
+                'views_category_share_daily': 0,
             }
         )
         product_ids = []
@@ -367,7 +370,7 @@ class OzonReportInterest(models.Model):
         # Plot the BCG matrix
         fig, ax = plt.subplots()
         for quadrant, products in quadrants.items():
-            x = [data['sp_qty_%_per_view_per_day'] for _, data in products]
+            x = [data['sp_views_category_share_daily'] for _, data in products]
             y = [data['product_growth_rate'] for _, data in products]
             ax.scatter(x, y, label=quadrant, color=colors[quadrant])
 
