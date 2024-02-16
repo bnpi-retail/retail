@@ -7,7 +7,7 @@ class Seller(models.Model):
     _name = "retail.seller"
     _description = "Продавец"
 
-    name = fields.Char(string="Название")
+    name = fields.Char(string="Название", index=True)
     ogrn = fields.Char(string="ОГРН")
     trade_name = fields.Char(string="Торговое название")
     is_my_shop = fields.Char(default=True)

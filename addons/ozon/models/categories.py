@@ -10,7 +10,7 @@ class Categories(models.Model):
     _description = "Категории Ozon"
 
     name_categories = fields.Char(string="Название", readonly=True)
-    c_id = fields.Integer(string="Идентификатор", readonly=True)
+    c_id = fields.Integer(string="Идентификатор", readonly=True, index=True)
     insurance = fields.Float(string="Страховой коэффициент, %")
 
     category_manager = fields.Many2one("res.users")

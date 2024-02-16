@@ -16,14 +16,20 @@ class OzonReportInterestData(models.Model):
     ozon_products_id = fields.Many2one("ozon.products")
     fp_hits_view = fields.Float(digits=(12, 5))
     sp_hits_view = fields.Float(digits=(12, 5))
-    fp_revenue = fields.Float(digits=(12, 5))
-    sp_revenue = fields.Float(digits=(12, 5))
+    fp_qty = fields.Float(digits=(12, 5))
+    sp_qty = fields.Float(digits=(12, 5))
     fp_share = fields.Float(digits=(12, 5))
     sp_share = fields.Float(digits=(12, 5))
     product_growth_rate = fields.Float(digits=(12, 5))
     interest_group = fields.Selection([
         ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', 'Нет данных'), ('f', '')
     ])
+    bcg_group = fields.Selection([
+        ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', 'Нет данных'), ('f', '')
+    ])
+    is_match = fields.Selection(
+        [('a', 'Не совпадает'), ('b', 'Совпадает'), ('c', 'Нет данных')]
+    )
 
     ozon_report_interest_id = fields.Many2one("ozon.report.interest")
 
@@ -49,6 +55,8 @@ class OzonReportInterest(models.Model):
     )
     fp_revenue_per_hit_view_per_day = fields.Float(digits=(12, 5))
     sp_revenue_per_hit_view_per_day = fields.Float(digits=(12, 5))
+    fp_qty_per_hit_view_per_day = fields.Float(digits=(12, 5))
+    sp_qty_per_hit_view_per_day = fields.Float(digits=(12, 5))
     fp_to_cart_per_hit_view_per_day = fields.Float(digits=(12, 5))
     sp_to_cart_per_hit_view_per_day = fields.Float(digits=(12, 5))
 
@@ -81,7 +89,6 @@ class OzonReportInterest(models.Model):
             )
             fp_data, fp_product_ids = self._get_period_data_dict(first_period_analysis_data)
             del first_period_analysis_data
-
             self._add_sales_data(
                 record.first_period_from, record.first_period_to, fp_product_ids, fp_data
             )
@@ -94,25 +101,36 @@ class OzonReportInterest(models.Model):
             )
             sp_data, sp_product_ids = self._get_period_data_dict(second_period_analysis_data)
             del second_period_analysis_data
-
             self._add_sales_data(record.second_period_from, record.second_period_to, sp_product_ids, sp_data)
 
+            category_id = record.ozon_categories_id.id
+            all_category_product_ids_groups = self.env["ozon.products"].search([
+                ('categories', '=', category_id)
+            ]).mapped(lambda r: (r.id, r.bcg_group))
+
             # calculate data
-            fp_revenue_per_view_per_day_relation, fp_to_cart_per_view_per_day = self._calculate_revenue_per_view_daily(
+            res_1 = self._calculate_qty_per_view_daily(
                 record.first_period_from, record.first_period_to, fp_data)
-            sp_revenue_per_view_per_day_relation, sp_to_cart_per_view_per_day = self._calculate_revenue_per_view_daily(
+            fp_revenue_per_view_per_day_relation, fp_to_cart_per_view_per_day, fp_qty_per_view_per_day = res_1
+
+            res_2 = self._calculate_qty_per_view_daily(
                 record.second_period_from, record.second_period_to, sp_data)
+            sp_revenue_per_view_per_day_relation, sp_to_cart_per_view_per_day, sp_qty_per_view_per_day = res_2
 
             # record common values
             record.fp_revenue_per_hit_view_per_day = fp_revenue_per_view_per_day_relation
             record.fp_to_cart_per_hit_view_per_day = fp_to_cart_per_view_per_day
+
+            record.fp_qty_per_hit_view_per_day = fp_qty_per_view_per_day
+            record.sp_qty_per_hit_view_per_day = sp_qty_per_view_per_day
 
             record.sp_revenue_per_hit_view_per_day = sp_revenue_per_view_per_day_relation
             record.sp_to_cart_per_hit_view_per_day = sp_to_cart_per_view_per_day
 
             # merge periods + all category products
             both_period_data, max_growth_value, max_curr_share = self._merge_fp_sp_data_and_calc_reminds_values(
-                record.ozon_categories_id.id, fp_data, sp_data)
+                fp_data, sp_data, all_category_product_ids_groups
+            )
 
             quadrants, colors = self._assign_groups(record, both_period_data, max_growth_value, max_curr_share)
 
@@ -139,17 +157,17 @@ class OzonReportInterest(models.Model):
         dogs_qty = 0
         for product, data in both_period_data.items():
             if data['product_growth_rate'] >= threshold_growth and \
-                    data['sp_revenue_%_per_view_per_day'] >= threshold_share:
+                    data['sp_views_category_share_daily'] >= threshold_share:
                 quadrants['Звезды'].append((product, data))
                 data['quadrant'] = 'a'
                 stars_qty += 1
             elif data['product_growth_rate'] >= threshold_growth and \
-                    data['sp_revenue_%_per_view_per_day'] < threshold_share:
+                    data['sp_views_category_share_daily'] < threshold_share:
                 quadrants['Проблемы'].append((product, data))
                 data['quadrant'] = 'c'
                 questions_qty += 1
             elif data['product_growth_rate'] < threshold_growth and \
-                    data['sp_revenue_%_per_view_per_day'] >= threshold_share:
+                    data['sp_views_category_share_daily'] >= threshold_share:
                 quadrants['Дойные коровы'].append((product, data))
                 data['quadrant'] = 'b'
                 cows_qty += 1
@@ -171,39 +189,39 @@ class OzonReportInterest(models.Model):
 
         return quadrants, colors
 
-    def _merge_fp_sp_data_and_calc_reminds_values(self, category_id, fp_data, sp_data) -> tuple:
-        all_category_product_ids = self.env["ozon.products"].search([
-            ('categories', '=', category_id)
-        ]).ids
+    @staticmethod
+    def _merge_fp_sp_data_and_calc_reminds_values(fp_data, sp_data, ids) -> tuple:
+        all_category_product_ids_groups = ids
         both_period_data = defaultdict(dict)
         max_growth_value = float('-inf')
         max_curr_share = float('-inf')
-        for product_id in all_category_product_ids:
+        for product_id, bcg_group in all_category_product_ids_groups:
             vals = {
                 "fp_hits_view": 0,
                 "sp_hits_view": 0,
-                "fp_revenue": 0,
-                "sp_revenue": 0,
-                "fp_revenue_%_per_view_per_day": 0,
-                "sp_revenue_%_per_view_per_day": 0,
+                "fp_qty": 0,
+                "sp_qty": 0,
+                "fp_views_category_share_daily": 0,
+                "sp_views_category_share_daily": 0,
                 "product_growth_rate": 0,
                 "quadrant": None,
+                "bcg_group": bcg_group,
             }
             fp_product_data: dict = fp_data.get(product_id)
             fp_value = 0
             if fp_product_data:
                 vals['fp_hits_view'] = fp_product_data['hits_view']
-                vals['fp_revenue'] = fp_product_data['revenue']
-                fp_value = fp_product_data['revenue_%_per_view_per_day']
-                vals['fp_revenue_%_per_view_per_day'] = fp_value
+                vals['fp_qty'] = fp_product_data['qty']
+                fp_value = fp_product_data['views_category_share_daily']
+                vals['fp_views_category_share_daily'] = fp_value
 
             sp_product_data: dict = sp_data.get(product_id)
             sp_value = 0
             if sp_product_data:
                 vals['sp_hits_view'] = sp_product_data['hits_view']
-                vals['sp_revenue'] = sp_product_data['revenue']
-                sp_value = sp_product_data['revenue_%_per_view_per_day']
-                vals['sp_revenue_%_per_view_per_day'] = sp_value
+                vals['sp_qty'] = sp_product_data['qty']
+                sp_value = sp_product_data['views_category_share_daily']
+                vals['sp_views_category_share_daily'] = sp_value
                 if max_curr_share < sp_value:
                     max_curr_share = sp_value
 
@@ -223,40 +241,38 @@ class OzonReportInterest(models.Model):
         return both_period_data, max_growth_value, max_curr_share
 
     @staticmethod
-    def _calculate_revenue_per_view_daily(period_from, period_to, data_dict: defaultdict) -> tuple:
+    def _calculate_qty_per_view_daily(period_from, period_to, data_dict: defaultdict) -> tuple:
         days = (period_to - period_from).days
         if days == 0:
             raise UserError("Количество дней в периоде равно 0")
 
         period_total_hits_view = 0
         period_total_revenue = 0
+        period_total_qty = 0
         period_total_to_cart = 0
         for product_id, data in data_dict.items():
             period_total_hits_view += data['hits_view']
             period_total_revenue += data['revenue']
             period_total_to_cart += data['hits_tocart']
+            period_total_qty += data['qty']
 
         period_total_hits_view /= days
         period_total_revenue /= days
         period_total_to_cart /= days
+        period_total_qty /= days
 
         if period_total_hits_view == 0:
-            period_revenue_per_view_per_day = 0.000001
-            period_to_cart_per_view_per_day = 0.000001
-        else:
-            period_revenue_per_view_per_day = period_total_revenue / period_total_hits_view
-            period_to_cart_per_view_per_day = period_total_to_cart / period_total_hits_view
+            period_total_hits_view = 0.000001
+
+        period_revenue_per_view_per_day = period_total_revenue / period_total_hits_view
+        period_qty_per_view_per_day = period_total_qty / period_total_hits_view
+        period_to_cart_per_view_per_day = period_total_to_cart / period_total_hits_view
 
         for product_id, data in data_dict.items():
-            hits_view = data['hits_view']
-            revenue = data['revenue']
-            product_revenue_per_view = revenue / hits_view if hits_view != 0 else 0
-            product_revenue_per_view_per_day = product_revenue_per_view / days
-            revenue_per_view_per_day_percent = (
-                product_revenue_per_view_per_day * 100) / period_revenue_per_view_per_day
-            data['revenue_%_per_view_per_day'] = revenue_per_view_per_day_percent
+            hits_view = data['hits_view'] / days
+            data['views_category_share_daily'] = (hits_view * 100) / period_total_hits_view
 
-        return period_revenue_per_view_per_day, period_to_cart_per_view_per_day
+        return period_revenue_per_view_per_day, period_to_cart_per_view_per_day, period_qty_per_view_per_day
 
     def _record_data(self, record, both_period_data):
         query = """
@@ -270,16 +286,25 @@ class OzonReportInterest(models.Model):
         record_id = record.id
         values = []
         for product_id, data in both_period_data.items():
+            interest_group = data['quadrant']
+            bcg_group = data['bcg_group']
+            is_match = 'c'
+            if interest_group == bcg_group and bcg_group != 'e':
+                is_match = 'b'
+            elif interest_group != bcg_group and bcg_group != 'e':
+                is_match = 'a'
             vals = {
                 "ozon_products_id": product_id,
                 "fp_hits_view": data['fp_hits_view'],
                 "sp_hits_view": data['sp_hits_view'],
-                "fp_revenue": data['fp_revenue'],
-                "sp_revenue": data['sp_revenue'],
-                "fp_share": data['fp_revenue_%_per_view_per_day'],
-                "sp_share": data['sp_revenue_%_per_view_per_day'],
+                "fp_qty": data['fp_qty'],
+                "sp_qty": data['sp_qty'],
+                "fp_share": data['fp_views_category_share_daily'],
+                "sp_share": data['sp_views_category_share_daily'],
                 "product_growth_rate": data['product_growth_rate'],
-                "interest_group": data['quadrant'],
+                "interest_group": interest_group,
+                "bcg_group": bcg_group,
+                "is_match": is_match,
                 "ozon_report_interest_id": record_id
             }
             values.append(vals)
@@ -304,7 +329,7 @@ class OzonReportInterest(models.Model):
                 ('date', '>=', period_from),
                 ('date', '<=', period_to),
             ],
-            fields=['product', 'revenue'],
+            fields=['product', 'revenue', 'qty'],
             groupby=['product']
         )
         for entry in sales:
@@ -314,6 +339,7 @@ class OzonReportInterest(models.Model):
                 product_data = data_dict.get(product_id)
                 if product_data:
                     product_data['revenue'] += entry['revenue']
+                    product_data['qty'] += entry['qty']
 
     @staticmethod
     def _get_period_data_dict(period_raw_analysis_data) -> tuple:
@@ -322,7 +348,8 @@ class OzonReportInterest(models.Model):
                 'hits_view': 0,
                 'hits_tocart': 0,
                 'revenue': 0,
-                'revenue_%_per_view_per_day': 0,
+                'qty': 0,
+                'views_category_share_daily': 0,
             }
         )
         product_ids = []
@@ -343,7 +370,7 @@ class OzonReportInterest(models.Model):
         # Plot the BCG matrix
         fig, ax = plt.subplots()
         for quadrant, products in quadrants.items():
-            x = [data['sp_revenue_%_per_view_per_day'] for _, data in products]
+            x = [data['sp_views_category_share_daily'] for _, data in products]
             y = [data['product_growth_rate'] for _, data in products]
             ax.scatter(x, y, label=quadrant, color=colors[quadrant])
 

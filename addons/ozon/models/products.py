@@ -47,7 +47,7 @@ class Product(models.Model):
     )
 
     categories = fields.Many2one("ozon.categories", string="Название категории")
-    id_on_platform = fields.Char(string="Product ID", readonly=True)
+    id_on_platform = fields.Char(string="Product ID", readonly=True, index=True)
     sku = fields.Char(string="SKU", readonly=True)
     fbo_sku = fields.Char(string="FBO SKU", readonly=True)
     fbs_sku = fields.Char(string="FBS SKU", readonly=True)
@@ -1464,18 +1464,18 @@ class Product(models.Model):
         alive_products._compute_sales_per_day_last_30_days_group()
 
     def populate_search_queries(self, keywords_string):
-        # разделить полученную из csv string keywords на слова
         keywords = split_keywords(keywords_string)
 
         data = []
+        
         for word in keywords:
-            # если такое слово уже ассоциировано с продуктом, то его не добавляем
-            if self.env["ozon.search_queries"].search(
-                [
+            record = self.env["ozon.search_queries"] \
+                .search([
                     ("words", "=", word),
                     ("product_id", "=", self.id),
-                ]
-            ):
+                ])
+
+            if record:
                 continue
 
             record = {"words": word, "product_id": self.id}
@@ -1483,7 +1483,6 @@ class Product(models.Model):
             print(f"Word {word} added.")
 
         if data:
-            # добавить слова к продукту
             self.search_queries = data
 
     def populate_supplementary_categories(
