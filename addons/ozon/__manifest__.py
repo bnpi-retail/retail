@@ -114,6 +114,7 @@
         "views/history_of_product_positions/history_of_product_positions.xml",
         "views/reports/ozon_report_interest_views.xml",
         "views/technical/menu.xml",
+        "views/import/mass_data_import_views.xml",
         # cron
         "crone/ir_cron_data.xml",
     ],
