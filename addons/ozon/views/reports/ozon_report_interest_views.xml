@@ -47,9 +47,9 @@
                             <notebook>
                                 <page string="Данные по продуктам">
                                     <field name="ozon_report_interest_data_ids">
-                                        <tree default_order="is_match"
+                                        <tree default_order="is_match, bcg_group"
                                               decoration-danger="is_match=='a'"
-                                                   decoration-success="is_match=='b'"
+                                              decoration-success="is_match=='b'"
                                         >
                                             <field name="ozon_products_id" string="Продукт"
                                                    help="Наименование продукта" readonly="1"
