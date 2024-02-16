@@ -1,0 +1,40 @@
+<odoo>
+    <data>
+        <!-- Form -->
+        <record id="realisation_report_view_form" model="ir.ui.view">
+            <field name="name">realisation_report.form</field>
+            <field name="model">ozon.realisation_report</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="realisation_report_view_tree" model="ir.ui.view">
+            <field name="name">realisation_report.tree</field>
+            <field name="model">ozon.realisation_report</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="num" />
+                    <field name="start_date" />
+                    <field name="stop_date" />
+                    <field name="doc_amount" />
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="action_realisation_report" model="ir.actions.act_window">
+            <field name="name">Месячный отчет Ozon о реализации товаров</field>
+            <field name="res_model">ozon.realisation_report</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_realisation_report" name="Отчеты Ozon о реализации товаров"
+            parent="ozon.menu_reports"
+            action="action_realisation_report" sequence="3" />
+
+    </data>
+</odoo>
