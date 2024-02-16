@@ -8,7 +8,7 @@ import json
 import os
 import timeit
 
-from io import BytesIO
+from io import BytesIO, StringIO
 from typing import Any
 from datetime import date, datetime
 from collections import defaultdict
@@ -58,6 +58,7 @@ class ImportFile(models.Model):
                 "ozon_ad_campgaign_search_promotion_report",
                 "Отчёт о рекламной кампании (продвижение в поиске)",
             ),
+            ("ozon_realisation_report", "Отчёт о реализации товаров"),
         ],
         string="Данные для загрузки",
     )
@@ -135,6 +136,9 @@ class ImportFile(models.Model):
 
         if values["data_for_download"] == "ozon_ad_campgaign_search_promotion_report":
             self.import_ad_campgaign_search_promotion_report(content)
+
+        if values["data_for_download"] == "ozon_realisation_report":
+            self.import_ozon_realisation_report(content)
 
         if "csv" in mime_type:
             if values["data_for_download"] == "ozon_products":
@@ -855,6 +859,27 @@ class ImportFile(models.Model):
                     print(f"{i} - Product (SKU: {sku}) promotion expenses were added")
             self.env["ozon.promotion_expenses"].create(data)
         os.remove(f_path)
+
+    def import_ozon_realisation_report(self, content):
+        with StringIO(content) as jsonfile:
+            data = json.load(jsonfile)
+            if self.env["ozon.realisation_report"].search([("num", "=", data["header"]["num"])]):
+                print(f"""Report №{data["header"]["num"]} already exists""")
+                return
+            report = self.env["ozon.realisation_report"].create({**data["header"]})
+            products_in_report_data = []
+            for i, row in enumerate(data["rows"]):
+                product_id_on_platform = row.pop("product_id")
+                product = self.is_ozon_product_exists(product_id_on_platform)
+                if product:
+                    products_in_report_data.append({
+                        "product_id": product.id,
+                        "product_id_on_platform": product_id_on_platform,
+                        "realisation_report_id": report.id,
+                        **row
+                    })
+                    print(f"{i} - Product {product_id_on_platform} added to realisation report")
+            self.env["ozon.realisation_report_product"].create(products_in_report_data)
 
     def import_images_sale(self, content):
         model_products = self.env["ozon.products"]
