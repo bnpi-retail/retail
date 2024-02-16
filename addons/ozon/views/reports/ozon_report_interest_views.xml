@@ -63,14 +63,14 @@
                                             <field name="product_growth_rate" readonly="1"
                                                    string="%, Рост по отношению к периоду 1"/>
                                             <field name="interest_group" readonly="1"
-                                                   string="Группа: Спрос"
+                                                   string="Группа: Доля Интереса"
                                                    decoration-info="interest_group=='a'"
                                                    decoration-success="interest_group=='b'"
                                                    decoration-warning="interest_group=='c'"
                                                    decoration-danger="interest_group=='d'"
                                             />
                                             <field name="bcg_group" readonly="1"
-                                                   string="Группа: Рынок"
+                                                   string="Группа: Доля Рынка"
                                                    decoration-info="bcg_group=='a'"
                                                    decoration-success="bcg_group=='b'"
                                                    decoration-warning="bcg_group=='c'"
