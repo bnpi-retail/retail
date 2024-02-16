@@ -169,8 +169,6 @@ class ImportFile(models.Model):
                     )
                     print(f"{i}th commission was created")
 
-            os.remove(f_path)
-
         elif values["data_for_download"] == "ozon_transactions":
             self.import_transactions(content)
 
@@ -321,8 +319,6 @@ class ImportFile(models.Model):
                         revenue=row["amount"],
                     )
     
-        os.remove(f_path)
-
     def import_stocks(self, content):
 
         with StringIO(content) as csvfile:
@@ -370,7 +366,6 @@ class ImportFile(models.Model):
                         }
                     )
                     print(f"{i} - Product {id_on_platform} stock history was created")
-        os.remove(f_path)
 
     def import_prices(self, content):
 
@@ -394,8 +389,6 @@ class ImportFile(models.Model):
                         }
                     )
                     print(f"{i} - Product {row['id_on_platform']} prices were updated")
-
-        os.remove(f_path)
 
     def get_or_create_warehouse(self, warehouse_id, warehouse_name):
         """Returns existing warehouse or create a new one"""
@@ -458,7 +451,6 @@ class ImportFile(models.Model):
                 print(f"{i} - Posting {row['posting_number']} was imported")
 
             self.env["ozon.posting"].create(data)
-        os.remove(f_path)
 
     def import_fbo_supply_orders(self, content):
 
@@ -512,7 +504,6 @@ class ImportFile(models.Model):
                     }
                 )
                 print(f"{i} - Supply order {supply_order_id} was imported")
-        os.remove(f_path)
 
     def create_sale_from_transaction(self, products: list, date: str, revenue: float):
         # if all products are the same
@@ -804,8 +795,6 @@ class ImportFile(models.Model):
                             action_candidate.is_participating = True
 
                 print(f"{i} - Action {a_id} was imported")
-
-        os.remove(f_path)
 
     def import_successful_products_competitors(self, content):
         lines = content.split("\n")
