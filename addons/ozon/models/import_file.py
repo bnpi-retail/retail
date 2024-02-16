@@ -14,7 +14,6 @@ from typing import Any, Optional
 import openpyxl
 from odoo import models, fields, api, exceptions
 from odoo.exceptions import UserError
-from pydantic import BaseModel
 
 from ..ozon_api import (
     ALL_COMMISSIONS,
