@@ -21,7 +21,7 @@ logger = logging.getLogger()
 
 from ..ozon_api import (
     ALL_COMMISSIONS,
-    get_product_id_by_sku,
+    get_product_info_list_by_sku,
 )
 
 from ..helpers import convert_ozon_datetime_str_to_odoo_datetime_str
@@ -507,17 +507,8 @@ class ImportFile(models.Model):
                 skus = ast.literal_eval(row["product_skus"])
                 for sku in skus:
                     if ozon_product := self.is_ozon_product_exists_by_sku(sku):
-                        pass
-                    else:
-                        # обратиться в озон - есть ли такой товар по этому sku?
-                        product_id = get_product_id_by_sku([sku])
-                        if product_id:
-                            ozon_product = self.is_ozon_product_exists(product_id[0])
-                        else:
-                            # TODO: что делать, если указанного в транзакции sku нет ни у нас, ни в озоне
-                            continue
-                    ozon_products.append(ozon_product)
-                    ozon_products_ids.append(ozon_product.id)
+                        ozon_products.append(ozon_product)
+                        ozon_products_ids.append(ozon_product.id)
 
                 # TODO: как быть с транзакциями, где указанных sku нет в нашей системе? 
                 # или напр. в транзакции 2 sku, один из них есть у нас, другого нет.
