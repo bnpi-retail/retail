@@ -7,6 +7,24 @@
             <field name="arch" type="xml">
                 <form>
                     <sheet>
+                        <group>
+                            <field name="num" />
+                            <field name="doc_date" />
+                            <field name="contract_date" />
+                            <field name="contract_num" />
+                            <field name="doc_amount" />
+                            <field name="vat_amount" />
+                            <field name="payer_inn" />
+                            <field name="payer_kpp" />
+                            <field name="payer_name" />
+                            <field name="rcv_inn" />
+                            <field name="rcv_kpp" />
+                            <field name="rcv_name" />
+                            <field name="start_date" />
+                            <field name="stop_date" />
+                            <field name="currency_code" />
+                        </group>
+                        <field name="realisation_report_product_ids" />
                     </sheet>
                 </form>
             </field>
