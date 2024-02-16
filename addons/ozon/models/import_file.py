@@ -134,14 +134,10 @@ class ImportFile(models.Model):
             self.import_products(content)
 
         elif values["data_for_download"] == "ozon_commissions":
-            f_path = (
-                "/mnt/extra-addons/ozon/__pycache__/commissions_from_ozon_api.csv"
-            )
-            with open(f_path, "w") as f:
-                f.write(content)
 
-            with open(f_path) as csvfile:
+            with StringIO(content) as csvfile:
                 reader = csv.DictReader(csvfile)
+
                 for i, row in enumerate(reader):
                     result = self.is_ozon_fee_exists(
                         category_name=row["category_name"],
@@ -269,12 +265,10 @@ class ImportFile(models.Model):
         return result if result else False
 
     def import_transactions(self, content):
-        f_path = "/mnt/extra-addons/ozon/__pycache__/transactions.csv"
-        with open(f_path, "w") as f:
-            f.write(content)
 
-        with open(f_path) as csvfile:
+        with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
+
             all_transactions = (
                 self.env["ozon.transaction"]
                 .search([])
@@ -331,12 +325,10 @@ class ImportFile(models.Model):
         os.remove(f_path)
 
     def import_stocks(self, content):
-        f_path = "/mnt/extra-addons/ozon/__pycache__/stocks.csv"
-        with open(f_path, "w") as f:
-            f.write(content)
 
-        with open(f_path) as csvfile:
+        with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
+
             for i, row in enumerate(reader):
                 id_on_platform = row["id_on_platform"]
                 if ozon_product := self.is_ozon_product_exists(id_on_platform):
@@ -382,12 +374,10 @@ class ImportFile(models.Model):
         os.remove(f_path)
 
     def import_prices(self, content):
-        f_path = "/mnt/extra-addons/ozon/__pycache__/prices.csv"
-        with open(f_path, "w") as f:
-            f.write(content)
 
-        with open(f_path) as csvfile:
+        with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
+
             for i, row in enumerate(reader):
                 if ozon_product := self.is_ozon_product_exists(
                     id_on_platform=row["id_on_platform"]
@@ -421,12 +411,10 @@ class ImportFile(models.Model):
         return warehouse
 
     def import_postings(self, content):
-        f_path = "/mnt/extra-addons/ozon/__pycache__/postings.csv"
-        with open(f_path, "w") as f:
-            f.write(content)
-
-        with open(f_path) as csvfile:
+        
+        with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
+
             data = []
             for i, row in enumerate(reader):
                 posting_number = row["posting_number"]
@@ -474,12 +462,10 @@ class ImportFile(models.Model):
         os.remove(f_path)
 
     def import_fbo_supply_orders(self, content):
-        f_path = "/mnt/extra-addons/ozon/__pycache__/fbo_supply_orders.csv"
-        with open(f_path, "w") as f:
-            f.write(content)
 
-        with open(f_path) as csvfile:
+        with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
+
             for i, row in enumerate(reader):
                 supply_order_id = row["supply_order_id"]
                 if self.env["ozon.fbo_supply_order"].search(
@@ -738,12 +724,10 @@ class ImportFile(models.Model):
         record.img_data_sale_last_year = average_data
 
     def import_actions(self, content):
-        f_path = "/mnt/extra-addons/ozon/__pycache__/actions.csv"
-        with open(f_path, "w") as f:
-            f.write(content)
 
-        with open(f_path) as csvfile:
+        with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
+
             for i, row in enumerate(reader):
                 a_id = row["action_id"]
                 is_participating = ast.literal_eval(row["is_participating"])
@@ -849,7 +833,6 @@ class ImportFile(models.Model):
             period_to = None
             category = None
 
-            # get period and category via parsing
             for row in sheet.iter_rows(min_row=1, max_row=4, values_only=True):
                 if row[0]:
                     if "Период:" in row[0]:
@@ -865,7 +848,6 @@ class ImportFile(models.Model):
                         splited_row = row[0].split(": ")
                         category = splited_row[1]
 
-            # create report
             existed_category = self.env["ozon.categories"].search(
                 [("name_categories", "=", category)]
             )
@@ -1072,7 +1054,7 @@ class ProcessImportFile(models.Model):
             keywords=row.get("keywords"),
             categories=row["categories"],
             description_category_id=row["description_category_id"],
-            trading_scheme=row["trading_scheme"].replace(",", ""),
+            trading_scheme=row["trading_scheme"].replace("FBS FBO", "FBS, FBO"),
         )
 
     def get_or_create_ozon_proudct(self, row: ImportRowProduct, old_row: dict):
