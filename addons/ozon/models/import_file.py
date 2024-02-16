@@ -21,10 +21,7 @@ logger = logging.getLogger()
 
 from ..ozon_api import (
     ALL_COMMISSIONS,
-    FBO_FIX_COMMISSIONS,
-    FBO_PERCENT_COMMISSIONS,
-    FBS_FIX_COMMISSIONS,
-    FBS_PERCENT_COMMISSIONS,
+    get_product_id_by_sku,
 )
 
 from ..helpers import convert_ozon_datetime_str_to_odoo_datetime_str
@@ -502,15 +499,6 @@ class ImportFile(models.Model):
             all_transactions = dict.fromkeys(all_transactions, True)
             transactions_data = []
             for i, row in enumerate(reader):
-                # tran = self.env["ozon_transaction"].filtered(
-                #     lambda r: r.transaction_id == row["transaction_id"])
-                # if tran:
-                #     tran.write({
-                #         "accruals_for_sale": row["accruals_for_sale"],
-                #         "sale_commission": row["sale_commission"],
-                #         "transaction_type": row["type"]
-                #     })
-                #     continue
                 if all_transactions.get(row["transaction_id"]):
                     print(f"{i} - Transaction already exists")
                     continue
@@ -519,8 +507,18 @@ class ImportFile(models.Model):
                 skus = ast.literal_eval(row["product_skus"])
                 for sku in skus:
                     if ozon_product := self.is_ozon_product_exists_by_sku(sku):
-                        ozon_products.append(ozon_product)
-                        ozon_products_ids.append(ozon_product.id)
+                        pass
+                    else:
+                        # обратиться в озон - есть ли такой товар по этому sku?
+                        product_id = get_product_id_by_sku([sku])
+                        if product_id:
+                            ozon_product = self.is_ozon_product_exists(product_id[0])
+                        else:
+                            # TODO: что делать, если указанного в транзакции sku нет ни у нас, ни в озоне
+                            continue
+                    ozon_products.append(ozon_product)
+                    ozon_products_ids.append(ozon_product.id)
+
                 # TODO: как быть с транзакциями, где указанных sku нет в нашей системе? 
                 # или напр. в транзакции 2 sku, один из них есть у нас, другого нет.
                 # if len(skus) != len(ozon_products):
@@ -763,8 +761,6 @@ class ImportFile(models.Model):
         if len(products) == 0:
             return
         # if all products are the same
-        print(products)
-        print(data["products"])
         product_id = data["products"][0]
         qty = len(data["products"])
         if data["products"].count(product_id) == qty:
@@ -781,8 +777,7 @@ class ImportFile(models.Model):
                     "profit": data["amount"]
                 }
             )
-
-        # TODO: if different products in one transaction
+        # TODO: что делать если разные продукты в одной транзакции? как создавать продажи?
 
     def import_ad_campgaign_search_promotion_report(self, content):
         f_path = "/mnt/extra-addons/ozon/__pycache__/ad_campgaign_search_promotion_report.csv"
