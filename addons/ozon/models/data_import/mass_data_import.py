@@ -8,8 +8,8 @@ class MassDataImport(models.Model):
     _description = "Массовый импорт данных из стороннего сервиса"
 
     name = fields.Char()
-    start_date = fields.Date(default=lambda: datetime.datetime.now())
-    state = fields.Selection([('running', 'Running'), ('done', 'Done'), ('error', 'Error')])
+    start_date = fields.Date(default=lambda x: datetime.datetime.now())
+    state = fields.Selection([('running', 'Running'), ('done', 'Done'), ('error', 'Error')], default='running')
     displaying_data = fields.Text()
     log_value = fields.Boolean(default=False)
 

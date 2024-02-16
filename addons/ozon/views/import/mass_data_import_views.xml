@@ -11,6 +11,8 @@
                             <group>
                                 <field name="start_date" string="Дата запуска" readonly="1"/>
                                 <field name="name" string="Наименование" readonly="1"/>
+                                <field name="state" string="Состояние" readonly="1"/>
+                                <field name="displaying_data" string="Контекст" readonly="1"/>
                                 <field name="log_value" string="Результат" readonly="1"/>
                             </group>
                         </group>
@@ -25,7 +27,9 @@
             <field name="arch" type="xml">
                 <tree string="Отчеты" create="0" default_order="start_date desc">
                     <field name="start_date" string="Дата запуска" readonly="1"/>
+                    <field name="state" string="Состояние" readonly="1"/>
                     <field name="name" string="Наименование" readonly="1"/>
+                    <field name="displaying_data" string="Контекст" readonly="1"/>
                     <field name="log_value" string="Результат" readonly="1"/>
                 </tree>
             </field>
