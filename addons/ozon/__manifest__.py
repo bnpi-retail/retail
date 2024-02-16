@@ -113,6 +113,7 @@
         "views/reports/ozon_report_bcg_matrix_views.xml",
         "views/history_of_product_positions/history_of_product_positions.xml",
         "views/reports/ozon_report_interest_views.xml",
+        "views/reports/realisation_report.xml",
         "views/technical/menu.xml",
         # cron
         "crone/ir_cron_data.xml",

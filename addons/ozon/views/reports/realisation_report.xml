@@ -1,0 +1,135 @@
+<odoo>
+    <data>
+        <!-- Realisation report form -->
+        <record id="realisation_report_view_form" model="ir.ui.view">
+            <field name="name">realisation_report.form</field>
+            <field name="model">ozon.realisation_report</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div name="button_box" position="inside">
+                            <button class="oe_stat_button" type="object"
+                                name="open_tree_view_realisation_report_product"
+                                string="Подробнее" />
+                        </div>
+                        <group col="3">
+                            <group>
+                                <field name="num" />
+                                <field name="doc_date" />
+                                <field name="start_date" />
+                                <field name="stop_date" />
+                            </group>
+                            <group>
+                                <field name="contract_date" />
+                                <field name="contract_num" />
+                            </group>
+                            <group>
+                                <field name="doc_amount" />
+                                <field name="vat_amount" />
+                                <field name="currency_code" />
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Плательщик">
+                                <field name="payer_inn" />
+                                <field name="payer_kpp" />
+                                <field name="payer_name" />
+                            </group>
+                            <group string="Получатель">
+                                <field name="rcv_name" />
+                                <field name="rcv_inn" />
+                                <field name="rcv_kpp" />
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Realisation report tree view -->
+        <record id="realisation_report_view_tree" model="ir.ui.view">
+            <field name="name">realisation_report.tree</field>
+            <field name="model">ozon.realisation_report</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="num" />
+                    <field name="start_date" />
+                    <field name="stop_date" />
+                    <field name="doc_amount" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Product in realisation report form -->
+        <record id="realisation_report_product_view_form" model="ir.ui.view">
+            <field name="name">realisation_report_product.form</field>
+            <field name="model">ozon.realisation_report_product</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="product_id" />
+                        </group>
+                        <group col="3">
+                            <group>
+                                <field name="product_id_on_platform" />
+                            </group>
+                            <group>
+                                <field name="offer_id" />
+                            </group>
+                            <group>
+                                <field name="barcode" />
+                            </group>
+                        </group>
+                        <group col="3">
+                            <group string="Реализация">
+                                <field name="price" />
+                                <field name="price_sale" />
+                                <field name="sale_amount" />
+                                <field name="sale_discount" />
+                                <field name="sale_price_seller" />
+                                <field name="sale_qty" />
+                            </group>
+                            <group string="Комиссия">
+                                <field name="commission_percent" widget="percentage" />
+                                <field name="sale_commission" />
+                            </group>
+                            <group string="Возвраты">
+                                <field name="return_sale" />
+                                <field name="return_amount" />
+                                <field name="return_commission" />
+                                <field name="return_discount" />
+                                <field name="return_price_seller" />
+                                <field name="return_qty" />
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Product in realisation report tree view -->
+        <record id="realisation_report_product_view_tree" model="ir.ui.view">
+            <field name="name">realisation_report_product.tree</field>
+            <field name="model">ozon.realisation_report_product</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="offer_id" />
+                    <field name="product_id" />
+                    <field name="sale_amount" sum="1" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_realisation_report" model="ir.actions.act_window">
+            <field name="name">Месячный отчет Ozon о реализации товаров</field>
+            <field name="res_model">ozon.realisation_report</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_realisation_report" name="Отчеты Ozon о реализации товаров"
+            parent="ozon.menu_reports"
+            action="action_realisation_report" sequence="3" />
+
+    </data>
+</odoo>

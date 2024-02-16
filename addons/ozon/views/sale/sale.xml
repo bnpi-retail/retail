@@ -19,22 +19,25 @@
             <field name="model">ozon.sale</field>
             <field name="arch" type="xml">
                 <form>
-                    <group string="Продажа товара">
-                        <field name="product_id_on_platform" />
-                        <field name="product">
-                            <tree>
-                                <field name="products">
-                                    <tree>
-                                        <field name="name"></field>
-                                    </tree>
-                                </field>
-                            </tree>
-                        </field>
-                        <field name="date" />
-                        <field name="qty" />
-                        <field name="revenue" />
-                        <field name="is_calculate" />
+                    <group string="Продажа товара" col="3">
+                        <group>
+                            <field name="transaction_identifier" />
+                            <field name="date" />
+                            <field name="is_calculate" />
+                        </group>
+                        <group>
+                            <field name="product_id_on_platform" />
+                            <field name="product" />
+                        </group>
+                        <group>
+                            <field name="qty" />
+                            <field name="revenue" />
+                            <field name="sale_commission" />
+                            <field name="services_cost" />
+                            <field name="profit" />
+                        </group>
                     </group>
+
                 </form>
             </field>
         </record>
@@ -47,11 +50,7 @@
                 <tree>
                     <field name="date" />
                     <field name="product_id_on_platform" />
-                    <field name="product">
-                        <tree>
-                            <field name="id_on_platform" />
-                        </tree>
-                    </field>
+                    <field name="product" />
                     <field name="qty" />
                     <field name="revenue" />
                     <field name="is_calculate" />

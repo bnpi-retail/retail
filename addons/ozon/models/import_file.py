@@ -4,8 +4,14 @@ import csv
 import logging
 import json
 import os
+
+import timeit
+
+from io import BytesIO, StringIO
+from typing import Any
 import uuid
 from dataclasses import dataclass
+
 from datetime import date, datetime
 from collections import defaultdict
 from io import BytesIO, StringIO
@@ -17,10 +23,7 @@ from odoo.exceptions import UserError
 
 from ..ozon_api import (
     ALL_COMMISSIONS,
-    FBO_FIX_COMMISSIONS,
-    FBO_PERCENT_COMMISSIONS,
-    FBS_FIX_COMMISSIONS,
-    FBS_PERCENT_COMMISSIONS,
+    get_product_info_list_by_sku,
 )
 from ..helpers import convert_ozon_datetime_str_to_odoo_datetime_str
 
@@ -56,6 +59,7 @@ class ImportFile(models.Model):
                 "ozon_ad_campgaign_search_promotion_report",
                 "Отчёт о рекламной кампании (продвижение в поиске)",
             ),
+            ("ozon_realisation_report", "Отчёт о реализации товаров"),
         ],
         string="Данные для загрузки",
     )
@@ -128,6 +132,9 @@ class ImportFile(models.Model):
 
         elif values["data_for_download"] == "ozon_ad_campgaign_search_promotion_report":
             self.import_ad_campgaign_search_promotion_report(content)
+
+        elif values["data_for_download"] == "ozon_realisation_report":
+            self.import_ozon_realisation_report(content)
 
         elif values["data_for_download"] == "ozon_products":
             self.import_products(content)
@@ -272,53 +279,58 @@ class ImportFile(models.Model):
                 .mapped(lambda r: r.transaction_id)
             )
             all_transactions = dict.fromkeys(all_transactions, True)
-
+            transactions_data = []
             for i, row in enumerate(reader):
-                # if self.is_ozon_transaction_exists(
-                #     transaction_id=row["transaction_id"]
-                # ):
-                #     continue
                 if all_transactions.get(row["transaction_id"]):
                     print(f"{i} - Transaction already exists")
                     continue
                 ozon_products = []
+                ozon_products_ids = []
                 skus = ast.literal_eval(row["product_skus"])
                 for sku in skus:
                     if ozon_product := self.is_ozon_product_exists_by_sku(sku):
-                        ozon_products.append(ozon_product.id)
+                        ozon_products.append(ozon_product)
+                        ozon_products_ids.append(ozon_product.id)
 
-                if len(skus) != len(ozon_products):
-                    print(f"{i} -")
-                    continue
+                # TODO: как быть с транзакциями, где указанных sku нет в нашей системе? 
+                # или напр. в транзакции 2 sku, один из них есть у нас, другого нет.
+                # if len(skus) != len(ozon_products):
+                #     print(f"{i} -")
+                #     continue
 
                 ozon_services = []
                 service_list = ast.literal_eval(row["services"])
+                services_cost = 0
                 for name, price in service_list:
                     service = self.env["ozon.ozon_services"].create(
                         {"name": name, "price": price}
                     )
                     ozon_services.append(service.id)
-                data = {
+                    services_cost += price
+                tran_data = {
                     "transaction_id": str(row["transaction_id"]),
                     "transaction_date": row["transaction_date"],
                     "order_date": row["order_date"],
                     "name": row["name"],
+                    "accruals_for_sale": row["accruals_for_sale"],
+                    "sale_commission": row["sale_commission"],
+                    "transaction_type": row["type"],
                     "amount": row["amount"],
                     "skus": skus,
-                    "products": ozon_products,
+                    "products": ozon_products_ids,
                     "services": ozon_services,
                     "posting_number": row["posting_number"],
                 }
-                ozon_transaction = self.env["ozon.transaction"].create(data)
+                transactions_data.append(tran_data)
+
                 print(f"{i} - Transaction {row['transaction_id']} was created")
                 # creating ozon.sale records
                 if row["name"] == "Доставка покупателю":
-                    self.create_sale_from_transaction(
-                        products=ozon_products,
-                        date=row["order_date"],
-                        revenue=row["amount"],
-                    )
-    
+                    self.create_sale_from_transaction(data=tran_data, 
+                        products=ozon_products, services_cost=services_cost)
+            self.env["ozon.transaction"].create(transactions_data)
+        os.remove(f_path)
+
     def import_stocks(self, content):
 
         with StringIO(content) as csvfile:
@@ -505,16 +517,27 @@ class ImportFile(models.Model):
                 )
                 print(f"{i} - Supply order {supply_order_id} was imported")
 
-    def create_sale_from_transaction(self, products: list, date: str, revenue: float):
+    def create_sale_from_transaction(self, data: dict, products: list, services_cost: float):
+        if len(products) == 0:
+            return
         # if all products are the same
-        product = products[0]
-        qty = len(products)
-        if products.count(product) == qty:
+        product_id = data["products"][0]
+        qty = len(data["products"])
+        if data["products"].count(product_id) == qty:
             self.env["ozon.sale"].create(
-                {"product": product, "date": date, "qty": qty, "revenue": revenue}
+                {
+                    "transaction_identifier": data["transaction_id"],
+                    "product": product_id, 
+                    "product_id_on_platform": products[0].id_on_platform, 
+                    "date": data["order_date"], 
+                    "qty": qty, 
+                    "revenue": data["accruals_for_sale"],
+                    "sale_commission": data["sale_commission"],
+                    "services_cost": services_cost,
+                    "profit": data["amount"]
+                }
             )
-
-        # TODO: if different products in one transaction
+        # TODO: что делать если разные продукты в одной транзакции? как создавать продажи?
 
     def import_ad_campgaign_search_promotion_report(self, content):
         f_path = "/mnt/extra-addons/ozon/__pycache__/ad_campgaign_search_promotion_report.csv"
@@ -591,6 +614,27 @@ class ImportFile(models.Model):
                     print(f"{i} - Product (SKU: {sku}) promotion expenses were added")
             self.env["ozon.promotion_expenses"].create(data)
         os.remove(f_path)
+
+    def import_ozon_realisation_report(self, content):
+        with StringIO(content) as jsonfile:
+            data = json.load(jsonfile)
+            if self.env["ozon.realisation_report"].search([("num", "=", data["header"]["num"])]):
+                print(f"""Report №{data["header"]["num"]} already exists""")
+                return
+            report = self.env["ozon.realisation_report"].create({**data["header"]})
+            products_in_report_data = []
+            for i, row in enumerate(data["rows"]):
+                product_id_on_platform = row.pop("product_id")
+                product = self.is_ozon_product_exists(product_id_on_platform)
+                if product:
+                    products_in_report_data.append({
+                        "product_id": product.id,
+                        "product_id_on_platform": product_id_on_platform,
+                        "realisation_report_id": report.id,
+                        **row
+                    })
+                    print(f"{i} - Product {product_id_on_platform} added to realisation report")
+            self.env["ozon.realisation_report_product"].create(products_in_report_data)
 
     def import_images_sale(self, content):
         model_products = self.env["ozon.products"]

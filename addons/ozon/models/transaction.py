@@ -22,14 +22,16 @@ class Transactions(models.Model):
         string="Дата принятия отправления в обработку", readonly=True
     )
     name = fields.Char(string="Название транзакции", readonly=True)
-    amount = fields.Float(
-        string="Итого, р.",
-        readonly=True,
-    )
+    transaction_type = fields.Char(string="Тип транзакции", readonly=True)
+    accruals_for_sale = fields.Float(string="Стоимость товаров с учётом скидок продавца", readonly=True)
+    sale_commission = fields.Float(string="Комиссия за продажу или возврат комиссии за продажу", 
+                                   readonly=True)
+    amount = fields.Float(string="Итоговая сумма операции (стоимость - комиссия - стоимость доп.услуг)", 
+                          readonly=True)
     skus = fields.Char(string="Список SKU товаров", readonly=True)
     products = fields.Many2many(
         "ozon.products",
-        string="Лоты",
+        string="Товары",
         copy=True,
         readonly=True,
     )

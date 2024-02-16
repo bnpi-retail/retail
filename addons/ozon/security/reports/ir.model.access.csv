@@ -12,3 +12,5 @@ ozon.access_ozon_report_bcg_matrix_product_data,access_ozon_report_bcg_matrix_pr
 ozon.access_ozon_report_task,access_ozon_report_task,ozon.model_ozon_report_task,base.group_user,1,1,1,1
 ozon.access_ozon_report_interest,access_ozon_report_interest,ozon.model_ozon_report_interest,base.group_user,1,1,1,1
 ozon.access_ozon_report_interest_data,access_ozon_report_interest_data,ozon.model_ozon_report_interest_data,base.group_user,1,1,1,1
+ozon.access_ozon_realisation_report,access_ozon_realisation_report,ozon.model_ozon_realisation_report,base.group_user,1,1,1,1
+ozon.access_ozon_realisation_report_product,access_ozon_realisation_report_product,ozon.model_ozon_realisation_report_product,base.group_user,1,1,1,1
