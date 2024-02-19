@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ozon_mass_data_import_view_form" model="ir.ui.view">
+            <field name="name">ozon_mass_data_import.form</field>
+            <field name="model">ozon.mass_data_import</field>
+            <field name="arch" type="xml">
+                <form string="Mass Data Imports">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="start_time" string="Дата запуска" readonly="1"/>
+                                <field name="finish_time" string="Время окончания" readonly="1"/>
+                                <field name="name" string="Наименование" readonly="1"/>
+                                <field name="state" string="Состояние" readonly="1"/>
+                                <field name="displaying_data" string="Контекст" readonly="1"/>
+                                <field name="log_value" string="Результат" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="ozon_mass_data_import_view_tree" model="ir.ui.view">
+            <field name="name">ozon_mass_data_import.tree</field>
+            <field name="model">ozon.mass_data_import</field>
+            <field name="arch" type="xml">
+                <tree string="Отчеты" create="0" default_order="start_time desc">
+                    <field name="start_time" string="Время запуска" readonly="1"/>
+                    <field name="finish_time" string="Время окончания" readonly="1"/>
+                    <field name="state" string="Состояние" readonly="1"/>
+                    <field name="name" string="Наименование" readonly="1"/>
+                    <field name="displaying_data" string="Контекст" readonly="1"/>
+                    <field name="log_value" string="Результат" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--        <record id="product_labeling_labeled_product_search" model="ir.ui.view">-->
+        <!--            <field name="name">product_labeling.labeled_product.search</field>-->
+        <!--            <field name="model">ozon.report</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <search>-->
+        <!--                    <field name="name"/>-->
+        <!--                    <field name="pl_product_id"/>-->
+        <!--                    <field name="state"/>-->
+        <!--                    <field name="quantity"/>-->
+        <!--                    <field name="parent_id"/>-->
+        <!--                    <field name="child_ids"/>-->
+        <!--                    <field name="mark"/>-->
+        <!--                    <field name="pl_warehouse_id"/>-->
+        <!--                    <filter string="Archived" name="active" domain="[('active', '=',False)]"/>-->
+        <!--                    <filter string="Разделенные товары" name="divined" domain="[('state', '=','Товар был разделен')]"/>-->
+        <!--                    <filter string="Проданные товары" name="sold" domain="[('state', '=','Продан')]"/>-->
+        <!--                    <filter string="В наличии" name="current"-->
+        <!--                            domain="[('state', '!=','Продан'),('state', '!=','Товар был разделен')]"/>-->
+        <!--                </search>-->
+        <!--            </field>-->
+        <!--        </record>-->
+
+        <record id="action_open_ozon_mass_data_import" model="ir.actions.act_window">
+            <field name="name">Mass Imports</field>
+            <field name="res_model">ozon.mass_data_import</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="ozon.menu_mass_data_import" name="Массовый импорт данных" parent="ozon.menu_root" sequence="38"/>
+        <menuitem id="menu_mass_data_import" name="Массовый импорт данных" parent="ozon.menu_root"
+                  action="action_open_ozon_mass_data_import" sequence="38"/>
+
+    </data>
+</odoo>

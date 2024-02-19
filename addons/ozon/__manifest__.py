@@ -116,6 +116,7 @@
         "views/reports/ozon_report_interest_views.xml",
         "views/reports/realisation_report.xml",
         "views/technical/menu.xml",
+        "views/import/mass_data_import_views.xml",
         # cron
         "crone/ir_cron_data.xml",
     ],
