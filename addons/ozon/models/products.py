@@ -371,6 +371,10 @@ class Product(models.Model):
     ], default='e')
     bcg_group_is_computed = fields.Boolean()
 
+    price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
+                                           string="Сравнение цен")
+
+
     def calculate_expected_price(self):
         # TODO: откуда берем ожидаемую цену?
         # ожид.цена=фикс.затраты/(1-процент_затрат-ожид.ROS-проц.налог-ожид.ROI)
@@ -1548,7 +1552,6 @@ class Product(models.Model):
             [], limit=1, order="id desc"
         )
         all_products = self.env["ozon.products"].search([])
-        # all_products.create_update_fix_exp_cost_price()
         self.env["ozon.all_expenses"].create_update_all_product_expenses(
             all_products, latest_indirect_expenses
         )
@@ -1623,6 +1626,10 @@ class Product(models.Model):
                     ]
                 )
 
+    def get_minimal_competitor_price(self):
+        comp_prices = self.competitors_with_price_ids.mapped("price")
+        return min(comp_prices) if comp_prices else 0
+
     @api.onchange("calculated_pricing_strategy_ids")
     def calculate_calculated_pricing_strategy_ids(self):
         if not self.calculated_pricing_strategy_ids.pricing_strategy_id:
@@ -1687,16 +1694,8 @@ class Product(models.Model):
             r.calculator_delta = (r.expected_price 
                                   - sum(r.all_expenses_except_roi_roe_ids.mapped("expected_value")))
 
-    # def _compute_calculator_profit_norm(self):
-    #     for r in self:
-    #         if r.expected_price != 0:
-    #             r.calculator_profit_norm = round(r.calculator_delta / r.expected_price, 2)
-    #         else:
-    #             r.calculator_profit_norm = 0
-                
-    # def _compute_calculator_investment(self):
-    #     for r in self:
-    #         r.calculator_investment = round(r.calculator_profit_norm / 2, 2)
+    def calculate_price_comparison_ids(self):
+        self.env["ozon.price_comparison"].update_for_products(self)
 
     @api.depends("posting_ids")
     def _compute_count_postings(self):
