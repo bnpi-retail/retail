@@ -1,4 +1,4 @@
-import json
+import datetime
 import logging
 import traceback
 
@@ -30,17 +30,23 @@ class MassDataImportController(http.Controller):
             return response_data
 
         elif http.request.httprequest.method == 'PUT':
-            request_data = http.Request.get_json_data(http.request).get('data')
-            mdi_model = http.request.env["ozon.mass_data_import"]
-            log = mdi_model.browse([request_data.get('log_id')])
-            state = request_data.get('state')
-            displaying_data = request_data.get('activity_data').get('data')
-            log_value = request_data.get('log_value')
-            vals = {
-                'state': state,
-                'displaying_data': displaying_data,
-                'log_value': log_value,
-            }
-            log.write(vals)
-            logger.warning(request_data)
+            try:
+                request_data = http.Request.get_json_data(http.request).get('data')
+                mdi_model = http.request.env["ozon.mass_data_import"]
+                log = mdi_model.browse([request_data.get('log_id')])
+                state = request_data.get('state')
+                log_value = request_data.get('log_value')
+                displaying_data_raw = request_data.get('activity_data')
+                dd_list = [f"{key}: {value}\n" for key, value in displaying_data_raw.items()]
+                displaying_data = ''.join(dd_list)
+
+                vals = {
+                    'state': state,
+                    'displaying_data': displaying_data,
+                    'log_value': log_value,
+                    'finish_time': datetime.datetime.now(),
+                }
+                log.write(vals)
+            except Exception:
+                logger.error(traceback.format_exc())
 

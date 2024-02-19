@@ -9,7 +9,8 @@
                     <sheet>
                         <group>
                             <group>
-                                <field name="start_date" string="Дата запуска" readonly="1"/>
+                                <field name="start_time" string="Дата запуска" readonly="1"/>
+                                <field name="finish_time" string="Время окончания" readonly="1"/>
                                 <field name="name" string="Наименование" readonly="1"/>
                                 <field name="state" string="Состояние" readonly="1"/>
                                 <field name="displaying_data" string="Контекст" readonly="1"/>
@@ -25,8 +26,9 @@
             <field name="name">ozon_mass_data_import.tree</field>
             <field name="model">ozon.mass_data_import</field>
             <field name="arch" type="xml">
-                <tree string="Отчеты" create="0" default_order="start_date desc">
-                    <field name="start_date" string="Дата запуска" readonly="1"/>
+                <tree string="Отчеты" create="0" default_order="start_time desc">
+                    <field name="start_time" string="Время запуска" readonly="1"/>
+                    <field name="finish_time" string="Время окончания" readonly="1"/>
                     <field name="state" string="Состояние" readonly="1"/>
                     <field name="name" string="Наименование" readonly="1"/>
                     <field name="displaying_data" string="Контекст" readonly="1"/>
