@@ -1626,6 +1626,10 @@ class Product(models.Model):
                     ]
                 )
 
+    def get_minimal_competitor_price(self):
+        comp_prices = self.competitors_with_price_ids.mapped("price")
+        return min(comp_prices) if comp_prices else 0
+
     @api.onchange("calculated_pricing_strategy_ids")
     def calculate_calculated_pricing_strategy_ids(self):
         if not self.calculated_pricing_strategy_ids.pricing_strategy_id:

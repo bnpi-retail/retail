@@ -59,8 +59,10 @@ class PriceComparison(models.Model):
         # TODO: Цена для покупателя - откуда брать?
         buyer_price = Row(group, name="Цена для покупателя", plan_value=0, market_value=0, fact_value=0)
         # TODO: Ваша цена. Откуда брать значения ПЛАН, рынок, ФАКТ?
+        min_comp_price = product.get_minimal_competitor_price()
+        fact_price = 0 # TODO
         your_price = Row(group, name="Ваша цена", plan_value=product.price, 
-                         market_value=product.price, fact_value=product.price)
+                         market_value=min_comp_price, fact_value=fact_price)
         data_prices = [buyer_price, your_price]
 
         ### Расходы Ozon
@@ -143,8 +145,8 @@ class PriceComparison(models.Model):
         # ROS (доходность, рентабельность продаж)
         ros = Row(group, "ROS (доходность, рентабельность продаж)",
                   plan_value=profit.plan_value / your_price.plan_value,
-                  market_value=profit.market_value / your_price.market_value,
-                  fact_value=profit.fact_value / your_price.fact_value)
+                  market_value=your_price.market_value and profit.market_value / your_price.market_value,
+                  fact_value=your_price.fact_value and profit.fact_value / your_price.fact_value)
         data_indicators.append(ros)
         # Наценка
         margin = Row(group, "Наценка", 
