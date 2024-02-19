@@ -70,7 +70,7 @@ class PriceComparison(models.Model):
         group = "Расходы Ozon"
         # Себестоимость - fix
         name = "Себестоимость"
-        cp = product.all_expenses_ids.filtered(lambda r: r.category == name).value
+        cp = product.fix_expenses.filtered(lambda r: r.name == "Себестоимость товара").value
         cost_price = Row(group, name, cp, cp, cp)
         if cp == 0:
             return [{"product_id": p_id, "comment": "Не задана себестоимость."}]
