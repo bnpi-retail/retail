@@ -69,8 +69,9 @@ class PriceComparison(models.Model):
         data_ozon_expenses = []
         group = "Расходы Ozon"
         # Себестоимость - fix
-        cp = product.retail_product_total_cost_price
-        cost_price = Row(group, "Себестоимость", cp, cp, cp)
+        name = "Себестоимость"
+        cp = product.all_expenses_ids.filtered(lambda r: r.category == name).value
+        cost_price = Row(group, name, cp, cp, cp)
         if cp == 0:
             return [{"product_id": p_id, "comment": "Не задана себестоимость."}]
         data_ozon_expenses.append(cost_price)
