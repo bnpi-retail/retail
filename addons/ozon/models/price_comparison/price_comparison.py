@@ -179,6 +179,7 @@ class PriceComparison(models.Model):
     def update_for_products(self, products):
         products.price_comparison_ids.unlink()
         data = []
-        for prod in products:
+        for i, prod in enumerate(products):
             data.extend(self.collect_product_data(prod))
+            print(f"{i} - price_comparison_ids were updated")
         self.create(data)
