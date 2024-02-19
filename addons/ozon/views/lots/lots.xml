@@ -136,7 +136,8 @@
                             <group>
                                 <button type="object" name="calculate_price_comparison_ids"
                                     string="Рассчитать"
-                                    class="btn-outline-primary" />
+                                    class="btn-outline-primary"
+                                />
                             </group>
                             <field name="price_comparison_ids">
                                 <tree>
