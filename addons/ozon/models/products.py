@@ -371,6 +371,10 @@ class Product(models.Model):
     ], default='e')
     bcg_group_is_computed = fields.Boolean()
 
+    price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
+                                           string="Сравнение цен")
+
+
     def calculate_expected_price(self):
         # TODO: откуда берем ожидаемую цену?
         # ожид.цена=фикс.затраты/(1-процент_затрат-ожид.ROS-проц.налог-ожид.ROI)

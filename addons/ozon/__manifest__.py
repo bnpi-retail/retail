@@ -21,6 +21,7 @@
         "security/price/name_competitors/ir.model.access.csv",
         "security/price/profitability_norm/profitability_norm/ir.model.access.csv",
         "security/price/profitability_norm/profitability_norm_wizard/ir.model.access.csv",
+        "security/price/price_comparison/ir.model.access.csv",
         "security/lots/ir.model.access.csv",
         "security/lots/tracked_search_queries/ir.model.access.csv",
         "security/categories/categories/ir.model.access.csv",
