@@ -41,4 +41,6 @@ from .abc_analize import abs_analysis
 from .temporal_tasks import temporal_tasks
 from .history_of_product_positions import history_of_product_positions
 from .price_comparison import price_comparison
+from .price_comparison import price_component
+from .price_comparison import base_calculation
 from .data_import import mass_data_import
