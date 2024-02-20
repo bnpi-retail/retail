@@ -17,6 +17,15 @@ from collections import defaultdict
 from io import BytesIO, StringIO
 from typing import Any, Optional
 
+from ..helpers import (
+    split_list,
+    split_keywords,
+    split_keywords_on_slash,
+    remove_latin_characters,
+    remove_duplicates_from_list,
+    mean,
+)
+
 import openpyxl
 from odoo import models, fields, api, exceptions
 from odoo.exceptions import UserError
@@ -1322,6 +1331,50 @@ class ProcessProductFile(models.Model):
             })
         return seller
 
+    def populate_supplementary_categories(
+        self, full_categories_string: str, full_categories_id: int
+    ):
+        cats_list = split_keywords_on_slash(full_categories_string)
+        cats_list = remove_duplicates_from_list(cats_list)
+
+        sup_cat_vals = []
+        for cat in cats_list:
+            if not self.env["ozon.supplementary_categories"].search([
+                    ("sc_id", "=", full_categories_id), ("name", "=", cat)
+            ]):
+                vals = {"sc_id": full_categories_id, "name": cat}
+                sup_cat_vals.append(vals)
+
+        return sup_cat_vals
+
+    def _create_supplementary_categories(self, sup_categories: dict) -> list:
+        vals = []
+        model = self.env["ozon.supplementary_categories"]
+        for full_categories_id, full_categories in sup_categories.items():
+            supplementary_categories_vals = self.populate_supplementary_categories(
+               full_categories, int(full_categories_id)
+            )
+            logger.warning(supplementary_categories_vals)
+            vals.append(supplementary_categories_vals)
+        # model.create(vals)
+        all_sup_cats = model.search([])
+        res = [{'full_categories_id': cat.sc_id, 'id': cat.id, 'name': cat.name} for cat in all_sup_cats]
+        return res
+
+    def populate_search_queries(self, keywords_string: str, ozon_product_id) -> list:
+        keywords = split_keywords(keywords_string)
+        vals = []
+        for word in keywords:
+            record = self.env["ozon.search_queries"].search([
+                ("words", "=", word),
+                ("product_id", "=", ozon_product_id),
+            ])
+            if record:
+                continue
+
+            vals.append({"words": word, "product_id": ozon_product_id})
+        return vals
+
     def process_products_imported_data(self, content):
         with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
@@ -1331,6 +1384,7 @@ class ProcessProductFile(models.Model):
             imported_categories = {}
             retail_products_data = {}
             retail_products_offer_ids = []
+            sup_categories = {}
             for old_row in reader:
                 # products
                 id_on_platform = old_row.get('id_on_platform')
@@ -1356,6 +1410,10 @@ class ProcessProductFile(models.Model):
                         'weight': float(old_row.get('weight')),
                         'keywords': old_row.get('keywords') if old_row.get('keywords') else '',
                     }
+                full_categories_id = old_row['full_categories_id']
+                if not sup_categories.get(full_categories_id):
+                    if full_categories_id:
+                        sup_categories[full_categories_id] = old_row['full_categories']
 
         # update cats data
         self._create_update_categories(imported_categories)
@@ -1376,6 +1434,34 @@ class ProcessProductFile(models.Model):
         # update ozon products
         products_dict = self._get_products_dict(ids_on_platform)
         self._create_update_products(imported_products_vals, products_dict, curr_categories, curr_retail_products)
+        del products_dict
+        del curr_categories
+        del curr_retail_products
+
+        # other
+        # all_sup_categories = self._create_supplementary_categories(sup_categories)
+        # del sup_categories
+        #
+        # products_dict = self._get_products_dict(ids_on_platform)
+        # self._search_queries_sup_categories(imported_products_vals, products_dict, all_sup_categories)
+
+    def _search_queries_sup_categories(self, imported_products_vals, products_dict, all_sup_categories):
+        search_queries_vals_to_create = []
+        products_ids_with_sup_categories_ids = defaultdict(list)
+        for id_on_platform, data in imported_products_vals.items():
+            curr_product_data = products_dict.get(id_on_platform)
+            # check and update if necessary
+            if curr_product_data:
+                # create search queries vals
+                keywords = data['keywords']
+                if keywords:
+                    search_queries_vals = self.populate_search_queries(keywords, curr_product_data['id'])
+                    search_queries_vals_to_create.extend(search_queries_vals)
+                #
+                full_categories = data['full_categories']
+                full_categories_id = data['full_categories_id']
+
+        self.env["ozon.search_queries"].create(search_queries_vals_to_create)
 
     def _create_update_products(self, imported_products_vals, products_dict, curr_categories, curr_retail_products):
         vals_to_create_products = []
@@ -1390,6 +1476,8 @@ class ProcessProductFile(models.Model):
                         key = 'img_urls'
                     elif key == 'article':
                         key = 'offer_id'
+                    elif key == 'id':
+                        continue
 
                     new_val = data[key] if key != 'products' and key != 'seller' else None
                     if key == 'price':
@@ -1404,11 +1492,7 @@ class ProcessProductFile(models.Model):
                         new_val = float(new_val) if new_val else 0
                     elif key == 'categories':
                         if new_val:
-                            name_categories = new_val
                             category_id = curr_categories.get(new_val)
-                            if not category_id:
-                                cat = self._get_or_create_category(name_categories, data.get('description_category_id'))
-                                category_id = cat.id
                             new_val = category_id
                     elif key == 'products':
                         offer_id = data.get('offer_id')
@@ -1464,6 +1548,7 @@ class ProcessProductFile(models.Model):
                     "trading_scheme": data["trading_scheme"],
                 }
                 vals_to_create_products.append(vals)
+
         self.env['ozon.products'].create(vals_to_create_products)
 
     def _create_update_categories(self, imported_cats_data: dict):
@@ -1500,7 +1585,8 @@ class ProcessProductFile(models.Model):
                 price_index,
                 imgs_urls,
                 seller,
-                trading_scheme
+                trading_scheme,
+                id
                 FROM ozon_products
                 WHERE id_on_platform IN %s
                 """
@@ -1528,6 +1614,7 @@ class ProcessProductFile(models.Model):
                     "imgs_urls": product_vals[14],
                     "seller": product_vals[15],
                     "trading_scheme": product_vals[16],
+                    "id": product_vals[17],
                 }
                 products_dict[id_on_platform] = product_data
 
