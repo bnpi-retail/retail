@@ -373,7 +373,7 @@ class Product(models.Model):
 
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
                                            string="Сравнение цен")
-
+    base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Базовый расчёт")
 
     def calculate_expected_price(self):
         # TODO: откуда берем ожидаемую цену?
