@@ -132,6 +132,26 @@
                                 </group>
                             </group>
                         </page>
+                        <page id="page_price_comparison" string="Сравнение цен">
+                            <group>
+                                <button type="object" name="calculate_price_comparison_ids"
+                                    string="Рассчитать"
+                                    class="btn-outline-primary"
+                                />
+                            </group>
+                            <field name="price_comparison_ids">
+                                <tree>
+                                    <field name="name" />
+                                    <field name="plan_value" />
+                                    <field name="market_value" />
+                                    <field name="fact_value" />
+                                    <field name="diff_fact_market" />
+                                    <field name="diff_plan_fact" />
+                                    <field name="calc_value" />
+                                    <field name="comment" optional="hide" />
+                                </tree>
+                            </field>
+                        </page>
                         <page id="page_price_calculator" string="Калькулятор цены">
                             <group>
                                 <field name="expected_price" string="Цена" />
@@ -166,6 +186,8 @@
                             <group>
                                 <field name="profitability_norm" />
                                 <field name="investment_expenses_id" />
+                            </group>
+                            <group>
                                 <field name="all_expenses_ids">
                                     <tree>
                                         <field name="name" />
