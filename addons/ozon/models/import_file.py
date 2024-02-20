@@ -1382,6 +1382,7 @@ class ProcessProductFile(models.Model):
         vals_to_create_products = []
         for id_on_platform, data in imported_products_vals.items():
             curr_product_data = products_dict.get(id_on_platform)
+            # check and update if necessary
             if curr_product_data:
                 vals = {}
                 for key, curr_val in curr_product_data.items():
@@ -1433,10 +1434,38 @@ class ProcessProductFile(models.Model):
                 if vals:
                     product = self.env['ozon.products'].search([("id_on_platform", '=', id_on_platform)])
                     product.sudo().write(vals)
+            # create
             else:
-                pass
-
-
+                # get category
+                name_categories = data.get('categories')
+                category_id = curr_categories.get(name_categories)
+                # get retail product
+                offer_id = data.get('offer_id')
+                retail_prod_id = curr_retail_products.get(offer_id)
+                seller = self.get_or_create_seller(data['seller_name'])
+                vals = {
+                    "id_on_platform": data['id_on_platform'],
+                    "sku": data["sku"],
+                    "fbo_sku": data["fbo_sku"],
+                    "fbs_sku": data["fbs_sku"],
+                    "categories": category_id,
+                    "article": data['offer_id'],
+                    "description": data['description'],
+                    "products": retail_prod_id,
+                    "price": data['price'],
+                    "old_price": data['old_price'],
+                    "ext_comp_min_price": data["ext_comp_min_price"],
+                    "ozon_comp_min_price": data["ozon_comp_min_price"],
+                    "self_marketplaces_min_price": data[
+                        "self_marketplaces_min_price"
+                    ],
+                    "price_index": data["price_index"],
+                    "imgs_urls": data["img_urls"],
+                    "seller": seller.id,
+                    "trading_scheme": data["trading_scheme"],
+                }
+                vals_to_create_products.append(vals)
+        self.env['ozon.products'].create(vals_to_create_products)
 
     def _create_update_categories(self, imported_cats_data: dict):
         model = self.env["ozon.categories"]
