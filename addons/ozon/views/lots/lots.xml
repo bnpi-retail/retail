@@ -140,7 +140,7 @@
                                 />
                             </group>
                             <field name="price_comparison_ids">
-                                <tree>
+                                <tree editable="1">
                                     <field name="name" />
                                     <field name="plan_value" />
                                     <field name="market_value" />
@@ -160,6 +160,7 @@
                                 />
                             </group>
                             <group>
+                                <field name="logistics_tariff_id" />
                                 <field name="base_calculation_ids">
                                     <tree editable="1">
                                         <field name="price_component_id" />

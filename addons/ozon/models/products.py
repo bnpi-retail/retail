@@ -374,6 +374,8 @@ class Product(models.Model):
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
                                            string="Сравнение цен")
     base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Базовый расчёт")
+    logistics_tariff_id = fields.Many2one("ozon.logistics_tariff", 
+                                          string="Тариф логистики в базовом расчёте")
 
     def calculate_expected_price(self):
         # TODO: откуда берем ожидаемую цену?
@@ -1699,7 +1701,7 @@ class Product(models.Model):
         self.env["ozon.price_comparison"].update_for_products(self)
     
     def reset_base_calculation_ids(self):
-        self.env["ozon.base_calculation"].reset_for_product(self)
+        self.env["ozon.base_calculation"].reset_for_products(self)
         self.env["ozon.price_comparison"].update_for_products(self)
 
     @api.depends("posting_ids")
