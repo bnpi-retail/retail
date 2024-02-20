@@ -373,7 +373,7 @@ class Product(models.Model):
 
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
                                            string="Сравнение цен")
-
+    base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Базовый расчёт")
 
     def calculate_expected_price(self):
         # TODO: откуда берем ожидаемую цену?
@@ -1695,7 +1695,11 @@ class Product(models.Model):
                                   - sum(r.all_expenses_except_roi_roe_ids.mapped("expected_value")))
 
     def calculate_price_comparison_ids(self):
+        self.env["ozon.base_calculation"].fill_if_not_exists(self)
         self.env["ozon.price_comparison"].update_for_products(self)
+    
+    def reset_base_calculation_ids(self):
+        self.env["ozon.base_calculation"].reset_for_product(self)
 
     @api.depends("posting_ids")
     def _compute_count_postings(self):

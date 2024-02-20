@@ -152,6 +152,23 @@
                                 </tree>
                             </field>
                         </page>
+                        <page id="page_base_calculation" string="План (базовый расчёт)">
+                            <group>
+                                <button type="object" name="reset_base_calculation_ids"
+                                    string="Сбросить"
+                                    class="btn-outline-primary"
+                                />
+                            </group>
+                            <group>
+                                <field name="base_calculation_ids">
+                                    <tree editable="1">
+                                        <field name="price_component_id" />
+                                        <field name="kind" />
+                                        <field name="value" />
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
                         <page id="page_price_calculator" string="Калькулятор цены">
                             <group>
                                 <field name="expected_price" string="Цена" />
@@ -169,8 +186,6 @@
                             </field>
                             <group>
                                 <field name="calculator_delta" />
-                                <!-- <field name="calculator_profit_norm" />
-                                <field name="calculator_investment" /> -->
                             </group>
                             <field name="all_expenses_only_roi_roe_ids">
                                 <tree>
@@ -180,9 +195,8 @@
                                     <field name="expected_value" string="Значение" />
                                 </tree>
                             </field>
-
                         </page>
-                        <page id="page_all_expenses_info" string="Ожидаемая структура затрат">
+                        <!-- <page id="page_all_expenses_info" string="Ожидаемая структура затрат">
                             <group>
                                 <field name="profitability_norm" />
                                 <field name="investment_expenses_id" />
@@ -195,9 +209,6 @@
                                         <field name="expected_value" />
                                     </tree>
                                 </field>
-                                <!-- <field name="total_all_expenses_ids_except_tax_roe_roi" /> -->
-                                <!-- <field name="total_all_expenses_ids" /> -->
-                                <!-- <field name="total_expected_price_all_expenses_ids" /> -->
                             </group>
                             <group>
                                 <group>
@@ -209,7 +220,7 @@
                                     <field name="price_delta" />
                                 </group>
                             </group>
-                        </page>
+                        </page> -->
                         <page id="page_lot_expenses_info" string="Комиссии и себестоимость">
                             <separator string="Фиксированные затраты" />
                             <notebook>
