@@ -1313,6 +1313,16 @@ class ProcessProductFile(models.Model):
             })
         return record
 
+    def get_or_create_seller(self, seller_name: str):
+        model_seller = self.env["retail.seller"]
+        seller = model_seller.search([("name", "=", seller_name)], limit=1)
+        if not seller:
+            seller = model_seller.create({
+                "name": "Продавец",
+                "tax": "earnings_6",
+            })
+        return seller
+
     def process_products_imported_data(self, content):
         with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
@@ -1375,18 +1385,13 @@ class ProcessProductFile(models.Model):
             if curr_product_data:
                 vals = {}
                 for key, curr_val in curr_product_data.items():
-                    if (
-                            key == 'article' or
-                            key == 'seller'
-                    ):
-                        continue
 
-                    if key == 'products':
-                        key = 'offer_id'
-                    elif key == 'imgs_urls':
+                    if key == 'imgs_urls':
                         key = 'img_urls'
+                    elif key == 'article':
+                        key = 'offer_id'
 
-                    new_val = data[key]
+                    new_val = data[key] if key != 'products' and key != 'seller' else None
                     if key == 'price':
                         new_val = float(new_val) if new_val else 0
                     elif key == 'old_price':
@@ -1405,29 +1410,32 @@ class ProcessProductFile(models.Model):
                                 cat = self._get_or_create_category(name_categories, data.get('description_category_id'))
                                 category_id = cat.id
                             new_val = category_id
-                    elif key == 'offer_id':
-                        offer_id = data.get(key)
+                    elif key == 'products':
+                        offer_id = data.get('offer_id')
                         retail_prod_id = curr_retail_products.get(offer_id)
                         new_val = retail_prod_id
+                    elif key == 'seller':
+                        if not curr_val:
+                            seller_id = self.get_or_create_seller(data['seller_name']).id
+                            vals[key] = seller_id
+                            continue
+                        continue
 
                     if curr_val != new_val:
-                        logger.warning(f"{key}{type(curr_val)}")
-                        logger.warning(f"{key}{type(new_val)}")
-                        logger.warning('-----------------')
+                        # logger.warning(f"{key}{type(curr_val)}")
+                        # logger.warning(f"{key}{type(new_val)}")
+                        # logger.warning('-----------------')
                         if key == 'img_urls':
                             key = 'imgs_urls'
                         elif key == 'offer_id':
-                            key = 'products'
+                            key = 'article'
                         vals[key] = new_val
                 if vals:
-                    # product = self.env['ozon.products'].search([("id_on_platform", '=', id_on_platform)])
-                    # product.sudo().write(vals)
-
-                    logger.warning(vals)
-
+                    product = self.env['ozon.products'].search([("id_on_platform", '=', id_on_platform)])
+                    product.sudo().write(vals)
             else:
                 pass
-               
+
 
 
     def _create_update_categories(self, imported_cats_data: dict):
