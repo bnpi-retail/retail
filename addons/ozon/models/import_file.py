@@ -1321,26 +1321,52 @@ class ProcessProductFile(models.Model):
             imported_products_vals = {}
             imported_categories = {}
             retail_products_data = {}
+            retail_products_offer_ids = []
             for old_row in reader:
+                # products
                 id_on_platform = old_row.get('id_on_platform')
                 ids_on_platform.append(id_on_platform)
                 imported_products_vals[id_on_platform] = old_row
-                if not imported_categories.get(old_row.get('categories')):
-                    imported_categories[old_row.get('categories')] = {
-                        'description_category_id': old_row.get('description_category_id'),
+                # categories
+                c_id = int(old_row.get('description_category_id'))
+                if c_id and not imported_categories.get(c_id):
+                    imported_categories[c_id] = {
+                        'name_categories': old_row.get('categories'),
+                        'c_id': c_id,
                     }
-                if not retail_products_data.get(old_row.get('name')):
-                    retail_products_data[old_row.get('name')] = {
+                # retail products
+                retail_products_offer_ids.append(old_row.get('offer_id'))
+                if not retail_products_data.get(old_row.get('offer_id')):
+                    retail_products_data[old_row.get('offer_id')] = {
+                        'product_id': old_row.get('offer_id'),
+                        'name': old_row.get('name'),
                         'description': old_row.get('description'),
-                        'keywords': old_row.get('keywords') if old_row.get('keywords') else False,
+                        'length': float(old_row.get('length')),
+                        'width': float(old_row.get('width')),
+                        'height': float(old_row.get('height')),
+                        'weight': float(old_row.get('weight')),
+                        'keywords': old_row.get('keywords') if old_row.get('keywords') else '',
                     }
-
-        curr_categories = self._get_all_categories()
-        products_dict = self._get_products_dict(ids_on_platform)
-        self._create_update_products(imported_products_vals, products_dict, curr_categories)
 
         # update cats data
+        self._create_update_categories(imported_categories)
+        del imported_categories
+
         # update retail_products_data
+        retail_products_dict = self._get_retail_products_dict(retail_products_offer_ids)
+        curr_retail_products = self._create_update_retail_products_and_get_ids(
+            retail_products_dict, retail_products_data, retail_products_offer_ids
+        )
+        del retail_products_offer_ids
+        del retail_products_dict
+        del retail_products_data
+
+        # get data
+        curr_categories = self._get_all_categories()
+
+        # update ozon products
+        products_dict = self._get_products_dict(ids_on_platform)
+        self._create_update_products(imported_products_vals, products_dict, curr_categories)
 
     def _create_update_products(self, imported_products_vals, products_dict, curr_categories):
         vals_to_create_products = []
@@ -1398,6 +1424,21 @@ class ProcessProductFile(models.Model):
 
         logger.warning(count)
 
+    def _create_update_categories(self, imported_cats_data: dict):
+        model = self.env["ozon.categories"]
+        curr_categories = model.search([])
+        curr_cats_data = {
+            cat.c_id: {'name_categories': cat.name_categories, 'c_id': cat.c_id} for cat in curr_categories
+        }
+        for c_id, data in imported_cats_data.items():
+            curr_cat_vals = curr_cats_data.get(c_id)
+            if curr_cat_vals:
+                if data != curr_cat_vals:
+                    category = model.search([('c_id', '=', c_id)], limit=1)
+                    category.write(data)
+            else:
+                model.create(data)
+
     def _get_products_dict(self, ids_on_platform) -> dict:
         query = """
                 SELECT
@@ -1449,6 +1490,76 @@ class ProcessProductFile(models.Model):
                 products_dict[id_on_platform] = product_data
 
         return products_dict
+
+    def _create_update_retail_products_and_get_ids(
+            self, curr_retail_products, new_retail_products, offer_ids
+    ) -> dict:
+        create_data = []
+        model = self.env['retail.products']
+        for product_id, new_data in new_retail_products.items():
+            curr_data = curr_retail_products.get(product_id)
+            if curr_data:
+                if curr_data != new_data:
+                    vals = {}
+                    for key, value in new_data.items():
+                        if new_data[key] != curr_data[key]:
+                            vals[key] = new_data[key]
+                    ret_product = model.search([('product_id', '=', product_id)])
+                    if ret_product:
+                        ret_product.write(vals)
+                    else:
+                        create_data.append(new_data)
+            else:
+                create_data.append(new_data)
+        # create
+        model.create(create_data)
+
+        # update
+        query = """
+                SELECT
+                    product_id,
+                    id
+                FROM retail_products
+                WHERE product_id IN %s
+                """
+        self.env.cr.execute(query, (tuple(offer_ids),))
+        products_raw_vals = self.env.cr.fetchall()
+        retail_products_dict = {product[0]: product[1] for product in products_raw_vals}
+
+        return retail_products_dict
+
+    def _get_retail_products_dict(self, offer_ids: list) -> dict:
+        query = """
+                SELECT
+                    product_id,
+                    name,
+                    description,
+                    length,
+                    width,
+                    height,
+                    weight,
+                    keywords
+                FROM retail_products
+                WHERE product_id IN %s
+                """
+        self.env.cr.execute(query, (tuple(offer_ids),))
+        products_raw_vals = self.env.cr.fetchall()
+        retail_products_dict = {}
+        for product_vals in products_raw_vals:
+            product_id_offer_id_article = product_vals[0]
+            vals = {
+                'product_id': product_id_offer_id_article,
+                'name': product_vals[1],
+                'description': product_vals[2],
+                'length': product_vals[3],
+                'width': product_vals[4],
+                'height': product_vals[5],
+                'weight': product_vals[6],
+                'keywords': product_vals[7],
+            }
+            retail_products_dict[product_id_offer_id_article] = vals
+
+        return retail_products_dict
 
 
 old_row = {'id_on_platform': '85658502',
