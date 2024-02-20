@@ -329,7 +329,6 @@ class ImportFile(models.Model):
                     self.create_sale_from_transaction(data=tran_data, 
                         products=ozon_products, services_cost=services_cost)
             self.env["ozon.transaction"].create(transactions_data)
-        os.remove(f_path)
 
     def import_stocks(self, content):
 
