@@ -1366,11 +1366,10 @@ class ProcessProductFile(models.Model):
 
         # update ozon products
         products_dict = self._get_products_dict(ids_on_platform)
-        self._create_update_products(imported_products_vals, products_dict, curr_categories)
+        self._create_update_products(imported_products_vals, products_dict, curr_categories, curr_retail_products)
 
-    def _create_update_products(self, imported_products_vals, products_dict, curr_categories):
+    def _create_update_products(self, imported_products_vals, products_dict, curr_categories, curr_retail_products):
         vals_to_create_products = []
-        count = 0
         for id_on_platform, data in imported_products_vals.items():
             curr_product_data = products_dict.get(id_on_platform)
             if curr_product_data:
@@ -1378,11 +1377,13 @@ class ProcessProductFile(models.Model):
                 for key, curr_val in curr_product_data.items():
                     if (
                             key == 'article' or
-                            key == 'products' or
                             key == 'seller'
                     ):
                         continue
-                    if key == 'imgs_urls':
+
+                    if key == 'products':
+                        key = 'offer_id'
+                    elif key == 'imgs_urls':
                         key = 'img_urls'
 
                     new_val = data[key]
@@ -1404,6 +1405,10 @@ class ProcessProductFile(models.Model):
                                 cat = self._get_or_create_category(name_categories, data.get('description_category_id'))
                                 category_id = cat.id
                             new_val = category_id
+                    elif key == 'offer_id':
+                        offer_id = data.get(key)
+                        retail_prod_id = curr_retail_products.get(offer_id)
+                        new_val = retail_prod_id
 
                     if curr_val != new_val:
                         logger.warning(f"{key}{type(curr_val)}")
@@ -1411,18 +1416,19 @@ class ProcessProductFile(models.Model):
                         logger.warning('-----------------')
                         if key == 'img_urls':
                             key = 'imgs_urls'
+                        elif key == 'offer_id':
+                            key = 'products'
                         vals[key] = new_val
                 if vals:
-                    count += 1
-                    product = self.env['ozon.products'].search([("id_on_platform", '=', id_on_platform)])
-                    product.sudo().write(vals)
+                    # product = self.env['ozon.products'].search([("id_on_platform", '=', id_on_platform)])
+                    # product.sudo().write(vals)
 
                     logger.warning(vals)
 
             else:
                 pass
+               
 
-        logger.warning(count)
 
     def _create_update_categories(self, imported_cats_data: dict):
         model = self.env["ozon.categories"]
