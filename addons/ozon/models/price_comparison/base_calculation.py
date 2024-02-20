@@ -70,3 +70,14 @@ class BaseCalculation(models.Model):
         if product.base_calculation_ids:
             return
         self.reset_for_product(product)
+
+
+class LogisticsTariff(models.Model):
+    _name = "ozon.logistics_tariff"
+    _description = "Тариф логистики"
+
+    name = fields.Selection([
+        ("1", "От 0,1 до 5 литров включительно — 76 рублей"),
+        ("2", "До 175 литров включительно — 9 рублей за каждый дополнительный литр свыше объёма 5 л"),
+        ("3", "Свыше 175 литров — 1615 рублей")],
+        string="Тариф")

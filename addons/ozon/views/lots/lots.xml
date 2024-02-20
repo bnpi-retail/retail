@@ -160,6 +160,7 @@
                                 />
                             </group>
                             <group>
+                                <field name="logistics_tariff_id" />
                                 <field name="base_calculation_ids">
                                     <tree editable="1">
                                         <field name="price_component_id" />
