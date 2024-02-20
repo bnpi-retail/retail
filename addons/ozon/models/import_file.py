@@ -137,7 +137,7 @@ class ImportFile(models.Model):
             self.import_ozon_realisation_report(content)
 
         elif values["data_for_download"] == "ozon_products":
-            self.import_products(content)
+            self.process_products_imported_data(content)
 
         elif values["data_for_download"] == "ozon_commissions":
 
@@ -1291,3 +1291,206 @@ class ProcessImportFile(models.Model):
             "costs": percent_expenses_ids,
         }
         return price_history_data
+
+
+class ProcessProductFile(models.Model):
+    _inherit = "ozon.import_file"
+
+    def _get_all_categories(self) -> dict:
+        cats = self.env['ozon.categories'].search([])
+        res = {}
+        for cat in cats:
+            res[cat.name_categories] = cat.id
+        return res
+
+    def _get_or_create_category(self, name_categories, c_id):
+        model = self.env["ozon.categories"]
+        record = model.search([("c_id", "=", c_id)])
+        if not record:
+            record = model.create({
+                "name_categories": name_categories,
+                "c_id": c_id,
+            })
+        return record
+
+    def process_products_imported_data(self, content):
+        with StringIO(content) as csvfile:
+            reader = csv.DictReader(csvfile)
+
+            ids_on_platform = []
+            imported_products_vals = {}
+            imported_categories = {}
+            retail_products_data = {}
+            for old_row in reader:
+                id_on_platform = old_row.get('id_on_platform')
+                ids_on_platform.append(id_on_platform)
+                imported_products_vals[id_on_platform] = old_row
+                if not imported_categories.get(old_row.get('categories')):
+                    imported_categories[old_row.get('categories')] = {
+                        'description_category_id': old_row.get('description_category_id'),
+                    }
+                if not retail_products_data.get(old_row.get('name')):
+                    retail_products_data[old_row.get('name')] = {
+                        'description': old_row.get('description'),
+                        'keywords': old_row.get('keywords') if old_row.get('keywords') else False,
+                    }
+
+        curr_categories = self._get_all_categories()
+        products_dict = self._get_products_dict(ids_on_platform)
+        self._create_update_products(imported_products_vals, products_dict, curr_categories)
+
+        # update cats data
+        # update retail_products_data
+
+    def _create_update_products(self, imported_products_vals, products_dict, curr_categories):
+        vals_to_create_products = []
+        count = 0
+        for id_on_platform, data in imported_products_vals.items():
+            curr_product_data = products_dict.get(id_on_platform)
+            if curr_product_data:
+                vals = {}
+                for key, curr_val in curr_product_data.items():
+                    if (
+                            key == 'article' or
+                            key == 'products' or
+                            key == 'seller'
+                    ):
+                        continue
+                    if key == 'imgs_urls':
+                        key = 'img_urls'
+
+                    new_val = data[key]
+                    if key == 'price':
+                        new_val = float(new_val) if new_val else 0
+                    elif key == 'old_price':
+                        new_val = float(new_val) if new_val else 0
+                    elif key == 'ext_comp_min_price':
+                        new_val = float(new_val) if new_val else 0
+                    elif key == 'ozon_comp_min_price':
+                        new_val = float(new_val) if new_val else 0
+                    elif key == 'self_marketplaces_min_price':
+                        new_val = float(new_val) if new_val else 0
+                    elif key == 'categories':
+                        if new_val:
+                            name_categories = new_val
+                            category_id = curr_categories.get(new_val)
+                            if not category_id:
+                                cat = self._get_or_create_category(name_categories, data.get('description_category_id'))
+                                category_id = cat.id
+                            new_val = category_id
+
+                    if curr_val != new_val:
+                        logger.warning(f"{key}{type(curr_val)}")
+                        logger.warning(f"{key}{type(new_val)}")
+                        logger.warning('-----------------')
+                        if key == 'img_urls':
+                            key = 'imgs_urls'
+                        vals[key] = new_val
+                if vals:
+                    count += 1
+                    product = self.env['ozon.products'].search([("id_on_platform", '=', id_on_platform)])
+                    product.sudo().write(vals)
+
+                    logger.warning(vals)
+
+            else:
+                pass
+
+        logger.warning(count)
+
+    def _get_products_dict(self, ids_on_platform) -> dict:
+        query = """
+                SELECT
+                id_on_platform,
+                sku,
+                fbo_sku,
+                fbs_sku,
+                categories,
+                article,
+                description,
+                products,
+                price,
+                old_price,
+                ext_comp_min_price,
+                ozon_comp_min_price,
+                self_marketplaces_min_price,
+                price_index,
+                imgs_urls,
+                seller,
+                trading_scheme
+                FROM ozon_products
+                WHERE id_on_platform IN %s
+                """
+        self.env.cr.execute(query, (tuple(ids_on_platform),))
+        products_raw_vals = self.env.cr.fetchall()
+
+        products_dict = {}
+        for product_vals in products_raw_vals:
+            id_on_platform = product_vals[0]
+            if id_on_platform:
+                product_data = {
+                    "sku": product_vals[1],
+                    "fbo_sku": product_vals[2],
+                    "fbs_sku": product_vals[3],
+                    "categories": product_vals[4],
+                    "article": product_vals[5],
+                    "description": product_vals[6],
+                    "products": product_vals[7],
+                    "price": product_vals[8],
+                    "old_price": product_vals[9],
+                    "ext_comp_min_price": product_vals[10],
+                    "ozon_comp_min_price": product_vals[11],
+                    "self_marketplaces_min_price": product_vals[12],
+                    "price_index": product_vals[13],
+                    "imgs_urls": product_vals[14],
+                    "seller": product_vals[15],
+                    "trading_scheme": product_vals[16],
+                }
+                products_dict[id_on_platform] = product_data
+
+        return products_dict
+
+
+old_row = {'id_on_platform': '85658502',
+           'offer_id': '020339',
+           'sku': '279467165',
+           'fbo_sku': '0',
+           'fbs_sku': '0',
+           'categories': 'Дисплеи для телефонов',
+           'description_category_id': '53567477',
+           'full_categories': 'Miscellaneous accessories/Запчасти Access/Запчасти для телефонов Access/Дисплеи для телефонов',
+           'full_categories_id': '971463128',
+           'name': 'Модуль (матрица + тачскрин) для Huawei Honor, Y5 II 3G (CUN-U29) золотой',
+           'description': 'Модуль  для Huawei Honor 6C / Enjoy 6S белый',
+           'keywords': '',
+           'length': '0.7',
+           'width': '0.7',
+           'height': '0.5',
+           'weight': '0.06',
+           'seller_name': 'Продавец',
+           'trading_scheme': 'undefined',
+           'price': '1367.0000',
+           'old_price': '2367.0000',
+           'ext_comp_min_price': '',
+           'ozon_comp_min_price': '',
+           'self_marketplaces_min_price': '',
+           'price_index': 'WITHOUT_INDEX',
+           'acquiring': '18',
+           'fbo_fulfillment_amount': '0',
+           'fbo_direct_flow_trans_min_amount': '0',
+           'fbo_direct_flow_trans_max_amount': '0',
+           'fbo_deliv_to_customer_amount': '75.19',
+           'fbo_return_flow_amount': '0',
+           'fbo_return_flow_trans_min_amount': '63',
+           'fbo_return_flow_trans_max_amount': '63',
+           'fbs_first_mile_min_amount': '0',
+           'fbs_first_mile_max_amount': '25',
+           'fbs_direct_flow_trans_min_amount': '76',
+           'fbs_direct_flow_trans_max_amount': '76',
+           'fbs_deliv_to_customer_amount': '75.19',
+           'fbs_return_flow_amount': '0',
+           'fbs_return_flow_trans_min_amount': '76',
+           'fbs_return_flow_trans_max_amount': '76',
+           'sales_percent_fbo': '21.5', 'sales_percent_fbs': '22.5',
+           'sales_percent': '22.5',
+           'img_urls': "['https://cdn1.ozone.ru/s3/multimedia-w/6070605032.jpg']"}
