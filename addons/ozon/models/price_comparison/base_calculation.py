@@ -81,3 +81,12 @@ class LogisticsTariff(models.Model):
         ("2", "До 175 литров включительно — 9 рублей за каждый дополнительный литр свыше объёма 5 л"),
         ("3", "Свыше 175 литров — 1615 рублей")],
         string="Тариф")
+
+    def name_get(self):
+        result = []
+        for r in self:
+            result.append((r.id, f"""{dict(self._fields['name'].selection).get(r.name)}"""))
+        return result
+
+
+        
