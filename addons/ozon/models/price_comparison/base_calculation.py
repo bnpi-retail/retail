@@ -36,6 +36,9 @@ class BaseCalculation(models.Model):
                 value = product.all_expenses_ids.filtered(
                     lambda r: r.category == "Вознаграждение Ozon").percent * 100
                 kind = "percent"
+            elif pc.identifier == "promo":
+                value = 10
+                kind = "percent"
             elif pc.identifier == "tax":
                 value = product.all_expenses_ids.filtered(lambda r: r.name == "Налог").percent * 100
                 kind = "percent"
