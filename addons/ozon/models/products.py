@@ -1701,7 +1701,7 @@ class Product(models.Model):
         self.env["ozon.price_comparison"].update_for_products(self)
     
     def reset_base_calculation_ids(self):
-        self.env["ozon.base_calculation"].reset_for_product(self)
+        self.env["ozon.base_calculation"].reset_for_products(self)
         self.env["ozon.price_comparison"].update_for_products(self)
 
     @api.depends("posting_ids")
