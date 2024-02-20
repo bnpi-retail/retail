@@ -40,13 +40,15 @@ class PriceComparison(models.Model):
         if max_val == 0:
             plan_value = price_row.plan_value * coef
             market_value = price_row.market_value * coef
+            fact_value = price_row.fact_value * coef
         else:
             plan_value = min(price_row.plan_value * coef, max_val)
             market_value = min(price_row.market_value * coef, max_val)
+            fact_value = min(price_row.fact_value * coef, max_val)
         row = RowClass(group=group,
                 plan_value=plan_value,
                 market_value=market_value,
-                fact_value=0, price_component_id=price_component_id)
+                fact_value=fact_value, price_component_id=price_component_id)
         return row
     
     def collect_product_data(self, product) -> list:
@@ -68,10 +70,9 @@ class PriceComparison(models.Model):
         # TODO: Ваша цена. Откуда брать значения ПЛАН, рынок, ФАКТ?
         pc = pcm.get("your_price")
         min_comp_price = product.get_minimal_competitor_price()
-        fact_price = 0 # TODO
         your_price = Row(group, plan_value=product.price, 
                          market_value=min_comp_price, 
-                         fact_value=fact_price, 
+                         fact_value=product.price, 
                          price_component_id=pc.id)
         data_prices = [buyer_price, your_price]
 

@@ -16,13 +16,16 @@ class BaseCalculation(models.Model):
         ], string="Тип начисления")
     value = fields.Float(string="Значение")
 
+    def _base_calculation_components(self):
+        return self.env["ozon.price_component"].search([]).filtered(
+            lambda r: r.identifier in BASE_CALCULATION_COMPONENTS)
+
     def reset_for_products(self, products):
         products.base_calculation_ids.unlink()
         data = []
         for product in products:
             p_id = product.id
-            for pc in self.env["ozon.price_component"].search([]).filtered(
-                lambda r: r.identifier in BASE_CALCULATION_COMPONENTS):
+            for pc in self._base_calculation_components():
                 if pc.identifier == "logistics":
                     value = product.all_expenses_ids.filtered(lambda r: r.category == "Логистика").value
                     kind = "depends_on_volume"
@@ -70,8 +73,7 @@ class BaseCalculation(models.Model):
     def fill_if_not_exists(self, product):
         if product.base_calculation_ids:
             return
-        self.reset_for_product(product)
-
+        self.reset_for_product(product)  
 
 class LogisticsTariff(models.Model):
     _name = "ozon.logistics_tariff"
