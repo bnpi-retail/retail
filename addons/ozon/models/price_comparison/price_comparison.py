@@ -58,142 +58,135 @@ class PriceComparison(models.Model):
             ["group", "plan_value", "market_value", "fact_value", 
              "price_component_id", "product_id"], 
             defaults=[p_id])
-        price_component_model = self.env["ozon.price_component"]
+        pcm = self.env["ozon.price_component"]
         ### Цены
         group = "Цены"
         # TODO: Цена для покупателя - откуда брать?
-        price_component = price_component_model.get("buyer_price")
+        pc = pcm.get("buyer_price")
         buyer_price = Row(group, plan_value=0, market_value=0, fact_value=0, 
-                          price_component_id=price_component.id)
+                          price_component_id=pc.id)
         # TODO: Ваша цена. Откуда брать значения ПЛАН, рынок, ФАКТ?
-        price_component = price_component_model.get("your_price")
+        pc = pcm.get("your_price")
         min_comp_price = product.get_minimal_competitor_price()
         fact_price = 0 # TODO
         your_price = Row(group, plan_value=product.price, 
                          market_value=min_comp_price, 
                          fact_value=fact_price, 
-                         price_component_id=price_component.id)
+                         price_component_id=pc.id)
         data_prices = [buyer_price, your_price]
 
         ### Расходы Ozon
         data_ozon_expenses = []
         group = "Расходы Ozon"
         # Себестоимость - fix
-        price_component = price_component_model.get("cost")
+        pc = pcm.get("cost")
         cp = product.fix_expenses.filtered(lambda r: r.name == "Себестоимость товара").price
         if cp == 0:
             return [{"product_id": p_id, "comment": "Не задана себестоимость."}]
-        cost_price = Row(group, cp, cp, cp, price_component.id)
+        cost_price = Row(group, cp, cp, cp, pc.id)
         data_ozon_expenses.append(cost_price)
         # Логистика - fix
-        price_component = price_component_model.get("logistics")
-        log = product.all_expenses_ids.filtered(lambda r: r.category == "Логистика").value
-        data_ozon_expenses.append(Row(group, log, log, log, price_component.id))
+        pc = pcm.get("logistics")
+        log = product.base_calculation_ids.filtered(lambda r: r.price_component_id == pc).value
+        data_ozon_expenses.append(Row(group, log, log, log, pc.id))
         # Последняя миля - percent
-        price_component = price_component_model.get("last_mile")
-        lm = product.all_expenses_ids.filtered(lambda r: r.category == "Последняя миля").percent
-        last_mile = self.create_row_based_on_price_row(Row, your_price, group, lm, 
-                                                        price_component.id, max_val=500)
+        pc = pcm.get("last_mile")
+        lm = product.base_calculation_ids.filtered(lambda r: r.price_component_id == pc).value / 100
+        last_mile = self.create_row_based_on_price_row(Row, your_price, group, lm, pc.id, max_val=500)
         data_ozon_expenses.append(last_mile)
         # Эквайринг - percent
-        price_component = price_component_model.get("acquiring")
-        acq = product.all_expenses_ids.filtered(lambda r: r.category == "Эквайринг").percent
-        acquiring = self.create_row_based_on_price_row(Row, your_price, group, acq, 
-                                                       price_component.id)
+        pc = pcm.get("acquiring")
+        acq = product.base_calculation_ids.filtered(lambda r: r.price_component_id == pc).value / 100
+        acquiring = self.create_row_based_on_price_row(Row, your_price, group, acq, pc.id)
         data_ozon_expenses.append(acquiring)
         # Вознаграждение Ozon (комиссия Ozon) - percent
-        price_component = price_component_model.get("ozon_reward")
-        com = product.all_expenses_ids.filtered(lambda r: r.category == "Вознаграждение Ozon").percent
-        commission = self.create_row_based_on_price_row(Row, your_price, group, com,
-                                                        price_component.id)
+        pc = pcm.get("ozon_reward")
+        com = product.base_calculation_ids.filtered(lambda r: r.price_component_id == pc).value / 100
+        commission = self.create_row_based_on_price_row(Row, your_price, group, com, pc.id)
         data_ozon_expenses.append(commission)
         # Реклама - percent
-        price_component = price_component_model.get("promo")
-        promo_percent = product.all_expenses_ids.filtered(
-            lambda r: r.name == "Средняя стоимость продвижения товара").percent
-        promo = self.create_row_based_on_price_row(Row, your_price, group, promo_percent,
-                                                   price_component.id)
+        pc = pcm.get("promo")
+        promo_percent = product.base_calculation_ids.filtered(
+            lambda r: r.price_component_id == pc).value / 100
+        promo = self.create_row_based_on_price_row(Row, your_price, group, promo_percent, pc.id)
         data_ozon_expenses.append(promo)
         # Обработка - fix
-        price_component = price_component_model.get("processing")
-        proc = product.all_expenses_ids.filtered(lambda r: r.category == "Обработка").value
-        data_ozon_expenses.append(Row(group, proc, proc, proc, price_component.id))
+        pc = pcm.get("processing")
+        proc = product.base_calculation_ids.filtered(lambda r: r.price_component_id == pc).value
+        data_ozon_expenses.append(Row(group, proc, proc, proc, pc.id))
         # Обратная логистика - fix  TODO: depends on sales qty and returns
-        price_component = price_component_model.get("return_logistics")
-        data_ozon_expenses.append(Row(group, 0, 0, 0, price_component.id))
+        pc = pcm.get("return_logistics")
+        ret_log = product.base_calculation_ids.filtered(lambda r: r.price_component_id == pc).value
+        data_ozon_expenses.append(Row(group, ret_log, ret_log, ret_log, pc.id))
 
         ### Расходы компании
         group = "Расходы компании"
         data_company_expenses = []
-        # TODO переделать - брать значения из модели Конструктор цен
-        price_component = price_component_model.get("company_processing_and_storage")
-        data_company_expenses.append(Row(group, 0, 0, 0, price_component.id))
-        price_component = price_component_model.get("company_packaging")
-        data_company_expenses.append(Row(group, 0, 0, 0, price_component.id))
-        price_component = price_component_model.get("company_marketing")
-        data_company_expenses.append(Row(group, 0, 0, 0, price_component.id))
-        price_component = price_component_model.get("company_operators")
-        data_company_expenses.append(Row(group, 0, 0, 0, price_component.id))
-
+        for i in ["company_processing_and_storage", "company_packaging", 
+                  "company_marketing", "company_operators"]:
+            pc = pcm.get(i)
+            val = product.base_calculation_ids.filtered(lambda r: r.price_component_id == pc).value
+            data_company_expenses.append(Row(group, val, val, val, pc.id))
+       
         ### Налог
         # Налог - percent
         group = "Налог"
-        price_component = price_component_model.get("tax")
-        t_percent = product.all_expenses_ids.filtered(lambda r: r.name == "Налог").percent
-        tax = self.create_row_based_on_price_row(Row, your_price, group, t_percent,
-                                                 price_component.id)
+        pc = pcm.get("tax")
+        t_percent = product.base_calculation_ids.filtered(
+            lambda r: r.price_component_id == pc).value / 100
+        tax = self.create_row_based_on_price_row(Row, your_price, group, t_percent, pc.id)
 
         ### Показатели
         group = "Показатели"
         data_indicators = []
         # Сумма расходов
-        price_component = price_component_model.get("total_expenses")
+        pc = pcm.get("total_expenses")
         pv, mv, fv = 0, 0, 0
         for i in data_ozon_expenses + data_company_expenses:
             pv += i.plan_value
             mv += i.market_value
             fv += i.fact_value
-        total_expenses = Row(group, pv, mv, fv, price_component.id)
+        total_expenses = Row(group, pv, mv, fv, pc.id)
         data_indicators.append(total_expenses)
         # Прибыль
-        price_component = price_component_model.get("profit")
+        pc = pcm.get("profit")
         profit = Row(group,
                      plan_value=your_price.plan_value - total_expenses.plan_value,
                      market_value=your_price.market_value - total_expenses.market_value,
                      fact_value=your_price.market_value - total_expenses.market_value,
-                     price_component_id=price_component.id)
+                     price_component_id=pc.id)
         data_indicators.append(profit)
         # ROS (доходность, рентабельность продаж)
-        price_component = price_component_model.get("ros")
+        pc = pcm.get("ros")
         ros = Row(group,
                   plan_value=profit.plan_value / your_price.plan_value,
                   market_value=your_price.market_value and profit.market_value / your_price.market_value,
                   fact_value=your_price.fact_value and profit.fact_value / your_price.fact_value,
-                  price_component_id=price_component.id)
+                  price_component_id=pc.id)
         data_indicators.append(ros)
         # Наценка
-        price_component = price_component_model.get("margin")
+        pc = pcm.get("margin")
         margin = Row(group,
                      plan_value=your_price.plan_value - cost_price.plan_value,
                      market_value=your_price.market_value - cost_price.market_value,
                      fact_value=your_price.fact_value - cost_price.fact_value,
-                     price_component_id=price_component.id)
+                     price_component_id=pc.id)
         data_indicators.append(margin)
         # Процент наценки
-        price_component = price_component_model.get("margin_percent")
+        pc = pcm.get("margin_percent")
         margin_percent = Row(group,
                              plan_value=margin.plan_value / cost_price.plan_value,
                              market_value=margin.market_value / cost_price.market_value,
                              fact_value=margin.fact_value / cost_price.fact_value,
-                             price_component_id=price_component.id)
+                             price_component_id=pc.id)
         data_indicators.append(margin_percent)
         # ROE (рентабельность инвестиций)
-        price_component = price_component_model.get("roe")
+        pc = pcm.get("roe")
         roe = Row(group,
                   plan_value=profit.plan_value / cost_price.plan_value,
                   market_value=profit.market_value / cost_price.market_value,
                   fact_value=profit.fact_value / cost_price.fact_value,
-                  price_component_id=price_component.id)
+                  price_component_id=pc.id)
         data_indicators.append(roe)
 
 
