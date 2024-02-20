@@ -48,6 +48,22 @@ IDENTIFIER_NAME = {
      "roe": "ROE (рентабельность инвестиций)",
  }
 
+BASE_CALCULATION_COMPONENTS = [
+    "logistics", 
+    "last_mile", 
+    "acquiring", 
+    "ozon_reward", 
+    "promo", 
+    "processing", 
+    "return_logistics", 
+    "company_processing_and_storage", 
+    "company_packaging",
+    "company_marketing",
+    "company_operators",
+    "tax",
+    "roe",
+    ]
+
 class PriceComponent(models.Model):
     _name = "ozon.price_component"
     _description = "Компонент цены"

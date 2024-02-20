@@ -153,7 +153,12 @@
                             </field>
                         </page>
                         <page id="page_base_calculation" string="План (базовый расчёт)">
-                            <group />
+                            <group>
+                                <button type="object" name="reset_base_calculation_ids"
+                                    string="Сбросить"
+                                    class="btn-outline-primary"
+                                />
+                            </group>
                             <group>
                                 <field name="base_calculation_ids">
                                     <tree editable="1">
