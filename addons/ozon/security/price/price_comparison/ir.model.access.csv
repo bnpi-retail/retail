@@ -2,4 +2,5 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_ozon_price_comparison,Access Ozon Price Comparison,model_ozon_price_comparison,base.group_user,1,1,1,1
 access_ozon_price_component,Access Ozon Price Component,model_ozon_price_component,base.group_user,1,1,1,1
 access_ozon_base_calculation,Access Ozon Base Calculation,model_ozon_base_calculation,base.group_user,1,1,1,1
+access_ozon_base_calculation_wizard,Access Ozon Base Calculation Wizard,model_ozon_base_calculation_wizard,base.group_user,1,1,1,1
 access_ozon_logistics_tariff,Access Ozon Logistics Tariff,model_ozon_logistics_tariff,base.group_user,1,1,1,1

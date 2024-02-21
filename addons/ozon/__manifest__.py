@@ -68,6 +68,7 @@
         "views/price/investment_expenses.xml",
         "views/price/all_expenses.xml",
         "views/price/price_component.xml",
+        "views/price/base_calculation.xml",
         "views/lots/menu.xml",
         "views/lots/wizards.xml",
         "views/lots/lots.xml",

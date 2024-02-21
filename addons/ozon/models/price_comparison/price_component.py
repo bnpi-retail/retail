@@ -63,6 +63,19 @@ BASE_CALCULATION_COMPONENTS = [
     "tax",
     "roe",
     ]
+PERCENT_COMPONENTS = [
+    "last_mile", 
+    "acquiring", 
+    "ozon_reward", 
+    "promo",
+    "tax"
+]
+DEPENDS_ON_VOLUME_COMPONENTS = [
+    "logistics"
+]
+PERCENT_COST_PRICE_COMPONENTS = [
+    "roe"
+]
 
 class PriceComponent(models.Model):
     _name = "ozon.price_component"

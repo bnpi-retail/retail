@@ -649,6 +649,15 @@
             <field name="target">new</field>
         </record>
 
+        <record model="ir.actions.server" id="action_base_calculation_wizard">
+            <field name="name">Назначить базовый расчёт</field>
+            <field name="model_id" ref="model_ozon_products" />
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="state">code</field>
+            <field name="code">
+                action = records.open_base_calculation_wizard()
+            </field>
+        </record>
 
         <!-- Menu -->
         <menuitem name="Продукты"
