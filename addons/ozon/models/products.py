@@ -373,9 +373,9 @@ class Product(models.Model):
 
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
                                            string="Сравнение цен")
-    base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Базовый расчёт")
+    base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Плановый расчёт")
     logistics_tariff_id = fields.Many2one("ozon.logistics_tariff", 
-                                          string="Тариф логистики в базовом расчёте")
+                                          string="Тариф логистики в плановом расчёте")
 
     def calculate_expected_price(self):
         # TODO: откуда берем ожидаемую цену?
@@ -1747,6 +1747,17 @@ class Product(models.Model):
                 logger.warning('action_run_indicators_checks exception')
 
         schedules[0].ozon_products_checking_last_time = datetime.now()
+
+    def open_base_calculation_wizard(self):
+        self.env["ozon.base_calculation_template"].create_if_not_exists()
+        bc_wiz_model = self.env["ozon.base_calculation_wizard"]
+        bc_wiz_model.unlink()
+        return {
+            "type": "ir.actions.act_window", 
+            "view_mode": "form", 
+            "res_model": "ozon.base_calculation_wizard",
+            "target": "new",
+            }
 
 
 class ProductNameGetExtension(models.Model):
