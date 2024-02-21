@@ -1796,7 +1796,9 @@ class Product(models.Model):
         schedules[0].ozon_products_checking_last_time = datetime.now()
 
     def open_base_calculation_wizard(self):
-        bc_comps = self.env["ozon.base_calculation"].create_base_calculation_components()
+        bc_model = self.env["ozon.base_calculation"]
+        bc_model.search([("product_id", "=", False)]).unlink()
+        bc_comps = bc_model.create_base_calculation_components()
         bc_wiz_model = self.env["ozon.base_calculation_wizard"]
         bc_wiz_model.unlink()
         bc_wiz = self.env["ozon.base_calculation_wizard"].create({"base_calculation_ids": bc_comps})

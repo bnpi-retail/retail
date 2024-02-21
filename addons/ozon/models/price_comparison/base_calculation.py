@@ -80,7 +80,7 @@ class BaseCalculation(models.Model):
     def fill_if_not_exists(self, product):
         if product.base_calculation_ids:
             return
-        self.reset_for_product(product)  
+        self.reset_for_products(product)  
 
 class BaseCalculationWizard(models.Model):
     _name = "ozon.base_calculation_wizard"
@@ -89,8 +89,18 @@ class BaseCalculationWizard(models.Model):
     base_calculation_ids = fields.Many2many("ozon.base_calculation", string="Базовый расчёт")
 
     def apply_to_products(self):
-        print("here")
-        print(self._context)
+        """Applies base_calculation_ids to products"""
+        products = self.env["ozon.products"].browse(self._context["active_ids"])
+        data = []
+        products.base_calculation_ids.unlink()
+        for prod in products:
+            p_id = prod.id
+            for r in self.base_calculation_ids: 
+                data.append({"product_id": p_id, 
+                             "price_component_id": r.price_component_id.id,
+                             "value": r.value})
+        self.env["ozon.base_calculation"].create(data)
+
 
 
 class LogisticsTariff(models.Model):
