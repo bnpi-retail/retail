@@ -125,7 +125,7 @@ class BaseCalculationWizard(models.Model):
                     data.append({"product_id": p_id, 
                                  "price_component_id": r.price_component_id.id, 
                                  "value": log_value,
-                                 "comment": f"Объём: {prod.products.volume}л\n"
+                                 "comment": f"Объём: {round(prod.products.volume, 2)}л\n"
                                  f"Тариф: {prod.logistics_tariff_id.name}"})
                 else:
                     data.append({"product_id": p_id, 
