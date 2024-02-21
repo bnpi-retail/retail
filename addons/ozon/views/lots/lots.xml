@@ -164,7 +164,8 @@
                                     <tree editable="1">
                                         <field name="price_component_id" />
                                         <field name="kind" />
-                                        <field name="value" />
+                                        <field name="value"
+                                            attrs="{'readonly': [('kind','=','depends_on_volume')]}" />
                                         <field name="comment" optional="hide" />
                                     </tree>
                                 </field>

@@ -1,3 +1,5 @@
+from math import ceil
+
 from odoo import models, fields, api
 
 from .price_component import (BASE_CALCULATION_COMPONENTS, 
@@ -111,12 +113,23 @@ class BaseCalculationWizard(models.Model):
         data = []
         products.base_calculation_ids.unlink()
         template = self.base_calculation_template_id
+        log_tar_model = self.env["ozon.logistics_tariff"]
         for prod in products:
             p_id = prod.id
-            for r in template.base_calculation_ids: 
-                data.append({"product_id": p_id, 
-                             "price_component_id": r.price_component_id.id,
-                             "value": r.value})
+            for r in template.base_calculation_ids:
+                if r.price_component_id.identifier == "logistics":
+                    if not prod.logistics_tariff_id:
+                        log_tar_model.assign_logistics_tariff_id(prod)
+                    log_value = log_tar_model.get_logistics_cost_based_on_tariff(prod)
+                    data.append({"product_id": p_id, 
+                                 "price_component_id": r.price_component_id.id, 
+                                 "value": log_value,
+                                 "comment": f"Объём: {prod.products.volume}л\n"
+                                 f"Тариф: {prod.logistics_tariff_id.name}"})
+                else:
+                    data.append({"product_id": p_id, 
+                                "price_component_id": r.price_component_id.id,
+                                "value": r.value})
         self.env["ozon.base_calculation"].create(data)
 
 
@@ -126,13 +139,15 @@ class LogisticsTariff(models.Model):
     _description = "Тариф логистики"
 
     name = fields.Char(string="Тариф")
+    identifier = fields.Integer(string="Идентификатор")
 
     def create_if_not_exists(self):
         if len(self.search([])) < 3:
             self.create([
-                {"name": "От 0,1 до 5 литров включительно — 76 рублей"},
-                {"name": "До 175 литров включительно — 9 рублей за каждый дополнительный литр свыше объёма 5 л"},
-                {"name": "Свыше 175 литров — 1615 рублей"}
+                {"name": "От 0,1 до 5 литров включительно — 76 рублей", "identifier": 1},
+                {"name": "До 175 литров включительно — 9 рублей за каждый дополнительный литр свыше объёма 5 л",
+                 "identifier": 2},
+                {"name": "Свыше 175 литров — 1615 рублей", "identifier": 3}
             ])
             self.unlink()
             return {
@@ -141,4 +156,30 @@ class LogisticsTariff(models.Model):
                 "view_mode": "tree,form",
                 "res_model": "ozon.logistics_tariff",
             }
-        
+    
+    def assign_logistics_tariff_id(self, products):
+        tariff_1_id = self.search([("identifier", "=", 1)]).id
+        tariff_2_id = self.search([("identifier", "=", 2)]).id
+        tariff_3_id = self.search([("identifier", "=", 3)]).id
+        for prod in products:
+            if prod.logistics_tariff_id:
+                continue
+            vol = prod.products.volume
+            if vol <= 5:
+                prod.logistics_tariff_id = tariff_1_id
+            elif 5 < vol <= 175:
+                prod.logistics_tariff_id = tariff_2_id
+            else:
+                prod.logistics_tariff_id = tariff_3_id
+
+    def get_logistics_cost_based_on_tariff(self, product):
+        if not product.logistics_tariff_id:
+            return "Logistics tariff is not assigned to the product"
+        if product.logistics_tariff_id.identifier == 1:
+            return 76
+        elif product.logistics_tariff_id.identifier == 2:
+            vol = product.products.volume
+            log_cost = 76 + ceil(vol - 5) * 9
+            return log_cost
+        else:
+            return 1615
