@@ -655,7 +655,7 @@
             <field name="binding_model_id" ref="model_ozon_products" />
             <field name="state">code</field>
             <field name="code">
-                records.open_base_calculation_wizard()
+                action = records.open_base_calculation_wizard()
             </field>
         </record>
 

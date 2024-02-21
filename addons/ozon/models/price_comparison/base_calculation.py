@@ -20,6 +20,12 @@ class BaseCalculation(models.Model):
         return self.env["ozon.price_component"].search([]).filtered(
             lambda r: r.identifier in BASE_CALCULATION_COMPONENTS)
 
+    def create_base_calculation_components(self):
+        data = []
+        for pc in self._base_calculation_components():
+            data.append({"price_component_id": pc.id})
+        return self.create(data)
+
     def reset_for_products(self, products):
         products.base_calculation_ids.unlink()
         data = []
@@ -80,9 +86,6 @@ class BaseCalculationWizard(models.Model):
     _description = "План (Базовый расчёт)"
 
     base_calculation_ids = fields.Many2many("ozon.base_calculation", string="Базовый расчёт")
-
-
-
 
 
 

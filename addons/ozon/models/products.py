@@ -1796,7 +1796,18 @@ class Product(models.Model):
         schedules[0].ozon_products_checking_last_time = datetime.now()
 
     def open_base_calculation_wizard(self):
-        pass
+        bc_comps = self.env["ozon.base_calculation"].create_base_calculation_components()
+        bc_wiz_model = self.env["ozon.base_calculation_wizard"]
+        bc_wiz_model.unlink()
+        bc_wiz = self.env["ozon.base_calculation_wizard"].create({"base_calculation_ids": bc_comps})
+        return {
+            "type": "ir.actions.act_window", 
+            "view_mode": "form", 
+            "res_model": "ozon.base_calculation_wizard",
+            "res_id": bc_wiz.id,
+            "target": "new",
+            }
+
 
 class ProductNameGetExtension(models.Model):
     _inherit = "ozon.products"
