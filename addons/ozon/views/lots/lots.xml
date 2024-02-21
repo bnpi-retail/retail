@@ -165,6 +165,7 @@
                                         <field name="price_component_id" />
                                         <field name="kind" />
                                         <field name="value" />
+                                        <field name="comment" optional="hide" />
                                     </tree>
                                 </field>
                             </group>

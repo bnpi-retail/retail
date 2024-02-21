@@ -18,6 +18,7 @@ class BaseCalculation(models.Model):
             ("depends_on_volume", "Значение, ₽ (зависит от объёма)"),
         ], string="Тип начисления", compute="_compute_kind")
     value = fields.Float(string="Значение")
+    comment = fields.Text(string="Комментарий")
 
     def _compute_kind(self):
         for r in self:
@@ -37,7 +38,10 @@ class BaseCalculation(models.Model):
     def create_base_calculation_components(self):
         data = []
         for pc in self._base_calculation_components():
-            data.append({"price_component_id": pc.id})
+            if pc.identifier == "logistics":
+                data.append({"price_component_id": pc.id, "comment": "В зависимости от тарифа логистики"})
+            else:
+                data.append({"price_component_id": pc.id})
         return self.create(data)
 
     def reset_for_products(self, products):
@@ -87,8 +91,7 @@ class BaseCalculationTemplate(models.Model):
     _description = "Шаблон планового расчёта"
 
     name = fields.Char(string="Название")
-    base_calculation_ids = fields.Many2many("ozon.base_calculation", string="Плановый расчёт", 
-        domain=[("price_component_id.identifier", "!=", "logistics")])
+    base_calculation_ids = fields.Many2many("ozon.base_calculation", string="Плановый расчёт")
 
     def create_if_not_exists(self):
         if not self.search([]):

@@ -13,7 +13,9 @@
                             <tree editable="1">
                                 <field name="price_component_id" />
                                 <field name="kind" />
-                                <field name="value" />
+                                <field name="value"
+                                    attrs="{'invisible': [('kind','=','depends_on_volume')]}" />
+                                <field name="comment" />
                             </tree>
                         </field>
                     </group>
