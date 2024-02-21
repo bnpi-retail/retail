@@ -121,17 +121,20 @@ class LogisticsTariff(models.Model):
     _name = "ozon.logistics_tariff"
     _description = "Тариф логистики"
 
-    name = fields.Selection([
-        ("1", "От 0,1 до 5 литров включительно — 76 рублей"),
-        ("2", "До 175 литров включительно — 9 рублей за каждый дополнительный литр свыше объёма 5 л"),
-        ("3", "Свыше 175 литров — 1615 рублей")],
-        string="Тариф")
+    name = fields.Char(string="Тариф")
 
-    def name_get(self):
-        result = []
-        for r in self:
-            result.append((r.id, f"""{dict(self._fields['name'].selection).get(r.name)}"""))
-        return result
-
-
+    def create_if_not_exists(self):
+        if len(self.search([])) < 3:
+            self.create([
+                {"name": "От 0,1 до 5 литров включительно — 76 рублей"},
+                {"name": "До 175 литров включительно — 9 рублей за каждый дополнительный литр свыше объёма 5 л"},
+                {"name": "Свыше 175 литров — 1615 рублей"}
+            ])
+            self.unlink()
+            return {
+                "type": "ir.actions.act_window",
+                "name": "Тарифы логистики",
+                "view_mode": "tree,form",
+                "res_model": "ozon.logistics_tariff",
+            }
         
