@@ -52,35 +52,36 @@ class BaseCalculation(models.Model):
         for product in products:
             p_id = product.id
             for pc in self._base_calculation_components():
-                if pc.identifier == "logistics":
-                    value = product.all_expenses_ids.filtered(lambda r: r.category == "Логистика").value
-                elif pc.identifier == "last_mile":
-                    value = product.all_expenses_ids.filtered(
-                        lambda r: r.category == "Последняя миля").percent * 100
-                elif pc.identifier == "acquiring":
-                    value = product.all_expenses_ids.filtered(lambda r: r.category == "Эквайринг").percent * 100
-                elif pc.identifier == "ozon_reward":
-                    value = product.all_expenses_ids.filtered(
-                        lambda r: r.category == "Вознаграждение Ozon").percent * 100
-                elif pc.identifier == "promo":
-                    value = 10
-                elif pc.identifier == "tax":
-                    value = product.all_expenses_ids.filtered(lambda r: r.name == "Налог").percent * 100
-                elif pc.identifier == "processing":  
-                    value = product.all_expenses_ids.filtered(lambda r: r.category == "Обработка").value
-                elif pc.identifier == "company_processing_and_storage": 
-                    value = 100
-                elif pc.identifier == "company_packaging": 
-                    value = 20
-                elif pc.identifier == "company_marketing": 
-                    value = 50
-                elif pc.identifier == "company_operators": 
-                    value = 20
-                elif pc.identifier == "roe": 
-                    value = 0
-                else:
-                    value = 0
-                data.append({"product_id": p_id, "price_component_id": pc.id, "value": value})
+                data.append({"product_id": p_id, "price_component_id": pc.id, "value": 0})
+                # if pc.identifier == "logistics":
+                #     value = product.all_expenses_ids.filtered(lambda r: r.category == "Логистика").value
+                # elif pc.identifier == "last_mile":
+                #     value = product.all_expenses_ids.filtered(
+                #         lambda r: r.category == "Последняя миля").percent * 100
+                # elif pc.identifier == "acquiring":
+                #     value = product.all_expenses_ids.filtered(lambda r: r.category == "Эквайринг").percent * 100
+                # elif pc.identifier == "ozon_reward":
+                #     value = product.all_expenses_ids.filtered(
+                #         lambda r: r.category == "Вознаграждение Ozon").percent * 100
+                # elif pc.identifier == "promo":
+                #     value = 10
+                # elif pc.identifier == "tax":
+                #     value = product.all_expenses_ids.filtered(lambda r: r.name == "Налог").percent * 100
+                # elif pc.identifier == "processing":  
+                #     value = product.all_expenses_ids.filtered(lambda r: r.category == "Обработка").value
+                # elif pc.identifier == "company_processing_and_storage": 
+                #     value = 100
+                # elif pc.identifier == "company_packaging": 
+                #     value = 20
+                # elif pc.identifier == "company_marketing": 
+                #     value = 50
+                # elif pc.identifier == "company_operators": 
+                #     value = 20
+                # elif pc.identifier == "roe": 
+                #     value = 0
+                # else:
+                #     value = 0
+                # data.append({"product_id": p_id, "price_component_id": pc.id, "value": value})
         self.create(data)
 
     def fill_if_not_exists(self, product):
