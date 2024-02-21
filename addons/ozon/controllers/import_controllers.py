@@ -1,4 +1,5 @@
 import time
+import traceback
 
 from odoo import http
 
@@ -41,7 +42,7 @@ class OzonProductsImport(http.Controller):
         try:
             model_ozon_import_file.create(values)
         except Exception as e:
-            raise Exception(f"Controller error: {e}")
+            raise Exception(f"ozon_import_file error: {e} {traceback.format_exc()}")
         return "Products csv file uploaded and processed successfully."
 
 
