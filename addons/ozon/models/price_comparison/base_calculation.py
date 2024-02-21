@@ -1,6 +1,9 @@
 from odoo import models, fields, api
 
-from .price_component import BASE_CALCULATION_COMPONENTS
+from .price_component import (BASE_CALCULATION_COMPONENTS, 
+                              PERCENT_COMPONENTS, 
+                              PERCENT_COST_PRICE_COMPONENTS, 
+                              DEPENDS_ON_VOLUME_COMPONENTS)
 
 class BaseCalculation(models.Model):
     _name = "ozon.base_calculation"
@@ -13,8 +16,19 @@ class BaseCalculation(models.Model):
             ("percent_cost_price", "Процент от себестоимости"),
             ("fix", "Значение, ₽"),
             ("depends_on_volume", "Значение, ₽ (зависит от объёма)"),
-        ], string="Тип начисления")
+        ], string="Тип начисления", compute="_compute_kind")
     value = fields.Float(string="Значение")
+
+    def _compute_kind(self):
+        for r in self:
+            if r.price_component_id.identifier in PERCENT_COMPONENTS:
+                r.kind = "percent"
+            elif r.price_component_id.identifier in PERCENT_COST_PRICE_COMPONENTS:
+                r.kind = "percent_cost_price"
+            elif r.price_component_id.identifier in DEPENDS_ON_VOLUME_COMPONENTS:
+                r.kind = "depends_on_volume"
+            else:
+                r.kind = "fix"
 
     def _base_calculation_components(self):
         return self.env["ozon.price_component"].search([]).filtered(
@@ -34,46 +48,33 @@ class BaseCalculation(models.Model):
             for pc in self._base_calculation_components():
                 if pc.identifier == "logistics":
                     value = product.all_expenses_ids.filtered(lambda r: r.category == "Логистика").value
-                    kind = "depends_on_volume"
                 elif pc.identifier == "last_mile":
                     value = product.all_expenses_ids.filtered(
                         lambda r: r.category == "Последняя миля").percent * 100
-                    kind = "percent"
                 elif pc.identifier == "acquiring":
                     value = product.all_expenses_ids.filtered(lambda r: r.category == "Эквайринг").percent * 100
-                    kind = "percent"
                 elif pc.identifier == "ozon_reward":
                     value = product.all_expenses_ids.filtered(
                         lambda r: r.category == "Вознаграждение Ozon").percent * 100
-                    kind = "percent"
                 elif pc.identifier == "promo":
                     value = 10
-                    kind = "percent"
                 elif pc.identifier == "tax":
                     value = product.all_expenses_ids.filtered(lambda r: r.name == "Налог").percent * 100
-                    kind = "percent"
                 elif pc.identifier == "processing":  
                     value = product.all_expenses_ids.filtered(lambda r: r.category == "Обработка").value
-                    kind = "fix"
                 elif pc.identifier == "company_processing_and_storage": 
                     value = 100
-                    kind = "fix"
                 elif pc.identifier == "company_packaging": 
                     value = 20
-                    kind = "fix"
                 elif pc.identifier == "company_marketing": 
                     value = 50
-                    kind = "fix"
                 elif pc.identifier == "company_operators": 
                     value = 20
-                    kind = "fix"
                 elif pc.identifier == "roe": 
                     value = 0
-                    kind = "percent_cost_price"
                 else:
                     value = 0
-                    kind = "fix"
-                data.append({"product_id": p_id, "price_component_id": pc.id, "value": value, "kind": kind})
+                data.append({"product_id": p_id, "price_component_id": pc.id, "value": value})
         self.create(data)
 
     def fill_if_not_exists(self, product):
@@ -87,6 +88,9 @@ class BaseCalculationWizard(models.Model):
 
     base_calculation_ids = fields.Many2many("ozon.base_calculation", string="Базовый расчёт")
 
+    def apply_to_products(self):
+        print("here")
+        print(self._context)
 
 
 class LogisticsTariff(models.Model):

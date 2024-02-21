@@ -17,6 +17,11 @@
                             </tree>
                         </field>
                     </group>
+                    <footer>
+                        <button string="Отмена" class="btn-secondary" special="cancel" />
+                        <button name="apply_to_products" string="Применить" type="object"
+                            class="btn-primary" />
+                    </footer>
                 </form>
             </field>
         </record>
