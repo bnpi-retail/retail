@@ -87,7 +87,8 @@ class BaseCalculationTemplate(models.Model):
     _description = "Шаблон планового расчёта"
 
     name = fields.Char(string="Название")
-    base_calculation_ids = fields.Many2many("ozon.base_calculation", string="Плановый расчёт")
+    base_calculation_ids = fields.Many2many("ozon.base_calculation", string="Плановый расчёт", 
+        domain=[("price_component_id.identifier", "!=", "logistics")])
 
     def create_if_not_exists(self):
         if not self.search([]):
