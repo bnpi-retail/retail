@@ -1795,6 +1795,8 @@ class Product(models.Model):
 
         schedules[0].ozon_products_checking_last_time = datetime.now()
 
+    def open_base_calculation_wizard(self):
+        pass
 
 class ProductNameGetExtension(models.Model):
     _inherit = "ozon.products"

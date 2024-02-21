@@ -75,6 +75,17 @@ class BaseCalculation(models.Model):
             return
         self.reset_for_product(product)  
 
+class BaseCalculationWizard(models.Model):
+    _name = "ozon.base_calculation_wizard"
+    _description = "План (Базовый расчёт)"
+
+    base_calculation_ids = fields.Many2many("ozon.base_calculation", string="Базовый расчёт")
+
+
+
+
+
+
 class LogisticsTariff(models.Model):
     _name = "ozon.logistics_tariff"
     _description = "Тариф логистики"
