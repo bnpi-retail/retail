@@ -1080,225 +1080,225 @@ class ImportRowProduct:
     trading_scheme: str
 
 
-class ProcessImportFile(models.Model):
-    _inherit = "ozon.import_file"
-
-    @staticmethod
-    def get_row_data(row: dict) -> ImportRowProduct:
-        return ImportRowProduct(
-            id_on_platform=row["id_on_platform"],
-            price=float(row["price"]),
-            old_price=float(row["old_price"]),
-            name=row["name"],
-            description=row["description"],
-            keywords=row.get("keywords"),
-            categories=row["categories"],
-            description_category_id=row["description_category_id"],
-            trading_scheme=row["trading_scheme"].replace("FBS FBO", "FBS, FBO"),
-        )
-
-    def get_or_create_ozon_proudct(self, row: ImportRowProduct, old_row: dict):
-        model_products = self.env["ozon.products"]
-
-        ozon_product = model_products \
-            .search([("id_on_platform", "=", row.id_on_platform)], limit=1)
-
-        if ozon_product:
-            retail_product_values = {
-                    "name": row.name,
-                    "description": row.description,
-                }
-            
-            if row.keywords is not None:
-                retail_product_values["keywords"] = row.keywords
-
-            ozon_product.write({
-                "sku": old_row["sku"],
-                "fbo_sku": old_row["fbo_sku"],
-                "fbs_sku": old_row["fbs_sku"],
-                "trading_scheme": row.trading_scheme,
-                "price": old_row["price"],
-                "old_price": old_row["old_price"],
-                "ext_comp_min_price": old_row["ext_comp_min_price"],
-                "ozon_comp_min_price": old_row["ozon_comp_min_price"],
-                "self_marketplaces_min_price": old_row["self_marketplaces_min_price"],
-                "price_index": old_row["price_index"],
-                "imgs_urls": old_row["img_urls"],
-                "products": [(1, ozon_product.products.id, retail_product_values)],
-                "categories": [(1, ozon_product.categories.id, {
-                    "name_categories": row.categories,
-                    "c_id": row.description_category_id,
-                })],
-            })
-
-        else:
-
-            ozon_category = self.get_or_create_ozon_category(
-                description_category_id=row.description_category_id,
-                categories=row.categories,
-            )
-            seller = self.get_or_create_seller(seller_name=row["seller_name"])
-
-            retail_product = self.create_retail_products(row=row, old_row=old_row)
-
-            ozon_product = self.env["ozon.products"].create({
-                "id_on_platform": row.id_on_platform,
-                "sku": old_row["sku"],
-                "fbo_sku": old_row["fbo_sku"],
-                "fbs_sku": old_row["fbs_sku"],
-                "categories": ozon_category.id,
-                "article": retail_product.product_id,
-                "description": row.description,
-                "products": retail_product.id,
-                "price": row.price,
-                "old_price": row.old_price,
-                "ext_comp_min_price": old_row["ext_comp_min_price"],
-                "ozon_comp_min_price": old_row["ozon_comp_min_price"],
-                "self_marketplaces_min_price": old_row[
-                    "self_marketplaces_min_price"
-                ],
-                "price_index": old_row["price_index"],
-                "imgs_urls": old_row["img_urls"],
-                "seller": seller.id,
-                "trading_scheme": row.trading_scheme,
-            })
-
-        return ozon_product
-
-    def create_retail_products(self, row: ImportRowProduct, old_row: dict):
-        model = self.env["retail.products"]
-        value = {
-            "name": row.name,
-            "description": row.description,
-            "product_id": old_row["offer_id"],
-            "length": float(old_row["length"]),
-            "width": float(old_row["width"]),
-            "height": float(old_row["height"]),
-            "weight": float(old_row["weight"]),
-        }
-        if row.keywords:
-            value["keywords"] = row.keywords
-        record = model.create(value)
-        return record
-
-    def get_or_create_ozon_category(self, description_category_id: int, categories: str):
-        model = self.env["ozon.categories"]
-        record = model.search([("c_id", "=", description_category_id)])
-        if not record:
-            record = model.create({
-                "name_categories": categories,
-                "c_id": description_category_id,
-            })
-        return record
-
-    def get_or_create_seller(self, seller_name: str):
-        model_seller = self.env["retail.seller"]
-        seller = model_seller.search([("name", "=", seller_name)], limit=1)
-        if not seller:
-            seller = model_seller.create({
-                "name": "Продавец",
-                "tax": "earnings_6",
-            })
-        return seller
-
-    def import_products(self, content) -> None:
-
-        with StringIO(content) as csvfile:
-            reader = csv.DictReader(csvfile)
-
-            model = self.env["ozon.price_history"]
-            price_history_data_list = []
-
-            for i, old_row in enumerate(reader):
-                row = self.get_row_data(old_row)
-                price_history_data = self.process_product(row=row, old_row=old_row)
-                price_history_data_list.append(price_history_data)
-                print(f"Product imported. Line: {i}")
-
-            model.create(price_history_data_list)
-
-    def process_product(self, row: ImportRowProduct, old_row: dict):
-        ozon_product = self.get_or_create_ozon_proudct(row, old_row)
-
-        if row.keywords is not None:
-            ozon_product.populate_search_queries(row.keywords)
-
-        ozon_product.populate_supplementary_categories(
-            old_row["full_categories"],
-            old_row["full_categories_id"],
-        )
-
-        all_fees = {k: old_row[k] for k in ALL_COMMISSIONS.keys()}
-
-        if product_fee := ozon_product.product_fee:
-            product_fee.write({
-                "product_id_on_platform": row.id_on_platform
-            })
-            are_fees_the_same = True
-            for key, new_value in all_fees.items():
-                if product_fee[key] != float(new_value):
-                    are_fees_the_same = False
-                    product_fee.write({
-                        "product_id_on_platform": row.id_on_platform,
-                        **all_fees,
-                    })
-                    break
-        else:
-            are_fees_the_same = False
-            product_fee = self.env["ozon.product_fee"].create({
-                "product": ozon_product.id,
-                "product_id_on_platform": row.id_on_platform,
-                **all_fees,
-            })
-            ozon_product.write({"product_fee": product_fee.id})
-
-        if are_fees_the_same:
-            fix_expenses_ids = ozon_product.fix_expenses.ids
-            percent_expenses_ids = ozon_product.percent_expenses.ids
-
-        else:
-            fix_expenses = self.env["ozon.fix_expenses"] \
-                .create_from_ozon_product_fee(product_fee)
-            
-            fix_expenses_ids = fix_expenses.ids
-            
-            percent_expenses = self.env["ozon.cost"] \
-                .create_from_ozon_product_fee(
-                    product_fee=product_fee,
-                    price=ozon_product.price,
-                )
-            
-            percent_expenses_ids = percent_expenses.ids
-
-            ozon_product.write(
-                {
-                    "fix_expenses": fix_expenses_ids,
-                    "percent_expenses": percent_expenses_ids,
-                },
-                percent_expenses=percent_expenses,
-            )
-
-        price_history_records = (
-            ozon_product.price_our_history_ids.sorted(
-                key=lambda r: r.create_date, reverse=True
-            )
-        )
-
-        if price_history_records:
-            previous_price = price_history_records[0].price
-        else:
-            previous_price = 0
-
-        price_history_data = {
-            "product": ozon_product.id,
-            "id_on_platform": row.id_on_platform,
-            "provider": ozon_product.seller.id,
-            "price": row.price,
-            "previous_price": previous_price,
-            "fix_expenses": fix_expenses_ids,
-            "costs": percent_expenses_ids,
-        }
-        return price_history_data
+# class ProcessImportFile(models.Model):
+#     _inherit = "ozon.import_file"
+#
+#     @staticmethod
+#     def get_row_data(row: dict) -> ImportRowProduct:
+#         return ImportRowProduct(
+#             id_on_platform=row["id_on_platform"],
+#             price=float(row["price"]),
+#             old_price=float(row["old_price"]),
+#             name=row["name"],
+#             description=row["description"],
+#             keywords=row.get("keywords"),
+#             categories=row["categories"],
+#             description_category_id=row["description_category_id"],
+#             trading_scheme=row["trading_scheme"].replace("FBS FBO", "FBS, FBO"),
+#         )
+#
+#     def get_or_create_ozon_proudct(self, row: ImportRowProduct, old_row: dict):
+#         model_products = self.env["ozon.products"]
+#
+#         ozon_product = model_products \
+#             .search([("id_on_platform", "=", row.id_on_platform)], limit=1)
+#
+#         if ozon_product:
+#             retail_product_values = {
+#                     "name": row.name,
+#                     "description": row.description,
+#                 }
+#
+#             if row.keywords is not None:
+#                 retail_product_values["keywords"] = row.keywords
+#
+#             ozon_product.write({
+#                 "sku": old_row["sku"],
+#                 "fbo_sku": old_row["fbo_sku"],
+#                 "fbs_sku": old_row["fbs_sku"],
+#                 "trading_scheme": row.trading_scheme,
+#                 "price": old_row["price"],
+#                 "old_price": old_row["old_price"],
+#                 "ext_comp_min_price": old_row["ext_comp_min_price"],
+#                 "ozon_comp_min_price": old_row["ozon_comp_min_price"],
+#                 "self_marketplaces_min_price": old_row["self_marketplaces_min_price"],
+#                 "price_index": old_row["price_index"],
+#                 "imgs_urls": old_row["img_urls"],
+#                 "products": [(1, ozon_product.products.id, retail_product_values)],
+#                 "categories": [(1, ozon_product.categories.id, {
+#                     "name_categories": row.categories,
+#                     "c_id": row.description_category_id,
+#                 })],
+#             })
+#
+#         else:
+#
+#             ozon_category = self.get_or_create_ozon_category(
+#                 description_category_id=row.description_category_id,
+#                 categories=row.categories,
+#             )
+#             seller = self.get_or_create_seller(seller_name=row["seller_name"])
+#
+#             retail_product = self.create_retail_products(row=row, old_row=old_row)
+#
+#             ozon_product = self.env["ozon.products"].create({
+#                 "id_on_platform": row.id_on_platform,
+#                 "sku": old_row["sku"],
+#                 "fbo_sku": old_row["fbo_sku"],
+#                 "fbs_sku": old_row["fbs_sku"],
+#                 "categories": ozon_category.id,
+#                 "article": retail_product.product_id,
+#                 "description": row.description,
+#                 "products": retail_product.id,
+#                 "price": row.price,
+#                 "old_price": row.old_price,
+#                 "ext_comp_min_price": old_row["ext_comp_min_price"],
+#                 "ozon_comp_min_price": old_row["ozon_comp_min_price"],
+#                 "self_marketplaces_min_price": old_row[
+#                     "self_marketplaces_min_price"
+#                 ],
+#                 "price_index": old_row["price_index"],
+#                 "imgs_urls": old_row["img_urls"],
+#                 "seller": seller.id,
+#                 "trading_scheme": row.trading_scheme,
+#             })
+#
+#         return ozon_product
+#
+#     def create_retail_products(self, row: ImportRowProduct, old_row: dict):
+#         model = self.env["retail.products"]
+#         value = {
+#             "name": row.name,
+#             "description": row.description,
+#             "product_id": old_row["offer_id"],
+#             "length": float(old_row["length"]),
+#             "width": float(old_row["width"]),
+#             "height": float(old_row["height"]),
+#             "weight": float(old_row["weight"]),
+#         }
+#         if row.keywords:
+#             value["keywords"] = row.keywords
+#         record = model.create(value)
+#         return record
+#
+#     def get_or_create_ozon_category(self, description_category_id: int, categories: str):
+#         model = self.env["ozon.categories"]
+#         record = model.search([("c_id", "=", description_category_id)])
+#         if not record:
+#             record = model.create({
+#                 "name_categories": categories,
+#                 "c_id": description_category_id,
+#             })
+#         return record
+#
+#     def get_or_create_seller(self, seller_name: str):
+#         model_seller = self.env["retail.seller"]
+#         seller = model_seller.search([("name", "=", seller_name)], limit=1)
+#         if not seller:
+#             seller = model_seller.create({
+#                 "name": "Продавец",
+#                 "tax": "earnings_6",
+#             })
+#         return seller
+#
+#     def import_products(self, content) -> None:
+#
+#         with StringIO(content) as csvfile:
+#             reader = csv.DictReader(csvfile)
+#
+#             model = self.env["ozon.price_history"]
+#             price_history_data_list = []
+#
+#             for i, old_row in enumerate(reader):
+#                 row = self.get_row_data(old_row)
+#                 price_history_data = self.process_product(row=row, old_row=old_row)
+#                 price_history_data_list.append(price_history_data)
+#                 print(f"Product imported. Line: {i}")
+#
+#             model.create(price_history_data_list)
+#
+#     def process_product(self, row: ImportRowProduct, old_row: dict):
+#         ozon_product = self.get_or_create_ozon_proudct(row, old_row)
+#
+#         if row.keywords is not None:
+#             ozon_product.populate_search_queries(row.keywords)
+#
+#         ozon_product.populate_supplementary_categories(
+#             old_row["full_categories"],
+#             old_row["full_categories_id"],
+#         )
+#
+#         all_fees = {k: old_row[k] for k in ALL_COMMISSIONS.keys()}
+#
+#         if product_fee := ozon_product.product_fee:
+#             product_fee.write({
+#                 "product_id_on_platform": row.id_on_platform
+#             })
+#             are_fees_the_same = True
+#             for key, new_value in all_fees.items():
+#                 if product_fee[key] != float(new_value):
+#                     are_fees_the_same = False
+#                     product_fee.write({
+#                         "product_id_on_platform": row.id_on_platform,
+#                         **all_fees,
+#                     })
+#                     break
+#         else:
+#             are_fees_the_same = False
+#             product_fee = self.env["ozon.product_fee"].create({
+#                 "product": ozon_product.id,
+#                 "product_id_on_platform": row.id_on_platform,
+#                 **all_fees,
+#             })
+#             ozon_product.write({"product_fee": product_fee.id})
+#
+#         if are_fees_the_same:
+#             fix_expenses_ids = ozon_product.fix_expenses.ids
+#             percent_expenses_ids = ozon_product.percent_expenses.ids
+#
+#         else:
+#             fix_expenses = self.env["ozon.fix_expenses"] \
+#                 .create_from_ozon_product_fee(product_fee)
+#
+#             fix_expenses_ids = fix_expenses.ids
+#
+#             percent_expenses = self.env["ozon.cost"] \
+#                 .create_from_ozon_product_fee(
+#                     product_fee=product_fee,
+#                     price=ozon_product.price,
+#                 )
+#
+#             percent_expenses_ids = percent_expenses.ids
+#
+#             ozon_product.write(
+#                 {
+#                     "fix_expenses": fix_expenses_ids,
+#                     "percent_expenses": percent_expenses_ids,
+#                 },
+#                 percent_expenses=percent_expenses,
+#             )
+#
+#         price_history_records = (
+#             ozon_product.price_our_history_ids.sorted(
+#                 key=lambda r: r.create_date, reverse=True
+#             )
+#         )
+#
+#         if price_history_records:
+#             previous_price = price_history_records[0].price
+#         else:
+#             previous_price = 0
+#
+#         price_history_data = {
+#             "product": ozon_product.id,
+#             "id_on_platform": row.id_on_platform,
+#             "provider": ozon_product.seller.id,
+#             "price": row.price,
+#             "previous_price": previous_price,
+#             "fix_expenses": fix_expenses_ids,
+#             "costs": percent_expenses_ids,
+#         }
+#         return price_history_data
 
 
 class ProcessProductFile(models.Model):
@@ -1442,9 +1442,18 @@ class ProcessProductFile(models.Model):
         del sup_categories
 
         products_dict = self._get_products_dict(ids_on_platform)
-        self._search_queries_sup_categories(imported_products_vals, products_dict, all_sup_categories)
+        res = self._create_search_queries_and_get_sup_categories_ids(
+            imported_products_vals, products_dict, all_sup_categories
+        )
+        products_ids, sup_categories_ids = res
+        processed_products_qty = self._write_sup_categories_ids_fees_fix_expenses_price_history(
+            products_ids, sup_categories_ids, imported_products_vals
+        )
+        logger.warning(f"{processed_products_qty} products processed")
 
-    def _search_queries_sup_categories(self, imported_products_vals, products_dict, all_sup_categories):
+    def _create_search_queries_and_get_sup_categories_ids(
+            self, imported_products_vals, products_dict, all_sup_categories
+    ) -> tuple:
         search_queries_vals_to_create = []
         products_ids_with_sup_categories_ids = defaultdict(list)
         products_ids = []
@@ -1459,7 +1468,7 @@ class ProcessProductFile(models.Model):
                 if keywords:
                     search_queries_vals = self.populate_search_queries(keywords, curr_product_data['id'])
                     search_queries_vals_to_create.extend(search_queries_vals)
-                #
+                # sup categories get ids
                 full_categories = data['full_categories']
                 full_categories_id = data['full_categories_id']
                 for cat in all_sup_categories:
@@ -1469,12 +1478,92 @@ class ProcessProductFile(models.Model):
                             products_ids_with_sup_categories_ids[product_id].append(cat_id)
 
         self.env["ozon.search_queries"].create(search_queries_vals_to_create)
+
+        return products_ids, products_ids_with_sup_categories_ids
+
+    def _write_sup_categories_ids_fees_fix_expenses_price_history(
+            self, products_ids, products_ids_with_sup_categories_ids, imported_products_vals) -> int:
+        # sup categories check and write ids
         ozon_products = self.env['ozon.products'].browse(products_ids)
-        for product in ozon_products:
-            sup_cats_ids = products_ids_with_sup_categories_ids.get(product.id)
+        price_histories_vals_to_write = []
+        price_model = self.env["ozon.price_history"]
+        for ozon_product in ozon_products:
+            sup_cats_ids = products_ids_with_sup_categories_ids.get(ozon_product.id)
             if sup_cats_ids:
-                if product.supplementary_categories.ids != sup_cats_ids:
-                    product.supplementary_categories = sup_cats_ids
+                if ozon_product.supplementary_categories.ids != sup_cats_ids:
+                    ozon_product.supplementary_categories = sup_cats_ids
+
+            # fees
+            id_on_platform = ozon_product.id_on_platform
+            old_row = imported_products_vals[id_on_platform]
+            all_fees = {k: old_row[k] for k in ALL_COMMISSIONS.keys()}
+
+            if product_fee := ozon_product.product_fee:
+                if product_fee.product_id_on_platform != id_on_platform:
+                    product_fee.write({
+                        "product_id_on_platform": id_on_platform
+                    })
+                are_fees_the_same = True
+                for key, new_value in all_fees.items():
+                    if product_fee[key] != float(new_value):
+                        are_fees_the_same = False
+                        product_fee.write({
+                            "product_id_on_platform": id_on_platform,
+                            **all_fees,
+                        })
+                        break
+            else:
+                are_fees_the_same = False
+                product_fee = self.env["ozon.product_fee"].create({
+                    "product": ozon_product.id,
+                    "product_id_on_platform": id_on_platform,
+                    **all_fees,
+                })
+                ozon_product.write({"product_fee": product_fee.id})
+
+            # fix expenses
+            if are_fees_the_same:
+                fix_expenses_ids = ozon_product.fix_expenses.ids
+                percent_expenses_ids = ozon_product.percent_expenses.ids
+
+            else:
+                fix_expenses = self.env["ozon.fix_expenses"].create_from_ozon_product_fee(product_fee)
+                fix_expenses_ids = fix_expenses.ids
+
+                percent_expenses = self.env["ozon.cost"].create_from_ozon_product_fee(
+                    product_fee=product_fee,
+                    price=ozon_product.price,
+                )
+                percent_expenses_ids = percent_expenses.ids
+
+                ozon_product.write(
+                    {
+                        "fix_expenses": fix_expenses_ids,
+                        "percent_expenses": percent_expenses_ids,
+                    },
+                    percent_expenses=percent_expenses,
+                )
+
+            # price history
+            previous_price_history = price_model.search([
+                ('product', '=', ozon_product.id)
+            ], order="create_date desc", limit=1)
+            previous_price = previous_price_history.price if previous_price_history else 0
+
+            if previous_price != ozon_product.price:
+                price_history_data = {
+                    "product": ozon_product.id,
+                    "id_on_platform": id_on_platform,
+                    "provider": ozon_product.seller.id,
+                    "price": ozon_product.price,
+                    "previous_price": previous_price,
+                    "fix_expenses": fix_expenses_ids,
+                    "costs": percent_expenses_ids,
+                }
+                price_histories_vals_to_write.append(price_history_data)
+        price_model.create(price_histories_vals_to_write)
+
+        return len(ozon_products)
 
     def _create_update_products(self, imported_products_vals, products_dict, curr_categories, curr_retail_products):
         vals_to_create_products = []
