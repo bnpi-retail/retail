@@ -82,24 +82,37 @@ class BaseCalculation(models.Model):
             return
         self.reset_for_products(product)  
 
+class BaseCalculationTemplate(models.Model):
+    _name = "ozon.base_calculation_template"
+    _description = "Шаблон планового расчёта"
+
+    name = fields.Char(string="Название")
+    base_calculation_ids = fields.Many2many("ozon.base_calculation", string="Плановый расчёт")
+
+    def create_if_not_exists(self):
+        if not self.search([]):
+            bc_comps = self.env["ozon.base_calculation"].create_base_calculation_components()
+            self.create({"name": "Шаблон", "base_calculation_ids": bc_comps})
+
 class BaseCalculationWizard(models.Model):
     _name = "ozon.base_calculation_wizard"
-    _description = "План (Базовый расчёт)"
+    _description = "Wizard - Шаблон планового расчёта"
 
-    base_calculation_ids = fields.Many2many("ozon.base_calculation", string="Базовый расчёт")
+    base_calculation_template_id = fields.Many2one("ozon.base_calculation_template", 
+                                                   string="Шаблон планового расчёта")
 
     def apply_to_products(self):
-        """Applies base_calculation_ids to products"""
-        products = self.env["ozon.products"].browse(self._context["active_ids"])
-        data = []
-        products.base_calculation_ids.unlink()
-        for prod in products:
-            p_id = prod.id
-            for r in self.base_calculation_ids: 
-                data.append({"product_id": p_id, 
-                             "price_component_id": r.price_component_id.id,
-                             "value": r.value})
-        self.env["ozon.base_calculation"].create(data)
+        """Applies base_calculation_template to products"""
+        # products = self.env["ozon.products"].browse(self._context["active_ids"])
+        # data = []
+        # products.base_calculation_ids.unlink()
+        # for prod in products:
+        #     p_id = prod.id
+        #     for r in self.base_calculation_ids: 
+        #         data.append({"product_id": p_id, 
+        #                      "price_component_id": r.price_component_id.id,
+        #                      "value": r.value})
+        # self.env["ozon.base_calculation"].create(data)
 
 
 
