@@ -103,16 +103,17 @@ class BaseCalculationWizard(models.Model):
 
     def apply_to_products(self):
         """Applies base_calculation_template to products"""
-        # products = self.env["ozon.products"].browse(self._context["active_ids"])
-        # data = []
-        # products.base_calculation_ids.unlink()
-        # for prod in products:
-        #     p_id = prod.id
-        #     for r in self.base_calculation_ids: 
-        #         data.append({"product_id": p_id, 
-        #                      "price_component_id": r.price_component_id.id,
-        #                      "value": r.value})
-        # self.env["ozon.base_calculation"].create(data)
+        products = self.env["ozon.products"].browse(self._context["active_ids"])
+        data = []
+        products.base_calculation_ids.unlink()
+        template = self.base_calculation_template_id
+        for prod in products:
+            p_id = prod.id
+            for r in template.base_calculation_ids: 
+                data.append({"product_id": p_id, 
+                             "price_component_id": r.price_component_id.id,
+                             "value": r.value})
+        self.env["ozon.base_calculation"].create(data)
 
 
 
