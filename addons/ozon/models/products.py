@@ -1469,53 +1469,6 @@ class Product(models.Model):
         alive_products._compute_coef_profitability_group()
         alive_products._compute_sales_per_day_last_30_days_group()
 
-    def populate_search_queries(self, keywords_string):
-        keywords = split_keywords(keywords_string)
-
-        data = []
-        
-        for word in keywords:
-            record = self.env["ozon.search_queries"] \
-                .search([
-                    ("words", "=", word),
-                    ("product_id", "=", self.id),
-                ])
-
-            if record:
-                continue
-
-            record = {"words": word, "product_id": self.id}
-            data.append((0, 0, record))
-            print(f"Word {word} added.")
-
-        if data:
-            self.search_queries = data
-
-    def populate_supplementary_categories(
-        self, full_categories_string: str, full_categories_id: int
-    ):
-        cats_list = split_keywords_on_slash(full_categories_string)
-        cats_list = remove_duplicates_from_list(cats_list)
-
-        sup_cat_ids = []
-        for cat in cats_list:
-            if (
-                sup_cat_id := self.env["ozon.supplementary_categories"]
-                .search([("sc_id", "=", full_categories_id), ("name", "=", cat)])
-                .id
-            ):
-                pass
-            else:
-                sup_cat_id = (
-                    self.env["ozon.supplementary_categories"]
-                    .create({"sc_id": full_categories_id, "name": cat})
-                    .id
-                )
-
-            sup_cat_ids.append(sup_cat_id)
-
-        self.supplementary_categories = [(6, 0, sup_cat_ids)]
-
     def update_percent_expenses(self):
         latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
             [],
