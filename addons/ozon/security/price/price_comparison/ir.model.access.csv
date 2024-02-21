@@ -3,4 +3,5 @@ access_ozon_price_comparison,Access Ozon Price Comparison,model_ozon_price_compa
 access_ozon_price_component,Access Ozon Price Component,model_ozon_price_component,base.group_user,1,1,1,1
 access_ozon_base_calculation,Access Ozon Base Calculation,model_ozon_base_calculation,base.group_user,1,1,1,1
 access_ozon_base_calculation_wizard,Access Ozon Base Calculation Wizard,model_ozon_base_calculation_wizard,base.group_user,1,1,1,1
+access_ozon_base_calculation_template,Access Ozon Base Calculation Template,model_ozon_base_calculation_template,base.group_user,1,1,1,1
 access_ozon_logistics_tariff,Access Ozon Logistics Tariff,model_ozon_logistics_tariff,base.group_user,1,1,1,1

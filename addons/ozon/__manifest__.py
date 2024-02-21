@@ -80,6 +80,7 @@
         "views/commissions/menu.xml",
         "views/commissions/fee_ozon.xml",
         "views/commissions/product_fee.xml",
+        "views/commissions/logistics_tariff.xml",
         "views/import/import.xml",
         "views/competitors/menu.xml",
         "views/competitors/products_competitors.xml",
