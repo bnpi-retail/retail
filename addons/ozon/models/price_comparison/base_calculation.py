@@ -22,6 +22,23 @@ class BaseCalculation(models.Model):
     value = fields.Float(string="Значение")
     comment = fields.Text(string="Комментарий")
 
+    def calculate_plan_price_from_base_calculation_components(self, product):
+        # найти сумму фикс затрат (себестоимость + все из планового расчета)
+        cp = product.fix_expenses.filtered(lambda r: r.name == "Себестоимость товара").price
+        fix_exps = product.base_calculation_ids.filtered(lambda r: r.kind in ["fix", "depends_on_volume"])
+        sum_fix_exps = sum(fix_exps.mapped("value"))
+        roe_percent = product.base_calculation_ids.filtered(
+            lambda r: r.price_component_id.identifier == "roe").value
+        roe_val = roe_percent * cp
+        total_fix_exps = cp + sum_fix_exps + roe_val
+        # найти сумму проц затрат из планового расчета
+        per_exps = product.base_calculation_ids.filtered(lambda r: r.kind == "percent")
+        total_per_exps = sum(per_exps.mapped("value")) / 100
+        # план. цена = sum_fix_expenses / (1 - total_percent)
+        plan_price = total_fix_exps / (1 - total_per_exps)
+        return plan_price
+        
+
     def _compute_kind(self):
         for r in self:
             if r.price_component_id.identifier in PERCENT_COMPONENTS:
