@@ -2287,14 +2287,29 @@ class ProductExpenses(models.Model):
     def _tax(self):
         return self.get_expense_by_category("Налог")
     
-class ProductSales(models.Model):
+class ProductTransactions(models.Model):
     _inherit = "ozon.products"
 
-    @property
-    def _last_30_days_sales(self):
+    def get_last_30_days_limits(self):
         date_from = (datetime.combine(datetime.now(), time.min) - timedelta(days=30)).date()
         date_to = (datetime.combine(datetime.now(), time.max) - timedelta(days=1)).date()
+        return date_from, date_to
+    
+    @property
+    def _last_30_days_sales(self):
+        date_from, date_to = self.get_last_30_days_limits()
         return self.sales.filtered(lambda r: date_from <= r.date <= date_to)
+    
+    @property
+    def _last_30_days_returns(self):
+        date_from, date_to = self.get_last_30_days_limits()
+        returns = (
+            self.env["ozon.transaction"]
+            .search([("name", "=", "Доставка и обработка возврата, отмены, невыкупа")])
+            .filtered(lambda r: self in [r.products])
+            .filtered(lambda r: date_from <= r.transaction_date <= date_to)
+        )
+        return returns
 
 class ProductCalculator(models.Model):
     _name = "ozon.product_calculator"
