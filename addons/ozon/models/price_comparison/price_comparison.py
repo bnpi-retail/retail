@@ -187,7 +187,7 @@ class PriceComparison(models.Model):
             val = product.base_calculation_ids.filtered(
                 lambda r: r.price_component_id == pc
             ).value
-            data_company_expenses.append(Row(group, val, val, 0, pc.id))
+            data_company_expenses.append(Row(group, val, val, val, pc.id))
 
         ### Налог
         # Налог - percent
