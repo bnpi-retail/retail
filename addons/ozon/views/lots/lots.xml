@@ -67,6 +67,7 @@
                         <field name="calculated_pricing_strategy_ids">
                             <tree editable="bottom" edit="True">
                                 <field name="strategy_id" invisible="1" />
+                                <field name="expected_price" invisible="1" />
                                 <field name="pricing_strategy_id" />
                                 <field name="value" widget="percentage"
                                     attrs="{'invisible':[('strategy_id','=','expected_price')]}" />

@@ -69,10 +69,13 @@ class PriceComparison(models.Model):
                           price_component_id=pc.id)
         # TODO: Ваша цена. Откуда брать значения ПЛАН, рынок, ФАКТ?
         pc = pcm.get("your_price")
-        min_comp_price = product.get_minimal_competitor_price()
         plan_price = self.env["ozon.base_calculation"].calculate_plan_price(product)
+        market_price = product.calculated_pricing_strategy_ids.filtered(
+            lambda r: r.strategy_id == "lower_min_competitor").expected_price
+        if not market_price:
+            market_price = product.get_minimal_competitor_price()
         your_price = Row(group, plan_value=plan_price, 
-                         market_value=min_comp_price, 
+                         market_value=market_price, 
                          fact_value=product.price, 
                          price_component_id=pc.id)
         data_prices = [buyer_price, your_price]
@@ -155,7 +158,7 @@ class PriceComparison(models.Model):
         profit = Row(group,
                      plan_value=your_price.plan_value - total_expenses.plan_value,
                      market_value=your_price.market_value - total_expenses.market_value,
-                     fact_value=your_price.market_value - total_expenses.market_value,
+                     fact_value=your_price.fact_value - total_expenses.fact_value,
                      price_component_id=pc.id)
         data_indicators.append(profit)
         # ROS (доходность, рентабельность продаж)

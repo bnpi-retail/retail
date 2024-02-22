@@ -131,7 +131,6 @@ class PricingStrategy(models.Model):
     expected_price = fields.Float(string="Цена")
     message = fields.Char(
         string="Цена",
-        readonly=True,
         help="Показывает цену либо сообщение об ошибке, если цена не может быть рассчитана",
     )
 
