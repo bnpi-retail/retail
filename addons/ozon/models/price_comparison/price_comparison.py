@@ -99,7 +99,7 @@ class PriceComparison(models.Model):
             lambda r: r.price_component_id == pc
         ).value
         fact_log = product._logistics.value
-        data_ozon_expenses.append(Row(group, plan_log, plan_log, fact_log, pc.id))
+        data_ozon_expenses.append(Row(group, plan_log, fact_log, fact_log, pc.id))
         # Последняя миля - percent
         pc = pcm.get("last_mile")
         coef = (
@@ -109,7 +109,7 @@ class PriceComparison(models.Model):
             / 100
         )
         plan_lm = your_price.plan_value * coef
-        market_lm = your_price.market_value * coef
+        market_lm = your_price.market_value * product._last_mile.percent
         fact_lm = product._last_mile.value
         data_ozon_expenses.append(Row(group, plan_lm, market_lm, fact_lm, pc.id))
         # Эквайринг - percent
@@ -121,7 +121,7 @@ class PriceComparison(models.Model):
             / 100
         )
         plan_acq = your_price.plan_value * coef
-        market_acq = your_price.market_value * coef
+        market_acq = your_price.market_value * product._acquiring.percent
         fact_acq = product._acquiring.value
         data_ozon_expenses.append(Row(group, plan_acq, market_acq, fact_acq, pc.id))
         # Вознаграждение Ozon (комиссия Ozon) - percent
@@ -133,7 +133,7 @@ class PriceComparison(models.Model):
             / 100
         )
         plan_reward = your_price.plan_value * coef
-        market_reward = your_price.market_value * coef
+        market_reward = your_price.market_value * product._ozon_reward.percent
         fact_reward = product._ozon_reward.value
         data_ozon_expenses.append(
             Row(group, plan_reward, market_reward, fact_reward, pc.id)
@@ -147,7 +147,7 @@ class PriceComparison(models.Model):
             / 100
         )
         plan_promo = your_price.plan_value * coef
-        market_promo = your_price.market_value * coef
+        market_promo = your_price.market_value * product._promo.percent
         fact_promo = product._promo.value
         data_ozon_expenses.append(
             Row(group, plan_promo, market_promo, fact_promo, pc.id)
@@ -158,7 +158,7 @@ class PriceComparison(models.Model):
             lambda r: r.price_component_id == pc
         ).value
         fact_proc = product._processing.value
-        data_ozon_expenses.append(Row(group, proc, proc, fact_proc, pc.id))
+        data_ozon_expenses.append(Row(group, proc, fact_proc, fact_proc, pc.id))
         # Обратная логистика - fix  TODO: depends on sales qty and returns
         pc = pcm.get("return_logistics")
         ret_log = product.base_calculation_ids.filtered(
@@ -171,7 +171,7 @@ class PriceComparison(models.Model):
             fact_ret_log = 0
         else:
             fact_ret_log = ((fact_log + fact_proc) * len(returns)) / (len(sales) - len(returns))
-        data_ozon_expenses.append(Row(group, ret_log, ret_log, fact_ret_log, pc.id))
+        data_ozon_expenses.append(Row(group, ret_log, fact_ret_log, fact_ret_log, pc.id))
 
         ### Расходы компании
         # TODO: откуда брать расходы компании для стобца ФАКТ?
@@ -200,7 +200,7 @@ class PriceComparison(models.Model):
             / 100
         )
         plan_tax = your_price.plan_value * coef
-        market_tax = your_price.market_value * coef
+        market_tax = your_price.market_value * product._tax.percent
         fact_tax = product._tax.value
         tax = Row(group, plan_tax, market_tax, fact_tax, pc.id)
 
