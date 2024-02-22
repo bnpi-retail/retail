@@ -669,7 +669,7 @@ class AllExpenses(models.Model):
                     "name": "Налог",
                     "description": tax_description,
                     "kind": "percent",
-                    "category": "Налоги",
+                    "category": "Налог",
                     "percent": tax_value / price,
                     "value": tax_value,
                     "expected_value": expected_tax_value,
