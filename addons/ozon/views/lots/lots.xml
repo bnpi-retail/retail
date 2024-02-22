@@ -152,7 +152,7 @@
                                 </tree>
                             </field>
                         </page>
-                        <page id="page_base_calculation" string="Плановый расчёт">
+                        <page id="page_base_calculation" string="Плановая цена">
                             <group>
                                 <button type="object" name="reset_base_calculation_ids"
                                     string="Сбросить"

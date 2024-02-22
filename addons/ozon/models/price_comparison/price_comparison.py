@@ -13,7 +13,7 @@ class PriceComparison(models.Model):
     name = fields.Char(string="Показатель (статья расходов, индикатор)", 
                        related="price_component_id.name")
     group = fields.Char(string="Группа")
-    plan_value = fields.Float(string="План (базовый расчет)")
+    plan_value = fields.Float(string="План")
     market_value = fields.Float(string="Рынок")
     fact_value = fields.Float(string="Факт")
 
