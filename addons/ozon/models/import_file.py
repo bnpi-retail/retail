@@ -6,6 +6,7 @@ import json
 import os
 
 import timeit
+import time
 
 from io import BytesIO, StringIO
 from typing import Any
@@ -370,7 +371,7 @@ class ImportFile(models.Model):
                                    """
         self.env.cr.execute(query)
         warehouse_raw_vals = self.env.cr.fetchall()
-        warehouses = {product[0]: product[1] for product in warehouse_raw_vals}
+        warehouses = {int(product[0]): product[1] for product in warehouse_raw_vals}
 
         return warehouses
 
