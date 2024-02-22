@@ -360,6 +360,9 @@ class AllExpenses(models.Model):
             limit=1,
             order="create_date desc",
         )
+        if not exp:
+            self.comment = "Косвенные затраты не посчитаны"
+            return
         period = (f"{datetime.strftime(exp.date_from, '%d %b %Y')}" 
                   f" - {datetime.strftime(exp.date_to, '%d %b %Y')}")
         for r in self:

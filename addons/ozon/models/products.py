@@ -1516,6 +1516,8 @@ class Product(models.Model):
         latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
             [], limit=1, order="id desc"
         )
+        if not latest_indirect_expenses:
+            raise UserError("Косвенные затраты не рассчитаны.")
         self.env["ozon.all_expenses"].create_update_all_product_expenses(
             self, latest_indirect_expenses, expected_price
         )

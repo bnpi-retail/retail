@@ -1,6 +1,7 @@
 # # -*- coding: utf-8 -*-
 from datetime import datetime, time, timedelta
-from odoo import models, fields, api, exceptions
+from odoo import models, fields, api
+from odoo.exceptions import UserError
 
 STRING_FIELDNAMES = {
     "Выручка": "revenue",
@@ -164,7 +165,8 @@ class IndirectPercentExpenses(models.Model):
             fields=[],
             groupby="name",
         )
-
+        if not transactions:
+            raise UserError("Транзакции за предыдущий месяц не загружены.")
         data = {
             "date_from": date_from,
             "date_to": date_to,
