@@ -50,107 +50,107 @@ class IndirectPercentExpenses(models.Model):
     _order = "create_date desc"
 
     timestamp = fields.Date(
-        string="Дата расчета", default=fields.Date.today, readonly=True
+        string="Дата расчета", default=fields.Date.today
     )
-    date_from = fields.Date(string="Начало периода", readonly=True)
-    date_to = fields.Date(string="Конец периода", readonly=True)
+    date_from = fields.Date(string="Начало периода")
+    date_to = fields.Date(string="Конец периода")
 
     # values
-    revenue = fields.Float(string="Выручка", readonly=True)
+    revenue = fields.Float(string="Выручка")
     refund = fields.Float(
-        string="Получение возврата, отмены, невыкупа от покупателя", readonly=True
+        string="Получение возврата, отмены, невыкупа от покупателя"
     )
     refund_delivery = fields.Float(
-        string="Доставка и обработка возврата, отмены, невыкупа", readonly=True
+        string="Доставка и обработка возврата, отмены, невыкупа"
     )
     pickup = fields.Float(
-        string="Обработка отправления «Pick-up» (отгрузка курьеру)", readonly=True
+        string="Обработка отправления «Pick-up» (отгрузка курьеру)"
     )
-    acquiring = fields.Float(string="Оплата эквайринга", readonly=True)
+    acquiring = fields.Float(string="Оплата эквайринга")
     delivery_rfbs = fields.Float(
-        string="Услуги доставки Партнерами Ozon на схеме realFBS", readonly=True
+        string="Услуги доставки Партнерами Ozon на схеме realFBS"
     )
     agent_rfbs = fields.Float(
         string="Агентское вознаграждение за доставку Партнерами Ozon на схеме realFBS",
         readonly=True,
     )
     promotion_seller_bonus = fields.Float(
-        string="Услуга продвижения Бонусы продавца", readonly=True
+        string="Услуга продвижения Бонусы продавца"
     )
-    review = fields.Float(string="Приобретение отзывов на платформе", readonly=True)
+    review = fields.Float(string="Приобретение отзывов на платформе")
     subscription_premium_plus = fields.Float(
-        string="Подписка Premium Plus", readonly=True
+        string="Подписка Premium Plus"
     )
     seller_error_cancel = fields.Float(
-        string="Услуга за обработку операционных ошибок продавца: отмена", readonly=True
+        string="Услуга за обработку операционных ошибок продавца: отмена"
     )
     seller_error_expired_shipment = fields.Float(
         string="Услуга за обработку операционных ошибок продавца: просроченная отгрузка",
         readonly=True,
     )
     fbo_processing = fields.Float(
-        string="Обработка товара в составе грузоместа на FBO", readonly=True
+        string="Обработка товара в составе грузоместа на FBO"
     )
     fbo_expiration_date_processing = fields.Float(
-        string="Обработка сроков годности на FBO", readonly=True
+        string="Обработка сроков годности на FBO"
     )
-    utilization = fields.Float(string="Утилизация", readonly=True)
+    utilization = fields.Float(string="Утилизация")
     booking_incomplete = fields.Float(
         string="Услуга по бронированию места и персонала для поставки с неполным составом",
         readonly=True,
     )
-    other = fields.Float(string="Прочее", readonly=True)
+    other = fields.Float(string="Прочее")
 
     # coefs: expenses/revenue
     coef_refund = fields.Float(
-        string="Получение возврата, отмены, невыкупа от покупателя", readonly=True
+        string="Получение возврата, отмены, невыкупа от покупателя"
     )
     coef_refund_delivery = fields.Float(
-        string="Доставка и обработка возврата, отмены, невыкупа", readonly=True
+        string="Доставка и обработка возврата, отмены, невыкупа"
     )
     coef_pickup = fields.Float(
-        string="Обработка отправления «Pick-up» (отгрузка курьеру)", readonly=True
+        string="Обработка отправления «Pick-up» (отгрузка курьеру)"
     )
-    coef_acquiring = fields.Float(string="Оплата эквайринга", readonly=True)
+    coef_acquiring = fields.Float(string="Оплата эквайринга")
     coef_delivery_rfbs = fields.Float(
-        string="Услуги доставки Партнерами Ozon на схеме realFBS", readonly=True
+        string="Услуги доставки Партнерами Ozon на схеме realFBS"
     )
     coef_agent_rfbs = fields.Float(
         string="Агентское вознаграждение за доставку Партнерами Ozon на схеме realFBS",
         readonly=True,
     )
     coef_promotion_seller_bonus = fields.Float(
-        string="Услуга продвижения Бонусы продавца", readonly=True
+        string="Услуга продвижения Бонусы продавца"
     )
     coef_review = fields.Float(
-        string="Приобретение отзывов на платформе", readonly=True
+        string="Приобретение отзывов на платформе"
     )
     coef_subscription_premium_plus = fields.Float(
-        string="Подписка Premium Plus", readonly=True
+        string="Подписка Premium Plus"
     )
     coef_seller_error_cancel = fields.Float(
-        string="Услуга за обработку операционных ошибок продавца: отмена", readonly=True
+        string="Услуга за обработку операционных ошибок продавца: отмена"
     )
     coef_seller_error_expired_shipment = fields.Float(
         string="Услуга за обработку операционных ошибок продавца: просроченная отгрузка",
         readonly=True,
     )
     coef_fbo_processing = fields.Float(
-        string="Обработка товара в составе грузоместа на FBO", readonly=True
+        string="Обработка товара в составе грузоместа на FBO"
     )
     coef_fbo_expiration_date_processing = fields.Float(
-        string="Обработка сроков годности на FBO", readonly=True
+        string="Обработка сроков годности на FBO"
     )
-    coef_utilization = fields.Float(string="Утилизация", readonly=True)
+    coef_utilization = fields.Float(string="Утилизация")
     coef_booking_incomplete = fields.Float(
         string="Услуга по бронированию места и персонала для поставки с неполным составом",
         readonly=True,
     )
-    coef_other = fields.Float(string="Прочее", readonly=True)
+    coef_other = fields.Float(string="Прочее")
 
     # total
     coef_total = fields.Float(
-        string="Общий коэффициент косвенных затрат", readonly=True
+        string="Общий коэффициент косвенных затрат"
     )
 
     def calculate_indirect_expenses_prev_month(self):
