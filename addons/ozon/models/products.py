@@ -1432,7 +1432,8 @@ class Product(models.Model):
                 record.is_selling = True
             else:
                 record.is_selling = False
-            self._update_in_out_stock_indicators(record)
+            for rec in record:
+                self._update_in_out_stock_indicators(rec)
 
     def _compute_is_alive(self):
         for record in self:
