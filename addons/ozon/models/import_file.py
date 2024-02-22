@@ -339,53 +339,125 @@ class ImportFile(models.Model):
                         products=ozon_products, services_cost=services_cost)
             self.env["ozon.transaction"].create(transactions_data)
 
-    def import_stocks(self, content):
+    def get_all_products_dict_by_id_on_platform(self) -> dict:
+        query = """
+                           SELECT
+                               id_on_platform,
+                               id,
+                               stocks_fbs,
+                               stocks_fbo
+                           FROM ozon_products
+                           """
+        self.env.cr.execute(query)
+        products_raw_vals = self.env.cr.fetchall()
+        products_dict = {product[0]: {
+            'id': product[1],
+            'stocks_fbs': product[2],
+            'stocks_fbo': product[3],
+        } for product in products_raw_vals}
 
+        return products_dict
+
+    name = fields.Char(string="Название")
+    w_id = fields.Char(string="Идентификатор")
+
+    def get_all_warehouses_data(self):
+        query = """
+                                   SELECT
+                                       w_id,
+                                       id
+                                   FROM ozon_warehouse
+                                   """
+        self.env.cr.execute(query)
+        warehouse_raw_vals = self.env.cr.fetchall()
+        warehouses = {product[0]: product[1] for product in warehouse_raw_vals}
+
+        return warehouses
+
+    def import_stocks(self, content):
+        all_products_by_id_on_platform = self.get_all_products_dict_by_id_on_platform()
+        stocks_vals = []
+        stocks_imported_data = {}
         with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
-
-            for i, row in enumerate(reader):
+            for row in reader:
                 id_on_platform = row["id_on_platform"]
-                if ozon_product := self.is_ozon_product_exists(id_on_platform):
-                    stock = self.env["ozon.stock"].create(
-                        {
-                            "product": ozon_product.id,
+                if ozon_product := all_products_by_id_on_platform.get(id_on_platform):
+                    if ozon_product:
+                        ozon_product_id = ozon_product['id']
+                        vals = {
+                            "product": ozon_product_id,
                             "id_on_platform": id_on_platform,
                             "stocks_fbs": row["stocks_fbs"],
                             "stocks_fbo": row["stocks_fbo"],
                         }
-                    )
-                    stocks_by_warehouse = ast.literal_eval(row["stocks_fbs_warehouses"])
-                    data = []
-                    for item in stocks_by_warehouse:
-                        warehouse = self.get_or_create_warehouse(
-                            warehouse_id=item["warehouse_id"],
-                            warehouse_name=item["warehouse_name"],
-                        )
-                        qty = item["present"]
-                        data.append(
-                            {
-                                "stock_id": stock.id,
-                                "product_id": ozon_product.id,
-                                "warehouse_id": warehouse.id,
-                                "qty": qty,
-                            }
-                        )
-                    fbs_warehouse_product_stock_ids = (
-                        self.env["ozon.fbs_warehouse_product_stock"].create(data).ids
-                    )
-                    stock.write(
-                        {
-                            "fbs_warehouse_product_stock_ids": fbs_warehouse_product_stock_ids
-                        }
-                    )
-                    ozon_product.write(
-                        {
+                        stocks_vals.append(vals)
+                        stocks_imported_data[id_on_platform] = {
                             "stocks_fbs": row["stocks_fbs"],
                             "stocks_fbo": row["stocks_fbo"],
+                            "id_on_platform": row["id_on_platform"],
+                            "sku": row["sku"],
+                            "stocks_fbs_warehouses": row["stocks_fbs_warehouses"],
+                            "ozon_product_id": ozon_product_id,
                         }
-                    )
-                    print(f"{i} - Product {id_on_platform} stock history was created")
+
+        stocks = self.env["ozon.stock"].create(stocks_vals)
+        all_warehouses_data = self.get_all_warehouses_data()
+        fbs_warehouse_product_stock_vals_to_write = []
+        products_ids_and_stocks_to_write = {}
+        products_ids = []
+        for stock in stocks:
+            id_on_platform = stock.id_on_platform
+            row = stocks_imported_data[id_on_platform]
+            product_data = all_products_by_id_on_platform[id_on_platform]
+
+            stocks_by_warehouse = ast.literal_eval(row["stocks_fbs_warehouses"])
+
+            for item in stocks_by_warehouse:
+                warehouse_id = all_warehouses_data.get(item["warehouse_id"])
+                if not warehouse_id:
+                    warehouse_id = self.env["ozon.warehouse"].create(
+                        {"name": item["warehouse_name"], "w_id": item["warehouse_id"]}
+                    ).id
+                    all_warehouses_data = self.get_all_warehouses_data()
+
+                qty = item["present"]
+                fbs_warehouse_product_stock_vals_to_write.append(
+                    {
+                        "stock_id": stock.id,
+                        "product_id": row['ozon_product_id'],
+                        "warehouse_id": warehouse_id,
+                        "qty": qty,
+                    }
+                )
+
+            # product qty
+            new_stocks_fbs = int(row["stocks_fbs"])
+            new_stocks_fbo = int(row["stocks_fbo"])
+            if (
+                    product_data['stocks_fbs'] != new_stocks_fbs or
+                    product_data['stocks_fbo'] != new_stocks_fbo
+            ):
+                product_id = product_data['id']
+                stocks = {
+                    "stocks_fbs": new_stocks_fbs,
+                    "stocks_fbo": new_stocks_fbo,
+                }
+                products_ids_and_stocks_to_write[product_id] = stocks
+                products_ids.append(product_id)
+
+        self.env["ozon.fbs_warehouse_product_stock"].create(fbs_warehouse_product_stock_vals_to_write)
+
+        updated_products_qty = self._write_stocks_to_products(products_ids, products_ids_and_stocks_to_write)
+        logger.warning(f"Обновлено остатков товаров {updated_products_qty}")
+
+    def _write_stocks_to_products(self, products_ids: list, products_ids_and_stocks_to_write: dict[dict]) -> int:
+        ozon_products = self.env['ozon.products'].browse(products_ids)
+        for product in ozon_products:
+            vals = products_ids_and_stocks_to_write[product.id]
+            product.write(vals)
+
+        return len(ozon_products)
 
     def import_prices(self, content):
 
