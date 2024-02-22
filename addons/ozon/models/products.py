@@ -374,7 +374,7 @@ class Product(models.Model):
 
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
                                            string="Сравнение цен")
-    base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Плановый расчёт")
+    base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Плановая цена")
     logistics_tariff_id = fields.Many2one("ozon.logistics_tariff", 
                                           string="Тариф логистики в плановом расчёте")
 
@@ -1519,6 +1519,8 @@ class Product(models.Model):
         latest_indirect_expenses = self.env["ozon.indirect_percent_expenses"].search(
             [], limit=1, order="id desc"
         )
+        if not latest_indirect_expenses:
+            raise UserError("Косвенные затраты не рассчитаны.")
         self.env["ozon.all_expenses"].create_update_all_product_expenses(
             self, latest_indirect_expenses, expected_price
         )
@@ -2251,7 +2253,41 @@ class GenerateUrlForDownloadGrpahData(models.Model):
         url = self.get_url(model_name, record_id, field_name)
         return url
 
+class ProductExpenses(models.Model):
+    _inherit = "ozon.products"
 
+    def get_expense_by_category(self, category):
+        return self.all_expenses_ids.filtered(lambda r: r.category == category)
+    
+    @property
+    def _logistics(self):
+        return self.get_expense_by_category("Логистика")
+    
+    @property
+    def _acquiring(self):
+        return self.get_expense_by_category("Эквайринг")
+    
+    @property
+    def _last_mile(self):
+        return self.get_expense_by_category("Последняя миля")
+    
+    @property
+    def _ozon_reward(self):
+        return self.get_expense_by_category("Вознаграждение Ozon")
+    
+    @property
+    def _processing(self):
+        return self.get_expense_by_category("Обработка")
+    
+    @property
+    def _promo(self):
+        return self.get_expense_by_category("Продвижение товара")
+    
+    @property
+    def _tax(self):
+        return self.get_expense_by_category("Налог")
+    
+    
 class ProductCalculator(models.Model):
     _name = "ozon.product_calculator"
     _description = "Калькулятор лота"
