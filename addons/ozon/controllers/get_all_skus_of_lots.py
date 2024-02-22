@@ -15,7 +15,7 @@ class LotsForGPTController(http.Controller):
         records = model_ozon_products.search([])
         product_competitors = records.mapped("id_on_platform")
         json_response = json.dumps(product_competitors)
-        return http.Response(json_response, content_type="application/json")
+        return json_response
 
     @http.route("/api/v1/save-numbers-of-products-history", 
                 auth="user", 
