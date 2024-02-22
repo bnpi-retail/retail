@@ -70,7 +70,8 @@ class PriceComparison(models.Model):
         # TODO: Ваша цена. Откуда брать значения ПЛАН, рынок, ФАКТ?
         pc = pcm.get("your_price")
         min_comp_price = product.get_minimal_competitor_price()
-        your_price = Row(group, plan_value=product.price, 
+        plan_price = self.env["ozon.base_calculation"].calculate_plan_price(product)
+        your_price = Row(group, plan_value=plan_price, 
                          market_value=min_comp_price, 
                          fact_value=product.price, 
                          price_component_id=pc.id)
