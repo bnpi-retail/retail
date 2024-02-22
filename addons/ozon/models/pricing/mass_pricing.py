@@ -102,6 +102,18 @@ class PricingStrategy(models.Model):
     weight = fields.Float(string="Вес")
     value = fields.Float(string="Значение")
 
+    def create_if_not_exists(self):
+        self.create([
+            {"name": "Ниже конкурентов на", "strategy_id": "lower_min_competitor"}
+        ])
+        self.unlink()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Стратегии назначения цен",
+            "view_mode": "tree,form",
+            "res_model": "ozon.pricing_strategy",
+        }
+
 
 class PricingStrategy(models.Model):
     _name = "ozon.calculated_pricing_strategy"
@@ -119,7 +131,6 @@ class PricingStrategy(models.Model):
     expected_price = fields.Float(string="Цена")
     message = fields.Char(
         string="Цена",
-        readonly=True,
         help="Показывает цену либо сообщение об ошибке, если цена не может быть рассчитана",
     )
 

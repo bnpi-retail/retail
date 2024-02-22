@@ -4,6 +4,7 @@ from email.policy import default
 from statistics import mean
 
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 
 from ..helpers import split_list_into_chunks_of_size_n
 from .indirect_percent_expenses import (
@@ -360,6 +361,9 @@ class AllExpenses(models.Model):
             limit=1,
             order="create_date desc",
         )
+        if not exp:
+            raise UserError("Косвенные затраты не посчитаны. Невозможно рассчитать значения в калькуляторе")
+
         period = (f"{datetime.strftime(exp.date_from, '%d %b %Y')}" 
                   f" - {datetime.strftime(exp.date_to, '%d %b %Y')}")
         for r in self:
@@ -433,10 +437,12 @@ class AllExpenses(models.Model):
                                         f"{val} / {price} = {per}\n"
                                         f"Процент от текущей цены * цена = значение\n"
                                         f"{per} * {exp_price} = {exp_val}")
-                                    
+            elif not name:
+                r.comment = ""                        
             else:
                 rev = round(exp.revenue)
-                exp_amt = round(exp[STRING_FIELDNAMES[name]])
+                str_fieldname = STRING_FIELDNAMES.get(name)
+                exp_amt = round(exp[str_fieldname])
                 r.comment = (f"Рассчитывается, исходя из косвенных затрат за период {period} по магазину в целом.\n"
                              f"Общая выручка за период: {rev}\n"
                              f"""Общие затраты по "{name}" за период: {exp_amt}\n"""
@@ -663,7 +669,7 @@ class AllExpenses(models.Model):
                     "name": "Налог",
                     "description": tax_description,
                     "kind": "percent",
-                    "category": "Налоги",
+                    "category": "Налог",
                     "percent": tax_value / price,
                     "value": tax_value,
                     "expected_value": expected_tax_value,
