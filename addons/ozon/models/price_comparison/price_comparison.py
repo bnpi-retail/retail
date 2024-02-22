@@ -41,7 +41,7 @@ class PriceComparison(models.Model):
         for r in self:
             r.diff_plan_fact = r.plan_value - r.fact_value
 
-    def collect_product_data(self, product) -> list:
+    def collect_product_data(self, product, **kwargs) -> list:
         """Collects all data needed to create price_comparison_ids for product."""
         p_id = product.id
         Row = namedtuple(
@@ -51,6 +51,7 @@ class PriceComparison(models.Model):
                 "plan_value",
                 "market_value",
                 "fact_value",
+                "calc_value",
                 "price_component_id",
                 "product_id",
             ],
@@ -62,7 +63,7 @@ class PriceComparison(models.Model):
         # Цена для покупателя TODO: откуда брать?
         pc = pcm.get("buyer_price")
         buyer_price = Row(
-            group, plan_value=0, market_value=0, fact_value=0, price_component_id=pc.id
+            group, plan_value=0, market_value=0, fact_value=0, calc_value=0, price_component_id=pc.id
         )
         # Ваша цена
         pc = pcm.get("your_price")
@@ -77,6 +78,7 @@ class PriceComparison(models.Model):
             plan_value=plan_price,
             market_value=market_price,
             fact_value=product.price,
+            calc_value=kwargs.get('calc_price', 0),
             price_component_id=pc.id,
         )
         data_prices = [buyer_price, your_price]
@@ -91,7 +93,7 @@ class PriceComparison(models.Model):
         ).price
         if cp == 0:
             return [{"product_id": p_id, "comment": "Не задана себестоимость."}]
-        cost_price = Row(group, cp, cp, cp, pc.id)
+        cost_price = Row(group, cp, cp, cp, cp, pc.id)
         data_ozon_expenses.append(cost_price)
         # Логистика - fix
         pc = pcm.get("logistics")
@@ -99,7 +101,7 @@ class PriceComparison(models.Model):
             lambda r: r.price_component_id == pc
         ).value
         fact_log = product._logistics.value
-        data_ozon_expenses.append(Row(group, plan_log, fact_log, fact_log, pc.id))
+        data_ozon_expenses.append(Row(group, plan_log, fact_log, fact_log, fact_log, pc.id))
         # Последняя миля - percent
         pc = pcm.get("last_mile")
         coef = (
@@ -109,9 +111,11 @@ class PriceComparison(models.Model):
             / 100
         )
         plan_lm = your_price.plan_value * coef
-        market_lm = your_price.market_value * product._last_mile.percent
+        fact_percent = product._last_mile.percent
+        market_lm = your_price.market_value * fact_percent
         fact_lm = product._last_mile.value
-        data_ozon_expenses.append(Row(group, plan_lm, market_lm, fact_lm, pc.id))
+        calc_lm = your_price.calc_value * fact_percent
+        data_ozon_expenses.append(Row(group, plan_lm, market_lm, fact_lm, calc_lm, pc.id))
         # Эквайринг - percent
         pc = pcm.get("acquiring")
         coef = (
@@ -121,9 +125,11 @@ class PriceComparison(models.Model):
             / 100
         )
         plan_acq = your_price.plan_value * coef
-        market_acq = your_price.market_value * product._acquiring.percent
+        fact_percent = product._acquiring.percent
+        market_acq = your_price.market_value * fact_percent
         fact_acq = product._acquiring.value
-        data_ozon_expenses.append(Row(group, plan_acq, market_acq, fact_acq, pc.id))
+        calc_acq = your_price.calc_value * fact_percent
+        data_ozon_expenses.append(Row(group, plan_acq, market_acq, fact_acq, calc_acq, pc.id))
         # Вознаграждение Ozon (комиссия Ozon) - percent
         pc = pcm.get("ozon_reward")
         coef = (
@@ -133,10 +139,12 @@ class PriceComparison(models.Model):
             / 100
         )
         plan_reward = your_price.plan_value * coef
-        market_reward = your_price.market_value * product._ozon_reward.percent
+        fact_percent = product._ozon_reward.percent
+        market_reward = your_price.market_value * fact_percent
         fact_reward = product._ozon_reward.value
+        calc_reward = your_price.calc_value * fact_percent
         data_ozon_expenses.append(
-            Row(group, plan_reward, market_reward, fact_reward, pc.id)
+            Row(group, plan_reward, market_reward, fact_reward, calc_reward, pc.id)
         )
         # Реклама - percent
         pc = pcm.get("promo")
@@ -147,10 +155,12 @@ class PriceComparison(models.Model):
             / 100
         )
         plan_promo = your_price.plan_value * coef
-        market_promo = your_price.market_value * product._promo.percent
+        fact_percent = product._promo.percent
+        market_promo = your_price.market_value * fact_percent
         fact_promo = product._promo.value
+        calc_promo = your_price.calc_value * fact_percent
         data_ozon_expenses.append(
-            Row(group, plan_promo, market_promo, fact_promo, pc.id)
+            Row(group, plan_promo, market_promo, fact_promo, calc_promo, pc.id)
         )
         # Обработка - fix
         pc = pcm.get("processing")
@@ -158,7 +168,7 @@ class PriceComparison(models.Model):
             lambda r: r.price_component_id == pc
         ).value
         fact_proc = product._processing.value
-        data_ozon_expenses.append(Row(group, proc, fact_proc, fact_proc, pc.id))
+        data_ozon_expenses.append(Row(group, proc, fact_proc, fact_proc, fact_proc, pc.id))
         # Обратная логистика - fix  TODO: depends on sales qty and returns
         pc = pcm.get("return_logistics")
         ret_log = product.base_calculation_ids.filtered(
@@ -171,7 +181,7 @@ class PriceComparison(models.Model):
             fact_ret_log = 0
         else:
             fact_ret_log = ((fact_log + fact_proc) * len(returns)) / (len(sales) - len(returns))
-        data_ozon_expenses.append(Row(group, ret_log, fact_ret_log, fact_ret_log, pc.id))
+        data_ozon_expenses.append(Row(group, ret_log, fact_ret_log, fact_ret_log, fact_ret_log, pc.id))
 
         ### Расходы компании
         # TODO: откуда брать расходы компании для стобца ФАКТ?
@@ -187,7 +197,7 @@ class PriceComparison(models.Model):
             val = product.base_calculation_ids.filtered(
                 lambda r: r.price_component_id == pc
             ).value
-            data_company_expenses.append(Row(group, val, val, val, pc.id))
+            data_company_expenses.append(Row(group, val, val, val, val, pc.id))
 
         ### Налог
         # Налог - percent
@@ -200,21 +210,24 @@ class PriceComparison(models.Model):
             / 100
         )
         plan_tax = your_price.plan_value * coef
-        market_tax = your_price.market_value * product._tax.percent
+        fact_percent = product._tax.percent
+        market_tax = your_price.market_value * fact_percent
         fact_tax = product._tax.value
-        tax = Row(group, plan_tax, market_tax, fact_tax, pc.id)
+        calc_tax = your_price.calc_value * fact_percent
+        tax = Row(group, plan_tax, market_tax, fact_tax, calc_tax, pc.id)
 
         ### Показатели
         group = "Показатели"
         data_indicators = []
         # Сумма расходов
         pc = pcm.get("total_expenses")
-        pv, mv, fv = 0, 0, 0
+        pv, mv, fv, cv = 0, 0, 0, 0
         for i in data_ozon_expenses + data_company_expenses:
             pv += i.plan_value
             mv += i.market_value
             fv += i.fact_value
-        total_expenses = Row(group, pv, mv, fv, pc.id)
+            cv += i.calc_value
+        total_expenses = Row(group, pv, mv, fv, cv, pc.id)
         data_indicators.append(total_expenses)
         # Прибыль
         pc = pcm.get("profit")
@@ -223,6 +236,7 @@ class PriceComparison(models.Model):
             plan_value=your_price.plan_value - total_expenses.plan_value,
             market_value=your_price.market_value - total_expenses.market_value,
             fact_value=your_price.fact_value - total_expenses.fact_value,
+            calc_value=your_price.calc_value - total_expenses.calc_value,
             price_component_id=pc.id,
         )
         data_indicators.append(profit)
@@ -231,10 +245,9 @@ class PriceComparison(models.Model):
         ros = Row(
             group,
             plan_value=profit.plan_value / your_price.plan_value,
-            market_value=your_price.market_value
-            and profit.market_value / your_price.market_value,
-            fact_value=your_price.fact_value
-            and profit.fact_value / your_price.fact_value,
+            market_value=your_price.market_value and profit.market_value / your_price.market_value,
+            fact_value=your_price.fact_value and profit.fact_value / your_price.fact_value,
+            calc_value=your_price.calc_value and profit.calc_value / your_price.calc_value,
             price_component_id=pc.id,
         )
         data_indicators.append(ros)
@@ -245,6 +258,7 @@ class PriceComparison(models.Model):
             plan_value=your_price.plan_value - cost_price.plan_value,
             market_value=your_price.market_value - cost_price.market_value,
             fact_value=your_price.fact_value - cost_price.fact_value,
+            calc_value=your_price.calc_value - cost_price.calc_value,
             price_component_id=pc.id,
         )
         data_indicators.append(margin)
@@ -255,6 +269,7 @@ class PriceComparison(models.Model):
             plan_value=margin.plan_value / cost_price.plan_value,
             market_value=margin.market_value / cost_price.market_value,
             fact_value=margin.fact_value / cost_price.fact_value,
+            calc_value=margin.calc_value / cost_price.calc_value,
             price_component_id=pc.id,
         )
         data_indicators.append(margin_percent)
@@ -265,6 +280,7 @@ class PriceComparison(models.Model):
             plan_value=profit.plan_value / cost_price.plan_value,
             market_value=profit.market_value / cost_price.market_value,
             fact_value=profit.fact_value / cost_price.fact_value,
+            calc_value=profit.calc_value / cost_price.calc_value,
             price_component_id=pc.id,
         )
         data_indicators.append(roe)
@@ -279,10 +295,10 @@ class PriceComparison(models.Model):
         ]
         return data
 
-    def update_for_products(self, products):
+    def update_for_products(self, products, **kwargs):
         products.price_comparison_ids.unlink()
         data = []
         for i, prod in enumerate(products):
-            data.extend(self.collect_product_data(prod))
+            data.extend(self.collect_product_data(prod, **kwargs))
             print(f"{i} - price_comparison_ids were updated")
         self.create(data)
