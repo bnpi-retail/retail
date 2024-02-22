@@ -173,7 +173,10 @@ class PriceComparison(models.Model):
             .filtered(lambda r: product in [r.products])
             .filtered(lambda r: date_from <= r.transaction_date <= date_to)
         )
-        fact_ret_log = ((fact_log + fact_proc) * len(returns)) / (len(product._last_30_days_sales) - len(returns))
+        if len(product._last_30_days_sales) - len(returns) == 0:
+            fact_ret_log = 0
+        else:
+            fact_ret_log = ((fact_log + fact_proc) * len(returns)) / (len(product._last_30_days_sales) - len(returns))
         data_ozon_expenses.append(Row(group, ret_log, ret_log, fact_ret_log, pc.id))
 
         ### Расходы компании
