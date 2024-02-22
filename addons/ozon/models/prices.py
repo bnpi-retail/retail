@@ -330,6 +330,10 @@ ALL_EXPENSES_NAMES_IDENTIFIERS = {
     'Налог': 28,
     'Доходность': 29,
     'Investment': 30,
+    'Обработка и хранение (компания)': 31,
+    'Упаковка (компания)': 32,
+    'Маркетинг (компания)': 33,
+    'Операторы (компания)': 34
 }
 
 class AllExpenses(models.Model):
@@ -369,6 +373,7 @@ class AllExpenses(models.Model):
         for r in self:
             name = r.name
             val = r.value
+            category = r.category
             exp_val = round(r.expected_value, 2)
             per = round(r.percent, 6)
             price = r.product_id.price
@@ -437,6 +442,8 @@ class AllExpenses(models.Model):
                                         f"{val} / {price} = {per}\n"
                                         f"Процент от текущей цены * цена = значение\n"
                                         f"{per} * {exp_price} = {exp_val}")
+            elif category == "Расходы компании":
+                r.comment = "Фиксированное значение"
             elif not name:
                 r.comment = ""                        
             else:
@@ -648,7 +655,23 @@ class AllExpenses(models.Model):
                 + processing.price
                 + acquiring.price
             )
-            
+            ### расходы компании
+            base_calc_company_expenses = prod.base_calculation_ids.filtered(
+                lambda r: r.price_component_id.identifier.startswith("company_"))
+            for i in base_calc_company_expenses:
+                val = i.value
+                data.append(
+                    {
+                        "product_id": prod.id,
+                        "name": i.price_component_id.name,
+                        "kind": "fix",
+                        "category": "Расходы компании",
+                        "percent": val / price,
+                        "value": val,
+                        "expected_value": exp_price * val / price,
+                    }
+                )
+                total_expenses += val
             # налог
             total_ozon_expenses = total_expenses - prod.products.total_cost_price
             # TODO: как считать налог при налогообложении "Доходы минус расходы"? Что считать расходами?

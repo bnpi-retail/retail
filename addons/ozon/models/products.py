@@ -661,6 +661,14 @@ class Product(models.Model):
         for r in self:
             r.expected_price = r.price
 
+    # @api.onchange("price_comparison_ids")
+    # def onchange_price_comparison_ids(self):
+    #     calc_price = self.price_comparison_ids.filtered(lambda r: r.name == "Ваша цена").calc_value
+    #     if calc_price:
+    #         self.env["ozon.price_comparison"].update_for_products(self, calc_price=calc_price)
+
+
+
     @api.onchange("expected_price")
     def onchange_expected_price(self):
         exp_price = self.expected_price
