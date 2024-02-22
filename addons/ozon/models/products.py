@@ -1,6 +1,7 @@
 import ast
 import logging
 import requests
+from copy import copy
 
 from collections import defaultdict
 from os import getenv
@@ -936,7 +937,7 @@ class Product(models.Model):
         elif out_of_stock_indicator:
             days = (datetime.now() - out_of_stock_indicator.create_date).days
             lost_revenue_per_day = self._calculate_a_lost_revenue(
-                self, out_of_stock_indicator.create_date
+                record, out_of_stock_indicator.create_date
             )
             lost_revenue = round(lost_revenue_per_day * days, 2)
 
@@ -1428,12 +1429,13 @@ class Product(models.Model):
     @api.depends("stocks_fbs", "stocks_fbo")
     def _get_is_selling(self):
         for record in self:
+            curr_val = copy(record.is_selling)
             if record.stocks_fbs > 0 or record.stocks_fbo > 0:
                 record.is_selling = True
             else:
                 record.is_selling = False
-            for rec in record:
-                self._update_in_out_stock_indicators(rec)
+            if curr_val != record.is_selling:
+                self._update_in_out_stock_indicators(record)
 
     def _compute_is_alive(self):
         for record in self:
