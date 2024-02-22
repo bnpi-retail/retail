@@ -2287,7 +2287,15 @@ class ProductExpenses(models.Model):
     def _tax(self):
         return self.get_expense_by_category("Налог")
     
-    
+class ProductSales(models.Model):
+    _inherit = "ozon.products"
+
+    @property
+    def _last_30_days_sales(self):
+        date_from = (datetime.combine(datetime.now(), time.min) - timedelta(days=30)).date()
+        date_to = (datetime.combine(datetime.now(), time.max) - timedelta(days=1)).date()
+        return self.sales.filtered(lambda r: date_from <= r.date <= date_to)
+
 class ProductCalculator(models.Model):
     _name = "ozon.product_calculator"
     _description = "Калькулятор лота"
