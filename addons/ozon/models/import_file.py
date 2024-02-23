@@ -419,9 +419,6 @@ class ImportFile(models.Model):
 
             for item in stocks_by_warehouse:
                 warehouse_id = all_warehouses_data.get(item["warehouse_id"])
-
-                logger.warning(f"warehouse_id = {warehouse_id}")
-
                 if not warehouse_id:
                     warehouse_id = self.env["ozon.warehouse"].create(
                         {"name": item["warehouse_name"], "w_id": item["warehouse_id"]}
