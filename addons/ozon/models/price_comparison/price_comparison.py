@@ -300,6 +300,7 @@ class PriceComparison(models.Model):
         products.price_comparison_ids.unlink()
         data = []
         for i, prod in enumerate(products):
+            prod.update_current_product_all_expenses(prod.price)
             data.extend(self.collect_product_data(prod, **kwargs))
             print(f"{i} - price_comparison_ids were updated")
         self.create(data)
