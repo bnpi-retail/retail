@@ -63,7 +63,8 @@ class PriceComparison(models.Model):
         # Цена для покупателя TODO: откуда брать?
         pc = pcm.get("buyer_price")
         buyer_price = Row(
-            group, plan_value=0, market_value=0, fact_value=0, calc_value=0, price_component_id=pc.id
+            group, plan_value=0, market_value=0, fact_value=product.marketing_price, calc_value=0, 
+            price_component_id=pc.id
         )
         # Ваша цена
         pc = pcm.get("your_price")
