@@ -118,6 +118,7 @@
                                 </group>
                                 <group>
                                     <group>
+                                        <field name="marketing_price" />
                                         <field name="price" />
                                         <field name="old_price"
                                             style="text-decoration:line-through;" />
