@@ -61,6 +61,7 @@ class Product(models.Model):
     )
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
+    marketing_price = fields.Float(string="Цена на товар с учетом всех акций", readonly=True)
     calculator_delta = fields.Float(string="Дельта", compute="_compute_calculator_delta")
     calculator_profit_norm = fields.Float(string="Доходность", 
                                                  compute="_compute_calculator_profit_norm")

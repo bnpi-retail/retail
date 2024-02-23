@@ -1651,7 +1651,6 @@ class ProcessProductFile(models.Model):
             if curr_product_data:
                 vals = {}
                 for key, curr_val in curr_product_data.items():
-
                     if key == 'imgs_urls':
                         key = 'img_urls'
                     elif key == 'article':
@@ -1660,7 +1659,9 @@ class ProcessProductFile(models.Model):
                         continue
 
                     new_val = data[key] if key != 'products' and key != 'seller' else None
-                    if key == 'price':
+                    if key == 'marketing_price':            
+                        new_val = float(new_val) if new_val else 0
+                    elif key == 'price':
                         new_val = float(new_val) if new_val else 0
                     elif key == 'old_price':
                         new_val = float(new_val) if new_val else 0
@@ -1715,6 +1716,7 @@ class ProcessProductFile(models.Model):
                     "article": data['offer_id'],
                     "description": data['description'],
                     "products": retail_prod_id,
+                    "marketing_price": data['marketing_price'],
                     "price": data['price'],
                     "old_price": data['old_price'],
                     "ext_comp_min_price": data["ext_comp_min_price"],
@@ -1757,6 +1759,7 @@ class ProcessProductFile(models.Model):
                 article,
                 description,
                 products,
+                marketing_price,
                 price,
                 old_price,
                 ext_comp_min_price,
@@ -1785,16 +1788,17 @@ class ProcessProductFile(models.Model):
                     "article": product_vals[5],
                     "description": product_vals[6],
                     "products": product_vals[7],
-                    "price": product_vals[8],
-                    "old_price": product_vals[9],
-                    "ext_comp_min_price": product_vals[10],
-                    "ozon_comp_min_price": product_vals[11],
-                    "self_marketplaces_min_price": product_vals[12],
-                    "price_index": product_vals[13],
-                    "imgs_urls": product_vals[14],
-                    "seller": product_vals[15],
-                    "trading_scheme": product_vals[16],
-                    "id": product_vals[17],
+                    "marketing_price": product_vals[8],
+                    "price": product_vals[9],
+                    "old_price": product_vals[10],
+                    "ext_comp_min_price": product_vals[11],
+                    "ozon_comp_min_price": product_vals[12],
+                    "self_marketplaces_min_price": product_vals[13],
+                    "price_index": product_vals[14],
+                    "imgs_urls": product_vals[15],
+                    "seller": product_vals[16],
+                    "trading_scheme": product_vals[17],
+                    "id": product_vals[18],
                 }
                 products_dict[id_on_platform] = product_data
 
