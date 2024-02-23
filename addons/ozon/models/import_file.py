@@ -371,7 +371,10 @@ class ImportFile(models.Model):
                                    """
         self.env.cr.execute(query)
         warehouse_raw_vals = self.env.cr.fetchall()
-        warehouses = {int(product[0]): product[1] for product in warehouse_raw_vals}
+        warehouses = {}
+        for wh in warehouse_raw_vals:
+            if not warehouses.get(int(wh[0])):
+                warehouses[int(wh[0])] = wh[1]
 
         return warehouses
 
@@ -416,10 +419,14 @@ class ImportFile(models.Model):
 
             for item in stocks_by_warehouse:
                 warehouse_id = all_warehouses_data.get(item["warehouse_id"])
+
+                logger.warning(f"warehouse_id = {warehouse_id}")
+
                 if not warehouse_id:
                     warehouse_id = self.env["ozon.warehouse"].create(
                         {"name": item["warehouse_name"], "w_id": item["warehouse_id"]}
                     ).id
+                    logger.info(f"Создан новый warehouse с id {warehouse_id}")
                     all_warehouses_data = self.get_all_warehouses_data()
 
                 qty = item["present"]
@@ -447,7 +454,8 @@ class ImportFile(models.Model):
                 products_ids_and_stocks_to_write[product_id] = stocks
                 products_ids.append(product_id)
 
-        self.env["ozon.fbs_warehouse_product_stock"].create(fbs_warehouse_product_stock_vals_to_write)
+        st_records = self.env["ozon.fbs_warehouse_product_stock"].create(fbs_warehouse_product_stock_vals_to_write)
+        logger.warning(f"Создано записей остатков на FBS складах {len(st_records)}")
 
         updated_products_qty = self._write_stocks_to_products(products_ids, products_ids_and_stocks_to_write)
         logger.warning(f"Обновлено остатков товаров {updated_products_qty}")
