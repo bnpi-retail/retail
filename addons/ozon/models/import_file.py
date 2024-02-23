@@ -491,7 +491,7 @@ class ImportFile(models.Model):
     def get_or_create_warehouse(self, warehouse_id, warehouse_name):
         """Returns existing warehouse or create a new one"""
         if warehouse := self.env["ozon.warehouse"].search(
-            [("w_id", "=", warehouse_id)]
+            [("w_id", "=", warehouse_id)], limit=1
         ):
             pass
         else:
