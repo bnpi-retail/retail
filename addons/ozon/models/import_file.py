@@ -187,7 +187,7 @@ class ImportFile(models.Model):
             log_data = self.import_transactions(content)
 
         elif values["data_for_download"] == "ozon_stocks":
-            self.import_stocks(content)
+            log_data = self.import_stocks(content)
 
         elif values["data_for_download"] == "ozon_prices":
             self.import_prices(content)
@@ -461,6 +461,13 @@ class ImportFile(models.Model):
 
         updated_products_qty = self._write_stocks_to_products(products_ids, products_ids_and_stocks_to_write)
         logger.warning(f"Обновлено остатков товаров {updated_products_qty}")
+
+        log_data = {
+            "Обновлено остатков товаров": updated_products_qty,
+            "Создано записей остатков на FBS складах": len(st_records),
+        }
+
+        return log_data
 
     def _write_stocks_to_products(self, products_ids: list, products_ids_and_stocks_to_write: dict[dict]) -> int:
         ozon_products = self.env['ozon.products'].browse(products_ids)

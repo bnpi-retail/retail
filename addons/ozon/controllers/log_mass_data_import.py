@@ -19,7 +19,7 @@ class MassDataImportController(http.Controller):
                 mdi_model = http.request.env["ozon.mass_data_import"]
                 import_ = mdi_model.create({
                     'name': request_data.get('name'),
-                    'expected_quantity': 1,
+                    'expected_quantity': 13,
                 })
                 import_id = import_.id
 
