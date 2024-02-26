@@ -23,7 +23,6 @@ class MassDataImport(models.Model):
         if self.executed_quantity == self.expected_quantity:
             self.finish_time = datetime.datetime.now()
             self.state = 'done'
-            self.log_value = True
 
 
 class MassDataImportLog(models.Model):

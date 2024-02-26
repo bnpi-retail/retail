@@ -5,14 +5,7 @@ import logging
 import json
 import os
 
-import timeit
-import time
-
-from io import BytesIO, StringIO
-from typing import Any
-import uuid
 from dataclasses import dataclass
-
 from datetime import date, datetime
 from collections import defaultdict
 from io import BytesIO, StringIO
@@ -97,6 +90,11 @@ class ImportFile(models.Model):
 
     @api.model
     def create(self, values):
+        self.import_file(values)
+        return super(ImportFile, self).create(values)
+
+    def import_file(self, values) -> dict:
+        log_data = {}
         if not "file" in values or not values["file"]:
             raise exceptions.ValidationError("Отсутствует файл.")
 
@@ -147,7 +145,7 @@ class ImportFile(models.Model):
             self.import_ozon_realisation_report(content)
 
         elif values["data_for_download"] == "ozon_products":
-            self.process_products_imported_data(content)
+            log_data = self.process_products_imported_data(content)
 
         elif values["data_for_download"] == "ozon_commissions":
 
@@ -204,8 +202,7 @@ class ImportFile(models.Model):
         elif values["data_for_download"] == "ozon_actions":
             self.import_actions(content)
 
-        return super(ImportFile, self).create(values)
-
+        return log_data
 
     def is_ozon_product_exists(self, id_on_platform: str):
         result = self.env["ozon.products"].search(
@@ -1452,7 +1449,7 @@ class ProcessProductFile(models.Model):
             vals.append({"words": word, "product_id": ozon_product_id})
         return vals
 
-    def process_products_imported_data(self, content):
+    def process_products_imported_data(self, content) -> dict:
         with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
 
@@ -1462,6 +1459,7 @@ class ProcessProductFile(models.Model):
             retail_products_data = {}
             retail_products_offer_ids = []
             sup_categories = {}
+            data_qty = 0
             for old_row in reader:
                 # products
                 id_on_platform = old_row.get('id_on_platform')
@@ -1492,8 +1490,10 @@ class ProcessProductFile(models.Model):
                     if full_categories_id:
                         sup_categories[full_categories_id] = old_row['full_categories']
 
+                data_qty += 1
+
         # update cats data
-        self._create_update_categories(imported_categories)
+        updated_cats_qty, created_cats_qty = self._create_update_categories(imported_categories)
         del imported_categories
 
         # update retail_products_data
@@ -1510,7 +1510,8 @@ class ProcessProductFile(models.Model):
 
         # update ozon products
         products_dict = self._get_products_dict(ids_on_platform)
-        self._create_update_products(imported_products_vals, products_dict, curr_categories, curr_retail_products)
+        updated_products_qty, created_products_qty = self._create_update_products(
+            imported_products_vals, products_dict, curr_categories, curr_retail_products)
         del products_dict
         del curr_categories
         del curr_retail_products
@@ -1524,10 +1525,21 @@ class ProcessProductFile(models.Model):
             imported_products_vals, products_dict, all_sup_categories
         )
         products_ids, sup_categories_ids = res
-        processed_products_qty = self._write_sup_categories_ids_fees_fix_expenses_price_history(
+        processed_products_qty, qty_new_price_history = self._write_sup_categories_ids_fees_fix_expenses_price_history(
             products_ids, sup_categories_ids, imported_products_vals
         )
         logger.warning(f"{processed_products_qty} products processed")
+
+        log_data = {
+            'Всего данных о продуктах импортировано': data_qty,
+            'Обработано продуктов': processed_products_qty,
+            'Обновлено продуктов': updated_products_qty,
+            'Создано новых историй цен': qty_new_price_history,
+            'Создано продуктов': created_products_qty,
+            'Обновлено категорий': updated_cats_qty,
+            'Создано категорий': updated_cats_qty,
+        }
+        return log_data
 
     def _create_search_queries_and_get_sup_categories_ids(
             self, imported_products_vals, products_dict, all_sup_categories
@@ -1560,7 +1572,8 @@ class ProcessProductFile(models.Model):
         return products_ids, products_ids_with_sup_categories_ids
 
     def _write_sup_categories_ids_fees_fix_expenses_price_history(
-            self, products_ids, products_ids_with_sup_categories_ids, imported_products_vals) -> int:
+            self, products_ids, products_ids_with_sup_categories_ids, imported_products_vals) -> tuple:
+        qty_new_price_history = 0
         # sup categories check and write ids
         ozon_products = self.env['ozon.products'].browse(products_ids)
         price_histories_vals_to_write = []
@@ -1639,12 +1652,16 @@ class ProcessProductFile(models.Model):
                     "costs": percent_expenses_ids,
                 }
                 price_histories_vals_to_write.append(price_history_data)
+                qty_new_price_history += 1
         price_model.create(price_histories_vals_to_write)
 
-        return len(ozon_products)
+        return len(ozon_products), qty_new_price_history
 
-    def _create_update_products(self, imported_products_vals, products_dict, curr_categories, curr_retail_products):
+    def _create_update_products(
+            self, imported_products_vals, products_dict, curr_categories, curr_retail_products) -> tuple:
         vals_to_create_products = []
+        updated_products_qty = 0
+        created_products_qty = 0
         for id_on_platform, data in imported_products_vals.items():
             curr_product_data = products_dict.get(id_on_platform)
             # check and update if necessary
@@ -1698,6 +1715,7 @@ class ProcessProductFile(models.Model):
                 if vals:
                     product = self.env['ozon.products'].search([("id_on_platform", '=', id_on_platform)])
                     product.sudo().write(vals)
+                    updated_products_qty += 1
             # create
             else:
                 # get category
@@ -1730,10 +1748,15 @@ class ProcessProductFile(models.Model):
                     "trading_scheme": data["trading_scheme"],
                 }
                 vals_to_create_products.append(vals)
+                created_products_qty += 1
 
         self.env['ozon.products'].create(vals_to_create_products)
 
+        return updated_products_qty, created_products_qty
+
     def _create_update_categories(self, imported_cats_data: dict):
+        updated_cats_qty = 0
+        created_cats_qty = 0
         model = self.env["ozon.categories"]
         curr_categories = model.search([])
         curr_cats_data = {
@@ -1745,8 +1768,12 @@ class ProcessProductFile(models.Model):
                 if data != curr_cat_vals:
                     category = model.search([('c_id', '=', c_id)], limit=1)
                     category.write(data)
+                    updated_cats_qty += 1
             else:
                 model.create(data)
+                created_cats_qty += 1
+
+        return updated_cats_qty, created_cats_qty
 
     def _get_products_dict(self, ids_on_platform) -> dict:
         query = """
