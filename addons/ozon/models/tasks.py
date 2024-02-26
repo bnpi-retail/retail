@@ -92,7 +92,7 @@ class Task(models.Model):
         """Если profit < ideal_profit, то создается задача 'Низкая цена'"""
         is_exhaused, amount_left = self.is_new_tasks_limit_exhausted()
         if is_exhaused:
-            return "New tasks limit exhausted."
+            return {"Результат": "Лимит новых задач исчерпан"}
         # взять первые 50шт продуктов с отрицательной profit_delta
         products_records = self.env["ozon.products"].search(
             [("profit_delta", "<=", 0)],
@@ -109,7 +109,7 @@ class Task(models.Model):
             )
         recs = self.create(tasks_values)
 
-        return f"Tasks for {len(products_records)} products were created."
+        return {"Результат": f"Задачи для {len(products_records)} продуктов были созданы."}
 
     def create_mass_pricing_from_low_price_task(self):
         if self.name != "low_price":

@@ -1,3 +1,4 @@
+import json
 from odoo import http
 
 
@@ -10,4 +11,5 @@ class OzonCreateDailyTasks(http.Controller):
     )
     def create_daily_tasks(self):
         tasks_response = http.request.env["ozon.tasks"].create_tasks_low_price()
-        return f"{tasks_response}\n"
+        response_json = json.dumps(tasks_response)
+        return response_json

@@ -190,10 +190,10 @@ class ImportFile(models.Model):
             log_data = self.import_stocks(content)
 
         elif values["data_for_download"] == "ozon_prices":
-            self.import_prices(content)
+            log_data = self.import_prices(content)
 
         elif values["data_for_download"] == "ozon_postings":
-            self.import_postings(content)
+            log_data = self.import_postings(content)
 
         elif values["data_for_download"] == "ozon_fbo_supply_orders":
             self.import_fbo_supply_orders(content)
@@ -477,12 +477,14 @@ class ImportFile(models.Model):
 
         return len(ozon_products)
 
-    def import_prices(self, content):
-
+    def import_prices(self, content) -> dict:
+        prices_qty = 0
+        updated_products_qty = 0
         with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
 
-            for i, row in enumerate(reader):
+            for row in reader:
+                prices_qty += 1
                 if ozon_product := self.is_ozon_product_exists(
                     id_on_platform=row["id_on_platform"]
                 ):
@@ -498,7 +500,14 @@ class ImportFile(models.Model):
                             "price_index": row["price_index"],
                         }
                     )
-                    print(f"{i} - Product {row['id_on_platform']} prices were updated")
+                    updated_products_qty += 1
+
+        log_data = {
+            'Импортировано цен': prices_qty,
+            'Цены обновлены для количества продуктов': updated_products_qty
+        }
+
+        return log_data
 
     def get_or_create_warehouse(self, warehouse_id, warehouse_name):
         """Returns existing warehouse or create a new one"""
@@ -513,12 +522,14 @@ class ImportFile(models.Model):
         return warehouse
 
     def import_postings(self, content):
-        
+        qty_postings = 0
+        qty_created = 0
         with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
 
             data = []
             for i, row in enumerate(reader):
+                qty_postings += 1
                 posting_number = row["posting_number"]
                 status = row["status"]
                 if self.env["ozon.posting"].search(
@@ -558,9 +569,17 @@ class ImportFile(models.Model):
                         "cluster_to": row["cluster_to"],
                     }
                 )
-                print(f"{i} - Posting {row['posting_number']} was imported")
+                qty_created += 1
+                # print(f"{i} - Posting {row['posting_number']} was imported")
 
             self.env["ozon.posting"].create(data)
+
+        log_data = {
+            "Отправлений импортировано": qty_postings,
+            "Отправлений создано": qty_created,
+        }
+
+        return log_data
 
     def import_fbo_supply_orders(self, content):
 
