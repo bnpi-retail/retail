@@ -47,7 +47,7 @@ class Product(models.Model):
         string="Отслеживаемые поисковые запросы"
     )
 
-    categories = fields.Many2one("ozon.categories", string="Название категории")
+    categories = fields.Many2one("ozon.categories", string="Категория")
     id_on_platform = fields.Char(string="Product ID", readonly=True, index=True)
     sku = fields.Char(string="SKU", readonly=True)
     fbo_sku = fields.Char(string="FBO SKU", readonly=True)
