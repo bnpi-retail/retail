@@ -18,7 +18,8 @@ class MassDataImportController(http.Controller):
                 request_data = http.Request.get_json_data(http.request).get('data')
                 mdi_model = http.request.env["ozon.mass_data_import"]
                 import_ = mdi_model.create({
-                    'name': request_data.get('name')
+                    'name': request_data.get('name'),
+                    'expected_quantity': 1,
                 })
                 import_id = import_.id
 
@@ -37,9 +38,17 @@ class MassDataImportController(http.Controller):
         if http.request.httprequest.method == 'POST':
             try:
                 request_data = http.Request.get_json_data(http.request).get('data')
+                mass_import_id = http.request.env["ozon.mass_data_import"].search([
+                    ('create_date', '>', datetime.date.today() - datetime.timedelta(days=1)),
+                    ('name', '=', 'Главный поток'),
+                    ('state', '=', 'running')
+                ], order='create_date desc', limit=1).id
+                logger.warning(mass_import_id)
+
                 mdi_model = http.request.env["ozon.mass_data_import.log"]
                 log = mdi_model.create({
-                    'name': request_data.get('name')
+                    'name': request_data.get('name'),
+                    'ozon_mass_data_import_id': mass_import_id,
                 })
                 log_id = log.id
 
@@ -58,8 +67,12 @@ class MassDataImportController(http.Controller):
                 state = request_data.get('state')
                 log_value = request_data.get('log_value')
                 displaying_data_raw = request_data.get('activity_data')
-                dd_list = [f"{key}: {value}\n" for key, value in displaying_data_raw.items()]
+                dd_list = ['']
+                if displaying_data_raw:
+                    dd_list = [f"{key}: {value}\n" for key, value in displaying_data_raw.items()]
                 displaying_data = ''.join(dd_list)
+                mass_import_id = log.ozon_mass_data_import_id.id
+                mass_import = http.request.env["ozon.mass_data_import"].browse([mass_import_id])
 
                 vals = {
                     'state': state,
@@ -68,6 +81,7 @@ class MassDataImportController(http.Controller):
                     'finish_time': datetime.datetime.now(),
                 }
                 log.write(vals)
+                mass_import.executed_quantity += 1
             except Exception:
                 logger.error(traceback.format_exc())
 
