@@ -21,9 +21,10 @@ class OzonTransactionsImport(http.Controller):
             "data_for_download": "ozon_transactions",
             "file": f,
         }
-        model_ozon_import_file.create(values)
+        log_data = model_ozon_import_file.import_file(values)
+        response_json = json.dumps(log_data)
 
-        return "Transactions csv file uploaded and processed successfully."
+        return response_json
 
 
 class OzonProductsImport(http.Controller):
