@@ -1,5 +1,7 @@
 from collections import namedtuple
 from datetime import timedelta
+from itertools import groupby
+from operator import itemgetter
 
 from odoo import models, fields, api
 
@@ -28,40 +30,34 @@ class SalesReportByCategory(models.Model):
     sales_count = fields.Integer(string="Кол-во продаж", readonly=True)
     product_in_sales_report_ids = fields.One2many("ozon.product_in_sales_report", 
         "sales_report_by_category_id", string="Товары в отчете", readonly=True)
-
-
+    
+    
     @api.model
     def create(self, values):
-        date_from = fields.Date.to_date(values["date_from"])
-        date_to = fields.Date.to_date(values["date_to"])
-        cat_id = values["category_id"]
-        # Взять все товары из категории
-        products = self.env["ozon.products"].search(
-            [("categories", "=", cat_id), ("sales", "!=", False)]
-        )
-        print(cat_id)
-        print(products)
+        # Взять все товары из категории с продажами за период
+        products = self.env["ozon.products"].get_products_by_cat_with_sales_for_period(values)
         Expense = namedtuple('Expense', ['name', 'category'])
-        total_revenue = 0
         total_expenses = {}
-        total_products_count = 0
-        total_sales_count = 0
-        products_in_sales_report_ids = []
-        product_expenses_in_sales_report_data = []
+        products_in_sales_report_ids, product_expenses_in_sales_report_data = [], []
+        # транзакции "доставка покупателю" за период
+        _ = {"name": "Доставка покупателю", "product_ids": products.ids}
+        _.update(values)
+        transactions = self.env["ozon.transaction"].get_transactions_by_name_products_and_period(_)
+
         # взять все затраты (all_expenses) по всем продуктам
         for p in products:
-            sales = p.mapped("sales").filtered(lambda r: date_from <= r.date <= date_to)
-            sales_qty = len(sales)
-            if sales_qty == 0:
-                continue
-            total_products_count += 1
-            total_sales_count += sales_qty
-            prod_revenue = sum(sales.mapped("revenue"))
-            total_revenue += prod_revenue
+            prod_transactions = transactions.filtered(lambda r: p in r.products)
+            sales_qty = len(prod_transactions)
+            prod_revenue = sum(prod_transactions.mapped("accruals_for_sale"))
             expenses = p.all_expenses_ids.filtered(
-                lambda r: r.category not in ["Рентабельность", "Investment"]
+                lambda r: r.category not in ["Рентабельность", "Investment", 
+                                             "Вознаграждение Ozon", "Логистика", 
+                                             "Последняя миля", "Обработка"]
             )
-            prod_total_expenses = sum(expenses.mapped("value")) * sales_qty
+            sum_indir_expenses = sum(expenses.mapped("value")) * sales_qty
+            sum_services = abs(sum(prod_transactions.services.mapped("price")))
+            sum_commissions = abs(sum(prod_transactions.mapped("sale_commission")))
+            prod_total_expenses = sum_indir_expenses + sum_services + sum_commissions
             prod_in_sales_report = self.env["ozon.product_in_sales_report"].create(
                 {
                     "product_id": p.id,
@@ -72,14 +68,44 @@ class SalesReportByCategory(models.Model):
                 }
             )
             products_in_sales_report_ids.append(prod_in_sales_report.id)
-            for e in expenses:
-                exp = Expense(name=e.name, category=e.category)
-                total_expenses.update(
+            # комиссия за продажи
+            exp = Expense(name="Комиссия за продажу", category="Вознаграждение Ozon")
+            total_expenses.update({exp: total_expenses.get(exp, 0) + sum_commissions})
+            exp_item = self.get_or_create_expenses_item(exp.name, exp.category)
+            product_expenses_in_sales_report_data.append(
                     {
-                        exp: total_expenses.get(exp, 0)
-                        + e.value * sales_qty
+                        "product_in_sales_report_id": prod_in_sales_report.id,
+                        "expenses_item_id": exp_item.id,
+                        "expense": sum_commissions / sales_qty,
+                        "total_expense": sum_commissions,
                     }
                 )
+            # фактические затраты (доп.услуги) из транзакций "Доставка покупателю"
+            # group by name
+            services = sorted(prod_transactions.services.read(["name", "price"]), key=itemgetter("name"))
+            groupby_services = groupby(services, key=itemgetter("name"))
+            for name, services in groupby_services:
+                name = name.capitalize()
+                total = abs(sum([i["price"] for i in list(services)]))
+                # приплюсовать к total_expenses
+                exp = Expense(name=name, category=name)
+                total_expenses.update({exp: total_expenses.get(exp, 0) + total})
+                # по каждому создать product_expenses_in_sales_report
+                exp_item = self.get_or_create_expenses_item(name, name)
+                product_expenses_in_sales_report_data.append(
+                    {
+                        "product_in_sales_report_id": prod_in_sales_report.id,
+                        "expenses_item_id": exp_item.id,
+                        "expense": total / sales_qty,
+                        "total_expense": total,
+                    }
+                )
+                
+            
+            # Косвенные затраты
+            for e in expenses:
+                exp = Expense(name=e.name, category=e.category)
+                total_expenses.update({exp: total_expenses.get(exp, 0) + e.value * sales_qty})
                 exp_item = self.get_or_create_expenses_item(e.name, e.category)
                 product_expenses_in_sales_report_data.append(
                     {
@@ -89,7 +115,7 @@ class SalesReportByCategory(models.Model):
                         "total_expense": e.value * sales_qty,
                     }
                 )
-
+                
         prod_expenses_in_sales_report = self.env["ozon.prod_expenses_in_sales_report"].create(
             product_expenses_in_sales_report_data
         )
@@ -97,6 +123,7 @@ class SalesReportByCategory(models.Model):
         # суммируем все затраты
         sum_total_expenses = sum(total_expenses.values())
         # рассчитываем profit
+        total_revenue = sum(transactions.mapped("accruals_for_sale"))
         profit = total_revenue - sum_total_expenses
         expenses_by_category_data = []
         for k, v in total_expenses.items():
@@ -113,8 +140,8 @@ class SalesReportByCategory(models.Model):
                 "revenue": total_revenue,
                 "total_expenses": sum_total_expenses,
                 "profit": profit,
-                "products_count": total_products_count,
-                "sales_count": total_sales_count,
+                "products_count": len(products),
+                "sales_count": len(transactions),
                 "expenses_by_category_ids": expenses_by_category.ids,
                 "product_in_sales_report_ids": products_in_sales_report_ids,
             }

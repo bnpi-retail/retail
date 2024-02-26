@@ -47,7 +47,7 @@ class Product(models.Model):
         string="Отслеживаемые поисковые запросы"
     )
 
-    categories = fields.Many2one("ozon.categories", string="Название категории")
+    categories = fields.Many2one("ozon.categories", string="Категория")
     id_on_platform = fields.Char(string="Product ID", readonly=True, index=True)
     sku = fields.Char(string="SKU", readonly=True)
     fbo_sku = fields.Char(string="FBO SKU", readonly=True)
@@ -1766,7 +1766,18 @@ class Product(models.Model):
             "res_model": "ozon.base_calculation_wizard",
             "target": "new",
             }
-
+    
+    def get_products_by_cat_with_sales_for_period(self, data):
+        domain = []
+        if cat_id := data.get("category_id"):
+            domain.append(("categories", "=", cat_id))
+        if date_from := data.get("date_from"):
+            domain.append(("sales.date", ">=", fields.Date.to_date(date_from)))
+        if date_to := data.get("date_to"):
+            domain.append(("sales.date", "<=", fields.Date.to_date(date_to)))
+        if not domain:
+            domain.append(("sales", "!=", False))
+        return self.search(domain)
 
 class ProductNameGetExtension(models.Model):
     _inherit = "ozon.products"
