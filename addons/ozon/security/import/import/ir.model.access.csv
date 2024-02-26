@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_ozon_import_file,Access Ozon Import File,model_ozon_import_file,base.group_user,1,1,1,1
 access_ozon_mass_data_import,Access_ozon_mass_data_import,model_ozon_mass_data_import,base.group_user,1,1,1,1
+access_ozon_mass_data_import_log,Access_ozon_mass_data_import_log,model_ozon_mass_data_import_log,base.group_user,1,1,1,1

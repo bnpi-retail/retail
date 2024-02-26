@@ -16,7 +16,7 @@ class MassDataImportController(http.Controller):
         if http.request.httprequest.method == 'POST':
             try:
                 request_data = http.Request.get_json_data(http.request).get('data')
-                mdi_model = http.request.env["ozon.mass_data_import"]
+                mdi_model = http.request.env["ozon.mass_data_import.log"]
                 log = mdi_model.create({
                     'name': request_data.get('name')
                 })
@@ -32,7 +32,7 @@ class MassDataImportController(http.Controller):
         elif http.request.httprequest.method == 'PUT':
             try:
                 request_data = http.Request.get_json_data(http.request).get('data')
-                mdi_model = http.request.env["ozon.mass_data_import"]
+                mdi_model = http.request.env["ozon.mass_data_import.log"]
                 log = mdi_model.browse([request_data.get('log_id')])
                 state = request_data.get('state')
                 log_value = request_data.get('log_value')

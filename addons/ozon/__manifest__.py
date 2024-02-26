@@ -120,6 +120,7 @@
         "views/reports/realisation_report.xml",
         "views/technical/menu.xml",
         "views/import/mass_data_import_views.xml",
+        "views/import/mass_data_import_log_views.xml",
         # cron
         "crone/ir_cron_data.xml",
     ],
