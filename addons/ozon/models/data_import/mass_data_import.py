@@ -20,11 +20,6 @@ class MassDataImport(models.Model):
 
     @api.constrains('executed_quantity')
     def constraint_executed_quantity(self):
-
-        logging.getLogger().warning(self.executed_quantity)
-        logging.getLogger().warning(self.expected_quantity)
-
-
         if self.executed_quantity == self.expected_quantity:
             self.finish_time = datetime.datetime.now()
             self.state = 'done'

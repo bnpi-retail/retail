@@ -43,7 +43,6 @@ class MassDataImportController(http.Controller):
                     ('name', '=', 'Главный поток'),
                     ('state', '=', 'running')
                 ], order='create_date desc', limit=1).id
-                logger.warning(mass_import_id)
 
                 mdi_model = http.request.env["ozon.mass_data_import.log"]
                 log = mdi_model.create({
