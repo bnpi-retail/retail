@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ozon_mass_data_import_log_view_form" model="ir.ui.view">
+            <field name="name">ozon_mass_data_import_log.form</field>
+            <field name="model">ozon.mass_data_import.log</field>
+            <field name="arch" type="xml">
+                <form string="Mass Data Imports">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="start_time" string="Дата запуска" readonly="1"/>
+                                <field name="finish_time" string="Время окончания" readonly="1"/>
+                                <field name="name" string="Наименование" readonly="1"/>
+                                <field name="state" string="Состояние" readonly="1"/>
+                                <field name="displaying_data" string="Контекст" readonly="1"/>
+                                <field name="log_value" string="Результат" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="ozon_mass_data_import_log_view_tree" model="ir.ui.view">
+            <field name="name">ozon_mass_data_import_log.tree</field>
+            <field name="model">ozon.mass_data_import.log</field>
+            <field name="arch" type="xml">
+                <tree string="Отчеты" create="0" default_order="start_time desc">
+                    <field name="start_time" string="Время запуска" readonly="1"/>
+                    <field name="finish_time" string="Время окончания" readonly="1"/>
+                    <field name="state" string="Состояние" readonly="1"/>
+                    <field name="name" string="Наименование" readonly="1"/>
+                    <field name="displaying_data" string="Контекст" readonly="1"/>
+                    <field name="log_value" string="Результат" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_open_ozon_mass_data_import_log" model="ir.actions.act_window">
+            <field name="name">Mass Import logs</field>
+            <field name="res_model">ozon.mass_data_import.log</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+    </data>
+</odoo>
