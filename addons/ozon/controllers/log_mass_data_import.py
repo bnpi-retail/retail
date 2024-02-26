@@ -16,6 +16,27 @@ class MassDataImportController(http.Controller):
         if http.request.httprequest.method == 'POST':
             try:
                 request_data = http.Request.get_json_data(http.request).get('data')
+                mdi_model = http.request.env["ozon.mass_data_import"]
+                import_ = mdi_model.create({
+                    'name': request_data.get('name')
+                })
+                import_id = import_.id
+
+                response_data = {"response": "success", "message": "Processed successfully", 'import_id': import_id}
+            except Exception as e:
+                logger.warning(f"create_mass_data_import exception: {e}, {traceback.format_exc()} ")
+                response_data = {"response": "server error", "message": "Process error"}
+
+            return response_data
+
+    @http.route("/api/v1/mass-data-import-log",
+                auth="user",
+                type="json",
+                methods=["POST", "PUT"])
+    def mass_data_import_log(self):
+        if http.request.httprequest.method == 'POST':
+            try:
+                request_data = http.Request.get_json_data(http.request).get('data')
                 mdi_model = http.request.env["ozon.mass_data_import.log"]
                 log = mdi_model.create({
                     'name': request_data.get('name')
