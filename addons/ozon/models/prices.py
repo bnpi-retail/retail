@@ -545,23 +545,6 @@ class AllExpenses(models.Model):
                 )
                 total_expenses += value
 
-            # ЛИБО общий коэф затрат
-            # coef_total = latest_indirect_expenses.coef_total
-            # data.append(
-            #     {
-            #         "product_id": prod.id,
-            #         "name": "Общий коэффициент косвенных затрат",
-            #         "description": f"{round(coef_total,2)}%",
-            #         "kind": "percent",
-            #         "category": "Услуги Ozon",
-            #         "percent": coef_total / 100,
-            #         "value": price * coef_total / 100,
-            #         "expected_value": exp_price * coef_total / 100,
-            #         # TODO: убрать после тестов
-            #         # "percent": 0.05,
-            #         # "value": price * 0.05,
-            #     }
-            # )
             # вознаграждение озон, последняя миля, логистика, обработка, эквайринг
             if prod.trading_scheme == "FBO":
                 ozon_com = prod.fbo_percent_expenses.filtered(

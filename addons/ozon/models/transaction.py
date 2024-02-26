@@ -45,3 +45,17 @@ class Transactions(models.Model):
         string="Номер отправления",
         readonly=True,
     )
+
+    def get_transactions_by_name_products_and_period(self, data):
+        domain = []
+        if name := data.get("name"):
+            domain.append(("name", "=", name))
+        if date_from := data.get("date_from"):
+            domain.append(("transaction_date", ">=", fields.Date.to_date(date_from)))
+        if date_to := data.get("date_to"):
+            domain.append(("transaction_date", "<=", fields.Date.to_date(date_to)))
+        if product_ids := data.get("product_ids"):
+            domain.append(("products", "in", product_ids))
+        if not domain:
+            return
+        return self.search(domain)

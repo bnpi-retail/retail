@@ -38,6 +38,4 @@ class OzonComputeAllExpenses(http.Controller):
     def compute_ozon_products_all_expenses(self):
         ozon_products_model = http.request.env["ozon.products"]
         ozon_products_model.update_all_expenses()
-        all_products = ozon_products_model.search([])
-        all_products.calculate_price_comparison_ids()
         return "All products' expenses were successfully computed."
