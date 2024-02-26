@@ -196,10 +196,10 @@ class ImportFile(models.Model):
             log_data = self.import_postings(content)
 
         elif values["data_for_download"] == "ozon_fbo_supply_orders":
-            self.import_fbo_supply_orders(content)
+            log_data = self.import_fbo_supply_orders(content)
 
         elif values["data_for_download"] == "ozon_actions":
-            self.import_actions(content)
+            log_data = self.import_actions(content)
 
         return log_data
 
@@ -581,12 +581,14 @@ class ImportFile(models.Model):
 
         return log_data
 
-    def import_fbo_supply_orders(self, content):
-
+    def import_fbo_supply_orders(self, content) -> dict:
+        qty_fbo_supply_order = 0
+        qty_created = 0
         with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
 
             for i, row in enumerate(reader):
+                qty_fbo_supply_order += 1
                 supply_order_id = row["supply_order_id"]
                 if self.env["ozon.fbo_supply_order"].search(
                     [("supply_order_id", "=", supply_order_id)]
@@ -632,7 +634,15 @@ class ImportFile(models.Model):
                         "skus": skus,
                     }
                 )
-                print(f"{i} - Supply order {supply_order_id} was imported")
+                qty_created += 1
+                # print(f"{i} - Supply order {supply_order_id} was imported")
+
+        log_data = {
+            "Всего импортировано": qty_fbo_supply_order,
+            "Создано новых": qty_created,
+        }
+
+        return log_data
 
     def create_sale_from_transaction(self, data: dict, products: list, services_cost: float):
         if len(products) == 0:
@@ -874,12 +884,16 @@ class ImportFile(models.Model):
         record.img_url_sale_last_year = url
         record.img_data_sale_last_year = average_data
 
-    def import_actions(self, content):
-
+    def import_actions(self, content) -> dict:
+        qty_actions = 0
+        qty_created_actions = 0
+        qty_created_action_candidate = 0
+        qty_action_participants = 0
         with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
 
             for i, row in enumerate(reader):
+                qty_actions += 1
                 a_id = row["action_id"]
                 is_participating = ast.literal_eval(row["is_participating"])
                 potential_prod_count = row["potential_products_count"]
@@ -914,6 +928,7 @@ class ImportFile(models.Model):
                             "participating_products_count": participating_products_count,
                         }
                     )
+                    qty_created_actions += 1
 
                     candidates = json.loads(row["action_candidates"])
                     candidates_data = []
@@ -934,6 +949,7 @@ class ImportFile(models.Model):
                             print(
                                 f"{idx}/{len_candidates} - Product {id_on_platform} was added as action {a_id} candidate"
                             )
+                            qty_created_action_candidate += 1
 
                     action_candidate_ids = (
                         self.env["ozon.action_candidate"].create(candidates_data).ids
@@ -954,8 +970,18 @@ class ImportFile(models.Model):
                         )
                         if action_candidate:
                             action_candidate.is_participating = True
+                            qty_action_participants += 1
 
-                print(f"{i} - Action {a_id} was imported")
+                # print(f"{i} - Action {a_id} was imported")
+
+        log_data = {
+            "Всего импортировано акций": qty_actions,
+            "Создано новых акций": qty_created_actions,
+            "Создано новых кандидатов к акциям": qty_created_action_candidate,
+            "Добавлено в участники акций": qty_action_participants,
+        }
+
+        return log_data
 
     def import_successful_products_competitors(self, content):
         lines = content.split("\n")

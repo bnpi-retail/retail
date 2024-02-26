@@ -128,9 +128,10 @@ class OzonFboSupplyOrdersImport(http.Controller):
             "data_for_download": "ozon_fbo_supply_orders",
             "file": f,
         }
-        model_ozon_import_file.create(values)
+        log_data = model_ozon_import_file.import_file(values)
+        response_json = json.dumps(log_data)
 
-        return "FBO supply orders csv file uploaded and processed successfully."
+        return response_json
 
 
 class OzonActionsImport(http.Controller):
@@ -148,6 +149,7 @@ class OzonActionsImport(http.Controller):
             "data_for_download": "ozon_actions",
             "file": f,
         }
-        model_ozon_import_file.create(values)
+        log_data = model_ozon_import_file.import_file(values)
+        response_json = json.dumps(log_data)
 
-        return "Actions csv file uploaded and processed successfully."
+        return response_json
