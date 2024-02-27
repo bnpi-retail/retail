@@ -417,31 +417,33 @@ class AllExpenses(models.Model):
             elif name == "Налог":
                 if not tax:
                     r.comment = f"{name} не задан у продавца."
-                else: 
-                    exp_except_tax_roe_roi = r.product_id.total_all_expenses_ids_except_tax_roe_roi
-                    ozon_exp = exp_except_tax_roe_roi - r.product_id.products.total_cost_price
-                    if tax.startswith("earnings_minus_expenses"):
-                        if r.value == 0:
-                            r.comment = (f"Схема налогообложения: {tax_string}.\n"
-                                        f"Цена < все затраты. Налог = 0.")
-                        else:
-                            r.comment = ("(Цена - все затраты) * процент налогообложения = текущий налог\n"
-                                        f"({price} - {exp_except_tax_roe_roi}) * {tax_percent} = {val}\n"
-                                        f"Текущий налог / текущая цена = процент от текущей цены\n"
-                                        f"{val} / {price} = {per}\n"
-                                        f"Процент от текущей цены * цена = значение\n"
-                                        f"{per} * {exp_price} = {exp_val}")
-                    else:
-                        if val == 0:
-                            r.comment = (f"Схема налогообложения: {tax_string}.\n"
-                                        f"Цена < затраты Ozon. Налог = 0.")
-                        else:
-                            r.comment = ("(Цена - затраты Ozon) * процент налогообложения = текущий налог\n"
-                                        f"({price} - {ozon_exp}) * {tax_percent} = {val}\n"
-                                        f"Текущий налог / текущая цена = процент от текущей цены\n"
-                                        f"{val} / {price} = {per}\n"
-                                        f"Процент от текущей цены * цена = значение\n"
-                                        f"{per} * {exp_price} = {exp_val}")
+                else:
+                    r.comment = ("Цена * процент налогообложения = текущий налог\n"
+                                f"{exp_price} * {tax_percent} = {exp_val}\n")
+                    # exp_except_tax_roe_roi = r.product_id.total_all_expenses_ids_except_tax_roe_roi
+                    # ozon_exp = exp_except_tax_roe_roi - r.product_id.products.total_cost_price
+                    # if tax.startswith("earnings_minus_expenses"):
+                    #     if r.value == 0:
+                    #         r.comment = (f"Схема налогообложения: {tax_string}.\n"
+                    #                     f"Цена < все затраты. Налог = 0.")
+                    #     else:
+                    #         r.comment = ("(Цена - все затраты) * процент налогообложения = текущий налог\n"
+                    #                     f"({price} - {exp_except_tax_roe_roi}) * {tax_percent} = {val}\n"
+                    #                     f"Текущий налог / текущая цена = процент от текущей цены\n"
+                    #                     f"{val} / {price} = {per}\n"
+                    #                     f"Процент от текущей цены * цена = значение\n"
+                    #                     f"{per} * {exp_price} = {exp_val}")
+                    # else:
+                    #     if val == 0:
+                    #         r.comment = (f"Схема налогообложения: {tax_string}.\n"
+                    #                     f"Цена < затраты Ozon. Налог = 0.")
+                    #     else:
+                    #         r.comment = ("(Цена - затраты Ozon) * процент налогообложения = текущий налог\n"
+                    #                     f"({price} - {ozon_exp}) * {tax_percent} = {val}\n"
+                    #                     f"Текущий налог / текущая цена = процент от текущей цены\n"
+                    #                     f"{val} / {price} = {per}\n"
+                    #                     f"Процент от текущей цены * цена = значение\n"
+                    #                     f"{per} * {exp_price} = {exp_val}")
             elif category == "Расходы компании":
                 r.comment = "Фиксированное значение"
             elif not name:
@@ -656,19 +658,19 @@ class AllExpenses(models.Model):
                 )
                 total_expenses += val
             # налог
-            total_ozon_expenses = total_expenses - prod.products.total_cost_price
-            # TODO: как считать налог при налогообложении "Доходы минус расходы"? Что считать расходами?
-            if tax.startswith("earnings_minus_expenses"):
-                if (price - total_expenses) > 0:
-                    tax_value = (price - total_expenses) * tax_percent
-                else:
-                    tax_value = 0
-            else:
-                if (price - total_ozon_expenses) > 0:
-                    tax_value = (price - total_ozon_expenses) * tax_percent
-                else:
-                    tax_value = 0
-            expected_tax_value = (tax_value / price) * exp_price
+            # total_ozon_expenses = total_expenses - prod.products.total_cost_price
+            # if tax.startswith("earnings_minus_expenses"):
+            #     if (price - total_expenses) > 0:
+            #         tax_value = (price - total_expenses) * tax_percent
+            #     else:
+            #         tax_value = 0
+            # else:
+            #     if (price - total_ozon_expenses) > 0:
+            #         tax_value = (price - total_ozon_expenses) * tax_percent
+            #     else:
+            #         tax_value = 0
+            tax_value = price * tax_percent
+            expected_tax_value = exp_price * tax_percent
             data.append(
                 {
                     "product_id": prod.id,
@@ -676,7 +678,7 @@ class AllExpenses(models.Model):
                     "description": tax_description,
                     "kind": "percent",
                     "category": "Налог",
-                    "percent": tax_value / price,
+                    "percent": tax_percent,
                     "value": tax_value,
                     "expected_value": expected_tax_value,
                 },
