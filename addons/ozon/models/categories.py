@@ -1,8 +1,11 @@
 import requests
+import logging
 
 from os import getenv
 from datetime import datetime
 from odoo import models, fields, api
+
+logger = logging.getLogger(__name__)
 
 
 class Categories(models.Model):
@@ -16,6 +19,41 @@ class Categories(models.Model):
     category_manager = fields.Many2one("res.users")
     bcg_matrix_last_update = fields.Datetime()
     abc_group_last_update = fields.Datetime()
+
+    category_total_price = fields.Float(string="Сумма цен товаров категории в продаже")
+    category_total_marketing_price = fields.Float(string="Сумма цен для покупателя товаров категории в продаже")
+    price_difference_percentage = fields.Float(
+        string="Процентное соотношение между нашей ценой и ценой для покупателя")
+    is_price_difference_percentage_computed = fields.Boolean()
+
+    def action_compute_average_prices_difference(self):
+        for record in self:
+            query = """
+                    SELECT
+                         SUM(price) as total_price,
+                         SUM(marketing_price) as total_marketing_price
+                    FROM
+                        ozon_products
+                    WHERE
+                        categories = %s
+                        AND
+                        is_selling = %s
+            """
+            self.env.cr.execute(query, (record.id, True))
+            result = self.env.cr.fetchone()
+
+            total_price = result[0] if result and result[0] else 0.00001
+            total_marketing_price = result[1] if result and result[1] else 0
+
+            if result and (result[0] or result[1]):
+                difference = total_price - total_marketing_price
+                percentage = (difference * 100) / total_price
+                record.price_difference_percentage = percentage
+
+            record.category_total_price = total_price
+            record.category_total_marketing_price = total_marketing_price
+
+            record.is_price_difference_percentage_computed = True
 
 
 class GenerateUrlForDownloadGrpahData(models.Model):
