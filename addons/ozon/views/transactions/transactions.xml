@@ -55,6 +55,7 @@
                 <tree>
                     <field name="transaction_date" />
                     <field name="name" />
+                    <field name="accruals_for_sale" />
                     <field name="amount" />
                 </tree>
             </field>
