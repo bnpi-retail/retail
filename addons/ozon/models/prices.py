@@ -528,8 +528,7 @@ class AllExpenses(models.Model):
                     "expected_value": exp_price * percent_promo_expense,
                 }
             )
-            # ЛИБО услуги озон
-            category = "Услуги Ozon"
+            # косвенные затраты Ozon
             for k, v in COEF_FIELDNAMES_STRINGS.items():
                 percent = latest_indirect_expenses[k] / 100
                 value = price * percent
@@ -539,7 +538,7 @@ class AllExpenses(models.Model):
                         "name": v,
                         "description": f"{latest_indirect_expenses[k]}%",
                         "kind": "percent",
-                        "category": category,
+                        "category": "Вознаграждение Ozon",
                         "percent": percent,
                         "value": value,
                         "expected_value": exp_price * percent,

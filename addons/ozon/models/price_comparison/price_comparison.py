@@ -140,9 +140,10 @@ class PriceComparison(models.Model):
             / 100
         )
         plan_reward = your_price.plan_value * coef
-        fact_percent = product._ozon_reward.percent
+        total_ozon_reward_expenses = sum(product._ozon_reward.mapped("value"))
+        fact_percent = total_ozon_reward_expenses / product.price
         market_reward = your_price.market_value * fact_percent
-        fact_reward = product._ozon_reward.value
+        fact_reward = total_ozon_reward_expenses
         calc_reward = your_price.calc_value * fact_percent
         data_ozon_expenses.append(
             Row(group, plan_reward, market_reward, fact_reward, calc_reward, pc.id)
