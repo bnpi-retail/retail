@@ -177,14 +177,14 @@ class PriceComparison(models.Model):
         ret_log = product.base_calculation_ids.filtered(
             lambda r: r.price_component_id == pc
         ).value
-        # TODO: как считать факт. обратную логистику?
-        sales = product._last_30_days_sales
-        returns = product._last_30_days_returns
-        if len(product._last_30_days_sales) - len(returns) == 0:
-            fact_ret_log = 0
-        else:
-            fact_ret_log = ((fact_log + fact_proc) * len(returns)) / (len(sales) - len(returns))
-        data_ozon_expenses.append(Row(group, ret_log, fact_ret_log, fact_ret_log, fact_ret_log, pc.id))
+        # # TODO: как считать факт. обратную логистику?
+        # sales = product._last_30_days_sales
+        # returns = product._last_30_days_returns
+        # if len(product._last_30_days_sales) - len(returns) == 0:
+        #     fact_ret_log = 0
+        # else:
+        #     fact_ret_log = ((fact_log + fact_proc) * len(returns)) / (len(sales) - len(returns))
+        data_ozon_expenses.append(Row(group, ret_log, 0, 0, 0, pc.id))
 
         ### Расходы компании
         # TODO: откуда брать расходы компании для стобца ФАКТ?
