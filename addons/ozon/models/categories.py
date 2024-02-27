@@ -22,9 +22,9 @@ class Categories(models.Model):
 
     category_total_price = fields.Float(string="Сумма цен товаров категории в продаже")
     category_total_marketing_price = fields.Float(string="Сумма цен для покупателя товаров категории в продаже")
-    price_difference_percentage = fields.Float(
-        string="Процентное соотношение между нашей ценой и ценой для покупателя")
-    is_price_difference_percentage_computed = fields.Boolean()
+    price_difference = fields.Float(
+        string="Cоотношение между нашей ценой и ценой для покупателя")
+    is_price_difference_computed = fields.Boolean()
 
     def action_compute_average_prices_difference(self):
         for record in self:
@@ -46,14 +46,12 @@ class Categories(models.Model):
             total_marketing_price = result[1] if result and result[1] else 0
 
             if result and (result[0] or result[1]):
-                difference = total_price - total_marketing_price
-                percentage = (difference * 100) / total_price
-                record.price_difference_percentage = percentage
+                record.price_difference = (total_price - total_marketing_price) / total_price
 
             record.category_total_price = total_price
             record.category_total_marketing_price = total_marketing_price
 
-            record.is_price_difference_percentage_computed = True
+            record.is_price_difference_computed = True
 
 
 class GenerateUrlForDownloadGrpahData(models.Model):

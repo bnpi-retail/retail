@@ -62,6 +62,10 @@ class Product(models.Model):
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
     marketing_price = fields.Float(string="Цена на товар с учетом всех акций", readonly=True)
+    marketing_discount = fields.Float(string="Маркетинговая скидка", 
+                                      compute="_compute_marketing_discount")
+    category_marketing_discount = fields.Float(string="Средняя маркетинговая скидка категории",
+                                               related="categories.price_difference")
     calculator_delta = fields.Float(string="Дельта", compute="_compute_calculator_delta")
     calculator_profit_norm = fields.Float(string="Доходность", 
                                                  compute="_compute_calculator_profit_norm")
@@ -1778,6 +1782,10 @@ class Product(models.Model):
         if not domain:
             domain.append(("sales", "!=", False))
         return self.search(domain)
+    
+    def _compute_marketing_discount(self):
+        for r in self:
+            r.marketing_discount = (r.price - r.marketing_price) / r.price
 
 class ProductNameGetExtension(models.Model):
     _inherit = "ozon.products"

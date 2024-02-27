@@ -63,22 +63,23 @@ class PriceComparison(models.Model):
         group = "Цены"
         # Цена для покупателя TODO: откуда брать?
         pc = pcm.get("buyer_price")
+        market_value = product.calculated_pricing_strategy_ids.filtered(
+            lambda r: r.strategy_id == "lower_min_competitor"
+        ).expected_price
+        if not market_value:
+            market_value = product.get_minimal_competitor_price()
         buyer_price = Row(
-            group, plan_value=0, market_value=0, fact_value=product.marketing_price, calc_value=0, 
+            group, plan_value=0, market_value=market_value, fact_value=product.marketing_price, calc_value=0, 
             price_component_id=pc.id
         )
         # Ваша цена
         pc = pcm.get("your_price")
         plan_price = self.env["ozon.base_calculation"].calculate_plan_price(product)
-        market_price = product.calculated_pricing_strategy_ids.filtered(
-            lambda r: r.strategy_id == "lower_min_competitor"
-        ).expected_price
-        if not market_price:
-            market_price = product.get_minimal_competitor_price()
+        market_value = buyer_price.market_value / (1 - product.category_marketing_discount)
         your_price = Row(
             group,
             plan_value=plan_price,
-            market_value=market_price,
+            market_value=market_value,
             fact_value=product.price,
             calc_value=kwargs.get('calc_price', 0),
             price_component_id=pc.id,

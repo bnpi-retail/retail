@@ -324,6 +324,14 @@
                             </group>
                         </page>
                         <page id="page_lot_promotion_info" string="Продвижение">
+                            <group style="margin-bottom: 20px;">
+                                <field name="marketing_discount" widget="percentage" />
+                            </group>
+                            <group>
+                                <field name="category_marketing_discount" widget="percentage" />
+                            </group>
+                            <small>Данная скидка будет применена для расчёта "Вашей цены" в
+                                столбце "Рынок" на вкладке "Калькулятор"</small>
                             <separator string="Поисковые запросы" />
                             <field name="tracked_search_query_ids">
                                 <tree>
