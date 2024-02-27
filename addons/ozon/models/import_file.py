@@ -339,7 +339,7 @@ class ImportFile(models.Model):
                         products=ozon_products, services_cost=services_cost)
             self.env["ozon.transaction"].create(transactions_data)
 
-        log_data = {'Добавлено новых транзакций': qty_new_transactions, 'Импортировано записей по датам': ''}
+        log_data = {'Новых транзакций импортировано': qty_new_transactions, 'Записей получено по датам': ''}
         for date_, qty in imported_days_data.items():
             log_data[date_] = qty
 
@@ -503,7 +503,7 @@ class ImportFile(models.Model):
                     updated_products_qty += 1
 
         log_data = {
-            'Импортировано цен': prices_qty,
+            'Получено данных о ценах': prices_qty,
             'Цены обновлены для количества продуктов': updated_products_qty
         }
 
@@ -575,7 +575,7 @@ class ImportFile(models.Model):
             self.env["ozon.posting"].create(data)
 
         log_data = {
-            "Отправлений импортировано": qty_postings,
+            "Получено данных об отправлениях": qty_postings,
             "Отправлений создано": qty_created,
         }
 
@@ -638,8 +638,8 @@ class ImportFile(models.Model):
                 # print(f"{i} - Supply order {supply_order_id} was imported")
 
         log_data = {
-            "Всего импортировано": qty_fbo_supply_order,
-            "Создано новых": qty_created,
+            "Данных о заказах на поставку получено": qty_fbo_supply_order,
+            "Создано новых заказов на поставку": qty_created,
         }
 
         return log_data
@@ -975,7 +975,7 @@ class ImportFile(models.Model):
                 # print(f"{i} - Action {a_id} was imported")
 
         log_data = {
-            "Всего импортировано акций": qty_actions,
+            "Всего получено данных об акциях": qty_actions,
             "Создано новых акций": qty_created_actions,
             "Создано новых кандидатов к акциям": qty_created_action_candidate,
             "Добавлено в участники акций": qty_action_participants,
@@ -1357,7 +1357,7 @@ class ProcessProductFile(models.Model):
         logger.warning(f"{processed_products_qty} products processed")
 
         log_data = {
-            'Всего данных о продуктах импортировано': data_qty,
+            'Всего получено данных о продуктах': data_qty,
             'Обработано продуктов': processed_products_qty,
             'Обновлено продуктов': updated_products_qty,
             'Создано новых историй цен': qty_new_price_history,
