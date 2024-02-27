@@ -12,26 +12,28 @@
                             <group>
                                 <field name="c_id" />
                                 <field name="name_categories" />
-                                <field name="category_manager" string="Ответственный менеджер"/>
-                                <field name="abc_group_last_update" readonly="1" string="Последний ABC Анализ"/>
-                                <field name="bcg_matrix_last_update" readonly="1" string="Последний расчет BCG Матрицы"/>
+                                <field name="category_manager" string="Ответственный менеджер" />
+                                <field name="abc_group_last_update" readonly="1"
+                                    string="Последний ABC Анализ" />
+                                <field name="bcg_matrix_last_update" readonly="1"
+                                    string="Последний расчет BCG Матрицы" />
                             </group>
                         </page>
 
                         <page string="Аналитические данные">
                             <group string="Разница между нашей ценой и ценой для покупателя"
-                                   attrs="{'invisible': [('is_price_difference_percentage_computed', '=', False)]}"
+                                attrs="{'invisible': [('is_price_difference_computed', '=', False)]}"
                             >
-                                <field name="category_total_price" readonly="1"/>
-                                <field name="category_total_marketing_price" readonly="1"/>
-                                <field name="price_difference_percentage" readonly="1"/>
-                                <field name="is_price_difference_percentage_computed" invisible="1"/>
+                                <field name="category_total_price" readonly="1" />
+                                <field name="category_total_marketing_price" readonly="1" />
+                                <field name="price_difference" readonly="1" widget="percentage" />
+                                <field name="is_price_difference_computed" invisible="1" />
                             </group>
                             <group string="Графические данные">
-                                <field name="img_html_sale_this_year"/>
-                                <field name="img_data_sale_this_year" invisible="1"/>
-                                <field name="img_data_sale_last_year" invisible="1"/>
-                                <field name="img_data_analysis_data_this_year" invisible="1"/>
+                                <field name="img_html_sale_this_year" />
+                                <field name="img_data_sale_this_year" invisible="1" />
+                                <field name="img_data_sale_last_year" invisible="1" />
+                                <field name="img_data_analysis_data_this_year" invisible="1" />
                             </group>
                             <button string="Скачать данные"
                                 type="object"
