@@ -1,5 +1,6 @@
 from collections import namedtuple
 from datetime import datetime, time, timedelta
+from itertools import chain
 
 from odoo import models, fields, api
 
@@ -140,9 +141,10 @@ class PriceComparison(models.Model):
             / 100
         )
         plan_reward = your_price.plan_value * coef
-        fact_percent = product._ozon_reward.percent
+        total_ozon_reward_expenses = sum(product._ozon_reward.mapped("value"))
+        fact_percent = total_ozon_reward_expenses / product.price
         market_reward = your_price.market_value * fact_percent
-        fact_reward = product._ozon_reward.value
+        fact_reward = total_ozon_reward_expenses
         calc_reward = your_price.calc_value * fact_percent
         data_ozon_expenses.append(
             Row(group, plan_reward, market_reward, fact_reward, calc_reward, pc.id)
@@ -223,7 +225,7 @@ class PriceComparison(models.Model):
         # Сумма расходов
         pc = pcm.get("total_expenses")
         pv, mv, fv, cv = 0, 0, 0, 0
-        for i in data_ozon_expenses + data_company_expenses:
+        for i in chain(data_ozon_expenses, data_company_expenses, [tax]):
             pv += i.plan_value
             mv += i.market_value
             fv += i.fact_value

@@ -134,7 +134,7 @@
                                 </group>
                             </group>
                         </page>
-                        <page id="page_price_comparison" string="Сравнение цен">
+                        <page id="page_price_comparison" string="Калькулятор">
                             <group>
                                 <button type="object" name="calculate_price_comparison_ids"
                                     string="Рассчитать"
@@ -154,7 +154,7 @@
                                 </tree>
                             </field>
                         </page>
-                        <page id="page_base_calculation" string="Плановая цена">
+                        <page id="page_base_calculation" string="Плановая структура затрат">
                             <group>
                                 <button type="object" name="reset_base_calculation_ids"
                                     string="Сбросить"
@@ -173,7 +173,7 @@
                                 </field>
                             </group>
                         </page>
-                        <page id="page_price_calculator" string="Калькулятор цены">
+                        <page id="page_price_calculator" string="Фактическая структура затрат">
                             <group>
                                 <field name="expected_price" string="Цена" />
                             </group>
@@ -182,6 +182,7 @@
                                 <tree>
                                     <field name="identifier" />
                                     <field name="name" />
+                                    <field name="category" />
                                     <field name="kind" />
                                     <field name="comment" optional="hide" />
                                     <field name="percent" widget="percentage" />
