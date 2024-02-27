@@ -172,8 +172,8 @@ class IndirectPercentExpenses(models.Model):
             "coef_total": 0,
         }
         for tran in transactions:
-            if tran["amount"] > 0:
-                data["revenue"] += tran["amount"]
+            if tran["accruals_for_sale"] > 0:
+                data["revenue"] += tran["accruals_for_sale"]
         for tran in transactions:
             name = tran["name"]
             if name in ["Услуги продвижения товаров"]:
