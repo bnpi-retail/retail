@@ -182,6 +182,7 @@
                                 <tree>
                                     <field name="identifier" />
                                     <field name="name" />
+                                    <field name="category" />
                                     <field name="kind" />
                                     <field name="comment" optional="hide" />
                                     <field name="percent" widget="percentage" />
