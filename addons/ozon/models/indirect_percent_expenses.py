@@ -1,5 +1,5 @@
 # # -*- coding: utf-8 -*-
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 
@@ -153,10 +153,7 @@ class IndirectPercentExpenses(models.Model):
         string="Общий коэффициент косвенных затрат"
     )
 
-    def calculate_indirect_expenses_prev_month(self):
-        """Запускать еженедельно на весь recordset ozon.products"""
-        date_from = datetime.combine(datetime.now(), time.min) - timedelta(days=30)
-        date_to = datetime.combine(datetime.now(), time.max) - timedelta(days=1)
+    def collect_data(self, date_from, date_to):
         transactions = self.env["ozon.transaction"].read_group(
             domain=[
                 ("transaction_date", ">=", date_from),
@@ -166,7 +163,7 @@ class IndirectPercentExpenses(models.Model):
             groupby="name",
         )
         if not transactions:
-            raise UserError("Транзакции за предыдущий месяц не загружены.")
+            raise UserError("Транзакции за предыдущий месяц не загружены.")            
         data = {
             "date_from": date_from,
             "date_to": date_to,
@@ -177,7 +174,6 @@ class IndirectPercentExpenses(models.Model):
         for tran in transactions:
             if tran["amount"] > 0:
                 data["revenue"] += tran["amount"]
-
         for tran in transactions:
             name = tran["name"]
             if name in ["Услуги продвижения товаров"]:
@@ -193,13 +189,18 @@ class IndirectPercentExpenses(models.Model):
                 )
             else:
                 data["other"] += amount
-
         data["coef_other"] = abs(round(data["other"] / data["revenue"], 4) * 100)
-
         for k, v in data.items():
             if k.startswith("coef") and k not in ["coef_total", "coef_acquiring"]:
                 data["coef_total"] += v
+        return data
 
+    def calculate_indirect_expenses_prev_month(self):
+        """Запускать еженедельно на весь recordset ozon.products"""
+        date_from = datetime.combine(datetime.now(), time.min) - timedelta(days=30)
+        date_to = datetime.combine(datetime.now(), time.max) - timedelta(days=1)
+        
+        data = self.collect_data(date_from=date_from, date_to=date_to)
         rec = self.create(data)
         return rec
 
@@ -208,8 +209,23 @@ class IndirectPercentExpenses(models.Model):
         latest_indir_percent_expenses = self.calculate_indirect_expenses_prev_month()
         # all_products = self.env["ozon.products"].search([])
         # self.env["ozon.all_expenses"].update_all_expenses(all_products, latest_indir_percent_expenses)
-        self.env["ozon.products"].update_all_expenses()
+        # self.env["ozon.products"].update_all_expenses()
 
+    @api.model
+    def create(self, values):
+        data = self.collect_data(date_from=values["date_from"], date_to=values["date_to"])
+        values.update(data)
+        record = super(IndirectPercentExpenses, self).create(values)
+        return record
+    
+    def write(self, values):
+        date_from = values.get("date_from", self.date_from)
+        date_to = values.get("date_to", self.date_to)
+        data = self.collect_data(date_from, date_to)
+        values.update(data)
+        record = super(IndirectPercentExpenses, self).write(values)
+        return record
+    
     def name_get(self):
         """
         Rename records
