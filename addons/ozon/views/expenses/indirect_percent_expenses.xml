@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <form>
                     <group style="margin-top: 20px; margin-bottom: 20px;">
-                        <field name="timestamp" />
+                        <field name="timestamp" style="margin-bottom: 20px;" />
                         <field name="date_from" />
                         <field name="date_to" />
                     </group>
@@ -70,9 +70,6 @@
             <field name="model">ozon.indirect_percent_expenses</field>
             <field name="arch" type="xml">
                 <tree>
-                    <button type="object" name="calculate"
-                        string="Рассчитать"
-                        class="btn-outline-primary" />
                     <field name="timestamp" />
                     <field name="date_from" />
                     <field name="date_to" />
