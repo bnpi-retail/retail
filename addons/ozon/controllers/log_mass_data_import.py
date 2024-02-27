@@ -19,7 +19,7 @@ class MassDataImportController(http.Controller):
                 mdi_model = http.request.env["ozon.mass_data_import"]
                 import_ = mdi_model.create({
                     'name': request_data.get('name'),
-                    'expected_quantity': 10,
+                    'expected_quantity': request_data.get('logged_activities_qty'),
                 })
                 import_id = import_.id
 
@@ -40,7 +40,6 @@ class MassDataImportController(http.Controller):
                 request_data = http.Request.get_json_data(http.request).get('data')
                 mass_import_id = http.request.env["ozon.mass_data_import"].search([
                     ('create_date', '>', datetime.date.today() - datetime.timedelta(days=1)),
-                    ('name', '=', 'Главный поток'),
                     ('state', '=', 'running')
                 ], order='create_date desc', limit=1).id
 

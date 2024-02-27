@@ -40,8 +40,11 @@ class CompetitorsGetSKUs(http.Controller):
         ads = ast.literal_eval(ads)
         print(ads)
 
+        created_qty = 0
+        vals_to_create = []
         for ad in ads:
-            if ad['no_data'] == 1: continue
+            if ad['no_data'] == 1:
+                continue
             
             product_competitors = model_products_competitors.search(
                 [("id_product", "=", sku)],
@@ -53,13 +56,16 @@ class CompetitorsGetSKUs(http.Controller):
                 'sales': ad['sales'],
                 'price_without_sale': ad['price'],
                 'price': ad['final_price'],
-                'price': ad['final_price'],
                 'comments': ad['comments'],
                 'rating': ad['rating'],
             }
             if ad.get('ozon_card_price'):
                 values['price_with_card'] = ad.get('ozon_card_price')
-            model_price_history_competitors.create(values)
+            vals_to_create.append(values)
+            created_qty += 1
 
-        json_response = {'answer': 'success!'}
-        return http.Response(json_response, content_type='application/json')
+        model_price_history_competitors.create(vals_to_create)
+
+        log_data = {'Добавлено историй цен конкурентов': created_qty}
+        json_response = json.dumps(log_data)
+        return json_response
