@@ -380,7 +380,7 @@ class AllExpenses(models.Model):
             exp_price = r.product_id.expected_price
             tax = r.product_id.seller.tax
             tax_percent = r.product_id.seller.tax_percent
-            tax_string = dict(r.product_id.seller._fields['tax'].selection).get(tax)
+            tax_string = r.product_id.seller.tax_description
             if name == "Себестоимость товара":
                 if val == 0:
                     r.comment = "Себестоимость товара не указана."

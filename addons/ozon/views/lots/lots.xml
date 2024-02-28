@@ -107,6 +107,7 @@
                                         <field name="products" />
                                         <field name="categories" string="Категория" />
                                         <field name="abc_group" string="Группа" />
+                                        <field name="seller" />
                                     </group>
                                     <group>
                                         <field name="id_on_platform" />
