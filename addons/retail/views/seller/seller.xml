@@ -2,7 +2,7 @@
     <data>
 
         <!-- Form -->
-         <record id="retail_seller_view_form" model="ir.ui.view">
+        <record id="retail_seller_view_form" model="ir.ui.view">
             <field name="name">retail.seller.form</field>
             <field name="model">retail.seller</field>
             <field name="arch" type="xml">
@@ -10,14 +10,13 @@
                     <sheet>
                         <group>
                             <group>
-                                <field name="name"/>
-                                <field name="trade_name"/>
-                                <field name="ogrn"/>
+                                <field name="name" />
+                                <field name="trade_name" />
+                                <field name="ogrn" />
                             </group>
                             <group>
-                                <field name="tax"/>
-                                <field name="tax_percent"/>
-                                <field name="tax_description"/>
+                                <field name="tax" widget="percentage" />
+                                <field name="tax_description" />
                             </group>
                         </group>
                     </sheet>
@@ -31,10 +30,10 @@
             <field name="model">retail.seller</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="name" width="150"/>
-                    <field name="trade_name" width="150"/>
-                    <field name="ogrn" width="150"/>
-                    <field name="tax" width="150"/>
+                    <field name="name" width="150" />
+                    <field name="trade_name" width="150" />
+                    <field name="ogrn" width="150" />
+                    <field name="tax" width="150" />
                 </tree>
             </field>
         </record>
