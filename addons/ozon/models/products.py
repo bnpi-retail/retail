@@ -380,11 +380,11 @@ class Product(models.Model):
     # revenue returns promotion
     ozon_report_products_revenue_expenses_ids = fields.One2many(
         'ozon.report.products_revenue_expenses', 'ozon_products_id')
-    period_start = fields.Date(string="Период с")
-    period_finish = fields.Date(string="по")
+    period_start = fields.Date(string="Период с", default=date.today() - timedelta(days=31))
+    period_finish = fields.Date(string="по", default=date.today() - timedelta(days=1))
     period_preset = fields.Selection([
         ('month', '1 месяц'), ('2month', '2 месяца'), ('3month', '3 месяца')
-    ], default='month')
+    ])
     # ----------------
 
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
@@ -448,7 +448,7 @@ class Product(models.Model):
             'ozon_products_id': self.id,
             'name': 'Расходы на продвижение продукта за период',
             'comment': 'Сумма расходов на продвижение продукта за период',
-            'value': promotion_expenses_for_period,
+            'value': -promotion_expenses_for_period,
         }
 
     def calculate_renurns_vals_for_period(self) -> list:
@@ -474,7 +474,7 @@ class Product(models.Model):
                     return_amount_services = sum(
                         return_.services.mapped('price') if return_.services else (0, )
                     )
-                    return_amount_for_product = abs(return_amount_services) / len(products)
+                    return_amount_for_product = return_amount_services / len(products)
                     total_returns_amount_services += return_amount_for_product
 
         vals_to_write.append({
