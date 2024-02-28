@@ -1,7 +1,6 @@
 # # -*- coding: utf-8 -*-
-from datetime import date, datetime, time, timedelta
-from itertools import groupby
-from operator import itemgetter
+from datetime import datetime, time, timedelta
+from itertools import chain
 
 from odoo import models, fields, api
 from odoo.exceptions import UserError
@@ -170,16 +169,15 @@ class IndirectPercentExpenses(models.Model):
     def collect_data(self, date_from, date_to):
         domain = [("transaction_date", ">=", date_from), ("transaction_date", "<=", date_to)]
         transactions = self.env["ozon.transaction"].search(domain)
-
-        ### Заказы
+        
+        # Заказы
         orders = transactions.filtered(lambda r: r.transaction_type == "заказы")
         orders_other = orders.filtered(lambda r: r.name != "Доставка покупателю")
         total_orders_other_amount = sum(orders_other.mapped("amount"))
         accruals_for_sale = sum(orders.mapped("accruals_for_sale"))
         sale_commission = sum(orders.mapped("sale_commission"))
         orders_processing_and_delivery = sum(orders.services.mapped("price"))
-        # total_orders_amount = sum(orders.mapped("amount"))
-        # print("ЗАКАЗЫ: Итого с учетом баллов",total_orders_amount)
+
         # Возвраты и отмены 
         returns_and_cancels = transactions.filtered(lambda r: r.transaction_type == "возвраты и отмены")
         returns_and_cancels_accruals = sum(returns_and_cancels.mapped("accruals_for_sale"))
@@ -187,6 +185,14 @@ class IndirectPercentExpenses(models.Model):
         returns_and_cancels_amount = sum(returns_and_cancels.mapped("amount"))
         returns_and_cancels_proc_and_deliv = sum(returns_and_cancels.services.filtered(lambda r: r.name in ['последняя миля', 'обработка отправления', 'логистика']).mapped("price"))
 
+        # Сколько заказов с sku, которых у нас нет
+        _empty_products_orders = (orders - orders_other).filtered(lambda r: not r.products)
+
+        for o in chain(orders - orders_other):
+            print(o.products_qty)
+        
+        raise
+        #
         proc_and_deliv = (orders_processing_and_delivery 
                           + total_orders_other_amount 
                           + returns_and_cancels_proc_and_deliv)
@@ -212,26 +218,7 @@ class IndirectPercentExpenses(models.Model):
         total = sum(data.values())
         data.update({"date_from": date_from, "date_to": date_to, 
                      "revenue": accruals_for_sale, "total": total})
-        # print('_______________________________________________________________________')
-        # print("ЗАКАЗЫ: Сумма за заказы",accruals_for_sale)
-        # print("ВОЗВРАТЫ И ОТМЕНЫ: Сумма за заказы",returns_and_cancels_accruals)
-        # print("ВСЕ: Сумма за заказы",accruals_for_sale + returns_and_cancels_accruals)
-
-        # print("ЗАКАЗЫ: Вознаграждение за продажу",sale_commission)
-        # print("ВОЗВРАТЫ И ОТМЕНЫ: Вознаграждение за продажу",returns_and_cancels_sale_com)
-        # print("ВСЕ: Вознаграждение за продажу",sale_commission + returns_and_cancels_sale_com)
-
-        # print("ЗАКАЗЫ: Обработка и доставка",orders_processing_and_delivery + total_orders_other_amount)
-        # print("ВОЗВРАТЫ И ОТМЕНЫ: Обработка и доставка",returns_and_cancels_proc_and_deliv)
-        # print("ВСЕ: Обработка и доставка",orders_processing_and_delivery + total_orders_other_amount + returns_and_cancels_proc_and_deliv)
-
-        # print("ВСЕ: Возвраты и отмены", returns_and_cancels_sale_com + returns_and_cancels_proc_and_deliv - abs(returns_and_cancels_accruals - returns_and_cancels_amount))
-
-        # print("ПРОЧЕЕ",sum(transactions.filtered(lambda r: r.transaction_type == "прочее").mapped("amount")))   
-        # print("ДОП.УСЛУГИ",sum(transactions.filtered(lambda r: r.transaction_type == "сервисные сборы").mapped("amount")))   
-        # print("ПЕРЕЧИСЛЕНИЯ",sum(transactions.filtered(lambda r: r.transaction_type == "transfer_delivery").mapped("amount")))   
-        # print("КОМПЕНСИРОВАНО",sum(transactions.filtered(lambda r: r.transaction_type == "компенсация").mapped("amount")))   
-
+ 
         transactions = self.env["ozon.transaction"].read_group(
             domain=[
                 ("transaction_date", ">=", date_from),

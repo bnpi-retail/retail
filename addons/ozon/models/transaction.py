@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from ast import literal_eval
 
 from odoo import models, fields, api
 
@@ -59,3 +60,19 @@ class Transactions(models.Model):
         if not domain:
             return
         return self.search(domain)
+    
+    @property
+    def _skus(self) -> list:
+        return [str(sku) for sku in literal_eval(self.skus)]
+    
+    @property
+    def total_products_qty(self):
+        return len(self._skus)
+    
+    @property
+    def products_qty(self) -> dict:
+        data = {}
+        for p in self.products:
+            qty = self._skus.count(p.sku) or self._skus.count(p.fbs_sku) or self._skus.count(p.fbo_sku)
+            data.update({p: qty})
+        return data
