@@ -527,6 +527,37 @@
                                 </field>
                             </group>
                         </page>
+                        <page string="Выручка и расходы за период">
+                            <group>
+                                <group>
+                                    <button string="Рассчитать"
+                                            type="object"
+                                            name="action_calculate_revenue_returns_promotion_for_period"
+                                            attrs="{'invisible': ['|', ('period_start', '=', False), ('period_finish', '=', False)]}"
+                                    />
+                                </group>
+                                <group></group>
+                                <group>
+                                    <field name="period_preset" class="oe_inline" string="Период"/>
+                                </group>
+                                <group></group>
+                                <group>
+                                    <field name="period_start" widget="date" class="oe_inline"/>
+                                </group>
+                                <group>
+                                    <field name="period_finish" widget="date" class="oe_inline"/>
+                                </group>
+
+                                <field name="ozon_report_products_revenue_expenses_ids">
+                                    <tree create="0">
+                                         <field name="identifier"/>
+                                         <field name="name"/>
+                                         <field name="comment" optional="hide"/>
+                                         <field name="value"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
                     </notebook>
                 </form>
             </field>

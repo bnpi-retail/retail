@@ -36,6 +36,7 @@ from .reports import ozon_report
 from .reports import sales_report
 from .reports import ozon_report_interest
 from .reports import realisation_report
+from .reports import ozon_report_products_revenue_expenses
 from .indicators import indicator, indicator_summary
 from .abc_analize import abs_analysis
 from .temporal_tasks import temporal_tasks
