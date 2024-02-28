@@ -553,7 +553,7 @@
                                          <field name="identifier"/>
                                          <field name="name"/>
                                          <field name="comment" optional="hide"/>
-                                         <field name="value"/>
+                                         <field name="value" sum="1"/>
                                     </tree>
                                 </field>
                             </group>
