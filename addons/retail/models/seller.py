@@ -10,7 +10,7 @@ class Seller(models.Model):
     trade_name = fields.Char(string="Торговое название")
     is_my_shop = fields.Char(default=True)
 
-    tax = fields.Float(string="Налогообложение", default=7)
+    tax = fields.Float(string="Налогообложение", default=0.07)
     tax_percent = fields.Float(string="Процент налога", compute="_compute_tax_percent")
     tax_description = fields.Char(
         string="Описание налога", compute="_compute_tax_description"
