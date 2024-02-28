@@ -526,6 +526,33 @@
                                 </field>
                             </group>
                         </page>
+                        <page string="Выручка, возвраты, реклама">
+                            <group>
+                                <group>
+                                    <button string="Рассчитать"
+                                            type="object"
+                                            name="action_calculate_revenue_returns_promotion_for_period"
+                                            attrs="{'invisible': ['|', ('period_start', '=', False), ('period_finish', '=', False)]}"
+                                    />
+                                </group>
+                                <group></group>
+                                <group>
+                                    <field name="period_presets" class="oe_inline" string="Период"/>
+                                </group>
+                                <group></group>
+                                <group>
+                                    <field name="period_start" widget="date" class="oe_inline"/>
+                                </group>
+                                <group>
+                                    <field name="period_finish" widget="date" class="oe_inline"/>
+                                </group>
+                                <group>
+                                    <field name="revenue_for_period" class="oe_inline" readonly="1"/>
+                                    <field name="returns_for_period" class="oe_inline" readonly="1"/>
+                                    <field name="promotion_expenses_for_period" class="oe_inline" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
                     </notebook>
                 </form>
             </field>

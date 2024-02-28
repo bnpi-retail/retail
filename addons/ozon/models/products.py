@@ -376,12 +376,25 @@ class Product(models.Model):
         ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', 'Нет данных')
     ], default='e')
     bcg_group_is_computed = fields.Boolean()
+    # revenue returns promotion
+    revenue_for_period = fields.Float(string="Сумма выручки")
+    returns_for_period = fields.Float(string="Сумма возвратов")
+    promotion_expenses_for_period = fields.Float(string="Сумма затрат на рекламу")
+    period_start = fields.Date(string="Период с")
+    period_finish = fields.Date(string="по")
+    period_presets = fields.Selection([
+        ('month', '1 месяц'), ('2month', '2 месяца'), ('3month', '3 месяца')
+    ], default='month')
+    # ----------------
 
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
                                            string="Сравнение цен")
     base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Плановая цена")
     logistics_tariff_id = fields.Many2one("ozon.logistics_tariff", 
                                           string="Тариф логистики в плановом расчёте")
+
+    def action_calculate_revenue_returns_promotion_for_period(self):
+        pass
 
     def calculate_expected_price(self):
         # TODO: откуда берем ожидаемую цену?
