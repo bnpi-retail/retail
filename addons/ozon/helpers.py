@@ -1,5 +1,8 @@
 import re
+from typing import Iterable
+import logging
 
+logger = logging.getLogger(__name__)
 
 def split_list(l, n):
     k, m = divmod(len(l), n)
@@ -65,3 +68,10 @@ def mean(lst: list) -> float:
 
 def convert_ozon_datetime_str_to_odoo_datetime_str(ozon_datetime_str: str):
     return ozon_datetime_str.replace("T", " ").replace("Z", "")
+
+
+def delete_records(model: str, ids: Iterable, env):
+    if ids:
+        query = f"DELETE FROM {model} WHERE id IN %s"
+        env.cr.execute(query, (tuple(ids),))
+        logger.warning(f"delete from ozon_products_indicator_summary records with ids {ids}")

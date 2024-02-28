@@ -526,7 +526,7 @@
                                 </field>
                             </group>
                         </page>
-                        <page string="Выручка, возвраты, реклама">
+                        <page string="Выручка и расходы за период">
                             <group>
                                 <group>
                                     <button string="Рассчитать"
@@ -537,7 +537,7 @@
                                 </group>
                                 <group></group>
                                 <group>
-                                    <field name="period_presets" class="oe_inline" string="Период"/>
+                                    <field name="period_preset" class="oe_inline" string="Период"/>
                                 </group>
                                 <group></group>
                                 <group>
@@ -546,11 +546,15 @@
                                 <group>
                                     <field name="period_finish" widget="date" class="oe_inline"/>
                                 </group>
-                                <group>
-                                    <field name="revenue_for_period" class="oe_inline" readonly="1"/>
-                                    <field name="returns_for_period" class="oe_inline" readonly="1"/>
-                                    <field name="promotion_expenses_for_period" class="oe_inline" readonly="1"/>
-                                </group>
+
+                                <field name="ozon_report_products_revenue_expenses_ids">
+                                    <tree create="0">
+                                         <field name="identifier"/>
+                                         <field name="name"/>
+                                         <field name="comment" optional="hide"/>
+                                         <field name="value"/>
+                                    </tree>
+                                </field>
                             </group>
                         </page>
                     </notebook>

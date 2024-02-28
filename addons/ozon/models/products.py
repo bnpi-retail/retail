@@ -5,7 +5,7 @@ from copy import copy
 
 from collections import defaultdict
 from os import getenv
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, date
 from operator import itemgetter
 from lxml import etree
 
@@ -29,6 +29,7 @@ from ..helpers import (
     remove_latin_characters,
     remove_duplicates_from_list,
     mean,
+    delete_records
 )
 
 
@@ -377,12 +378,11 @@ class Product(models.Model):
     ], default='e')
     bcg_group_is_computed = fields.Boolean()
     # revenue returns promotion
-    revenue_for_period = fields.Float(string="Сумма выручки")
-    returns_for_period = fields.Float(string="Сумма возвратов")
-    promotion_expenses_for_period = fields.Float(string="Сумма затрат на рекламу")
+    ozon_report_products_revenue_expenses_ids = fields.One2many(
+        'ozon.report.products_revenue_expenses', 'ozon_products_id')
     period_start = fields.Date(string="Период с")
     period_finish = fields.Date(string="по")
-    period_presets = fields.Selection([
+    period_preset = fields.Selection([
         ('month', '1 месяц'), ('2month', '2 месяца'), ('3month', '3 месяца')
     ], default='month')
     # ----------------
@@ -393,8 +393,100 @@ class Product(models.Model):
     logistics_tariff_id = fields.Many2one("ozon.logistics_tariff", 
                                           string="Тариф логистики в плановом расчёте")
 
+    @api.onchange('period_preset')
+    def _onchange_period_preset(self):
+        preset = self.period_preset
+        period_to = date.today() - timedelta(days=1)
+        period_from = period_from = period_to - timedelta(days=30.5)
+        if preset:
+            if preset == 'month':
+                period_from = period_to - timedelta(days=30.5)
+            elif preset == '2month':
+                period_from = period_to - timedelta(days=61)
+            elif preset == '3month':
+                period_from = period_to - timedelta(days=91.5)
+
+        self.period_start = period_from
+        self.period_finish = period_to
+
     def action_calculate_revenue_returns_promotion_for_period(self):
-        pass
+        delete_records(
+            'ozon_report_products_revenue_expenses',
+            self.ozon_report_products_revenue_expenses_ids.ids,
+            self.env
+        )
+        vals_to_write = []
+        # revenue
+        vals_to_write.append(self.calculate_sales_revenue_for_period())
+
+        # promotion_expenses
+        vals_to_write.append(self.calculate_promotion_expenses_for_period())
+
+        # returns
+        vals_to_write.append(*self.calculate_renurns_vals_for_period())
+
+        self.env['ozon.report.products_revenue_expenses'].create(vals_to_write)
+
+    def calculate_sales_revenue_for_period(self) -> dict:
+        sales_revenue_for_period = sum([
+            sale.revenue for sale in self.sales if self.period_finish >= sale.date >= self.period_start
+        ])
+        return {
+            'identifier': 1,
+            'ozon_products_id': self.id,
+            'name': 'Выручка за период',
+            'comment': 'Сумма выручки продаж продукта за период',
+            'value': sales_revenue_for_period,
+        }
+
+    def calculate_promotion_expenses_for_period(self) -> dict:
+        promotion_expenses_for_period = sum([
+            pe.expense for pe in self.promotion_expenses_ids if self.period_finish >= pe.date >= self.period_start
+        ])
+        return {
+            'identifier': 2,
+            'ozon_products_id': self.id,
+            'name': 'Расходы на продвижение продукта за период',
+            'comment': 'Сумма расходов на продвижение продукта за период',
+            'value': promotion_expenses_for_period,
+        }
+
+    def calculate_renurns_vals_for_period(self) -> list:
+        vals_to_write = []
+        returns = self.env["ozon.transaction"].search([
+            ('transaction_date', '>=', self.period_start),
+            ('transaction_date', '<=', self.period_finish),
+            ('transaction_type', '=', 'возвраты и отмены'),
+        ])
+        total_returns_amount_services = 0
+        for return_ in returns:
+            products = return_.products
+            if not products:
+                skus: str = return_.skus
+                skus = skus.replace('[', '').replace(']', '')
+                if skus:
+                    skus: list = skus.split(', ')
+                    products = self.env['ozon.products'].search(
+                        ["|", "|", ("sku", "in", skus), ("fbo_sku", "in", skus), ("fbs_sku", "in", skus)],
+                    )
+            if products:
+                if self.id in products.ids:
+                    return_amount_services = sum(
+                        return_.services.mapped('price') if return_.services else (0, )
+                    )
+                    return_amount_for_product = abs(return_amount_services) / len(products)
+                    total_returns_amount_services += return_amount_for_product
+
+        vals_to_write.append({
+            'identifier': 3,
+            'ozon_products_id': self.id,
+            'name': 'Расходы на дополнительные услуги Ozon при возврате',
+            'comment': 'Расходы на услуги Озон в транзакциях возвратов и отмен за период. '
+                       'Стоимость услуг каждой транзакции суммируется и делится на количество товаров транзакции, '
+                       'затем значения суммируются для всех транзакций периода.',
+            'value': total_returns_amount_services,
+        })
+        return vals_to_write
 
     def calculate_expected_price(self):
         # TODO: откуда берем ожидаемую цену?
