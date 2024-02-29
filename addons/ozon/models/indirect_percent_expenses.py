@@ -68,7 +68,7 @@ class IndirectPercentExpenses(models.Model):
     services = fields.Float(string="Доп.услуги")
     transfer = fields.Float(string="Перечисления")
     compensation = fields.Float(string="Компенсировано")
-    other_total = fields.Float(string="Прочее")
+    other_total = fields.Float(string="Прочее (эквайринг)")
 
     # THEORY TOTALS
     theory_processing_delivery = fields.Float(string="Обработка и доставка (теоретическое значение)")
