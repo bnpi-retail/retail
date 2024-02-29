@@ -434,6 +434,7 @@ class Product(models.Model):
             ('name', '=', 'Доставка покупателю'),
         ])
         revenue = 0
+        sales_qty = 0
         for trs in sales_transactions:
             if trs.products and self.id in trs.products.ids:
                 products = []
@@ -450,6 +451,7 @@ class Product(models.Model):
                 if products and self in products:
                     if len(products) == 1:
                         revenue += trs.accruals_for_sale
+                        sales_qty += 1
                     else:
                         logger.warning(products)
                         products_prices = []
@@ -473,6 +475,7 @@ class Product(models.Model):
                                 if product == self:
                                     product_revenue = (price * accruals_for_sale) / products_prices_sum
                                     revenue += product_revenue
+                                    sales_qty += 1
                                     logger.warning(product_revenue)
                                     logger.warning(accruals_for_sale)
                                     logger.warning('-----------------')
@@ -481,7 +484,8 @@ class Product(models.Model):
             'identifier': 1,
             'ozon_products_id': self.id,
             'name': 'Выручка за период',
-            'comment': 'Сумма выручки продаж продукта за период',
+            'comment': f'Сумма выручки продаж продукта за период.\n'
+                       f'Количество продаж: {sales_qty}',
             'value': revenue,
         }
 
