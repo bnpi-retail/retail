@@ -95,3 +95,48 @@ class TransactionUnit(models.Model):
     transaction_type = fields.Char(related="transaction_id.transaction_type")
     name = fields.Char(string="Название")
     value = fields.Float(string="Значение")
+
+    def collect_data_from_transactions(self, transactions) -> list:
+        """Returns data to create."""
+        data = []
+        for t in transactions:
+            t_id = t.id
+            if t.name in ["Доставка покупателю", "Получение возврата, отмены, невыкупа от покупателя"]:
+                data.extend([
+                    {
+                        "transaction_id": t_id,
+                        "name": "Сумма за заказы",
+                        "value": t.accruals_for_sale
+                    },
+                    {
+                        "transaction_id": t_id,
+                        "name": "Вознаграждение за продажу",
+                        "value": t.sale_commission
+                    },
+                    {
+                        "transaction_id": t_id,
+                        "name": "Итого за заказы",
+                        "value": t.amount
+                    }
+                ])
+                for s in t.services:
+                    data.append({
+                        "transaction_id": t_id,
+                        "name": s.name,
+                        "value": s.price
+                    })
+            elif t.name in ["Доставка и обработка возврата, отмены, невыкупа", 
+                            "Доставка покупателю — отмена начисления"]:
+                for s in t.services:
+                    data.append({
+                        "transaction_id": t_id,
+                        "name": s.name,
+                        "value": s.price
+                    })
+            else:
+                data.append({
+                    "transaction_id": t_id,
+                    "name": t.name,
+                    "value": t.amount
+                })
+        return data
