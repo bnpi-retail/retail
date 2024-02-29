@@ -74,4 +74,4 @@ def delete_records(model: str, ids: Iterable, env):
     if ids:
         query = f"DELETE FROM {model} WHERE id IN %s"
         env.cr.execute(query, (tuple(ids),))
-        logger.warning(f"delete from ozon_products_indicator_summary records with ids {ids}")
+        logger.warning(f"delete from {model} records with ids {ids}")
