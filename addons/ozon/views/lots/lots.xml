@@ -538,22 +538,24 @@
                                 </group>
                                 <group></group>
                                 <group>
-                                    <field name="period_preset" class="oe_inline" string="Период"/>
+                                    <field name="period_preset" class="oe_inline" string="Пресеты периода"/>
                                 </group>
                                 <group></group>
                                 <group>
-                                    <field name="period_start" widget="date" class="oe_inline"/>
+                                    <field name="period_start" widget="daterange" class="oe_inline"
+                                           options="{'related_end_date': 'period_finish'}"
+                                           string="Период"
+                                    />
                                 </group>
-                                <group>
-                                    <field name="period_finish" widget="date" class="oe_inline"/>
-                                </group>
-
                                 <field name="ozon_report_products_revenue_expenses_ids">
                                     <tree create="0">
-                                         <field name="identifier"/>
-                                         <field name="name"/>
-                                         <field name="comment" optional="hide"/>
-                                         <field name="value" sum="1"/>
+                                        <field name="identifier"/>
+                                        <field name="name"/>
+                                        <field name="comment" optional="hide"/>
+                                        <field name="qty"/>
+                                        <field name="percent"/>
+                                        <field name="value" sum="1"/>
+                                        <field name="total_value"/>
                                     </tree>
                                 </field>
                             </group>

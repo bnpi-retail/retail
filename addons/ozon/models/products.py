@@ -409,6 +409,10 @@ class Product(models.Model):
         self.period_start = period_from
         self.period_finish = period_to
 
+    @api.constrains('period_start', 'period_finish')
+    def _onchange_period(self):
+        self.period_preset = False
+
     def action_calculate_revenue_returns_promotion_for_period(self):
         delete_records(
             'ozon_report_products_revenue_expenses',
@@ -468,9 +472,9 @@ class Product(models.Model):
                                     product_revenue = (price * accruals_for_sale) / products_prices_sum
                                     revenue += product_revenue
                                     sales_qty += 1
-                                    logger.warning(product_revenue)
-                                    logger.warning(accruals_for_sale)
-                                    logger.warning('-----------------')
+                                    logger.debug(product_revenue)
+                                    logger.debug(accruals_for_sale)
+                                    logger.debug('-----------------')
 
         return {
             'identifier': 1,
@@ -531,7 +535,7 @@ class Product(models.Model):
         products = []
         skus = skus.replace('[', '').replace(']', '')
         if skus:
-            skus: list = skus.split(', ')
+            skus = skus.split(', ')
             for sku in skus:
                 product = self.env['ozon.products'].search(
                     ["|", "|", ("sku", "=", sku), ("fbo_sku", "=", sku), ("fbs_sku", "=", sku)],
