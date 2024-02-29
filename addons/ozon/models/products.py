@@ -509,6 +509,7 @@ class Product(models.Model):
             ('transaction_type', '=', 'возвраты и отмены'),
         ])
         total_returns_amount_services = 0
+        returns_qty = 0
         for return_ in returns:
             products = return_.products
             if not products:
@@ -526,6 +527,7 @@ class Product(models.Model):
                     )
                     return_amount_for_product = return_amount_services / len(products)
                     total_returns_amount_services += return_amount_for_product
+                    returns_qty += 1
 
         vals_to_write.append({
             'identifier': 3,
@@ -534,7 +536,7 @@ class Product(models.Model):
             'comment': 'Расходы на услуги Озон в транзакциях возвратов и отмен за период. '
                        'Стоимость услуг каждой транзакции суммируется и делится на количество товаров транзакции, '
                        'затем значения суммируются для всех транзакций периода.'
-                       f'Количество возвратов: {len(returns)}',
+                       f'Количество возвратов: {returns_qty}',
             'value': total_returns_amount_services,
         })
         return vals_to_write
