@@ -1466,14 +1466,20 @@ class ProcessProductFile(models.Model):
                 ('product', '=', ozon_product.id)
             ], order="create_date desc", limit=1)
             previous_price = previous_price_history.price if previous_price_history else 0
+            previous_marketing_price = previous_price_history.previous_marketing_price if previous_price_history else 0
 
-            if previous_price != ozon_product.price:
+            if (
+                    previous_price != ozon_product.price or
+                    previous_marketing_price != ozon_product.marketing_price
+            ):
                 price_history_data = {
                     "product": ozon_product.id,
                     "id_on_platform": id_on_platform,
                     "provider": ozon_product.seller.id,
                     "price": ozon_product.price,
+                    "marketing_price": ozon_product.marketing_price,
                     "previous_price": previous_price,
+                    "previous_marketing_price": previous_marketing_price,
                     "fix_expenses": fix_expenses_ids,
                     "costs": percent_expenses_ids,
                 }

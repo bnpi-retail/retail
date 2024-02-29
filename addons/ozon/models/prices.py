@@ -90,6 +90,7 @@ class PriceHistory(models.Model):
     id_on_platform = fields.Char(string="Product ID", readonly=True)
     provider = fields.Many2one("retail.seller", string="Продавец")
     price = fields.Float(string="Установленная цена", readonly=True)
+    marketing_price = fields.Float(string="Установленная цена для покупателя", readonly=True)
     competitors = fields.One2many(
         "ozon.name_competitors",
         "pricing_history_id",
@@ -98,6 +99,7 @@ class PriceHistory(models.Model):
     )
 
     previous_price = fields.Float(string="Предыдущая цена", readonly=True)
+    previous_marketing_price = fields.Float(string="Предыдущая цена для покупателя", readonly=True)
     timestamp = fields.Date(string="Дата", default=fields.Date.today, readonly=True)
 
     # @api.model

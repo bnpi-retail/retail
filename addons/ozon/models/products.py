@@ -428,15 +428,57 @@ class Product(models.Model):
         self.env['ozon.report.products_revenue_expenses'].create(vals_to_write)
 
     def calculate_sales_revenue_for_period(self) -> dict:
-        sales_revenue_for_period = sum([
-            sale.revenue for sale in self.sales if self.period_finish >= sale.date >= self.period_start
+        sales_transactions = self.env["ozon.transaction"].search([
+            ('transaction_date', '>=', self.period_start),
+            ('transaction_date', '<=', self.period_finish),
+            ('name', '=', 'Доставка покупателю'),
         ])
+        revenue = 0
+        for trs in sales_transactions:
+            if trs.products and self.id in trs.products.ids:
+                products = []
+                skus: str = trs.skus
+                skus = skus.replace('[', '').replace(']', '')
+                if skus:
+                    skus: list = skus.split(', ')
+                    for sku in skus:
+                        product = self.env['ozon.products'].search(
+                            ["|", "|", ("sku", "=", sku), ("fbo_sku", "=", sku), ("fbs_sku", "=", sku)],
+                        )
+                        if product:
+                            products.append(product)
+                if products and self in products:
+                    if len(products) == 1:
+                        revenue += trs.accruals_for_sale
+                    else:
+                        products_prices = []
+                        for product in products:
+                            order_date = trs.order_date
+                            price_model = self.env["ozon.price_history"]
+                            previous_price_history = price_model.search([
+                                ('product', '=', product.id),
+                                ('timestamp', '<=', order_date),
+                            ], order="create_date desc", limit=1)
+                            marketing_price = previous_price_history.marketing_price \
+                                if previous_price_history \
+                                   and previous_price_history.marketing_price else product.marketing_price
+
+                            products_prices.append((product, marketing_price))
+
+                        products_prices_sum = sum(tuple_[1] for tuple_ in products_prices)
+                        accruals_for_sale = trs.accruals_for_sale
+                        if products_prices_sum and accruals_for_sale:
+                            for product, marketing_price in products_prices:
+                                if product == self:
+                                    product_revenue = (marketing_price * accruals_for_sale) / products_prices_sum
+                                    revenue += product_revenue
+
         return {
             'identifier': 1,
             'ozon_products_id': self.id,
             'name': 'Выручка за период',
             'comment': 'Сумма выручки продаж продукта за период',
-            'value': sales_revenue_for_period,
+            'value': revenue,
         }
 
     def calculate_promotion_expenses_for_period(self) -> dict:
