@@ -57,7 +57,9 @@ class IndirectPercentExpenses(models.Model):
     )
     date_from = fields.Date(string="Начало периода")
     date_to = fields.Date(string="Конец периода")
-
+    
+    transaction_unit_ids = fields.Many2many("ozon.transaction_unit", "indirect_percent_expenses_id", 
+                                           string="Составляющие транзакций")
     # FACT TOTALS
     revenue = fields.Float(string="Выручка")
     total = fields.Float(string="Итого с учётом баллов")
@@ -143,6 +145,7 @@ class IndirectPercentExpenses(models.Model):
         domain = [("transaction_date", ">=", date_from), ("transaction_date", "<=", date_to)]
         tran_model = self.env["ozon.transaction"]
         transactions = tran_model.search(domain)
+        tran_units_data = self.env["ozon.transaction_unit"].collect_data_from_transactions(transactions)
         
         # Заказы
         orders = transactions.filtered(lambda r: r.transaction_type == "заказы")
@@ -256,35 +259,33 @@ class IndirectPercentExpenses(models.Model):
         for k, v in data.items():
             if k.startswith("coef") and k not in ["coef_total", "coef_acquiring"]:
                 data["coef_total"] += v
-        return data
+
+        return data, tran_units_data
 
     def calculate_indirect_expenses_prev_month(self):
         """Запускать еженедельно на весь recordset ozon.products"""
         date_from = datetime.combine(datetime.now(), time.min) - timedelta(days=30)
         date_to = datetime.combine(datetime.now(), time.max) - timedelta(days=1)
         
-        data = self.collect_data(date_from=date_from, date_to=date_to)
+        data, transaction_units_data = self.collect_data(date_from=date_from, date_to=date_to)
         rec = self.create(data)
         return rec
 
-    # TODO: убрать после тестов
-    def calculate(self):
-        latest_indir_percent_expenses = self.calculate_indirect_expenses_prev_month()
-        # all_products = self.env["ozon.products"].search([])
-        # self.env["ozon.all_expenses"].update_all_expenses(all_products, latest_indir_percent_expenses)
-        # self.env["ozon.products"].update_all_expenses()
+
 
     @api.model
     def create(self, values):
-        data = self.collect_data(date_from=values["date_from"], date_to=values["date_to"])
+        data, transaction_units_data = self.collect_data(values["date_from"], values["date_to"])
+        tran_units = self.env["ozon.transaction_unit"].create(transaction_units_data)
         values.update(data)
         record = super(IndirectPercentExpenses, self).create(values)
+        tran_units.indirect_percent_expenses_id = record.id
         return record
     
     def write(self, values):
         date_from = values.get("date_from", self.date_from)
         date_to = values.get("date_to", self.date_to)
-        data = self.collect_data(date_from, date_to)
+        data, transaction_units_data = self.collect_data(date_from, date_to)
         values.update(data)
         record = super(IndirectPercentExpenses, self).write(values)
         return record
@@ -297,3 +298,13 @@ class IndirectPercentExpenses(models.Model):
         for record in self:
             result.append((record.id, f"С {record.date_from} по {record.date_to}"))
         return result
+
+    def open_transaction_unit_view(self):
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Разбивка транзакций на услуги",
+            "view_mode": "tree,form",
+            "res_model": "ozon.transaction_unit",
+            "domain": [("indirect_percent_expenses_id", "=", self.id)],
+            "context": {"create": False},
+        }

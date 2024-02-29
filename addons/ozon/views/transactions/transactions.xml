@@ -62,6 +62,21 @@
             </field>
         </record>
 
+        <!-- Tree Transaction unit -->
+        <record id="view_transaction_unit_tree" model="ir.ui.view">
+            <field name="name">Составляющие транзакций</field>
+            <field name="model">ozon.transaction_unit</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="transaction_date" />
+                    <field name="transaction_name" />
+                    <field name="transaction_type" />
+                    <field name="name" />
+                    <field name="value" />
+                </tree>
+            </field>
+        </record>
+
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_transaction">
             <field name="name">Транзакции</field>
