@@ -421,7 +421,8 @@ class Product(models.Model):
         )
         vals_to_write = []
         # revenue
-        vals_to_write.append(self.calculate_sales_revenue_for_period())
+        vals, revenue = self.calculate_sales_revenue_for_period()
+        vals_to_write.append(vals)
 
         # promotion_expenses
         vals_to_write.append(self.calculate_promotion_expenses_for_period())
@@ -431,7 +432,7 @@ class Product(models.Model):
 
         self.env['ozon.report.products_revenue_expenses'].create(vals_to_write)
 
-    def calculate_sales_revenue_for_period(self) -> dict:
+    def calculate_sales_revenue_for_period(self) -> tuple[dict, float]:
         sales_transactions = self.env["ozon.transaction"].search([
             ('transaction_date', '>=', self.period_start),
             ('transaction_date', '<=', self.period_finish),
@@ -476,14 +477,18 @@ class Product(models.Model):
                                     logger.debug(accruals_for_sale)
                                     logger.debug('-----------------')
 
+        total_revenue = self.calc_total_revenue()
         return {
             'identifier': 1,
             'ozon_products_id': self.id,
             'name': 'Выручка за период',
             'comment': f'Сумма выручки продаж продукта за период.\n'
                        f'Количество продаж: {sales_qty}',
+            'qty': sales_qty,
+            'percent': 100,
             'value': revenue,
-        }
+            'total_value': total_revenue,
+        }, revenue
 
     def calculate_promotion_expenses_for_period(self) -> dict:
         promotion_expenses_for_period = sum([
@@ -530,6 +535,23 @@ class Product(models.Model):
             'value': total_returns_amount_services,
         })
         return vals_to_write
+
+    def calc_total_revenue(self):
+        query = """
+                        SELECT
+                            SUM(accruals_for_sale) as total_revenue
+                        FROM 
+                            ozon_transaction
+                        WHERE 
+                            transaction_date >= %s
+                            AND
+                            transaction_date <= %s
+                            AND
+                            name = 'Доставка покупателю'
+                        """
+        self.env.cr.execute(query, (self.period_start, self.period_finish))
+        total_revenue = self.env.cr.fetchone()
+        return total_revenue[0] if total_revenue else 0
 
     def get_products_and_skus_from_transaction_skus(self, skus: str) -> tuple[list, list]:
         products = []
