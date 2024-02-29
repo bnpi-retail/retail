@@ -533,7 +533,7 @@
                                     <button string="Рассчитать"
                                             type="object"
                                             name="action_calculate_revenue_returns_promotion_for_period"
-                                            attrs="{'invisible': ['|', ('period_start', '=', False), ('period_finish', '=', False)]}"
+                                            attrs="{'invisible': ['|', ('period_start', '=', False)]}"
                                     />
                                 </group>
                                 <group></group>
