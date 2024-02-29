@@ -57,7 +57,9 @@ class IndirectPercentExpenses(models.Model):
     )
     date_from = fields.Date(string="Начало периода")
     date_to = fields.Date(string="Конец периода")
-
+    
+    transaction_unit_ids = fields.Many2many("ozon.transaction_unit", "indirect_percent_expenses_id", 
+                                           string="Составляющие транзакций")
     # FACT TOTALS
     revenue = fields.Float(string="Выручка")
     total = fields.Float(string="Итого с учётом баллов")
@@ -297,3 +299,4 @@ class IndirectPercentExpenses(models.Model):
         for record in self:
             result.append((record.id, f"С {record.date_from} по {record.date_to}"))
         return result
+

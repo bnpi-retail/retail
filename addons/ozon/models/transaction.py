@@ -46,6 +46,8 @@ class Transactions(models.Model):
         string="Номер отправления",
         readonly=True,
     )
+    transaction_unit_ids = fields.One2many("ozon.transaction_unit", "transaction_id", 
+                                           string="Составляющие транзакции")
 
     def get_transactions_by_name_products_and_period(self, data):
         domain = []
@@ -79,3 +81,17 @@ class Transactions(models.Model):
     
     def get_theory_acquiring(self):
         return sum([p._acquiring.value * qty for p, qty in self.products_qty.items()])
+    
+
+    
+
+class TransactionUnit(models.Model):
+    _name = "ozon.transaction_unit"
+    _description = "Составляющая транзакции"
+
+    transaction_id = fields.Many2one("ozon.transaction", string="Транзакция")
+    transaction_date = fields.Date(related="transaction_id.transaction_date")
+    transaction_name = fields.Char(related="transaction_id.name")
+    transaction_type = fields.Char(related="transaction_id.transaction_type")
+    name = fields.Char(string="Название")
+    value = fields.Float(string="Значение")
