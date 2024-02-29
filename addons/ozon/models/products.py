@@ -496,7 +496,7 @@ class Product(models.Model):
             pe.expense for pe in promotion_expenses if self.period_finish >= pe.date >= self.period_start
         ])
         percent = (promotion_expenses_for_period * 100) / revenue if revenue else 0
-        total_promotion_expenses = self.get_total_promotion_expenses()
+        total_promotion_expenses = -self.get_total_promotion_expenses()
         return {
             'identifier': 2,
             'ozon_products_id': self.id,
@@ -530,6 +530,10 @@ class Product(models.Model):
                 total_returns_amount_services += return_amount_for_product
                 returns_qty += qty
 
+        percent = (abs(total_returns_amount_services) * 100) / revenue if revenue else 0
+        total_returns_expenses = sum(
+                    sum(trs.services.mapped('price')) for trs in returns if trs.services
+                )
         vals_to_write.append({
             'identifier': 3,
             'ozon_products_id': self.id,
@@ -539,37 +543,40 @@ class Product(models.Model):
                        'затем значения суммируются для всех транзакций периода.'
                        f'Количество возвратов: {returns_qty}',
             'value': total_returns_amount_services,
+            'qty': returns_qty,
+            'percent': percent,
+            'total_value': total_returns_expenses,
         })
         return vals_to_write
 
     def calc_total_revenue(self):
         query = """
-                        SELECT
-                            SUM(accruals_for_sale) as total_revenue
-                        FROM 
-                            ozon_transaction
-                        WHERE 
-                            transaction_date >= %s
-                            AND
-                            transaction_date <= %s
-                            AND
-                            name = 'Доставка покупателю'
-                        """
+                SELECT
+                    SUM(accruals_for_sale) as total_revenue
+                FROM 
+                    ozon_transaction
+                WHERE 
+                    transaction_date >= %s
+                    AND
+                    transaction_date <= %s
+                    AND
+                    name = 'Доставка покупателю'
+                """
         self.env.cr.execute(query, (self.period_start, self.period_finish))
         total_revenue = self.env.cr.fetchone()
         return total_revenue[0] if total_revenue else 0
 
     def get_total_promotion_expenses(self):
         query = """
-                                SELECT
-                                    SUM(expense) as total_expense
-                                FROM 
-                                    ozon_promotion_expenses
-                                WHERE 
-                                    date >= %s
-                                    AND
-                                    date <= %s
-                                """
+                SELECT
+                    SUM(expense) as total_expense
+                FROM 
+                    ozon_promotion_expenses
+                WHERE 
+                    date >= %s
+                    AND
+                    date <= %s
+                """
         self.env.cr.execute(query, (self.period_start, self.period_finish))
         total_revenue = self.env.cr.fetchone()
         return total_revenue[0] if total_revenue else 0

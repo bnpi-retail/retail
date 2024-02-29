@@ -555,7 +555,7 @@
                                         <field name="qty"/>
                                         <field name="percent"/>
                                         <field name="value" sum="1"/>
-                                        <field name="total_value"/>
+                                        <field name="total_value" sum="1"/>
                                     </tree>
                                 </field>
                             </group>
