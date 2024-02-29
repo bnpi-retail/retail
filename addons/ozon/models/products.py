@@ -437,17 +437,9 @@ class Product(models.Model):
         sales_qty = 0
         for trs in sales_transactions:
             if trs.products and self.id in trs.products.ids:
-                products = []
                 skus: str = trs.skus
-                skus = skus.replace('[', '').replace(']', '')
-                if skus:
-                    skus: list = skus.split(', ')
-                    for sku in skus:
-                        product = self.env['ozon.products'].search(
-                            ["|", "|", ("sku", "=", sku), ("fbo_sku", "=", sku), ("fbs_sku", "=", sku)],
-                        )
-                        if product:
-                            products.append(product)
+                products, skus = self.get_products_and_skus_from_transaction_skus(skus)
+
                 if products and self in products:
                     if len(products) == 1:
                         revenue += trs.accruals_for_sale
@@ -511,23 +503,17 @@ class Product(models.Model):
         total_returns_amount_services = 0
         returns_qty = 0
         for return_ in returns:
-            products = return_.products
-            if not products:
+            if return_.products and self.id in return_.products.ids:
                 skus: str = return_.skus
-                skus = skus.replace('[', '').replace(']', '')
-                if skus:
-                    skus: list = skus.split(', ')
-                    products = self.env['ozon.products'].search(
-                        ["|", "|", ("sku", "in", skus), ("fbo_sku", "in", skus), ("fbs_sku", "in", skus)],
-                    )
-            if products:
-                if self.id in products.ids:
-                    return_amount_services = sum(
-                        return_.services.mapped('price') if return_.services else (0, )
-                    )
-                    return_amount_for_product = return_amount_services / len(products)
-                    total_returns_amount_services += return_amount_for_product
-                    returns_qty += 1
+                products, skus = self.get_products_and_skus_from_transaction_skus(skus)
+                qty = products.count(self)
+
+                return_amount_services = sum(
+                    return_.services.mapped('price') if return_.services else (0, )
+                )
+                return_amount_for_product = (return_amount_services / len(skus)) * qty
+                total_returns_amount_services += return_amount_for_product
+                returns_qty += qty
 
         vals_to_write.append({
             'identifier': 3,
@@ -540,6 +526,19 @@ class Product(models.Model):
             'value': total_returns_amount_services,
         })
         return vals_to_write
+
+    def get_products_and_skus_from_transaction_skus(self, skus: str) -> tuple[list, list]:
+        products = []
+        skus = skus.replace('[', '').replace(']', '')
+        if skus:
+            skus: list = skus.split(', ')
+            for sku in skus:
+                product = self.env['ozon.products'].search(
+                    ["|", "|", ("sku", "=", sku), ("fbo_sku", "=", sku), ("fbs_sku", "=", sku)],
+                )
+                if product:
+                    products.append(product)
+        return products, skus
 
     def calculate_expected_price(self):
         # TODO: откуда берем ожидаемую цену?
