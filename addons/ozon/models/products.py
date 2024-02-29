@@ -459,19 +459,22 @@ class Product(models.Model):
                                 ('product', '=', product.id),
                                 ('timestamp', '<=', order_date),
                             ], order="create_date desc", limit=1)
-                            marketing_price = previous_price_history.marketing_price \
+                            price = previous_price_history.price \
                                 if previous_price_history \
-                                   and previous_price_history.marketing_price else product.marketing_price
+                                   and previous_price_history.price else product.price
 
-                            products_prices.append((product, marketing_price))
+                            products_prices.append((product, price))
 
                         products_prices_sum = sum(tuple_[1] for tuple_ in products_prices)
                         accruals_for_sale = trs.accruals_for_sale
                         if products_prices_sum and accruals_for_sale:
-                            for product, marketing_price in products_prices:
+                            for product, price in products_prices:
                                 if product == self:
-                                    product_revenue = (marketing_price * accruals_for_sale) / products_prices_sum
+                                    product_revenue = (price * accruals_for_sale) / products_prices_sum
                                     revenue += product_revenue
+                                    logger.warning(product_revenue)
+                                    logger.warning(accruals_for_sale)
+                                    logger.warning('-----------------')
 
         return {
             'identifier': 1,
