@@ -90,16 +90,31 @@ class TransactionUnit(models.Model):
     _description = "Составляющая транзакции"
 
     transaction_id = fields.Many2one("ozon.transaction", string="Транзакция")
-    transaction_date = fields.Date(related="transaction_id.transaction_date")
-    transaction_name = fields.Char(related="transaction_id.name")
-    transaction_type = fields.Char(related="transaction_id.transaction_type")
+    transaction_date = fields.Date(related="transaction_id.transaction_date", store=True)
+    transaction_name = fields.Char(related="transaction_id.name", store=True)
+    transaction_type = fields.Char(related="transaction_id.transaction_type", store=True)
     name = fields.Char(string="Название")
+    category = fields.Char(string="Категория", compute="_compute_category", store=True)
     value = fields.Float(string="Значение")
+
+    indirect_percent_expenses_id = fields.Many2one("ozon.indirect_percent_expenses", 
+                                                   string="Отчёт о косвенных затратах", 
+                                                   ondelete="cascade")
+    @api.depends("name")
+    def _compute_category(self):
+        for r in self:
+            if r.name in ["логистика", "последняя миля", "обработка отправления", 
+                          "Обработка отправления «Pick-up» (отгрузка курьеру)",
+                          "Услуги доставки Партнерами Ozon на схеме realFBS"]:
+                r.category = "Обработка и доставка"
+            else:
+                r.category = r.name
 
     def collect_data_from_transactions(self, transactions) -> list:
         """Returns data to create."""
         data = []
-        for t in transactions:
+        _ = len(transactions) - 1
+        for idx, t in enumerate(transactions):
             t_id = t.id
             if t.name in ["Доставка покупателю", "Получение возврата, отмены, невыкупа от покупателя"]:
                 data.extend([
@@ -139,4 +154,5 @@ class TransactionUnit(models.Model):
                     "name": t.name,
                     "value": t.amount
                 })
+            print(f"{idx}/{_} - Transaction units data was collected")
         return data

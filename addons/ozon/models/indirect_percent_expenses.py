@@ -277,10 +277,9 @@ class IndirectPercentExpenses(models.Model):
     def create(self, values):
         data, transaction_units_data = self.collect_data(values["date_from"], values["date_to"])
         tran_units = self.env["ozon.transaction_unit"].create(transaction_units_data)
-        values.update({**data, "transaction_unit_ids": tran_units.ids})
+        values.update(data)
         record = super(IndirectPercentExpenses, self).create(values)
-        
-        
+        tran_units.indirect_percent_expenses_id = record.id
         return record
     
     def write(self, values):
@@ -300,3 +299,12 @@ class IndirectPercentExpenses(models.Model):
             result.append((record.id, f"С {record.date_from} по {record.date_to}"))
         return result
 
+    def open_transaction_unit_view(self):
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Разбивка транзакций на услуги",
+            "view_mode": "tree,form",
+            "res_model": "ozon.transaction_unit",
+            "domain": [("indirect_percent_expenses_id", "=", self.id)],
+            "context": {"create": False},
+        }

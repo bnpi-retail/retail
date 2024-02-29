@@ -7,6 +7,10 @@
             <field name="model">ozon.indirect_percent_expenses</field>
             <field name="arch" type="xml">
                 <form>
+                    <div name="button_box" position="inside">
+                        <button string="Подробнее" class="oe_stat_button" type="object"
+                            name="open_transaction_unit_view" />
+                    </div>
                     <group style="margin-top: 20px; margin-bottom: 20px;">
                         <field name="timestamp" style="margin-bottom: 20px;" />
                         <field name="date_from" />
@@ -80,9 +84,6 @@
                                     <field name="coef_other" />
                                 </group>
                             </group>
-                        </page>
-                        <page id="transaction_units" string="Составляющие транзакций">
-                            <field name="transaction_unit_ids" />
                         </page>
                     </notebook>
                 </form>
