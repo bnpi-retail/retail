@@ -76,3 +76,6 @@ class Transactions(models.Model):
             qty = self._skus.count(p.sku) or self._skus.count(p.fbs_sku) or self._skus.count(p.fbo_sku)
             data.update({p: qty})
         return data
+    
+    def get_theory_acquiring(self):
+        return sum([p._acquiring.value * qty for p, qty in self.products_qty.items()])

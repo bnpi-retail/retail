@@ -15,18 +15,24 @@
                     <notebook>
                         <page id="totals" string="Общие данные">
                             <group>
-                                <field name="total" />
-                                <field name="orders" />
-                                <field name="reward" />
-                                <field name="processing_delivery" />
-                                <field name="returns_cancels" />
-                                <field name="services" />
-                                <field name="transfer" />
-                                <field name="compensation" />
-                                <field name="other_total" />
+                                <group string="Фактические значения">
+                                    <field name="total" />
+                                    <field name="orders" />
+                                    <field name="reward" />
+                                    <field name="processing_delivery" />
+                                    <field name="returns_cancels" />
+                                    <field name="services" />
+                                    <field name="transfer" />
+                                    <field name="compensation" />
+                                    <field name="other_total" />
+                                </group>
+                                <group string="Теоретические значения">
+                                    <field name="theory_processing_delivery" />
+                                    <field name="theory_acquiring" />
+                                </group>
                             </group>
                         </page>
-                        <page id="expenses_by_transactions" string="Затраты по транзакциям">
+                        <page id="expenses_by_transactions" string="По видам транзакций">
                             <group>
                                 <group string="Выручка">
                                     <field name="revenue" />
