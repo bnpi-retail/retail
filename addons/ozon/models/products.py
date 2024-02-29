@@ -451,6 +451,7 @@ class Product(models.Model):
                     if len(products) == 1:
                         revenue += trs.accruals_for_sale
                     else:
+                        logger.warning(products)
                         products_prices = []
                         for product in products:
                             order_date = trs.order_date
