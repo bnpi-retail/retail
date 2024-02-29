@@ -10,3 +10,6 @@ class OzonReportProductsRevenueExpenses(models.Model):
     name = fields.Char(string="Название")
     comment = fields.Text(string="Комментарий", readonly=True)
     value = fields.Float(string="Значение")
+    qty = fields.Integer(string="Количество")
+    percent = fields.Float(string="Процент от выручки товара")
+    total_value = fields.Float(string="Значение по всем товарам")

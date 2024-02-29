@@ -409,6 +409,10 @@ class Product(models.Model):
         self.period_start = period_from
         self.period_finish = period_to
 
+    @api.constrains('period_start', 'period_finish')
+    def _onchange_period(self):
+        self.period_preset = False
+
     def action_calculate_revenue_returns_promotion_for_period(self):
         delete_records(
             'ozon_report_products_revenue_expenses',
@@ -417,17 +421,18 @@ class Product(models.Model):
         )
         vals_to_write = []
         # revenue
-        vals_to_write.append(self.calculate_sales_revenue_for_period())
+        vals, revenue = self.calculate_sales_revenue_for_period()
+        vals_to_write.append(vals)
 
         # promotion_expenses
-        vals_to_write.append(self.calculate_promotion_expenses_for_period())
+        vals_to_write.append(self.calculate_promotion_expenses_for_period(revenue))
 
         # returns
-        vals_to_write.append(*self.calculate_renurns_vals_for_period())
+        vals_to_write.append(*self.calculate_renurns_vals_for_period(revenue))
 
         self.env['ozon.report.products_revenue_expenses'].create(vals_to_write)
 
-    def calculate_sales_revenue_for_period(self) -> dict:
+    def calculate_sales_revenue_for_period(self) -> tuple[dict, float]:
         sales_transactions = self.env["ozon.transaction"].search([
             ('transaction_date', '>=', self.period_start),
             ('transaction_date', '<=', self.period_finish),
@@ -468,32 +473,42 @@ class Product(models.Model):
                                     product_revenue = (price * accruals_for_sale) / products_prices_sum
                                     revenue += product_revenue
                                     sales_qty += 1
-                                    logger.warning(product_revenue)
-                                    logger.warning(accruals_for_sale)
-                                    logger.warning('-----------------')
+                                    logger.debug(product_revenue)
+                                    logger.debug(accruals_for_sale)
+                                    logger.debug('-----------------')
 
+        total_revenue = self.calc_total_revenue()
         return {
             'identifier': 1,
             'ozon_products_id': self.id,
             'name': 'Выручка за период',
             'comment': f'Сумма выручки продаж продукта за период.\n'
                        f'Количество продаж: {sales_qty}',
+            'qty': sales_qty,
+            'percent': 100,
             'value': revenue,
-        }
+            'total_value': total_revenue,
+        }, revenue
 
-    def calculate_promotion_expenses_for_period(self) -> dict:
+    def calculate_promotion_expenses_for_period(self, revenue: float) -> dict:
+        promotion_expenses = self.promotion_expenses_ids
         promotion_expenses_for_period = sum([
-            pe.expense for pe in self.promotion_expenses_ids if self.period_finish >= pe.date >= self.period_start
+            pe.expense for pe in promotion_expenses if self.period_finish >= pe.date >= self.period_start
         ])
+        percent = (promotion_expenses_for_period * 100) / revenue if revenue else 0
+        total_promotion_expenses = -self.get_total_promotion_expenses()
         return {
             'identifier': 2,
             'ozon_products_id': self.id,
             'name': 'Расходы на продвижение продукта за период',
             'comment': 'Сумма расходов на продвижение продукта за период',
             'value': -promotion_expenses_for_period,
+            'qty': len(promotion_expenses),
+            'percent': percent,
+            'total_value': total_promotion_expenses,
         }
 
-    def calculate_renurns_vals_for_period(self) -> list:
+    def calculate_renurns_vals_for_period(self, revenue: float) -> list:
         vals_to_write = []
         returns = self.env["ozon.transaction"].search([
             ('transaction_date', '>=', self.period_start),
@@ -515,6 +530,10 @@ class Product(models.Model):
                 total_returns_amount_services += return_amount_for_product
                 returns_qty += qty
 
+        percent = (abs(total_returns_amount_services) * 100) / revenue if revenue else 0
+        total_returns_expenses = sum(
+                    sum(trs.services.mapped('price')) for trs in returns if trs.services
+                )
         vals_to_write.append({
             'identifier': 3,
             'ozon_products_id': self.id,
@@ -524,14 +543,49 @@ class Product(models.Model):
                        'затем значения суммируются для всех транзакций периода.'
                        f'Количество возвратов: {returns_qty}',
             'value': total_returns_amount_services,
+            'qty': returns_qty,
+            'percent': percent,
+            'total_value': total_returns_expenses,
         })
         return vals_to_write
+
+    def calc_total_revenue(self):
+        query = """
+                SELECT
+                    SUM(accruals_for_sale) as total_revenue
+                FROM 
+                    ozon_transaction
+                WHERE 
+                    transaction_date >= %s
+                    AND
+                    transaction_date <= %s
+                    AND
+                    name = 'Доставка покупателю'
+                """
+        self.env.cr.execute(query, (self.period_start, self.period_finish))
+        total_revenue = self.env.cr.fetchone()
+        return total_revenue[0] if total_revenue else 0
+
+    def get_total_promotion_expenses(self):
+        query = """
+                SELECT
+                    SUM(expense) as total_expense
+                FROM 
+                    ozon_promotion_expenses
+                WHERE 
+                    date >= %s
+                    AND
+                    date <= %s
+                """
+        self.env.cr.execute(query, (self.period_start, self.period_finish))
+        total_revenue = self.env.cr.fetchone()
+        return total_revenue[0] if total_revenue else 0
 
     def get_products_and_skus_from_transaction_skus(self, skus: str) -> tuple[list, list]:
         products = []
         skus = skus.replace('[', '').replace(']', '')
         if skus:
-            skus: list = skus.split(', ')
+            skus = skus.split(', ')
             for sku in skus:
                 product = self.env['ozon.products'].search(
                     ["|", "|", ("sku", "=", sku), ("fbo_sku", "=", sku), ("fbs_sku", "=", sku)],
