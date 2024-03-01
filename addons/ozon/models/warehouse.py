@@ -5,7 +5,7 @@ from odoo import models, fields, api
 
 class Warehouse(models.Model):
     _name = "ozon.warehouse"
-    _description = "Склад Ozon"
+    _description = "Склад FBS"
 
     name = fields.Char(string="Название")
     w_id = fields.Char(string="Идентификатор")
