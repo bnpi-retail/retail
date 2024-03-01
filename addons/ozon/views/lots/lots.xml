@@ -538,14 +538,22 @@
                                 </group>
                                 <group></group>
                                 <group>
-                                    <field name="period_preset" class="oe_inline" string="Пресеты периода"/>
+                                    <field name="period_preset" class="oe_inline" string="Период"/>
                                 </group>
                                 <group></group>
                                 <group>
-                                    <field name="period_start" widget="daterange" class="oe_inline"
-                                           options="{'related_end_date': 'period_finish'}"
-                                           string="Период"
-                                    />
+                                    <label for="period_start" string="Даты"/>
+                                    <div class="o_row">
+                                        <field name="period_start" widget="daterange" class="oe_inline"
+                                               options="{'related_end_date': 'period_finish'}"
+                                               nolable="1"
+                                        />
+                                        <i class="fa fa-long-arrow-right mx-2" aria-label="Arrow icon" title="To"/>
+                                        <field name="period_finish" widget="daterange" class="oe_inline"
+                                               options="{'related_start_date': 'period_start'}"
+                                               nolable="1"
+                                        />
+                                    </div>
                                 </group>
                                 <field name="ozon_report_products_revenue_expenses_ids">
                                     <tree create="0">

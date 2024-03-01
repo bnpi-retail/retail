@@ -409,9 +409,9 @@ class Product(models.Model):
         self.period_start = period_from
         self.period_finish = period_to
 
-    @api.constrains('period_start', 'period_finish')
-    def _onchange_period(self):
-        self.period_preset = False
+    # @api.constrains('period_start', 'period_finish')
+    # def _onchange_period(self):
+    #     self.period_preset = False
 
     def action_calculate_revenue_returns_promotion_for_period(self):
         delete_records(
