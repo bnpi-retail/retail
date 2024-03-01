@@ -30,8 +30,10 @@
             <field name="model">ozon.import_file</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="timestamp" width="300" />
-                    <field name="data_for_download" width="300" />
+                    <field name="timestamp" width="300"/>
+                    <field name="data_for_download" width="300"/>
+                    <field name="period_start_date" readonly="1"/>
+                    <field name="period_end_date" readonly="1"/>
                 </tree>
             </field>
         </record>

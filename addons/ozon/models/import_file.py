@@ -4,6 +4,7 @@ import csv
 import logging
 import json
 import os
+import re
 
 from datetime import date, datetime
 from collections import defaultdict
@@ -69,6 +70,8 @@ class ImportFile(models.Model):
     file = fields.Binary(
         attachment=True, string="Файл для загрузки своих данных", help="Выбрать файл"
     )
+    period_start_date = fields.Date(string="Период с")
+    period_end_date = fields.Date(string="по")
 
     def name_get(self):
         """
@@ -138,7 +141,9 @@ class ImportFile(models.Model):
             self.import_successful_products_competitors(content)
 
         elif values["data_for_download"] == "ozon_ad_campgaign_search_promotion_report":
-            self.import_ad_campgaign_search_promotion_report(content)
+            start_date, end_date = self.import_ad_campgaign_search_promotion_report(content)
+            values['period_start_date'] = start_date
+            values['period_end_date'] = end_date
 
         elif values["data_for_download"] == "ozon_realisation_report":
             self.import_ozon_realisation_report(content)
@@ -666,7 +671,7 @@ class ImportFile(models.Model):
             )
         # TODO: что делать если разные продукты в одной транзакции? как создавать продажи?
 
-    def import_ad_campgaign_search_promotion_report(self, content):
+    def import_ad_campgaign_search_promotion_report(self, content) -> tuple:
         f_path = "/mnt/extra-addons/ozon/__pycache__/ad_campgaign_search_promotion_report.csv"
         with open(f_path, "w") as f:
             f.write(content)
@@ -677,6 +682,17 @@ class ImportFile(models.Model):
                 raise UserError(
                     """Файл должен содержать номер рекламной кампании в первой строке"""
                 )
+
+            date_pattern = r"\b\d{2}\.\d{2}\.\d{4}\b"
+            dates = re.findall(date_pattern, first_row)
+            period_dates = [datetime.strptime(date_, "%d.%m.%Y") for date_ in dates]
+            if len(dates) == 2 and isinstance(period_dates[0], date) and isinstance(period_dates[1], date):
+                start_date = period_dates[0] if period_dates[0] < period_dates[1] else period_dates[1]
+                end_date = period_dates[1] if period_dates[1] > period_dates[0] else period_dates[0]
+            else:
+                raise UserError("Файл должен содержать даты начала и конца периода в первой строке"
+                                " в формате 01.01.2024-05.02.2024")
+
             reader = csv.DictReader(csvfile, delimiter=";")
             if reader.fieldnames != [
                 "Дата",
@@ -741,6 +757,8 @@ class ImportFile(models.Model):
                     print(f"{i} - Product (SKU: {sku}) promotion expenses were added")
             self.env["ozon.promotion_expenses"].create(data)
         os.remove(f_path)
+
+        return start_date, end_date
 
     def import_ozon_realisation_report(self, content):
         with StringIO(content) as jsonfile:
