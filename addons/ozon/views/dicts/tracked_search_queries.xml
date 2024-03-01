@@ -35,7 +35,7 @@
         <!-- Menu -->
         <menuitem name="Поисковые запросы"
             id="menu_search_queries_parser"
-            parent="main_menu_other"
+            parent="main_menu_dicts"
             action="action_tracked_search_queries"
             sequence="30" />
 

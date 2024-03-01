@@ -41,9 +41,9 @@
         <!-- Menu -->
         <menuitem name="Интерес к продуктам"
             id="menu_analysis_data"
-            parent="main_menu_other"
+            parent="main_menu_history"
             action="action_analysis_data"
-            sequence="20" />
+            sequence="3" />
 
     </data>
 </odoo>

@@ -112,7 +112,7 @@
         </record>
 
         <!-- Menu -->
-        <menuitem name="Отчёт о транзакциях"
+        <menuitem name="Выплата"
             id="menu_indirect_percent_expenses"
             parent="main_menu_reports"
             action="action_indirect_percent_expenses"

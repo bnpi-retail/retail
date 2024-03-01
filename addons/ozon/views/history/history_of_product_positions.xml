@@ -39,11 +39,11 @@
         </record>
 
         <!-- Menu -->
-        <menuitem name="История позиций товаров"
+        <menuitem name="Позиции товаров"
             id="menu_history_of_product_positions"
-            parent="main_menu_other"
+            parent="main_menu_history"
             action="action_history_of_product_positions"
-            sequence="80" />
+            sequence="4" />
 
     </data>
 </odoo>

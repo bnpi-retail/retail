@@ -35,7 +35,7 @@
         <!-- Menu -->
         <menuitem name="Ключевые слова"
             id="menu_search_queries"
-            parent="main_menu_other"
+            parent="main_menu_dicts"
             action="action_search_queries"
             sequence="38" />
     </data>

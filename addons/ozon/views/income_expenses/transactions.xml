@@ -84,7 +84,7 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem name="Транзакции"
+        <menuitem name="Выплаты"
             id="menu_transactions"
             parent="main_menu_finance"
             action="action_transaction"
