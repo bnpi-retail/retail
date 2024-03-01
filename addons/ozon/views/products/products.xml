@@ -730,12 +730,6 @@
             </field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Продукты"
-            id="menu_products"
-            parent="main_menu_products"
-            action="action_products"
-            sequence="20" />
 
     </data>
 </odoo>

@@ -37,7 +37,7 @@
         <!-- Menu -->
         <menuitem name="Настройки"
             id="menu_settings"
-            parent="main_menu_other"
+            parent="main_menu_dicts"
             action="action_settings"
             sequence="42" />
 

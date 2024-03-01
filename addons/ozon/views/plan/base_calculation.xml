@@ -33,9 +33,9 @@
         <!-- Menu -->
         <menuitem name="Шаблоны планового расчёта"
             id="menu_base_calculation_template"
-            parent="main_menu_other"
+            parent="main_menu_plan"
             action="action_base_calculation_template"
-            sequence="46" />
+            sequence="1" />
 
 
         <!-- Base calculation wizard - Form -->

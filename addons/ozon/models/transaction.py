@@ -83,8 +83,6 @@ class Transactions(models.Model):
         return sum([p._acquiring.value * qty for p, qty in self.products_qty.items()])
     
 
-    
-
 class TransactionUnit(models.Model):
     _name = "ozon.transaction_unit"
     _description = "Составляющая транзакции"
@@ -155,4 +153,30 @@ class TransactionUnit(models.Model):
                     "value": t.amount
                 })
             print(f"{idx}/{_} - Transaction units data was collected")
+        return data
+
+
+class TransactionUnitSummary(models.Model):
+    _name = "ozon.tran_unit_sum"
+    _description = "Суммарные выплаты"
+
+    name = fields.Char(string="Выплата")
+    count = fields.Integer(string="Кол-во")
+    value = fields.Float(string="Сумма")
+
+    indirect_percent_expenses_id = fields.Many2one("ozon.indirect_percent_expenses", 
+                                                   string="Отчёт о выплатах", 
+                                                   ondelete="cascade")
+    
+    def collect_data_from_transaction_units(self, report_id):
+        grouped_tran_units = self.env["ozon.transaction_unit"].read_group(
+            domain=[("indirect_percent_expenses_id", "=", report_id)], 
+            fields=["name", "value"],
+            groupby=["name"])
+        data = [
+            {"name": i["name"], 
+             "count": i["name_count"], 
+             "value": i["value"], 
+             "indirect_percent_expenses_id": report_id}
+             for i in grouped_tran_units]
         return data

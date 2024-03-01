@@ -58,8 +58,10 @@ class IndirectPercentExpenses(models.Model):
     date_from = fields.Date(string="Начало периода")
     date_to = fields.Date(string="Конец периода")
     
-    transaction_unit_ids = fields.Many2many("ozon.transaction_unit", "indirect_percent_expenses_id", 
+    transaction_unit_ids = fields.Many2many("ozon.transaction_unit", 
                                            string="Составляющие транзакций")
+    transaction_unit_summary_ids = fields.One2many("ozon.tran_unit_sum", "indirect_percent_expenses_id",
+                                                    string="Суммарные выплаты")
     # FACT TOTALS
     revenue = fields.Float(string="Выручка")
     total = fields.Float(string="Итого с учётом баллов")
@@ -278,9 +280,12 @@ class IndirectPercentExpenses(models.Model):
         data, transaction_units_data = self.collect_data(values["date_from"], values["date_to"])
         tran_units = self.env["ozon.transaction_unit"].create(transaction_units_data)
         values.update(data)
-        record = super(IndirectPercentExpenses, self).create(values)
-        tran_units.indirect_percent_expenses_id = record.id
-        return record
+        rec = super(IndirectPercentExpenses, self).create(values)
+        tran_units.indirect_percent_expenses_id = rec.id
+        tran_unit_sum_model = self.env['ozon.tran_unit_sum']
+        tran_unit_sum_data = tran_unit_sum_model.collect_data_from_transaction_units(rec.id)
+        tran_unit_sum_model.create(tran_unit_sum_data)
+        return rec
     
     def write(self, values):
         date_from = values.get("date_from", self.date_from)
