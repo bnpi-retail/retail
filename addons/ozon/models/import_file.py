@@ -1228,7 +1228,6 @@ class ProcessProductFile(models.Model):
         if not seller:
             seller = model_seller.create({
                 "name": "Продавец",
-                "tax": "earnings_6",
             })
         return seller
 
