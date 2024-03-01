@@ -8,8 +8,8 @@
             <field name="arch" type="xml">
                 <form>
                     <group>
-                        <field name="product"/>
-                        <field name="status"/>
+                        <field name="product" />
+                        <field name="status" />
                     </group>
                 </form>
             </field>
@@ -21,8 +21,8 @@
             <field name="model">ozon.lots_for_gpt</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="product"/>
-                    <field name="status"/>
+                    <field name="product" />
+                    <field name="status" />
                 </tree>
             </field>
         </record>
@@ -35,11 +35,11 @@
         </record>
 
         <!-- Menu -->
-        <menuitem name="Очередь для формирования поисковых запросов" 
-            id="menu_lots_for_gpt" 
-            parent="main_menu_products" 
-            action="action_lots_for_gpt" 
-            sequence="20"/>
+        <menuitem name="Очередь для формирования поисковых запросов"
+            id="menu_lots_for_gpt"
+            parent="main_menu_other"
+            action="action_lots_for_gpt"
+            sequence="20" />
 
     </data>
 </odoo>

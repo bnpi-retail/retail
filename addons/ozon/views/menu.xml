@@ -1,5 +1,16 @@
 <odoo>
   <data>
     <menuitem name="Ozon" id="ozon.menu_root" sequence="1" />
+
+    <menuitem name="Продукты" id="main_menu_products" parent="ozon.menu_root" sequence="2"
+      action="action_products" />
+    <menuitem name="Доходы/расходы" id="main_menu_finance" parent="ozon.menu_root" sequence="3" />
+    <menuitem name="История" id="main_menu_history" parent="ozon.menu_root" sequence="4" />
+    <menuitem name="Отчёты" id="main_menu_reports" parent="ozon.menu_root" sequence="5" />
+    <menuitem name="Когортный анализ" id="main_menu_analytics" parent="ozon.menu_root" sequence="6" />
+    <menuitem name="Работа менеджера" id="main_menu_manager" parent="ozon.menu_root" sequence="7" />
+    <menuitem name="Справочники" id="main_menu_dicts" parent="ozon.menu_root" sequence="8" />
+
+    <menuitem name="Другое" id="main_menu_other" parent="ozon.menu_root" sequence="20" />
   </data>
 </odoo>

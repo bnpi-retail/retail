@@ -9,20 +9,22 @@
                     <sheet>
                         <group>
                             <group>
-                                <field name="type" string="Тип индикатора" readonly="1"/>
-                                <field name="ozon_product_id" string="Продукт(Лот)" readonly="1"/>
-                                <field name="source" string="Источник" readonly="1"/>
+                                <field name="type" string="Тип индикатора" readonly="1" />
+                                <field name="ozon_product_id" string="Продукт(Лот)" readonly="1" />
+                                <field name="source" string="Источник" readonly="1" />
                                 <field name="user_id" string="Пользователь" readonly="1"
-                                       attrs="{'invisible':[('user_id','=',False)]}"
+                                    attrs="{'invisible':[('user_id','=',False)]}"
                                 />
                             </group>
                             <group>
-                                <field name="create_date" string="Дата создания индикатора" readonly="1"/>
-                                <field name="expiration_date" string="Индикатор будет снят" readonly="1"
-                                       attrs="{'invisible':[('type','!=','no_competitor_manager')]}"
+                                <field name="create_date" string="Дата создания индикатора"
+                                    readonly="1" />
+                                <field name="expiration_date" string="Индикатор будет снят"
+                                    readonly="1"
+                                    attrs="{'invisible':[('type','!=','no_competitor_manager')]}"
                                 />
                                 <field name="end_date" string="Индикатор был снят" readonly="1"
-                                       attrs="{'invisible':[('end_date','=',False)]}"
+                                    attrs="{'invisible':[('end_date','=',False)]}"
                                 />
                             </group>
                         </group>
@@ -36,13 +38,13 @@
             <field name="model">ozon.products.indicator</field>
             <field name="arch" type="xml">
                 <tree string="Отчеты" create="0">
-                    <field name="type" string="Тип индикатора"/>
-                    <field name="ozon_product_id" string="Продукт(Лот)"/>
-                    <field name="source" string="Источник"/>
-                    <field name="user_id" string="Пользователь"/>
-                    <field name="create_date" string="Дата создания индикатора"/>
-<!--                    <field name="expiration_date" string="Индикатор будет снят"/>-->
-                    <field name="end_date" string="Индикатор был снят"/>
+                    <field name="type" string="Тип индикатора" />
+                    <field name="ozon_product_id" string="Продукт(Лот)" />
+                    <field name="source" string="Источник" />
+                    <field name="user_id" string="Пользователь" />
+                    <field name="create_date" string="Дата создания индикатора" />
+                    <!--                    <field name="expiration_date" string="Индикатор будет снят"/>-->
+                    <field name="end_date" string="Индикатор был снят" />
                 </tree>
             </field>
         </record>
@@ -52,14 +54,14 @@
             <field name="model">ozon.products.indicator</field>
             <field name="arch" type="xml">
                 <search>
-                     <field name="type" string="Тип"/>
-                    <field name="ozon_product_id" string="Продукт(Лот)"/>
-                    <field name="source" string="Источник"/>
-                    <field name="user_id" string="Пользователь"/>
-                    <field name="create_date" string="Дата создания"/>
-                    <field name="expiration_date" string="Дата истечения"/>
-                    <field name="end_date" string="Дата завершения"/>
-                    <filter string="Archived" name="active" domain="[('active', '=',False)]"/>
+                    <field name="type" string="Тип" />
+                    <field name="ozon_product_id" string="Продукт(Лот)" />
+                    <field name="source" string="Источник" />
+                    <field name="user_id" string="Пользователь" />
+                    <field name="create_date" string="Дата создания" />
+                    <field name="expiration_date" string="Дата истечения" />
+                    <field name="end_date" string="Дата завершения" />
+                    <filter string="Archived" name="active" domain="[('active', '=',False)]" />
                 </search>
             </field>
         </record>
@@ -70,8 +72,8 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_indicators" name="Мониторинг индикаторов" parent="main_menu_products"
-                  action="action_open_ozon_products_indicator" sequence="40"/>
+        <menuitem id="menu_indicators" name="Мониторинг индикаторов" parent="main_menu_other"
+            action="action_open_ozon_products_indicator" sequence="40" />
 
     </data>
 </odoo>

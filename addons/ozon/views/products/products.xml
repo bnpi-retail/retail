@@ -531,31 +531,32 @@
                             <group>
                                 <group>
                                     <button string="Рассчитать"
-                                            type="object"
-                                            name="action_calculate_revenue_returns_promotion_for_period"
-                                            attrs="{'invisible': [('period_start', '=', False)]}"
+                                        type="object"
+                                        name="action_calculate_revenue_returns_promotion_for_period"
+                                        attrs="{'invisible': [('period_start', '=', False)]}"
                                     />
                                 </group>
                                 <group></group>
                                 <group>
-                                    <field name="period_preset" class="oe_inline" string="Пресеты периода"/>
+                                    <field name="period_preset" class="oe_inline"
+                                        string="Пресеты периода" />
                                 </group>
                                 <group></group>
                                 <group>
                                     <field name="period_start" widget="daterange" class="oe_inline"
-                                           options="{'related_end_date': 'period_finish'}"
-                                           string="Период"
+                                        options="{'related_end_date': 'period_finish'}"
+                                        string="Период"
                                     />
                                 </group>
                                 <field name="ozon_report_products_revenue_expenses_ids">
                                     <tree create="0">
-                                        <field name="identifier"/>
-                                        <field name="name"/>
-                                        <field name="comment" optional="hide"/>
-                                        <field name="qty"/>
-                                        <field name="percent"/>
-                                        <field name="value" sum="1"/>
-                                        <field name="total_value" sum="1"/>
+                                        <field name="identifier" />
+                                        <field name="name" />
+                                        <field name="comment" optional="hide" />
+                                        <field name="qty" />
+                                        <field name="percent" />
+                                        <field name="value" sum="1" />
+                                        <field name="total_value" sum="1" />
                                     </tree>
                                 </field>
                             </group>
@@ -704,13 +705,6 @@
                 action = records.open_base_calculation_wizard()
             </field>
         </record>
-
-        <!-- Menu -->
-        <menuitem name="Продукты"
-            id="menu_products"
-            parent="main_menu_products"
-            action="action_products"
-            sequence="20" />
 
     </data>
 </odoo>

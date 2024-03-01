@@ -68,11 +68,8 @@
         "views/price/all_expenses.xml",
         "views/price/price_component.xml",
         "views/price/base_calculation.xml",
-        "views/lots/menu.xml",
-        "views/lots/wizards.xml",
-        "views/lots/lots.xml",
-        "views/lots/lots_for_gpt.xml",
-        "views/lots/analysis_data.xml",
+        "views/products/wizards.xml",
+        "views/products/products.xml",
         "views/categories/menu.xml",
         "views/categories/categories.xml",
         "views/categories/supplementary_categories.xml",
@@ -119,6 +116,9 @@
         "views/technical/menu.xml",
         "views/import/mass_data_import_views.xml",
         "views/import/mass_data_import_log_views.xml",
+        # other
+        "views/other/lots_for_gpt.xml",
+        "views/other/analysis_data.xml",
         # cron
         "crone/ir_cron_data.xml",
     ],
