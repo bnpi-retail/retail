@@ -421,18 +421,18 @@ class Product(models.Model):
         )
         vals_to_write = []
         # revenue
-        vals, revenue = self.calculate_sales_revenue_for_period()
+        vals, revenue, total_revenue = self.calculate_sales_revenue_for_period()
         vals_to_write.append(vals)
 
         # promotion_expenses
-        vals_to_write.append(self.calculate_promotion_expenses_for_period(revenue))
+        vals_to_write.append(self.calculate_promotion_expenses_for_period(revenue, total_revenue))
 
         # returns
-        vals_to_write.append(*self.calculate_renurns_vals_for_period(revenue))
+        vals_to_write.append(*self.calculate_returns_vals_for_period(revenue, total_revenue))
 
         self.env['ozon.report.products_revenue_expenses'].create(vals_to_write)
 
-    def calculate_sales_revenue_for_period(self) -> tuple[dict, float]:
+    def calculate_sales_revenue_for_period(self) -> tuple[dict, float, float]:
         sales_transactions = self.env["ozon.transaction"].search([
             ('transaction_date', '>=', self.period_start),
             ('transaction_date', '<=', self.period_finish),
@@ -495,16 +495,18 @@ class Product(models.Model):
             'qty': sales_qty,
             'percent': 100,
             'value': revenue,
+            'percent_from_total': 100,
             'total_value': total_revenue,
-        }, revenue
+        }, revenue, total_revenue
 
-    def calculate_promotion_expenses_for_period(self, revenue: float) -> dict:
+    def calculate_promotion_expenses_for_period(self, revenue: float, total_revenue: float) -> dict:
         promotion_expenses = self.promotion_expenses_ids
         promotion_expenses_for_period = sum([
             pe.expense for pe in promotion_expenses if self.period_finish >= pe.date >= self.period_start
         ])
         percent = (promotion_expenses_for_period * 100) / revenue if revenue else 0
         total_promotion_expenses = -self.get_total_promotion_expenses()
+        percent_from_total = (abs(total_promotion_expenses) * 100) / total_revenue if total_revenue else 0
         return {
             'identifier': 2,
             'ozon_products_id': self.id,
@@ -514,10 +516,11 @@ class Product(models.Model):
             'value': -promotion_expenses_for_period,
             'qty': len(promotion_expenses),
             'percent': percent,
+            'percent_from_total': percent_from_total,
             'total_value': total_promotion_expenses,
         }
 
-    def calculate_renurns_vals_for_period(self, revenue: float) -> list:
+    def calculate_returns_vals_for_period(self, revenue: float, total_revenue: float) -> list:
         vals_to_write = []
         returns = self.env["ozon.transaction"].search([
             ('transaction_date', '>=', self.period_start),
@@ -543,6 +546,7 @@ class Product(models.Model):
         total_returns_expenses = sum(
                     sum(trs.services.mapped('price')) for trs in returns if trs.services
                 )
+        percent_from_total = (abs(total_returns_expenses) * 100) / total_revenue if total_revenue else 0
         vals_to_write.append({
             'identifier': 3,
             'ozon_products_id': self.id,
@@ -559,6 +563,7 @@ class Product(models.Model):
             'value': total_returns_amount_services,
             'qty': returns_qty,
             'percent': percent,
+            'percent_from_total': percent_from_total,
             'total_value': total_returns_expenses,
         })
         return vals_to_write
