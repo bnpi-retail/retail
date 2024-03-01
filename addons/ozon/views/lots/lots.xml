@@ -567,6 +567,15 @@
                                         <field name="total_value" sum="1"/>
                                     </tree>
                                 </field>
+                                <div class="o_row">
+                                    <h5>Использовать средние значения по магазину для расчета фактических статей затрат  </h5>
+                                    <field name="use_avg_value_of_all_products" widget="boolean_toggle"/>
+                                </div>
+                                <div></div>
+                                <div class="o_row">
+                                    <h5>Использовать средние значения по товару для расчета фактических статей затрат  </h5>
+                                    <field name="use_avg_value_of_current_product" widget="boolean_toggle"/>
+                                </div>
                             </group>
                         </page>
                     </notebook>
