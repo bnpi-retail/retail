@@ -32,8 +32,8 @@
                 <tree>
                     <field name="timestamp" width="300"/>
                     <field name="data_for_download" width="300"/>
-                    <field name="period_start_date" readonly="1"/>
-                    <field name="period_end_date" readonly="1"/>
+                    <field name="period_start_date" readonly="0"/>
+                    <field name="period_end_date" readonly="0"/>
                 </tree>
             </field>
         </record>

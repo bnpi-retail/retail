@@ -555,8 +555,20 @@
                                         />
                                     </div>
                                 </group>
+                                <field name="is_promotion_data_correct" invisible="1"/>
+                                    <div class="o_row"
+                                         attrs="{'invisible': [('is_promotion_data_correct', '=', True)]}">
+                                        <h5 style="background-color: #f5c242">
+                                            Данные Расходов на продвижение продуктов за период могут быть не точны.
+
+                                            Не найдены импорты Отчётов о рекламной кампании (продвижение в поиске)
+                                            покрывающие весь искомый период.
+
+                                            Пожалуйста, загрузите недостающие отчеты за период.
+                                        </h5>
+                                    </div>
                                 <field name="ozon_report_products_revenue_expenses_ids">
-                                    <tree create="0">
+                                    <tree create="0" decoration-warning="accuracy=='c'">
                                         <field name="identifier"/>
                                         <field name="name"/>
                                         <field name="comment" optional="hide"/>
@@ -565,6 +577,7 @@
                                         <field name="value" sum="1"/>
                                         <field name="percent_from_total"/>
                                         <field name="total_value" sum="1"/>
+                                        <field name="accuracy" invisible="1"/>
                                     </tree>
                                 </field>
                                 <div class="o_row">

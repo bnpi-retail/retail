@@ -389,7 +389,7 @@ class Product(models.Model):
                                                              "для расчета фактических статей затрат")
     use_avg_value_of_all_products = fields.Boolean(string="Использовать средние значения по магазину "
                                                           "для расчета фактических статей затрат", default=True)
-
+    is_promotion_data_correct = fields.Boolean()
     # ----------------
 
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
@@ -543,18 +543,72 @@ class Product(models.Model):
         percent = (promotion_expenses_for_period * 100) / revenue if revenue else 0
         total_promotion_expenses = -self.get_total_promotion_expenses()
         percent_from_total = (abs(total_promotion_expenses) * 100) / total_revenue if total_revenue else 0
+
+        accuracy = self.calc_accuracy(self.period_start, self.period_finish)
+        self.is_promotion_data_correct = True if accuracy == 'a' else False
+
         return {
             'identifier': 2,
             'ozon_products_id': self.id,
             'name': 'Расходы на продвижение продукта за период',
             'comment': 'Рассчитывается сложением суммы значений поля "Расход" '
-                       'затрат на продвижение текущего товара за искомый период.',
+                       'затрат на продвижение текущего товара за искомый период.\n',
             'value': -promotion_expenses_for_period,
             'qty': len(promotion_expenses),
             'percent': percent,
             'percent_from_total': percent_from_total,
             'total_value': total_promotion_expenses,
+            'accuracy': accuracy,
         }
+
+    def calc_accuracy(self, period_start, period_finish) -> str:
+        ps = period_start
+        pf = period_finish
+        query = """
+                SELECT
+                    period_start_date,
+                    period_end_date
+                FROM 
+                    ozon_import_file
+                WHERE 
+                    data_for_download = %s
+                    AND
+                    period_start_date IS NOT NULL
+                    AND
+                    period_end_date IS NOT NULL
+                ORDER BY
+                    period_start_date
+                """
+        self.env.cr.execute(query, ('ozon_ad_campgaign_search_promotion_report', ))
+        imports_periods = self.env.cr.fetchall()
+        is_covered = False
+        if imports_periods:
+            joined_periods = []
+            start = end = None
+            for s, e in imports_periods:
+                if not start:
+                    start = s
+                    end = e
+                if start <= s <= end + timedelta(days=1):
+                    end = max(end, e)
+                else:
+                    joined_periods.append((start, end))
+                    start = s
+                    end = e
+                if s == imports_periods[-1][0] and e == imports_periods[-1][1]:
+                    joined_periods.append((start, end))
+
+            joined_periods.reverse()
+
+            for start, end in joined_periods:
+                if start <= ps <= end:
+                    if start <= pf <= end:
+                        is_covered = True
+                        break
+
+        accuracy = 'a' if is_covered else 'c'
+
+        return accuracy
 
     def calculate_returns_vals_for_period(
             self, revenue: float, total_revenue: float, transaction_name: str, identifier: int) -> list:
