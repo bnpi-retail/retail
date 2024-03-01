@@ -428,7 +428,22 @@ class Product(models.Model):
         vals_to_write.append(self.calculate_promotion_expenses_for_period(revenue, total_revenue))
 
         # returns
-        vals_to_write.append(*self.calculate_returns_vals_for_period(revenue, total_revenue))
+        vals_to_write.append(
+            *self.calculate_returns_vals_for_period(
+                revenue=revenue,
+                total_revenue=total_revenue,
+                transaction_name='Доставка и обработка возврата, отмены, невыкупа',
+                identifier=3
+            )
+        )
+        vals_to_write.append(
+            *self.calculate_returns_vals_for_period(
+                revenue=revenue,
+                total_revenue=total_revenue,
+                transaction_name='Получение возврата, отмены, невыкупа от покупателя',
+                identifier=4
+            )
+        )
 
         self.env['ozon.report.products_revenue_expenses'].create(vals_to_write)
 
@@ -520,12 +535,13 @@ class Product(models.Model):
             'total_value': total_promotion_expenses,
         }
 
-    def calculate_returns_vals_for_period(self, revenue: float, total_revenue: float) -> list:
+    def calculate_returns_vals_for_period(
+            self, revenue: float, total_revenue: float, transaction_name: str, identifier: int) -> list:
         vals_to_write = []
         returns = self.env["ozon.transaction"].search([
             ('transaction_date', '>=', self.period_start),
             ('transaction_date', '<=', self.period_finish),
-            ('transaction_type', '=', 'возвраты и отмены'),
+            ('name', '=', transaction_name),
         ])
         total_returns_amount_services = 0
         returns_qty = 0
@@ -548,11 +564,11 @@ class Product(models.Model):
                 )
         percent_from_total = (abs(total_returns_expenses) * 100) / total_revenue if total_revenue else 0
         vals_to_write.append({
-            'identifier': 3,
+            'identifier': identifier,
             'ozon_products_id': self.id,
-            'name': 'Расходы на дополнительные услуги Ozon при возврате',
+            'name': f'Расходы на дополнительные услуги Ozon: {transaction_name}',
             'comment': 'Расходы на услуги Озон в транзакциях возвратов и отмен за период. '
-                       'Для каждой транзакции типа "возвраты и отмены" за искомый период '
+                       f'Для каждой транзакции типа "{transaction_name}" за искомый период '
                        'в которой присутствует текущий продукт, суммируется значение поля "Сумма услуги" '
                        'для всех записей поля "Дополнительные услуги Озон". Полученная сумма '
                        'делится на количество товаров в транзакции и умножается на количство '
