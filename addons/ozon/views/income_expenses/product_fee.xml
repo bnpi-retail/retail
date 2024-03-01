@@ -3,7 +3,7 @@
 
         <!-- Form -->
         <record id="view_product_fee_form" model="ir.ui.view">
-            <field name="name">Комиссии товаров Ozon</field>
+            <field name="name">Комиссии товаров</field>
             <field name="model">ozon.product_fee</field>
             <field name="arch" type="xml">
                 <form>
@@ -44,7 +44,7 @@
 
         <!-- Tree -->
         <record id="view_product_fee_tree" model="ir.ui.view">
-            <field name="name">Комиссии товаров Ozon</field>
+            <field name="name">Комиссии товаров</field>
             <field name="model">ozon.product_fee</field>
             <field name="arch" type="xml">
                 <tree>
@@ -64,17 +64,17 @@
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_product_fee">
-            <field name="name">Комиссии товаров Ozon</field>
+            <field name="name">Комиссии товаров</field>
             <field name="res_model">ozon.product_fee</field>
             <field name="view_mode">tree,form</field>
         </record>
 
         <!-- Menu -->
-        <menuitem name="Комиссии товаров Ozon"
+        <menuitem name="Комиссии товаров"
             id="menu_product_fee"
-            parent="ozon.menu_comissinons"
+            parent="main_menu_finance"
             action="action_product_fee"
-            sequence="37" />
+            sequence="5" />
 
     </data>
 </odoo>

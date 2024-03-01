@@ -86,9 +86,9 @@
 
         <menuitem name="Транзакции"
             id="menu_transactions"
-            parent="ozon.menu_root"
+            parent="main_menu_finance"
             action="action_transaction"
-            sequence="38" />
+            sequence="1" />
 
     </data>
 </odoo>

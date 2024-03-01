@@ -54,9 +54,9 @@
         <!-- Menu -->
         <menuitem name="Затраты на продвижение"
             id="menu_promotion_expenses"
-            parent="ozon.menu_expenses"
+            parent="main_menu_finance"
             action="action_promotion_expenses"
-            sequence="2" />
+            sequence="3" />
     </data>
 
 </odoo>
