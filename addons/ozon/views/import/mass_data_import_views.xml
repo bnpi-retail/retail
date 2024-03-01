@@ -9,16 +9,18 @@
                     <sheet>
                         <group>
                             <group>
-                                <field name="start_time" string="Дата запуска" readonly="1"/>
-                                <field name="finish_time" string="Время окончания" readonly="1"/>
-                                <field name="name" string="Наименование" readonly="1"/>
-                                <field name="state" string="Состояние" readonly="1"/>
-                                <field name="expected_quantity" string="Ожидаемых задач" readonly="1"/>
-                                <field name="executed_quantity" string="Выполненых задач" readonly="1"/>
+                                <field name="start_time" string="Дата запуска" readonly="1" />
+                                <field name="finish_time" string="Время окончания" readonly="1" />
+                                <field name="name" string="Наименование" readonly="1" />
+                                <field name="state" string="Состояние" readonly="1" />
+                                <field name="expected_quantity" string="Ожидаемых задач"
+                                    readonly="1" />
+                                <field name="executed_quantity" string="Выполненых задач"
+                                    readonly="1" />
                             </group>
                             <notebook>
                                 <page string="Логи">
-                                    <field name="ozon_mass_data_import_log_ids" string="Логи"/>
+                                    <field name="ozon_mass_data_import_log_ids" string="Логи" />
                                 </page>
                             </notebook>
                         </group>
@@ -32,12 +34,12 @@
             <field name="model">ozon.mass_data_import</field>
             <field name="arch" type="xml">
                 <tree string="Отчеты" create="0" default_order="start_time desc">
-                    <field name="start_time" string="Время запуска" readonly="1"/>
-                    <field name="finish_time" string="Время окончания" readonly="1"/>
-                    <field name="state" string="Состояние" readonly="1"/>
-                    <field name="name" string="Наименование" readonly="1"/>
-                    <field name="expected_quantity" string="Ожидаемых задач" readonly="1"/>
-                    <field name="executed_quantity" string="Выполненых задач" readonly="1"/>
+                    <field name="start_time" string="Время запуска" readonly="1" />
+                    <field name="finish_time" string="Время окончания" readonly="1" />
+                    <field name="state" string="Состояние" readonly="1" />
+                    <field name="name" string="Наименование" readonly="1" />
+                    <field name="expected_quantity" string="Ожидаемых задач" readonly="1" />
+                    <field name="executed_quantity" string="Выполненых задач" readonly="1" />
                 </tree>
             </field>
         </record>
@@ -56,7 +58,8 @@
         <!--                    <field name="mark"/>-->
         <!--                    <field name="pl_warehouse_id"/>-->
         <!--                    <filter string="Archived" name="active" domain="[('active', '=',False)]"/>-->
-        <!--                    <filter string="Разделенные товары" name="divined" domain="[('state', '=','Товар был разделен')]"/>-->
+        <!--                    <filter string="Разделенные товары" name="divined" domain="[('state', '=','Товар был
+        разделен')]"/>-->
         <!--                    <filter string="Проданные товары" name="sold" domain="[('state', '=','Продан')]"/>-->
         <!--                    <filter string="В наличии" name="current"-->
         <!--                            domain="[('state', '!=','Продан'),('state', '!=','Товар был разделен')]"/>-->
@@ -70,9 +73,9 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="ozon.menu_mass_data_import" name="Массовый импорт данных" parent="ozon.menu_root" sequence="38"/>
-        <menuitem id="menu_mass_data_import" name="Массовый импорт данных" parent="ozon.menu_root"
-                  action="action_open_ozon_mass_data_import" sequence="38"/>
+
+        <menuitem id="menu_mass_data_import" name="Массовый импорт данных" parent="main_menu_import"
+            action="action_open_ozon_mass_data_import" sequence="2" />
 
     </data>
 </odoo>

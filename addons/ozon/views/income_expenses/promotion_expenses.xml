@@ -1,0 +1,62 @@
+<odoo>
+    <data>
+        <!-- Form -->
+        <record id="view_ozon_promotion_expenses_form" model="ir.ui.view">
+            <field name="name">Затраты на продвижение товара Ozon</field>
+            <field name="model">ozon.promotion_expenses</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="ad_campaign" />
+                        <field name="date" />
+                        <field name="promotion_type" />
+                        <field name="product_id" />
+                        <field name="posting_ids" />
+                        <field name="sku" />
+                        <field name="order_id" />
+                        <field name="price" />
+                        <field name="qty" />
+                        <field name="total_price" />
+                        <field name="percent_rate" />
+                        <field name="abs_rate" />
+                        <field name="expense" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_ozon_promotion_expenses_tree" model="ir.ui.view">
+            <field name="name">Затраты на продвижение товара Ozon</field>
+            <field name="model">ozon.promotion_expenses</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="date" />
+                    <field name="promotion_type" />
+                    <field name="product_id">
+                        <tree>
+                            <field name="products" />
+                        </tree>
+                    </field>
+                    <field name="expense" />
+                </tree>
+            </field>
+
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_promotion_expenses">
+            <field name="name">Затраты на продвижение товара Ozon</field>
+            <field name="res_model">ozon.promotion_expenses</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Затраты на продвижение"
+            id="menu_promotion_expenses"
+            parent="main_menu_finance"
+            action="action_promotion_expenses"
+            sequence="3" />
+    </data>
+
+</odoo>

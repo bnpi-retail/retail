@@ -1,0 +1,65 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_ozon_investment_expenses_form" model="ir.ui.view">
+            <field name="name">Investment</field>
+            <field name="model">ozon.investment_expenses</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="name" />
+                        <field name="value" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_ozon_investment_expenses_tree" model="ir.ui.view">
+            <field name="name">Investment</field>
+            <field name="model">ozon.investment_expenses</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" />
+                    <field name="value" />
+                </tree>
+            </field>
+
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_investment_expenses">
+            <field name="name">Investment</field>
+            <field name="res_model">ozon.investment_expenses</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Investment"
+            id="menu_investment_expenses"
+            parent="main_menu_dicts"
+            action="action_investment_expenses"
+            sequence="4" />
+
+        <!-- Investment expenses wizard form -->
+        <record id="wizard_view_investment_expenses_form" model="ir.ui.view">
+            <field name="name">Назначить investment</field>
+            <field name="model">ozon.investment_expenses.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group class="oe_title">
+                        <field name="investment_expenses_id" />
+                    </group>
+                    <footer>
+                        <button string="Отмена" class="btn-secondary" special="cancel" />
+                        <button name="change_investment_expenses" string="Изменить" type="object"
+                            class="btn-primary" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    </data>
+
+</odoo>

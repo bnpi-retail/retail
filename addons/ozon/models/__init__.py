@@ -1,4 +1,3 @@
-from . import conditions_placing_ozon
 from . import ozon_fee
 from . import prices
 from . import import_file
@@ -39,7 +38,6 @@ from .reports import realisation_report
 from .reports import ozon_report_products_revenue_expenses
 from .indicators import indicator, indicator_summary
 from .abc_analize import abs_analysis
-from .temporal_tasks import temporal_tasks
 from .history_of_product_positions import history_of_product_positions
 from .price_comparison import price_comparison
 from .price_comparison import price_component

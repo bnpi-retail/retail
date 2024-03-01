@@ -1,8 +1,0 @@
-<odoo>
-  <data>
-    <menuitem name="Комиссии" 
-      id="ozon.menu_comissinons"
-      parent="ozon.menu_root"
-      sequence="30"/>
-  </data>
-</odoo>

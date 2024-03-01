@@ -1,0 +1,77 @@
+<odoo>
+    <data>
+
+        <!-- Graph -->
+        <record id="view_sale_graph" model="ir.ui.view">
+            <field name="name">Продажи</field>
+            <field name="model">ozon.sale</field>
+            <field name="arch" type="xml">
+                <graph string="Продажи товара" type="line">
+                    <field name="qty" type="measure" />
+                    <field interval="day" name="date" type="datetime" />
+                </graph>
+            </field>
+        </record>
+
+        <!-- Form -->
+        <record id="view_sale_form" model="ir.ui.view">
+            <field name="name">Продажи</field>
+            <field name="model">ozon.sale</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group string="Продажа товара" col="3">
+                        <group>
+                            <field name="transaction_identifier" />
+                            <field name="date" />
+                            <field name="is_calculate" />
+                        </group>
+                        <group>
+                            <field name="product_id_on_platform" />
+                            <field name="product" />
+                        </group>
+                        <group>
+                            <field name="qty" />
+                            <field name="revenue" />
+                            <field name="sale_commission" />
+                            <field name="services_cost" />
+                            <field name="profit" />
+                        </group>
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_sale_tree" model="ir.ui.view">
+            <field name="name">Продажи</field>
+            <field name="model">ozon.sale</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="date" />
+                    <field name="product_id_on_platform" />
+                    <field name="product" />
+                    <field name="qty" />
+                    <field name="revenue" />
+                    <field name="is_calculate" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_sale">
+            <field name="name">Продажи</field>
+            <field name="res_model">ozon.sale</field>
+            <field name="view_mode">tree,form,graph</field>
+            <field name="context">{"graph_mode": "line", "measure": "revenue"}</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Продажи"
+            id="menu_sale"
+            parent="main_menu_finance"
+            action="action_sale"
+            sequence="2" />
+
+    </data>
+</odoo>

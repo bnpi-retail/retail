@@ -1,34 +1,34 @@
 <odoo>
-  <data>
+    <data>
 
-    <!-- Form -->
+        <!-- Form -->
 
-    <!-- Tree -->
-    <record id="view_our_price_history_tree" model="ir.ui.view">
-        <field name="name">История наших цен</field>
-        <field name="model">ozon.our_price_history</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="timestamp"/>
-                <field name="product"/>
-                <field name="price"/>
-            </tree>
-        </field>
-    </record>
+        <!-- Tree -->
+        <record id="view_our_price_history_tree" model="ir.ui.view">
+            <field name="name">История наших цен</field>
+            <field name="model">ozon.our_price_history</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="timestamp" />
+                    <field name="product" />
+                    <field name="price" />
+                </tree>
+            </field>
+        </record>
 
-    <!-- Action -->
-    <record model="ir.actions.act_window" id="action_our_price_history">
-        <field name="name">История наших цен</field>
-        <field name="res_model">ozon.our_price_history</field>
-        <field name="view_mode">tree,form</field>
-    </record>
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_our_price_history">
+            <field name="name">История наших цен</field>
+            <field name="res_model">ozon.our_price_history</field>
+            <field name="view_mode">tree,form</field>
+        </record>
 
-    <!-- Menu -->
-    <menuitem name="История наших цен"
-        id="menu_our_price_history"
-        parent="ozon.menu_competitors"
-        action="action_our_price_history"
-        sequence="50"/>
+        <!-- Menu -->
+        <menuitem name="История наших цен"
+            id="menu_our_price_history"
+            parent="main_menu_competitors"
+            action="action_our_price_history"
+            sequence="50" />
 
-  </data>
+    </data>
 </odoo>

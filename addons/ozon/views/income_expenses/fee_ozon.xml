@@ -1,0 +1,56 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <!-- <record id="view_import_file_form" model="ir.ui.view">
+        <field name="name">Импорт</field>
+        <field name="model">ozon.import_file</field>
+        <field name="arch" type="xml">
+            <form>
+                <group string="Наполнить стандартными данными">
+                    <field name="data_for_download"/>
+                </group>
+                <group string="Загрузить данные">
+                    <field name="file"/>
+                </group>
+                <group string="Скачать примеры данных для загрузки">
+                    <a class="oe_menu_leaf" href="/download/index_local" title="Скачать файл">
+                        <i class="fa fa-download"/>
+                    </a>
+                </group>
+            </form>
+        </field>
+    </record> -->
+
+        <!-- Tree -->
+        <record id="view_ozon_fee_tree" model="ir.ui.view">
+            <field name="name">Комиссии</field>
+            <field name="model">ozon.ozon_fee</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" />
+                    <field name="category" />
+                    <field name="type" />
+                    <field name="trading_scheme" />
+                    <field name="delivery_location" />
+                    <field name="value" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_fee_ozon">
+            <field name="name">Комиссии</field>
+            <field name="res_model">ozon.ozon_fee</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Комиссии категорий"
+            id="menu_fee_ozon"
+            parent="main_menu_finance"
+            action="action_fee_ozon"
+            sequence="4" />
+
+    </data>
+</odoo>

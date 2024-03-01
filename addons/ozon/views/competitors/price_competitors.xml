@@ -1,85 +1,85 @@
 <odoo>
-  <data>
+    <data>
 
-    <!-- Graph -->
-    <record id="view_price_history_competitors_graph" model="ir.ui.view">
-        <field name="name">Мониторинг товаров конкурентов</field>
-        <field name="model">ozon.price_history_competitors</field>
-        <field name="arch" type="xml">
-            <graph string="История цен" type="line">
-                <field name="price_with_card" type="measure"/>
-                <field interval="day" name="timestamp" type="datetime"/>
-            </graph>
-        </field>
-    </record>
+        <!-- Graph -->
+        <record id="view_price_history_competitors_graph" model="ir.ui.view">
+            <field name="name">Мониторинг товаров конкурентов</field>
+            <field name="model">ozon.price_history_competitors</field>
+            <field name="arch" type="xml">
+                <graph string="История цен" type="line">
+                    <field name="price_with_card" type="measure" />
+                    <field interval="day" name="timestamp" type="datetime" />
+                </graph>
+            </field>
+        </record>
 
-    <!-- Graph -->
-    <record id="view_price_history_competitors_form" model="ir.ui.view">
-        <field name="name">Мониторинг товаров конкурентов</field>
-        <field name="model">ozon.price_history_competitors</field>
-        <field name="arch" type="xml">
-            <graph string="История цен" type="line">
-                <field name="price" type="measure"/>
-                <field name="timestamp" type="datetime"/>
-            </graph>
-        </field>
-    </record>
+        <!-- Graph -->
+        <record id="view_price_history_competitors_form" model="ir.ui.view">
+            <field name="name">Мониторинг товаров конкурентов</field>
+            <field name="model">ozon.price_history_competitors</field>
+            <field name="arch" type="xml">
+                <graph string="История цен" type="line">
+                    <field name="price" type="measure" />
+                    <field name="timestamp" type="datetime" />
+                </graph>
+            </field>
+        </record>
 
-    <!-- Form -->
-    <record id="view_price_history_competitors_form_form" model="ir.ui.view">
-        <field name="name">Мониторинг товаров конкурентов</field>
-        <field name="model">ozon.price_history_competitors</field>
-        <field name="arch" type="xml">
-            <form>
-                <group>
-                    <field name="timestamp"/>
-                    <field name="product_competitors"/>
-                    <field name="price_with_card"/>
-                    <field name="price"/>
-                    <field name="price_without_sale"/>
-                    
-                    <field name="sales"/>
-                    <field name="balance"/>
-                    <field name="revenue"/>
+        <!-- Form -->
+        <record id="view_price_history_competitors_form_form" model="ir.ui.view">
+            <field name="name">Мониторинг товаров конкурентов</field>
+            <field name="model">ozon.price_history_competitors</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="timestamp" />
+                        <field name="product_competitors" />
+                        <field name="price_with_card" />
+                        <field name="price" />
+                        <field name="price_without_sale" />
 
-                    <field name="rating"/>
-                    <field name="comments"/>
-                </group>
-            </form>
-        </field>
-    </record>
+                        <field name="sales" />
+                        <field name="balance" />
+                        <field name="revenue" />
 
-    <!-- Tree -->
-    <record id="view_price_history_competitors_tree" model="ir.ui.view">
-        <field name="name">Мониторинг товаров конкурентов</field>
-        <field name="model">ozon.price_history_competitors</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="timestamp"/>
-                <field name="product_competitors"/>
-                <field name="price_with_card"/>
-                <field name="price"/>
-                <field name="price_without_sale"/>
-                <field name="sales"/>
-                <field name="balance"/>
-            </tree>
-        </field>
-    </record>
+                        <field name="rating" />
+                        <field name="comments" />
+                    </group>
+                </form>
+            </field>
+        </record>
 
-    <!-- Action -->
-    <record model="ir.actions.act_window" id="action_name_competitors">
-        <field name="name">Мониторинг товаров конкурентов</field>
-        <field name="res_model">ozon.price_history_competitors</field>
-        <field name="view_mode">tree,form,graph</field>
-        <field name="context">{"graph_mode": "line", "measure": "price_with_card"}</field>
-    </record>
+        <!-- Tree -->
+        <record id="view_price_history_competitors_tree" model="ir.ui.view">
+            <field name="name">Мониторинг товаров конкурентов</field>
+            <field name="model">ozon.price_history_competitors</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="timestamp" />
+                    <field name="product_competitors" />
+                    <field name="price_with_card" />
+                    <field name="price" />
+                    <field name="price_without_sale" />
+                    <field name="sales" />
+                    <field name="balance" />
+                </tree>
+            </field>
+        </record>
 
-    <!-- Menu -->
-    <menuitem name="Мониторинг товаров конкурентов"
-        id="menu_name_competitors"
-        parent="ozon.menu_competitors"
-        action="action_name_competitors"
-        sequence="50"/>
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_name_competitors">
+            <field name="name">Мониторинг товаров конкурентов</field>
+            <field name="res_model">ozon.price_history_competitors</field>
+            <field name="view_mode">tree,form,graph</field>
+            <field name="context">{"graph_mode": "line", "measure": "price_with_card"}</field>
+        </record>
 
-  </data>
+        <!-- Menu -->
+        <menuitem name="Мониторинг товаров конкурентов"
+            id="menu_name_competitors"
+            parent="main_menu_competitors"
+            action="action_name_competitors"
+            sequence="50" />
+
+    </data>
 </odoo>

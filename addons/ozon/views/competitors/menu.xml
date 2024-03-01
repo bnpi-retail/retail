@@ -1,8 +1,0 @@
-<odoo>
-  <data>
-    <menuitem name="Конкуренты" 
-      id="ozon.menu_competitors"
-      parent="ozon.menu_root"
-      sequence="35"/>
-  </data>
-</odoo>

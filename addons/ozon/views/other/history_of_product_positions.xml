@@ -1,0 +1,49 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_history_of_product_positions_form" model="ir.ui.view">
+            <field name="name">Товарная позиция</field>
+            <field name="model">ozon.history_of_product_positions</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="timestamp" />
+                        <field name="search_query" />
+                        <field name="id_product" />
+                        <field name="number" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_history_of_product_positions_tree" model="ir.ui.view">
+            <field name="name">История позиций товаров</field>
+            <field name="model">ozon.history_of_product_positions</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="timestamp" />
+                    <field name="search_query" />
+                    <field name="id_product" />
+                    <field name="number" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_history_of_product_positions">
+            <field name="name">История позиций товаров</field>
+            <field name="res_model">ozon.history_of_product_positions</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="История позиций товаров"
+            id="menu_history_of_product_positions"
+            parent="main_menu_other"
+            action="action_history_of_product_positions"
+            sequence="80" />
+
+    </data>
+</odoo>

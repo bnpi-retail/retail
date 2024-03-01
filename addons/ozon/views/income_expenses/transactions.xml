@@ -1,0 +1,94 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_transaction_form" model="ir.ui.view">
+            <field name="name">Транзакции</field>
+            <field name="model">ozon.transaction</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group string="Информация о транзакции" col="3">
+                        <group>
+                            <field name="name" />
+                            <field name="transaction_type" />
+                        </group>
+                        <group>
+                            <field name="transaction_date" />
+                            <field name="order_date" />
+                        </group>
+                        <group>
+                            <field name="accruals_for_sale" />
+                            <field name="sale_commission" />
+                            <field name="amount" />
+                        </group>
+                        <group>
+                            <field name="skus" />
+                            <field name="posting_number" />
+                        </group>
+                    </group>
+                    <group>
+                        <field name="products">
+                            <tree>
+                                <field name="products">
+                                    <tree>
+                                        <field name="name"></field>
+                                    </tree>
+                                </field>
+                            </tree>
+                        </field>
+                        <field name="services">
+                            <tree>
+                                <field name="name" />
+                                <field name="price" sum="1" />
+                            </tree>
+                        </field>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_transaction_tree" model="ir.ui.view">
+            <field name="name">Транзакции</field>
+            <field name="model">ozon.transaction</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="transaction_date" />
+                    <field name="name" />
+                    <field name="accruals_for_sale" />
+                    <field name="sale_commission" />
+                    <field name="amount" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Tree Transaction unit -->
+        <record id="view_transaction_unit_tree" model="ir.ui.view">
+            <field name="name">Составляющие транзакций</field>
+            <field name="model">ozon.transaction_unit</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="transaction_date" />
+                    <field name="transaction_name" />
+                    <field name="transaction_type" />
+                    <field name="name" />
+                    <field name="value" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_transaction">
+            <field name="name">Транзакции</field>
+            <field name="res_model">ozon.transaction</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem name="Транзакции"
+            id="menu_transactions"
+            parent="main_menu_finance"
+            action="action_transaction"
+            sequence="1" />
+
+    </data>
+</odoo>

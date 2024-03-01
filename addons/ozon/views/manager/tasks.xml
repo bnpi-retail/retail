@@ -1,0 +1,74 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_tasks_form" model="ir.ui.view">
+            <field name="name">Задачи</field>
+            <field name="model">ozon.tasks</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group string="Задача">
+                        <field name="status" />
+                        <field name="name" />
+                        <field name="open_datetime" />
+                        <field name="close_datetime" />
+                        <field name="product">
+                            <tree>
+                                <field name="products" />
+                            </tree>
+                        </field>
+                        <field name="decision" />
+                        <field name="next_check_datetime" />
+                        <field name="manager" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+
+        <!-- Kanban -->
+        <record id="view_tasks_kanban" model="ir.ui.view">
+            <field name="name">Задачи - Kanban</field>
+            <field name="model">ozon.tasks</field>
+            <field name="arch" type="xml">
+
+                <kanban default_group_by="status" edit="True">
+                    <templates>
+
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_global_click">
+                                <p>
+                                    <field name="name" />
+                                </p>
+                                <p>
+                                    <field name="product" />
+                                </p>
+                                <p>
+                                    <field name="manager" />
+                                </p>
+
+                            </div>
+                        </t>
+
+                    </templates>
+                </kanban>
+
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_tasks">
+            <field name="name">Задачи</field>
+            <field name="res_model">ozon.tasks</field>
+            <field name="view_mode">kanban,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Задачи"
+            id="menu_tasks"
+            parent="main_menu_manager"
+            action="action_tasks"
+            sequence="4" />
+
+    </data>
+</odoo>

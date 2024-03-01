@@ -5,7 +5,7 @@ from odoo import models, fields, api
 
 class OzonFboSupplyOrder(models.Model):
     _name = "ozon.fbo_supply_order"
-    _description = "Завершённые заявки на поставку на склад Ozon (FBO)"
+    _description = "Накладные по отгрузкам на склад FBO"
     _order = "created_at desc"
 
     created_at = fields.Date(string="Дата создания заявки на поставку")

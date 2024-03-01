@@ -1,48 +1,48 @@
 <odoo>
-  <data>
+    <data>
 
-    <!-- Form -->
-    <record id="view_successful_product_competitors_form" model="ir.ui.view">
-        <field name="name">Успешный товар конкурента</field>
-        <field name="model">ozon.successful_product_competitors</field>
-        <field name="arch" type="xml">
-            <form>
-                <separator string="Успешный товар конкурента" />
-                <group>
-                    <field name="name"/>
-                    <field name="sku"/>
-                    <field name="product"/>
-                </group>
-            </form>
-        </field>
-    </record>
+        <!-- Form -->
+        <record id="view_successful_product_competitors_form" model="ir.ui.view">
+            <field name="name">Успешный товар конкурента</field>
+            <field name="model">ozon.successful_product_competitors</field>
+            <field name="arch" type="xml">
+                <form>
+                    <separator string="Успешный товар конкурента" />
+                    <group>
+                        <field name="name" />
+                        <field name="sku" />
+                        <field name="product" />
+                    </group>
+                </form>
+            </field>
+        </record>
 
-    <!-- Tree -->
-    <record id="view_successful_product_competitors_tree" model="ir.ui.view">
-        <field name="name">Успешные товары конкурентов</field>
-        <field name="model">ozon.successful_product_competitors</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name="sku"/>
-                <field name="name"/>
-                <field name="product"/>
-            </tree>
-        </field>
-    </record>
+        <!-- Tree -->
+        <record id="view_successful_product_competitors_tree" model="ir.ui.view">
+            <field name="name">Успешные товары конкурентов</field>
+            <field name="model">ozon.successful_product_competitors</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="sku" />
+                    <field name="name" />
+                    <field name="product" />
+                </tree>
+            </field>
+        </record>
 
-    <!-- Action -->
-    <record model="ir.actions.act_window" id="action_successful_product_competitors">
-        <field name="name">Успешные товары конкурентов</field>
-        <field name="res_model">ozon.successful_product_competitors</field>
-        <field name="view_mode">tree,form,search</field>
-    </record>
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_successful_product_competitors">
+            <field name="name">Успешные товары конкурентов</field>
+            <field name="res_model">ozon.successful_product_competitors</field>
+            <field name="view_mode">tree,form,search</field>
+        </record>
 
-    <!-- Menu -->
-    <menuitem name="Успешные товары конкурентов"
-        id="menu_successful_product_competitors"
-        parent="ozon.menu_competitors"
-        action="action_successful_product_competitors"
-        sequence="50"/>
+        <!-- Menu -->
+        <menuitem name="Успешные товары конкурентов"
+            id="menu_successful_product_competitors"
+            parent="main_menu_competitors"
+            action="action_successful_product_competitors"
+            sequence="50" />
 
-  </data>
+    </data>
 </odoo>

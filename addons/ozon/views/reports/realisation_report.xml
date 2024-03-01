@@ -128,7 +128,7 @@
         </record>
 
         <menuitem id="menu_realisation_report" name="Отчеты Ozon о реализации товаров"
-            parent="ozon.menu_reports"
+            parent="main_menu_reports"
             action="action_realisation_report" sequence="3" />
 
     </data>
