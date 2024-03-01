@@ -54,7 +54,6 @@
         "security/history_of_product_positions/history_of_product_positions/ir.model.access.csv",
         "security/price/all_expenses/ir.model.access.csv",
         "security/price/promotion_expenses/ir.model.access.csv",
-        "security/temporal_tasks/ir.model.access.csv",
         "security/ir.model.access.csv",
         ### views
         "views/menu.xml",
@@ -113,7 +112,6 @@
         "views/reports/ozon_report_category_market_share_views.xml",
         "views/reports/sales_report_by_category.xml",
         "views/competitors/competitor_seller_view.xml",
-        "views/temporal_tasks/temporal_tasks.xml",
         "views/reports/ozon_report_bcg_matrix_views.xml",
         "views/history_of_product_positions/history_of_product_positions.xml",
         "views/reports/ozon_report_interest_views.xml",
