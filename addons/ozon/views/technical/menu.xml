@@ -1,8 +1,0 @@
-<odoo>
-  <data>
-    <menuitem name="Техническое" 
-      id="ozon.technical"
-      parent="ozon.menu_root"
-      sequence="500"/>
-  </data>
-</odoo>

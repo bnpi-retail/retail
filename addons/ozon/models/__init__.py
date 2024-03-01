@@ -1,4 +1,3 @@
-from . import conditions_placing_ozon
 from . import ozon_fee
 from . import prices
 from . import import_file

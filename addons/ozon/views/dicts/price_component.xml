@@ -1,0 +1,47 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="ozon_price_component_form" model="ir.ui.view">
+            <field name="name">Компоненты цены</field>
+            <field name="model">ozon.price_component</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="name" />
+                        <field name="identifier" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="ozon_price_component_tree" model="ir.ui.view">
+            <field name="name">Компоненты цены</field>
+            <field name="model">ozon.price_component</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" />
+                </tree>
+            </field>
+
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_price_component">
+            <field name="name">Компоненты цены</field>
+            <field name="res_model">ozon.price_component</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Компоненты цены"
+            id="menu_price_component"
+            parent="main_menu_dicts"
+            action="action_price_component"
+            sequence="6" />
+
+
+    </data>
+
+</odoo>

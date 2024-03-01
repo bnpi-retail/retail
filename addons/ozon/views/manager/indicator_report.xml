@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ozon_report_view_form" model="ir.ui.view">
+            <field name="name">ozon_report.form</field>
+            <field name="model">ozon.report</field>
+            <field name="arch" type="xml">
+                <form string="Report">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="create_date" string="Дата создания" readonly="1" />
+                                <field name="res_users_id" string="Ответственный менеджер"
+                                    readonly="1" />
+                                <field name="lots_quantity" string="Количество лотов" readonly="1" />
+                            </group>
+                            <notebook>
+                                <page string="Лоты">
+                                    <field name="ozon_products_ids">
+                                        <tree string="Лоты"
+                                            default_order="ozon_products_indicator_qty desc, abc_group">
+                                            <button name="action_open_lot_full_screen" type="object"
+                                                string="Перейти"
+                                                class="oe_highlight" />
+                                            <field name="article" />
+                                            <field name="products" />
+                                            <!--                                            <field name="revenue_share_temp" string="Доля
+                                            продукта в выручке, %"-->
+                                            <!--                                                   readonly="1"/>-->
+                                            <!--                                            <field name="revenue_cumulative_share_temp"
+                                            string="Накопительный вклад, %"-->
+                                            <!--                                                   readonly="1"/>-->
+                                            <field name="abc_group" string="ABC Группа" readonly="1" />
+                                            <field name="ozon_products_indicator_qty"
+                                                string="Индикаторы"
+                                                decoration-danger="ozon_products_indicator_qty>0"
+                                                attrs="{'invisible': [('ozon_products_indicator_qty', '=', 0)]}"
+                                            />
+                                            <field name="categories" />
+                                        </tree>
+                                    </field>
+                                </page>
+                                <page string="Напоминания и задачи">
+                                    <field name="ozon_report_task_ids">
+                                        <tree string=""
+                                            decoration-danger="sequence==1"
+                                            decoration-info="sequence==3"
+                                        >
+                                            <field name="task" />
+                                            <field name="sequence" invisible="1" />
+                                        </tree>
+                                    </field>
+                                </page>
+                            </notebook>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="ozon_report_view_tree" model="ir.ui.view">
+            <field name="name">ozon_report.tree</field>
+            <field name="model">ozon.report</field>
+            <field name="arch" type="xml">
+                <tree string="Отчеты" create="0" default_order="create_date desc">
+                    <field name="create_date" string="Дата создания" readonly="1" />
+                    <field name="res_users_id" string="Ответственный менеджер" readonly="1" />
+                    <field name="lots_quantity" string="Количество лотов" readonly="1" />
+                </tree>
+            </field>
+        </record>
+
+        <!--        <record id="product_labeling_labeled_product_search" model="ir.ui.view">-->
+        <!--            <field name="name">product_labeling.labeled_product.search</field>-->
+        <!--            <field name="model">ozon.report</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <search>-->
+        <!--                    <field name="name"/>-->
+        <!--                    <field name="pl_product_id"/>-->
+        <!--                    <field name="state"/>-->
+        <!--                    <field name="quantity"/>-->
+        <!--                    <field name="parent_id"/>-->
+        <!--                    <field name="child_ids"/>-->
+        <!--                    <field name="mark"/>-->
+        <!--                    <field name="pl_warehouse_id"/>-->
+        <!--                    <filter string="Archived" name="active" domain="[('active', '=',False)]"/>-->
+        <!--                    <filter string="Разделенные товары" name="divined" domain="[('state', '=','Товар был
+        разделен')]"/>-->
+        <!--                    <filter string="Проданные товары" name="sold" domain="[('state', '=','Продан')]"/>-->
+        <!--                    <filter string="В наличии" name="current"-->
+        <!--                            domain="[('state', '!=','Продан'),('state', '!=','Товар был разделен')]"/>-->
+        <!--                </search>-->
+        <!--            </field>-->
+        <!--        </record>-->
+
+        <record id="action_open_ozon_report" model="ir.actions.act_window">
+            <field name="name">Reports</field>
+            <field name="res_model">ozon.report</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_indicators_reports" name="Отчеты по индикаторам"
+            parent="main_menu_manager"
+            action="action_open_ozon_report" sequence="3" />
+
+    </data>
+</odoo>

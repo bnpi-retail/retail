@@ -14,17 +14,18 @@
                         </button>
                     </div>
                     <notebook>
-                        <page id="page_info_competitors_history" string="Информация о товаре конкурента">
+                        <page id="page_info_competitors_history"
+                            string="Информация о товаре конкурента">
                             <group>
-                                <field name="id_product"/>
-                                <field name="article"/>
-                                <field name="name"/>
-                                <field name="product"/>
-                                <field name="url"/>
+                                <field name="id_product" />
+                                <field name="article" />
+                                <field name="name" />
+                                <field name="product" />
+                                <field name="url" />
                                 <field name="market_share" readonly="1"
                                     attrs="{'invisible': [('market_share_is_computed', '=', False)]}"
                                 />
-                                <field name="market_share_is_computed" invisible="1"/>
+                                <field name="market_share_is_computed" invisible="1" />
                             </group>
                         </page>
                         <page id="page_product_competitors_promotion_info" string="Продвижение">
@@ -37,13 +38,13 @@
                         </page>
                         <page id="page_graph_history" string="Аналитические данные">
                             <group>
-                                <field name="imgs_html_graph_this_year"/>
-                                <field name="imgs_data_graph_this_year" invisible="1"/>
+                                <field name="imgs_html_graph_this_year" />
+                                <field name="imgs_data_graph_this_year" invisible="1" />
                             </group>
-                            <button string="Скачать данные" 
-                                type="object" 
-                                class="oe_highlight" 
-                                icon="fa-download" 
+                            <button string="Скачать данные"
+                                type="object"
+                                class="oe_highlight"
+                                icon="fa-download"
                                 name="download_data_graph_this_year"
                                 attrs="{'invisible': [('imgs_data_graph_this_year', '=', False)]}"
                             />
@@ -101,7 +102,7 @@
         <!-- Menu -->
         <menuitem name="Товары конкурентов"
             id="menu_products_competitors"
-            parent="ozon.menu_competitors"
+            parent="main_menu_competitors"
             action="action_products_competitors"
             sequence="50" />
 

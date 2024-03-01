@@ -1,0 +1,42 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_search_queries_form" model="ir.ui.view">
+            <field name="name">Ключевые слова"</field>
+            <field name="model">ozon.search_queries</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="words" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_search_queries_tree" model="ir.ui.view">
+            <field name="name">Ключевые слова</field>
+            <field name="model">ozon.search_queries</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="words" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_search_queries">
+            <field name="name">Ключевые слова</field>
+            <field name="res_model">ozon.search_queries</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Ключевые слова"
+            id="menu_search_queries"
+            parent="main_menu_other"
+            action="action_search_queries"
+            sequence="38" />
+    </data>
+</odoo>

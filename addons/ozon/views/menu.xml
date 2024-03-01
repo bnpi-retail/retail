@@ -9,8 +9,9 @@
     <menuitem name="Отчёты" id="main_menu_reports" parent="ozon.menu_root" sequence="5" />
     <menuitem name="Когортный анализ" id="main_menu_analytics" parent="ozon.menu_root" sequence="6" />
     <menuitem name="Работа менеджера" id="main_menu_manager" parent="ozon.menu_root" sequence="7" />
-    <menuitem name="Справочники" id="main_menu_dicts" parent="ozon.menu_root" sequence="8" />
-
+    <menuitem name="Конкуренты" id="main_menu_competitors" parent="ozon.menu_root" sequence="8" />
+    <menuitem name="Справочники" id="main_menu_dicts" parent="ozon.menu_root" sequence="9" />
+    <menuitem name="Импорт" id="main_menu_import" parent="ozon.menu_root" sequence="10" />
     <menuitem name="Другое" id="main_menu_other" parent="ozon.menu_root" sequence="20" />
   </data>
 </odoo>

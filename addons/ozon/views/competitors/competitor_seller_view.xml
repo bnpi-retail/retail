@@ -7,7 +7,7 @@
             <field name="model">ozon.competitor_seller</field>
             <field name="arch" type="xml">
                 <tree string="Магазины-конкуренты">
-                    <field name="trade_name"/>
+                    <field name="trade_name" />
                 </tree>
             </field>
         </record>
@@ -18,8 +18,9 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_ozon_competitor_seller" name="Магазины-конкуренты" parent="ozon.menu_competitors"
-                  action="action_open_ozon_competitor_seller" sequence="100"/>
+        <menuitem id="menu_ozon_competitor_seller" name="Магазины-конкуренты"
+            parent="main_menu_competitors"
+            action="action_open_ozon_competitor_seller" sequence="100" />
 
     </data>
 </odoo>

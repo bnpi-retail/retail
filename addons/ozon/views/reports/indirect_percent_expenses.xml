@@ -1,0 +1,123 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_indirect_percent_expenses_form" model="ir.ui.view">
+            <field name="name">Отчёт о транзакциях</field>
+            <field name="model">ozon.indirect_percent_expenses</field>
+            <field name="arch" type="xml">
+                <form>
+                    <div name="button_box" position="inside">
+                        <button string="Подробнее" class="oe_stat_button" type="object"
+                            name="open_transaction_unit_view" />
+                    </div>
+                    <group style="margin-top: 20px; margin-bottom: 20px;">
+                        <field name="timestamp" style="margin-bottom: 20px;" />
+                        <field name="date_from" />
+                        <field name="date_to" />
+                    </group>
+                    <notebook>
+                        <page id="totals" string="Общие данные">
+                            <group>
+                                <group string="Фактические значения">
+                                    <field name="total" />
+                                    <field name="orders" />
+                                    <field name="reward" />
+                                    <field name="processing_delivery" />
+                                    <field name="returns_cancels" />
+                                    <field name="services" />
+                                    <field name="transfer" />
+                                    <field name="compensation" />
+                                    <field name="other_total" />
+                                </group>
+                                <group string="Теоретические значения">
+                                    <field name="theory_processing_delivery" />
+                                    <field name="theory_acquiring" />
+                                </group>
+                            </group>
+                        </page>
+                        <page id="expenses_by_transactions" string="По видам транзакций">
+                            <group>
+                                <group string="Выручка">
+                                    <field name="revenue" />
+                                </group>
+                                <group
+                                    string="Общий коэффициент затрат (кроме Оплаты эквайринга), % ">
+                                    <field name="coef_total" />
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Затраты">
+                                    <field name="refund" />
+                                    <field name="refund_delivery" />
+                                    <field name="pickup" />
+                                    <field name="acquiring" />
+                                    <field name="delivery_rfbs" />
+                                    <field name="agent_rfbs" />
+                                    <field name="promotion_seller_bonus" />
+                                    <field name="review" />
+                                    <field name="subscription_premium_plus" />
+                                    <field name="seller_error_cancel" />
+                                    <field name="seller_error_expired_shipment" />
+                                    <field name="fbo_processing" />
+                                    <field name="fbo_expiration_date_processing" />
+                                    <field name="utilization" />
+                                    <field name="booking_incomplete" />
+                                    <field name="other" />
+                                </group>
+                                <group string="Коэффициенты затрат, %">
+                                    <field name="coef_refund" />
+                                    <field name="coef_refund_delivery" />
+                                    <field name="coef_pickup" />
+                                    <field name="coef_acquiring" />
+                                    <field name="coef_delivery_rfbs" />
+                                    <field name="coef_agent_rfbs" />
+                                    <field name="coef_promotion_seller_bonus" />
+                                    <field name="coef_review" />
+                                    <field name="coef_subscription_premium_plus" />
+                                    <field name="coef_seller_error_cancel" />
+                                    <field name="coef_seller_error_expired_shipment" />
+                                    <field name="coef_fbo_processing" />
+                                    <field name="coef_fbo_expiration_date_processing" />
+                                    <field name="coef_utilization" />
+                                    <field name="coef_booking_incomplete" />
+                                    <field name="coef_other" />
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="view_indirect_percent_expenses_tree" model="ir.ui.view">
+            <field name="name">Отчёт о транзакциях</field>
+            <field name="model">ozon.indirect_percent_expenses</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="timestamp" />
+                    <field name="date_from" />
+                    <field name="date_to" />
+                    <field name="coef_total" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_indirect_percent_expenses">
+            <field name="name">Отчёт о транзакциях</field>
+            <field name="res_model">ozon.indirect_percent_expenses</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Отчёт о транзакциях"
+            id="menu_indirect_percent_expenses"
+            parent="main_menu_reports"
+            action="action_indirect_percent_expenses"
+            sequence="1" />
+
+
+    </data>
+</odoo>

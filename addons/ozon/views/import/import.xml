@@ -46,9 +46,9 @@
         <!-- Menu -->
         <menuitem name="Импорт"
             id="menu_import_file"
-            parent="ozon.menu_root"
+            parent="main_menu_import"
             action="action_import_file"
-            sequence="40" />
+            sequence="1" />
 
     </data>
 </odoo>

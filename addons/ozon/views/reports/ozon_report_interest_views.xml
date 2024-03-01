@@ -10,36 +10,38 @@
                         <group>
                             <group string="Первый период">
                                 <group>
-                                    <field name="first_period_from" string="С" widget="date"/>
+                                    <field name="first_period_from" string="С" widget="date" />
                                 </group>
                                 <group>
-                                    <field name="first_period_to" string="по" widjet="date"/>
+                                    <field name="first_period_to" string="по" widjet="date" />
                                 </group>
                             </group>
                             <group string="Пороговые значения">
                                 <group>
-                                    <field name="threshold_growth" string="Пороговое значение для темпов роста"
-                                           help="Продукты выше этого значения будут либо звездами, либо проблемами."
+                                    <field name="threshold_growth"
+                                        string="Пороговое значение для темпов роста"
+                                        help="Продукты выше этого значения будут либо звездами, либо проблемами."
                                     />
                                 </group>
                                 <group>
-                                    <field name="threshold_share" string="Пороговое значение для вклада"
-                                           help="Продукты выше этого значения будут либо звездами, либо дойными коровами."
+                                    <field name="threshold_share"
+                                        string="Пороговое значение для вклада"
+                                        help="Продукты выше этого значения будут либо звездами, либо дойными коровами."
                                     />
                                 </group>
                             </group>
                             <group string="Второй период">
                                 <group>
-                                    <field name="second_period_from" string="С" widget="date"/>
+                                    <field name="second_period_from" string="С" widget="date" />
                                 </group>
                                 <group>
-                                    <field name="second_period_to" string="по" widjet="date"/>
+                                    <field name="second_period_to" string="по" widjet="date" />
                                 </group>
                             </group>
                             <group></group>
-                            <separator/>
+                            <separator />
                             <group>
-                                <field name="ozon_categories_id" string="Категория"/>
+                                <field name="ozon_categories_id" string="Категория" />
                             </group>
                             <group>
 
@@ -48,36 +50,42 @@
                                 <page string="Данные по продуктам">
                                     <field name="ozon_report_interest_data_ids">
                                         <tree default_order="is_match, bcg_group"
-                                              decoration-danger="is_match=='a'"
-                                              decoration-success="is_match=='b'"
+                                            decoration-danger="is_match=='a'"
+                                            decoration-success="is_match=='b'"
                                         >
                                             <field name="ozon_products_id" string="Продукт"
-                                                   help="Наименование продукта" readonly="1"
+                                                help="Наименование продукта" readonly="1"
                                             />
-                                            <!--                                            <field name="fp_hits_view" string="Просмотры период 1"/>-->
-                                            <!--                                            <field name="sp_hits_view" string="Просмотры период 2"/>-->
-                                            <!--                                            <field name="fp_qty" string="Количество продаж 1"/>-->
-                                            <!--                                            <field name="sp_qty" string="Количество продаж 2"/>-->
-                                            <field name="fp_share" readonly="1" string="%, Просмотр/день период 1"/>
-                                            <field name="sp_share" readonly="1" string="%, Просмотр/день период 2"/>
+                                            <!--                                            <field name="fp_hits_view" string="Просмотры период
+                                            1"/>-->
+                                            <!--                                            <field name="sp_hits_view" string="Просмотры период
+                                            2"/>-->
+                                            <!--                                            <field name="fp_qty" string="Количество продаж
+                                            1"/>-->
+                                            <!--                                            <field name="sp_qty" string="Количество продаж
+                                            2"/>-->
+                                            <field name="fp_share" readonly="1"
+                                                string="%, Просмотр/день период 1" />
+                                            <field name="sp_share" readonly="1"
+                                                string="%, Просмотр/день период 2" />
                                             <field name="product_growth_rate" readonly="1"
-                                                   string="%, Рост по отношению к периоду 1"/>
+                                                string="%, Рост по отношению к периоду 1" />
                                             <field name="interest_group" readonly="1"
-                                                   string="Группа: Доля Интереса"
-                                                   decoration-info="interest_group=='a'"
-                                                   decoration-success="interest_group=='b'"
-                                                   decoration-warning="interest_group=='c'"
-                                                   decoration-danger="interest_group=='d'"
+                                                string="Группа: Доля Интереса"
+                                                decoration-info="interest_group=='a'"
+                                                decoration-success="interest_group=='b'"
+                                                decoration-warning="interest_group=='c'"
+                                                decoration-danger="interest_group=='d'"
                                             />
                                             <field name="bcg_group" readonly="1"
-                                                   string="Группа: Доля Рынка"
-                                                   decoration-info="bcg_group=='a'"
-                                                   decoration-success="bcg_group=='b'"
-                                                   decoration-warning="bcg_group=='c'"
-                                                   decoration-danger="bcg_group=='d'"
+                                                string="Группа: Доля Рынка"
+                                                decoration-info="bcg_group=='a'"
+                                                decoration-success="bcg_group=='b'"
+                                                decoration-warning="bcg_group=='c'"
+                                                decoration-danger="bcg_group=='d'"
                                             />
                                             <field name="is_match" readonly="1"
-                                                   string="Совпадение"
+                                                string="Совпадение"
                                             />
                                         </tree>
                                     </field>
@@ -85,21 +93,21 @@
                                 <page string="Данные по периодам">
                                     <group>
                                         <field name="fp_revenue_per_hit_view_per_day" readonly="1"
-                                               string="Выручка/просмотр/день за первый период"/>
+                                            string="Выручка/просмотр/день за первый период" />
                                         <field name="sp_revenue_per_hit_view_per_day" readonly="1"
-                                               string="Выручка/просмотр/день за второй период"/>
+                                            string="Выручка/просмотр/день за второй период" />
                                         <field name="fp_qty_per_hit_view_per_day" readonly="1"
-                                               string="Прождажи/просмотр/день за первый период"/>
+                                            string="Прождажи/просмотр/день за первый период" />
                                         <field name="sp_qty_per_hit_view_per_day" readonly="1"
-                                               string="Продажи/просмотр/день за второй период"/>
+                                            string="Продажи/просмотр/день за второй период" />
                                         <field name="fp_to_cart_per_hit_view_per_day" readonly="1"
-                                               string="Добавления в корзину/просмотр/день за первый период"/>
+                                            string="Добавления в корзину/просмотр/день за первый период" />
                                         <field name="sp_to_cart_per_hit_view_per_day" readonly="1"
-                                               string="Добавления в корзину/просмотр/день за второй период"/>
+                                            string="Добавления в корзину/просмотр/день за второй период" />
                                     </group>
                                 </page>
                                 <page string="Графические данные">
-                                    <field name="plot" widget="image"/>
+                                    <field name="plot" widget="image" />
                                 </page>
                             </notebook>
                         </group>
@@ -113,13 +121,13 @@
             <field name="model">ozon.report.interest</field>
             <field name="arch" type="xml">
                 <tree string="Отчеты" default_order="create_date desc">
-                    <field name="create_date" string="Дата создания" readonly="1"/>
-                    <field name="ozon_categories_id" string="Категория" readonly="1"/>
-                    <field name="first_period_from" string="Первый период с" readonly="1"/>
-                    <field name="first_period_to" string="по" readonly="1"/>
+                    <field name="create_date" string="Дата создания" readonly="1" />
+                    <field name="ozon_categories_id" string="Категория" readonly="1" />
+                    <field name="first_period_from" string="Первый период с" readonly="1" />
+                    <field name="first_period_to" string="по" readonly="1" />
 
-                    <field name="second_period_from" string="Второй период с" readonly="1"/>
-                    <field name="second_period_to" string="по" readonly="1"/>
+                    <field name="second_period_from" string="Второй период с" readonly="1" />
+                    <field name="second_period_to" string="по" readonly="1" />
                 </tree>
             </field>
         </record>
@@ -127,8 +135,8 @@
 
         <record model="ir.actions.server" id="action_calculate_interest_report">
             <field name="name">Рассчитать</field>
-            <field name="model_id" ref="model_ozon_report_interest"/>
-            <field name="binding_model_id" ref="model_ozon_report_interest"/>
+            <field name="model_id" ref="model_ozon_report_interest" />
+            <field name="binding_model_id" ref="model_ozon_report_interest" />
             <field name="state">code</field>
             <field name="code">
                 action = records.action_calculate_interest_report()
@@ -142,8 +150,8 @@
         </record>
 
         <menuitem id="menu_ozon_report_interest" name="Отчеты по интересу к продуктам"
-                  parent="ozon.menu_categories"
-                  action="action_open_ozon_report_interest" sequence="40"/>
+            parent="main_menu_reports"
+            action="action_open_ozon_report_interest" sequence="40" />
 
     </data>
 </odoo>

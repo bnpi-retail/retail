@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ozon_abc_analysis_view_form" model="ir.ui.view">
+            <field name="name">ozon_abc_analysis.form</field>
+            <field name="model">ozon.abc_analysis</field>
+            <field name="arch" type="xml">
+                <form string="">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="period_from" string="Период с" class="oe_inline"
+                                    widget="date" />
+                                <field name="ozon_categories_id" string="Категория"
+                                    class="oe_inline" />
+                            </group>
+                            <group>
+                                <field name="period_to" string="по" class="oe_inline" widjet="date" />
+                            </group>
+                            <field name="ozon_products_ids"
+                                attrs="{'invisible':[('ozon_products_ids','=',[])]}">
+                                <tree default_order="revenue_share_temp desc"
+                                    decoration-success="abc_group=='A'"
+                                    decoration-danger="abc_group=='C'"
+                                >
+                                    <field name="article" />
+                                    <field name="products" />
+                                    <field name="revenue_share_temp"
+                                        string="Доля продукта в выручке, %" />
+                                    <field name="revenue_cumulative_share_temp"
+                                        string="Накопительный вклад, %" />
+                                    <field name="abc_group" string="Группа" />
+                                </tree>
+                            </field>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="ozon_abc_analysis_view_tree" model="ir.ui.view">
+            <field name="name">ozon_abc_analysis.tree</field>
+            <field name="model">ozon.abc_analysis</field>
+            <field name="arch" type="xml">
+                <tree string="ABC анализ" default_order="create_date desc">
+                    <field name="create_date" string="Создан" />
+                    <field name="ozon_categories_id" string="Категория" />
+                    <field name="period_from" string="Начало периода" />
+                    <field name="period_to" string="Конец периода" />
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.server" id="action_do_abc_analysis">
+            <field name="name">Провести ABC Анализ</field>
+            <field name="model_id" ref="model_ozon_abc_analysis" />
+            <field name="binding_model_id" ref="model_ozon_abc_analysis" />
+            <field name="state">code</field>
+            <field name="code">
+                action = records.action_do_abc_analysis()
+            </field>
+        </record>
+
+        <record id="action_open_ozon_abc_analysis" model="ir.actions.act_window">
+            <field name="name">ABC Анализ</field>
+            <field name="res_model">ozon.abc_analysis</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_ozon_abc_analysis" name="ABC Анализ внутри категории"
+            parent="main_menu_analytics"
+            action="action_open_ozon_abc_analysis" sequence="1" />
+
+    </data>
+</odoo>

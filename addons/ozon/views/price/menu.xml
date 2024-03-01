@@ -1,8 +1,0 @@
-<odoo>
-  <data>
-    <menuitem name="Цены"
-      id="menu_price"
-      parent="ozon.menu_root"
-      sequence="10"/>
-  </data>
-</odoo>

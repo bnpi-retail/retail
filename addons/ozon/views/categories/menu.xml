@@ -1,9 +1,0 @@
-<odoo>
-    <data>
-        <menuitem name="Категории"
-            id="menu_categories"
-            parent="ozon.menu_root"
-            sequence="25" />
-
-    </data>
-</odoo>
