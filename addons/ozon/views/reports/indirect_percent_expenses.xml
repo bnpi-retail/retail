@@ -3,7 +3,7 @@
 
         <!-- Form -->
         <record id="view_indirect_percent_expenses_form" model="ir.ui.view">
-            <field name="name">Отчёт о транзакциях</field>
+            <field name="name">Отчёт о выплатах</field>
             <field name="model">ozon.indirect_percent_expenses</field>
             <field name="arch" type="xml">
                 <form>
@@ -35,8 +35,17 @@
                                     <field name="theory_acquiring" />
                                 </group>
                             </group>
+                            <group>
+                                <field name="transaction_unit_summary_ids">
+                                    <tree>
+                                        <field name="name" />
+                                        <field name="count" />
+                                        <field name="value" />
+                                    </tree>
+                                </field>
+                            </group>
                         </page>
-                        <page id="expenses_by_transactions" string="По видам транзакций">
+                        <!-- <page id="expenses_by_transactions" string="По видам транзакций">
                             <group>
                                 <group string="Выручка">
                                     <field name="revenue" />
@@ -84,7 +93,7 @@
                                     <field name="coef_other" />
                                 </group>
                             </group>
-                        </page>
+                        </page> -->
                     </notebook>
                 </form>
             </field>
@@ -92,7 +101,7 @@
 
         <!-- Tree -->
         <record id="view_indirect_percent_expenses_tree" model="ir.ui.view">
-            <field name="name">Отчёт о транзакциях</field>
+            <field name="name">Отчёт о выплатах</field>
             <field name="model">ozon.indirect_percent_expenses</field>
             <field name="arch" type="xml">
                 <tree>
@@ -106,18 +115,17 @@
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_indirect_percent_expenses">
-            <field name="name">Отчёт о транзакциях</field>
+            <field name="name">Отчёт о выплатах</field>
             <field name="res_model">ozon.indirect_percent_expenses</field>
             <field name="view_mode">tree,form</field>
         </record>
 
         <!-- Menu -->
-        <menuitem name="Выплата"
+        <menuitem name="Отчёт о выплатах"
             id="menu_indirect_percent_expenses"
             parent="main_menu_reports"
             action="action_indirect_percent_expenses"
             sequence="1" />
-
 
     </data>
 </odoo>
