@@ -3,7 +3,7 @@
 
         <!-- Form -->
         <record id="view_fbo_supply_order_product_form" model="ir.ui.view">
-            <field name="name">Товар Ozon в поставке на склад Ozon (FBO)</field>
+            <field name="name">Товар Ozon в накладной по отгрузке на склад FBO</field>
             <field name="model">ozon.fbo_supply_order_product</field>
             <field name="arch" type="xml">
                 <form>
@@ -21,7 +21,7 @@
 
         <!-- Tree -->
         <record id="view_fbo_supply_order_product_tree" model="ir.ui.view">
-            <field name="name">Товар Ozon в поставке на склад Ozon (FBO)</field>
+            <field name="name">Товар Ozon в накладной по отгрузке на склад FBO</field>
             <field name="model">ozon.fbo_supply_order_product</field>
             <field name="arch" type="xml">
                 <tree>
@@ -36,7 +36,7 @@
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_fbo_supply_order_product">
-            <field name="name">Товар Ozon в поставке</field>
+            <field name="name">Товар Ozon в накладной по отгрузке на склад FBO</field>
             <field name="res_model">ozon.fbo_supply_order_product</field>
             <field name="view_mode">tree,form</field>
         </record>

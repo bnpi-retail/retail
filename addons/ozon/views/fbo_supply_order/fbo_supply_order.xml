@@ -3,7 +3,7 @@
 
         <!-- Form -->
         <record id="view_fbo_supply_order_form" model="ir.ui.view">
-            <field name="name">Завершённые заявки на поставку на склад Ozon (FBO)</field>
+            <field name="name">Накладные по отгрузкам на склад FBO</field>
             <field name="model">ozon.fbo_supply_order</field>
             <field name="arch" type="xml">
                 <form>
@@ -28,7 +28,7 @@
 
         <!-- Tree -->
         <record id="view_fbo_supply_order_tree" model="ir.ui.view">
-            <field name="name">Завершённые заявки на поставку на склад Ozon (FBO)</field>
+            <field name="name">Накладные по отгрузкам на склад FBO</field>
             <field name="model">ozon.fbo_supply_order</field>
             <field name="arch" type="xml">
                 <tree>
@@ -44,13 +44,13 @@
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_fbo_supply_order">
-            <field name="name">Заявки на поставку</field>
+            <field name="name">Накладные по отгрузкам на склад FBO</field>
             <field name="res_model">ozon.fbo_supply_order</field>
             <field name="view_mode">tree,form</field>
         </record>
 
         <!-- Menu -->
-        <menuitem name="Поставки"
+        <menuitem name="Накладные по отгрузкам на склад FBO"
             id="menu_fbo_supply_order"
             parent="ozon.menu_root"
             action="action_fbo_supply_order"
