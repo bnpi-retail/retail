@@ -152,41 +152,28 @@ class ImportFile(models.Model):
             log_data = self.process_products_imported_data(content)
 
         elif values["data_for_download"] == "ozon_commissions":
-
             with StringIO(content) as csvfile:
                 reader = csv.DictReader(csvfile)
-
+                self.env["ozon.ozon_fee"].search([]).unlink()
+                cats = {i["name_categories"]: i["id"] 
+                        for i in self.env["ozon.categories"].search([]).read(["name_categories"])}
+                data = []
                 for i, row in enumerate(reader):
-                    result = self.is_ozon_fee_exists(
-                        category_name=row["category_name"],
-                        commission_name=row["commission_name"],
-                    )
-                    if result:
-                        continue
-
-                    row_c_id = row["description_category_id"]
-                    row_category_name = row["category_name"]
-                    if ozon_category := self.is_ozon_category_exists_by_id(
-                        row_c_id
-                    ):
-                        ozon_category.write(
-                            {"c_id": row_c_id, "name_categories": row_category_name}
+                    name = row["commission_name"]
+                    cat_id = row["description_category_id"]
+                    cat_name = row["category_name"]
+                    if cat_id := cats.get(cat_name):
+                        data.append(
+                            {
+                                "name": name,
+                                "value": row["value"],
+                                "category": cat_id,
+                                "type": row["commission_type"],
+                                "trading_scheme": row["trading_scheme"],
+                            }
                         )
-                    else:
-                        ozon_category = self.env["ozon.categories"].create(
-                            {"c_id": row_c_id, "name_categories": row_category_name}
-                        )
-
-                    self.env["ozon.ozon_fee"].create(
-                        {
-                            "name": row["commission_name"],
-                            "value": row["value"],
-                            "category": ozon_category.id,
-                            "type": row["commission_type"],
-                            "trading_scheme": row["trading_scheme"],
-                        }
-                    )
-                    print(f"{i}th commission was created")
+                        print(f"{i}th commission for category {cat_name} was created")
+                self.env["ozon.ozon_fee"].create(data)
 
         elif values["data_for_download"] == "ozon_transactions":
             log_data = self.import_transactions(content)
@@ -222,62 +209,8 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
-    def is_ozon_category_exists_by_name(self, category_name):
-        result = self.env["ozon.categories"].search(
-            [("name_categories", "=", category_name)],
-            limit=1,
-        )
-        return result if result else False
+    
 
-    def is_ozon_category_exists_by_id(self, category_id):
-        result = self.env["ozon.categories"].search([("c_id", "=", category_id)])
-        return result if result else False
-
-    def is_retail_product_exists(self, product_id):
-        result = self.env["retail.products"].search(
-            [("product_id", "=", product_id)],
-            limit=1,
-        )
-        return result if result else False
-
-    def is_retail_seller_exists(self, seller_name):
-        result = self.env["retail.seller"].search(
-            [("name", "=", seller_name)],
-            limit=1,
-        )
-        return result if result else False
-
-    def is_ozon_fee_exists(self, category_name, commission_name):
-        result = self.env["ozon.ozon_fee"].search(
-            [
-                ("category.name_categories", "=", category_name),
-                ("name", "=", commission_name),
-            ],
-            limit=1,
-        )
-        return result if result else False
-
-    def is_ozon_transaction_exists(self, transaction_id):
-        result = self.env["ozon.transaction"].search(
-            [("transaction_id", "=", transaction_id)],
-            limit=1,
-        )
-        return result if result else False
-
-    def is_ozon_service_exists(self, service_name):
-        result = self.env["ozon.ozon_services"].search(
-            [("name", "=", service_name)],
-            limit=1,
-        )
-        return result if result else False
-
-    def is_stock_exists(self, ozon_product_id):
-        result = self.env["ozon.stock"].search(
-            [("product", "=", ozon_product_id)],
-            limit=1,
-            order="create_date desc",
-        )
-        return result if result else False
 
     def import_transactions(self, content) -> dict:
         qty_new_transactions = 0
