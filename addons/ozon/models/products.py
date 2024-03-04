@@ -2607,6 +2607,10 @@ class ProductExpenses(models.Model):
         return self.get_expense_by_category("Логистика")
     
     @property
+    def _return_logistics(self):
+        return self.get_expense_by_category("Обратная логистика")
+    
+    @property
     def _acquiring(self):
         return self.get_expense_by_category("Эквайринг")
     
@@ -2624,7 +2628,7 @@ class ProductExpenses(models.Model):
     
     @property
     def _promo(self):
-        return self.get_expense_by_category("Продвижение товара")
+        return self.get_expense_by_category("Реклама")
     
     @property
     def _tax(self):

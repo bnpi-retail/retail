@@ -103,7 +103,7 @@ class PriceComparison(models.Model):
         plan_log = product.base_calculation_ids.filtered(
             lambda r: r.price_component_id == pc
         ).value
-        fact_log = product._logistics.value
+        fact_log = sum(product._logistics.mapped("value"))
         data_ozon_expenses.append(Row(group, plan_log, fact_log, fact_log, fact_log, pc.id))
         # Последняя миля - percent
         pc = pcm.get("last_mile")
@@ -171,21 +171,15 @@ class PriceComparison(models.Model):
         proc = product.base_calculation_ids.filtered(
             lambda r: r.price_component_id == pc
         ).value
-        fact_proc = product._processing.value
+        fact_proc = sum(product._processing.mapped("value"))
         data_ozon_expenses.append(Row(group, proc, fact_proc, fact_proc, fact_proc, pc.id))
-        # Обратная логистика - fix  TODO: depends on sales qty and returns
+        # Обратная логистика
         pc = pcm.get("return_logistics")
         ret_log = product.base_calculation_ids.filtered(
             lambda r: r.price_component_id == pc
         ).value
-        # # TODO: как считать факт. обратную логистику?
-        # sales = product._last_30_days_sales
-        # returns = product._last_30_days_returns
-        # if len(product._last_30_days_sales) - len(returns) == 0:
-        #     fact_ret_log = 0
-        # else:
-        #     fact_ret_log = ((fact_log + fact_proc) * len(returns)) / (len(sales) - len(returns))
-        data_ozon_expenses.append(Row(group, ret_log, 0, 0, 0, pc.id))
+        fact_ret_log = sum(product._return_logistics.mapped("value"))
+        data_ozon_expenses.append(Row(group, ret_log, fact_ret_log, fact_ret_log, fact_ret_log, pc.id))
 
         ### Расходы компании
         # TODO: откуда брать расходы компании для стобца ФАКТ?
