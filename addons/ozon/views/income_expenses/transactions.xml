@@ -77,6 +77,22 @@
             </field>
         </record>
 
+        <!-- Tree Transaction value_by_product -->
+        <record id="view_transaction_value_by_product_tree" model="ir.ui.view">
+            <field name="name">Транзакции с разбитием на услуги по продукту</field>
+            <field name="model">ozon.transaction.value_by_product</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="transaction_date" />
+                    <field name="transaction_name" />
+                    <field name="transaction_type" />
+                    <field name="category" />
+                    <field name="name" />
+                    <field name="value" />
+                </tree>
+            </field>
+        </record>
+
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_transaction">
             <field name="name">Транзакции</field>
