@@ -43,6 +43,15 @@
             sequence="2" />
 
 
+        <record model="ir.actions.server" id="action_refill_price_component_match_model">
+            <field name="name">Заполнить модель</field>
+            <field name="model_id" ref="model_ozon_price_component_match" />
+            <field name="binding_model_id" ref="model_ozon_price_component_match" />
+            <field name="state">code</field>
+            <field name="code">
+                records.refill_model()
+            </field>
+        </record>
     </data>
 
 </odoo>

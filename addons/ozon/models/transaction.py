@@ -123,7 +123,7 @@ class TransactionUnit(models.Model):
                     },
                     {
                         "transaction_id": t_id,
-                        "name": "Вознаграждение за продажу",
+                        "name": "Комиссия за продажу или возврат комиссии за продажу",
                         "value": t.sale_commission
                     },
                     {
