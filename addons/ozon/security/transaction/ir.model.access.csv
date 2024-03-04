@@ -3,3 +3,5 @@ access_ozon_transaction,Access Ozon Transaction,model_ozon_transaction,base.grou
 access_ozon_transaction_unit,Access Ozon Transaction Unit,model_ozon_transaction_unit,base.group_user,1,1,1,1
 access_ozon_tran_unit_sum,Access Ozon Transaction Unit Summary,model_ozon_tran_unit_sum,base.group_user,1,1,1,1
 access_ozon_ozon_services,Access Ozon Ozon_Services,model_ozon_ozon_services,base.group_user,1,1,1,1
+
+access_ozon_transaction_value_by_product,Access ozon.transaction.value_by_product,model_ozon_transaction_value_by_product,base.group_user,1,1,1,1
