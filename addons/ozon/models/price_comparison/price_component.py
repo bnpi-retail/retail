@@ -101,3 +101,10 @@ class PriceComponent(models.Model):
                 for name, iden in NAME_IDENTIFIER.items()
             ]
         )
+
+class PriceComponentMatch(models.Model):
+    _name = "ozon.price_component_match"
+    _description = "Сопоставление фактических статей затрат с плановыми"
+
+    name = fields.Char(string="Фактическая статья затрат")
+    price_component_id = fields.Many2one("ozon.price_component", string="Плановый компонент цены")

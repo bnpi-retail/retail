@@ -39,7 +39,7 @@
             id="menu_price_component"
             parent="main_menu_dicts"
             action="action_price_component"
-            sequence="6" />
+            sequence="1" />
 
 
     </data>
