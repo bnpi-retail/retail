@@ -58,9 +58,14 @@ class BaseCalculation(models.Model):
         data = []
         for pc in self._base_calculation_components():
             if pc.identifier == "logistics":
-                data.append({"price_component_id": pc.id, "comment": "В зависимости от тарифа логистики"})
+                comment = "В зависимости от тарифа логистики"
+            elif pc.identifier == "cost":
+                comment = """Данные из "Розничная торговля" """
+            elif pc.identifier == "ozon_reward":
+                comment = """Данные из "Комиссии категории" """
             else:
-                data.append({"price_component_id": pc.id})
+                comment = False
+            data.append({"price_component_id": pc.id, "comment": comment})
         return self.create(data)
 
     def reset_for_products(self, products):
@@ -138,16 +143,22 @@ class BaseCalculationWizard(models.Model):
                 if r.price_component_id.identifier == "logistics":
                     if not prod.logistics_tariff_id:
                         log_tar_model.assign_logistics_tariff_id(prod)
-                    log_value = log_tar_model.get_logistics_cost_based_on_tariff(prod)
-                    data.append({"product_id": p_id, 
-                                 "price_component_id": r.price_component_id.id, 
-                                 "value": log_value,
-                                 "comment": f"Объём: {round(prod.products.volume, 2)}л\n"
-                                 f"Тариф: {prod.logistics_tariff_id.name}"})
+                    value = log_tar_model.get_logistics_cost_based_on_tariff(prod)
+                    comment = (f"Объём: {round(prod.products.volume, 2)}л\n"
+                                f"Тариф: {prod.logistics_tariff_id.name}")
+                elif r.price_component_id.identifier == "cost":
+                    value = prod.retail_product_total_cost_price
+                    comment = r.comment
+                elif r.price_component_id.identifier == "ozon_reward":
+                    value = prod._ozon_reward.percent * 100
+                    comment = r.comment
                 else:
-                    data.append({"product_id": p_id, 
-                                "price_component_id": r.price_component_id.id,
-                                "value": r.value})
+                    value = r.value
+                    comment = r.comment
+                data.append({"product_id": p_id, 
+                            "price_component_id": r.price_component_id.id,
+                            "value": value,
+                            "comment": comment})
         self.env["ozon.base_calculation"].create(data)
 
 

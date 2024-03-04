@@ -37,7 +37,7 @@
         <!-- Menu -->
         <menuitem name="Компоненты цены"
             id="menu_price_component"
-            parent="main_menu_dicts"
+            parent="main_menu_plan"
             action="action_price_component"
             sequence="1" />
 

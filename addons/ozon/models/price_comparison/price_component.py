@@ -49,6 +49,7 @@ IDENTIFIER_NAME = {
  }
 
 BASE_CALCULATION_COMPONENTS = [
+    "cost",
     "logistics", 
     "last_mile", 
     "acquiring", 
@@ -152,3 +153,7 @@ class PriceComponentMatch(models.Model):
                 "price_component_id": price_component.id if price_component else None,
             })
         self.create(data)
+    
+    def get_fact_plan_match(self):
+        return {i.name: i.price_component_id.name if i.price_component_id else "Unknown" 
+                for i in self.search([])}

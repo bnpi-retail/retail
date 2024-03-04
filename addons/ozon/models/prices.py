@@ -8,8 +8,7 @@ from odoo.exceptions import UserError
 
 from ..helpers import split_list_into_chunks_of_size_n
 from .indirect_percent_expenses import (
-    STRING_FIELDNAMES,
-    COEF_FIELDNAMES_STRINGS,
+    STRING_FIELDNAMES
 )
 from ..ozon_api import (
     MAX_FIX_EXPENSES_FBO,
@@ -303,7 +302,7 @@ class InvestmentExpensesWizard(models.TransientModel):
 
 ALL_EXPENSES_NAMES_IDENTIFIERS = {
     'Себестоимость товара': 1,
-    'Средняя стоимость продвижения товара': 2,
+    'Услуги продвижения товаров': 2,
     'Получение возврата, отмены, невыкупа от покупателя': 3, 
     'Доставка и обработка возврата, отмены, невыкупа': 4, 
     'Обработка отправления «Pick-up» (отгрузка курьеру)': 5, 
@@ -362,105 +361,107 @@ class AllExpenses(models.Model):
             r.identifier = ALL_EXPENSES_NAMES_IDENTIFIERS.get(r.name, 0)
 
     def _compute_comment(self):
-        exp = self.env["ozon.indirect_percent_expenses"].search(
-            [],
-            limit=1,
-            order="create_date desc",
-        )
-        if not exp:
-            raise UserError("Косвенные затраты не посчитаны. Невозможно рассчитать значения в калькуляторе")
-
-        period = (f"{datetime.strftime(exp.date_from, '%d %b %Y')}" 
-                  f" - {datetime.strftime(exp.date_to, '%d %b %Y')}")
         for r in self:
-            name = r.name
-            val = r.value
-            category = r.category
-            exp_val = round(r.expected_value, 2)
-            per = round(r.percent, 6)
-            price = r.product_id.price
-            exp_price = r.product_id.expected_price
-            tax = r.product_id.seller.tax
-            tax_percent = r.product_id.seller.tax_percent
-            tax_string = r.product_id.seller.tax_description
-            if name == "Себестоимость товара":
-                if val == 0:
-                    r.comment = "Себестоимость товара не указана."
-                else:
-                    r.comment = "Себестоимость из модуля 'Розничная торговля'"
-            elif name == "Средняя стоимость продвижения товара":
-                if val == 0:
-                    r.comment = "Нет данных о продвижении товара."
-                else:
-                    promo_expenses = r.product_id.promotion_expenses_ids.filtered(
-                        lambda r: exp.date_from <= r.date <= exp.date_to)
-                    total_promo_expenses = round(sum(promo_expenses.mapped("expense")), 2)
-                    r.comment = (f"Продвижение товара (Арт: {r.product_id.article}) за период {period}\n"
-                        f"Cумма расходов на продвижение в поиске / " 
-                    f"кол-во заказов, полученных из рекламных кампаний по продвижению в поиске\n"
-                    f"{total_promo_expenses} / {len(promo_expenses)} = {exp_val}")
-            elif name == "Процент комиссии за продажу (FBS)":
-                r.comment = ("Процент комиссии за продажу (FBS) * цена = значение\n"
-                             f"{per} * {exp_price} = {exp_val}")
-            elif name in ["Последняя миля (FBS)", "Магистраль до (FBS)", "Максимальная комиссия за эквайринг"]:
-                r.comment = ("Рассчитывается как процент от текущей цены, умноженный на цену.\n"
-                             f"Текущая стоимость '{name}': {val}\n"
-                             f"Текущая цена: {price}\n"
-                             f"Процент от текущей цены: {val} / {price} = {per}\n"
-                             f"Значение: {per} * {exp_price} = {exp_val}")
-            elif name == "Максимальная комиссия за обработку отправления (FBS) — 25 рублей":
-                r.comment = f"Фиксированное значение"
-            elif name in ["Доходность", "Investment"]:
-                if exp_val == 0:
-                    r.comment = f"{name} не задан(а)."
-                else:
-                    r.comment = (f"{name} * цена = значение\n"
-                                 f"{per} * {exp_price} = {exp_val}")
-            elif name == "Налог":
-                if not tax:
-                    r.comment = f"{name} не задан у продавца."
-                else:
-                    r.comment = ("Цена * процент налогообложения = текущий налог\n"
-                                f"{exp_price} * {tax_percent} = {exp_val}\n")
-                    # exp_except_tax_roe_roi = r.product_id.total_all_expenses_ids_except_tax_roe_roi
-                    # ozon_exp = exp_except_tax_roe_roi - r.product_id.products.total_cost_price
-                    # if tax.startswith("earnings_minus_expenses"):
-                    #     if r.value == 0:
-                    #         r.comment = (f"Схема налогообложения: {tax_string}.\n"
-                    #                     f"Цена < все затраты. Налог = 0.")
-                    #     else:
-                    #         r.comment = ("(Цена - все затраты) * процент налогообложения = текущий налог\n"
-                    #                     f"({price} - {exp_except_tax_roe_roi}) * {tax_percent} = {val}\n"
-                    #                     f"Текущий налог / текущая цена = процент от текущей цены\n"
-                    #                     f"{val} / {price} = {per}\n"
-                    #                     f"Процент от текущей цены * цена = значение\n"
-                    #                     f"{per} * {exp_price} = {exp_val}")
-                    # else:
-                    #     if val == 0:
-                    #         r.comment = (f"Схема налогообложения: {tax_string}.\n"
-                    #                     f"Цена < затраты Ozon. Налог = 0.")
-                    #     else:
-                    #         r.comment = ("(Цена - затраты Ozon) * процент налогообложения = текущий налог\n"
-                    #                     f"({price} - {ozon_exp}) * {tax_percent} = {val}\n"
-                    #                     f"Текущий налог / текущая цена = процент от текущей цены\n"
-                    #                     f"{val} / {price} = {per}\n"
-                    #                     f"Процент от текущей цены * цена = значение\n"
-                    #                     f"{per} * {exp_price} = {exp_val}")
-            elif category == "Расходы компании":
-                r.comment = "Фиксированное значение"
-            elif not name:
-                r.comment = ""                        
-            else:
-                rev = round(exp.revenue)
-                str_fieldname = STRING_FIELDNAMES.get(name)
-                exp_amt = round(exp[str_fieldname])
-                r.comment = (f"Рассчитывается, исходя из косвенных затрат за период {period} по магазину в целом.\n"
-                             f"Общая выручка за период: {rev}\n"
-                             f"""Общие затраты по "{name}" за период: {exp_amt}\n"""
-                             f"""Затраты / выручка = коэффициент\n"""
-                             f"""{abs(exp_amt)} / {rev} = {per}\n"""
-                             f"""Коэффициент * цена = значение\n"""
-                             f"""{per} * {exp_price} = {exp_val}\n""")
+            r.comment = ""
+        # exp = self.env["ozon.indirect_percent_expenses"].search(
+        #     [],
+        #     limit=1,
+        #     order="create_date desc",
+        # )
+        # if not exp:
+        #     raise UserError("Косвенные затраты не посчитаны. Невозможно рассчитать значения в калькуляторе")
+
+        # period = (f"{datetime.strftime(exp.date_from, '%d %b %Y')}" 
+        #           f" - {datetime.strftime(exp.date_to, '%d %b %Y')}")
+        # for r in self:
+        #     name = r.name
+        #     val = r.value
+        #     category = r.category
+        #     exp_val = round(r.expected_value, 2)
+        #     per = round(r.percent, 6)
+        #     price = r.product_id.price
+        #     exp_price = r.product_id.expected_price
+        #     tax = r.product_id.seller.tax
+        #     tax_percent = r.product_id.seller.tax_percent
+        #     tax_string = r.product_id.seller.tax_description
+        #     if name == "Себестоимость товара":
+        #         if val == 0:
+        #             r.comment = "Себестоимость товара не указана."
+        #         else:
+        #             r.comment = "Себестоимость из модуля 'Розничная торговля'"
+        #     elif name == "Средняя стоимость продвижения товара":
+        #         if val == 0:
+        #             r.comment = "Нет данных о продвижении товара."
+        #         else:
+        #             promo_expenses = r.product_id.promotion_expenses_ids.filtered(
+        #                 lambda r: exp.date_from <= r.date <= exp.date_to)
+        #             total_promo_expenses = round(sum(promo_expenses.mapped("expense")), 2)
+        #             r.comment = (f"Продвижение товара (Арт: {r.product_id.article}) за период {period}\n"
+        #                 f"Cумма расходов на продвижение в поиске / " 
+        #             f"кол-во заказов, полученных из рекламных кампаний по продвижению в поиске\n"
+        #             f"{total_promo_expenses} / {len(promo_expenses)} = {exp_val}")
+        #     elif name == "Процент комиссии за продажу (FBS)":
+        #         r.comment = ("Процент комиссии за продажу (FBS) * цена = значение\n"
+        #                      f"{per} * {exp_price} = {exp_val}")
+        #     elif name in ["Последняя миля (FBS)", "Магистраль до (FBS)", "Максимальная комиссия за эквайринг"]:
+        #         r.comment = ("Рассчитывается как процент от текущей цены, умноженный на цену.\n"
+        #                      f"Текущая стоимость '{name}': {val}\n"
+        #                      f"Текущая цена: {price}\n"
+        #                      f"Процент от текущей цены: {val} / {price} = {per}\n"
+        #                      f"Значение: {per} * {exp_price} = {exp_val}")
+        #     elif name == "Максимальная комиссия за обработку отправления (FBS) — 25 рублей":
+        #         r.comment = f"Фиксированное значение"
+        #     elif name in ["Доходность", "Investment"]:
+        #         if exp_val == 0:
+        #             r.comment = f"{name} не задан(а)."
+        #         else:
+        #             r.comment = (f"{name} * цена = значение\n"
+        #                          f"{per} * {exp_price} = {exp_val}")
+        #     elif name == "Налог":
+        #         if not tax:
+        #             r.comment = f"{name} не задан у продавца."
+        #         else:
+        #             r.comment = ("Цена * процент налогообложения = текущий налог\n"
+        #                         f"{exp_price} * {tax_percent} = {exp_val}\n")
+        #             # exp_except_tax_roe_roi = r.product_id.total_all_expenses_ids_except_tax_roe_roi
+        #             # ozon_exp = exp_except_tax_roe_roi - r.product_id.products.total_cost_price
+        #             # if tax.startswith("earnings_minus_expenses"):
+        #             #     if r.value == 0:
+        #             #         r.comment = (f"Схема налогообложения: {tax_string}.\n"
+        #             #                     f"Цена < все затраты. Налог = 0.")
+        #             #     else:
+        #             #         r.comment = ("(Цена - все затраты) * процент налогообложения = текущий налог\n"
+        #             #                     f"({price} - {exp_except_tax_roe_roi}) * {tax_percent} = {val}\n"
+        #             #                     f"Текущий налог / текущая цена = процент от текущей цены\n"
+        #             #                     f"{val} / {price} = {per}\n"
+        #             #                     f"Процент от текущей цены * цена = значение\n"
+        #             #                     f"{per} * {exp_price} = {exp_val}")
+        #             # else:
+        #             #     if val == 0:
+        #             #         r.comment = (f"Схема налогообложения: {tax_string}.\n"
+        #             #                     f"Цена < затраты Ozon. Налог = 0.")
+        #             #     else:
+        #             #         r.comment = ("(Цена - затраты Ozon) * процент налогообложения = текущий налог\n"
+        #             #                     f"({price} - {ozon_exp}) * {tax_percent} = {val}\n"
+        #             #                     f"Текущий налог / текущая цена = процент от текущей цены\n"
+        #             #                     f"{val} / {price} = {per}\n"
+        #             #                     f"Процент от текущей цены * цена = значение\n"
+        #             #                     f"{per} * {exp_price} = {exp_val}")
+        #     elif category == "Расходы компании":
+        #         r.comment = "Фиксированное значение"
+        #     elif not name:
+        #         r.comment = ""                        
+        #     else:
+        #         rev = round(exp.revenue)
+        #         str_fieldname = STRING_FIELDNAMES.get(name)
+        #         exp_amt = round(exp[str_fieldname])
+        #         r.comment = (f"Рассчитывается, исходя из косвенных затрат за период {period} по магазину в целом.\n"
+        #                      f"Общая выручка за период: {rev}\n"
+        #                      f"""Общие затраты по "{name}" за период: {exp_amt}\n"""
+        #                      f"""Затраты / выручка = коэффициент\n"""
+        #                      f"""{abs(exp_amt)} / {rev} = {per}\n"""
+        #                      f"""Коэффициент * цена = значение\n"""
+        #                      f"""{per} * {exp_price} = {exp_val}\n""")
                 
     def update_all_expenses(self, products, latest_indirect_expenses):
         for idx, prod in enumerate(products):
@@ -485,9 +486,11 @@ class AllExpenses(models.Model):
             print(f"{idx}th product all expenses were updated")
 
     def create_update_all_product_expenses(self, products, latest_indirect_expenses, expected_price=None):
+        tran_sums = latest_indirect_expenses.transaction_unit_summary_ids.filtered(
+            lambda r: r.percent < 0)
+        fact_plan_match = self.env["ozon.price_component_match"].get_fact_plan_match()
         data = []
         for idx, prod in enumerate(products):
-            tax = prod.seller.tax
             tax_percent = prod.seller.tax_percent
             tax_description = prod.seller.tax_description
             total_expenses = 0
@@ -511,136 +514,140 @@ class AllExpenses(models.Model):
             )
             total_expenses += prod.products.total_cost_price
             # продвижение товара
+            name = "Услуги продвижения товаров"
             promo_expenses = prod.promotion_expenses_ids.filtered(
                 lambda r: latest_indirect_expenses.date_from <= r.date <= latest_indirect_expenses.date_to)
+            # если есть фактические данные по затратам на рекламу по данному товару
             if promo_expenses:
                 mean_promo_expense = mean(promo_expenses.mapped("expense"))
                 percent_promo_expense = mean_promo_expense / price
+            # берем коэф. из отчета о выплатах
             else:
-                mean_promo_expense = 0
-                percent_promo_expense = 0
+                percent_promo_expense = abs(tran_sums.filtered(lambda r: r.name == name).percent)
+                mean_promo_expense = price * percent_promo_expense
             data.append(
                 {
                     "product_id": prod.id,
-                    "name": "Средняя стоимость продвижения товара",
+                    "name": name,
                     "kind": "percent",
-                    "category": "Продвижение товара",
+                    "category": fact_plan_match.get(name, "Unknown"),
                     "percent": percent_promo_expense,
                     "value": mean_promo_expense,
                     "expected_value": exp_price * percent_promo_expense,
                 }
             )
-            # косвенные затраты Ozon
-            for k, v in COEF_FIELDNAMES_STRINGS.items():
-                percent = latest_indirect_expenses[k] / 100
+            # затраты из отчета о выплатах
+            for t_sum in tran_sums.filtered(lambda r: r.name != "Услуги продвижения товаров"): 
+                percent = abs(t_sum.percent)
                 value = price * percent
+                exp_value = exp_price * percent
                 data.append(
                     {
                         "product_id": prod.id,
-                        "name": v,
-                        "description": f"{latest_indirect_expenses[k]}%",
+                        "name": t_sum.name,
                         "kind": "percent",
-                        "category": "Вознаграждение Ozon",
+                        "category": fact_plan_match.get(t_sum.name, "Unknown"),
                         "percent": percent,
                         "value": value,
-                        "expected_value": exp_price * percent,
+                        "expected_value": exp_value,
                     }
                 )
                 total_expenses += value
+            
 
-            # вознаграждение озон, последняя миля, логистика, обработка, эквайринг
-            if prod.trading_scheme == "FBO":
-                ozon_com = prod.fbo_percent_expenses.filtered(
-                    lambda r: r.name.startswith("Процент")
-                )
-                last_mile = prod.fbo_fix_expenses_max.filtered(
-                    lambda r: r.name == "Последняя миля (FBO)"
-                )
-                logistics = prod.fbo_fix_expenses_max.filtered(
-                    lambda r: r.name == "Магистраль до (FBO)"
-                )
-                processing = prod.fbo_fix_expenses_max.filtered(
-                    lambda r: r.name == "Комиссия за сборку заказа (FBO)"
-                )
-                acquiring = prod.fbo_fix_expenses_max.filtered(
-                    lambda r: r.name == "Максимальная комиссия за эквайринг"
-                )
-            else:
-                ozon_com = prod.fbs_percent_expenses.filtered(
-                    lambda r: r.name.startswith("Процент")
-                )
-                last_mile = prod.fbs_fix_expenses_max.filtered(
-                    lambda r: r.name == "Последняя миля (FBS)"
-                )
-                logistics = prod.fbs_fix_expenses_max.filtered(
-                    lambda r: r.name == "Магистраль до (FBS)"
-                )
-                processing = prod.fbs_fix_expenses_max.filtered(
-                    lambda r: r.name.startswith("Максимальная комиссия за обработку")
-                )
-                acquiring = prod.fbs_fix_expenses_max.filtered(
-                    lambda r: r.name == "Максимальная комиссия за эквайринг"
-                )
+            # # вознаграждение озон, последняя миля, логистика, обработка, эквайринг
+            # if prod.trading_scheme == "FBO":
+            #     ozon_com = prod.fbo_percent_expenses.filtered(
+            #         lambda r: r.name.startswith("Процент")
+            #     )
+            #     last_mile = prod.fbo_fix_expenses_max.filtered(
+            #         lambda r: r.name == "Последняя миля (FBO)"
+            #     )
+            #     logistics = prod.fbo_fix_expenses_max.filtered(
+            #         lambda r: r.name == "Магистраль до (FBO)"
+            #     )
+            #     processing = prod.fbo_fix_expenses_max.filtered(
+            #         lambda r: r.name == "Комиссия за сборку заказа (FBO)"
+            #     )
+            #     acquiring = prod.fbo_fix_expenses_max.filtered(
+            #         lambda r: r.name == "Максимальная комиссия за эквайринг"
+            #     )
+            # else:
+            #     ozon_com = prod.fbs_percent_expenses.filtered(
+            #         lambda r: r.name.startswith("Процент")
+            #     )
+            #     last_mile = prod.fbs_fix_expenses_max.filtered(
+            #         lambda r: r.name == "Последняя миля (FBS)"
+            #     )
+            #     logistics = prod.fbs_fix_expenses_max.filtered(
+            #         lambda r: r.name == "Магистраль до (FBS)"
+            #     )
+            #     processing = prod.fbs_fix_expenses_max.filtered(
+            #         lambda r: r.name.startswith("Максимальная комиссия за обработку")
+            #     )
+            #     acquiring = prod.fbs_fix_expenses_max.filtered(
+            #         lambda r: r.name == "Максимальная комиссия за эквайринг"
+            #     )
 
-            data.extend(
-                [
-                    {
-                        "product_id": prod.id,
-                        "name": ozon_com.name,
-                        "description": ozon_com.discription,
-                        "kind": "percent",
-                        "category": "Вознаграждение Ozon",
-                        "percent": float(ozon_com.discription.replace("%", "")) / 100,
-                        "value": ozon_com.price,
-                        "expected_value": exp_price
-                        * float(ozon_com.discription.replace("%", ""))
-                        / 100,
-                    },
-                    {
-                        "product_id": prod.id,
-                        "name": last_mile.name,
-                        "kind": "percent",
-                        "category": "Последняя миля",
-                        "percent": last_mile.price / price,
-                        "value": last_mile.price,
-                        "expected_value": exp_price * last_mile.price / price,
-                    },
-                    {
-                        "product_id": prod.id,
-                        "name": logistics.name,
-                        "kind": "percent",
-                        "category": "Логистика",
-                        "percent": logistics.price / price,
-                        "value": logistics.price,
-                        "expected_value": logistics.price,
-                    },
-                    {
-                        "product_id": prod.id,
-                        "name": processing.name,
-                        "kind": "fix",
-                        "category": "Обработка",
-                        "percent": processing.price / price,
-                        "value": processing.price,
-                        "expected_value": processing.price,
-                    },
-                    {
-                        "product_id": prod.id,
-                        "name": acquiring.name,
-                        "kind": "percent",
-                        "category": "Эквайринг",
-                        "percent": acquiring.price / price,
-                        "value": acquiring.price,
-                        "expected_value": exp_price * acquiring.price / price,
-                    },
-                ]
-            )
-            total_expenses += (
-                ozon_com.price
-                + last_mile.price
-                + logistics.price
-                + processing.price
-                + acquiring.price
-            )
+            # data.extend(
+            #     [
+            #         {
+            #             "product_id": prod.id,
+            #             "name": ozon_com.name,
+            #             "description": ozon_com.discription,
+            #             "kind": "percent",
+            #             "category": "Вознаграждение Ozon",
+            #             "percent": float(ozon_com.discription.replace("%", "")) / 100,
+            #             "value": ozon_com.price,
+            #             "expected_value": exp_price
+            #             * float(ozon_com.discription.replace("%", ""))
+            #             / 100,
+            #         },
+            #         {
+            #             "product_id": prod.id,
+            #             "name": last_mile.name,
+            #             "kind": "percent",
+            #             "category": "Последняя миля",
+            #             "percent": last_mile.price / price,
+            #             "value": last_mile.price,
+            #             "expected_value": exp_price * last_mile.price / price,
+            #         },
+            #         {
+            #             "product_id": prod.id,
+            #             "name": logistics.name,
+            #             "kind": "percent",
+            #             "category": "Логистика",
+            #             "percent": logistics.price / price,
+            #             "value": logistics.price,
+            #             "expected_value": logistics.price,
+            #         },
+            #         {
+            #             "product_id": prod.id,
+            #             "name": processing.name,
+            #             "kind": "fix",
+            #             "category": "Обработка",
+            #             "percent": processing.price / price,
+            #             "value": processing.price,
+            #             "expected_value": processing.price,
+            #         },
+            #         {
+            #             "product_id": prod.id,
+            #             "name": acquiring.name,
+            #             "kind": "percent",
+            #             "category": "Эквайринг",
+            #             "percent": acquiring.price / price,
+            #             "value": acquiring.price,
+            #             "expected_value": exp_price * acquiring.price / price,
+            #         },
+            #     ]
+            # )
+            # total_expenses += (
+            #     ozon_com.price
+            #     + last_mile.price
+            #     + logistics.price
+            #     + processing.price
+            #     + acquiring.price
+            # )
             ### расходы компании
             base_calc_company_expenses = prod.base_calculation_ids.filtered(
                 lambda r: r.price_component_id.identifier.startswith("company_"))
@@ -659,17 +666,6 @@ class AllExpenses(models.Model):
                 )
                 total_expenses += val
             # налог
-            # total_ozon_expenses = total_expenses - prod.products.total_cost_price
-            # if tax.startswith("earnings_minus_expenses"):
-            #     if (price - total_expenses) > 0:
-            #         tax_value = (price - total_expenses) * tax_percent
-            #     else:
-            #         tax_value = 0
-            # else:
-            #     if (price - total_ozon_expenses) > 0:
-            #         tax_value = (price - total_ozon_expenses) * tax_percent
-            #     else:
-            #         tax_value = 0
             tax_value = price * tax_percent
             expected_tax_value = exp_price * tax_percent
             data.append(

@@ -26,25 +26,6 @@ STRING_FIELDNAMES = {
     "Услуга по бронированию места и персонала для поставки с неполным составом": "booking_incomplete",
     "Прочее": "other",
 }
-COEF_FIELDNAMES_STRINGS = {
-    # "coef_promotion": "Услуги продвижения товаров",
-    "coef_refund": "Получение возврата, отмены, невыкупа от покупателя",
-    "coef_refund_delivery": "Доставка и обработка возврата, отмены, невыкупа",
-    # "coef_pickup": "Обработка отправления «Pick-up» (отгрузка курьеру)",
-    # "coef_acquiring": "Оплата эквайринга",
-    # "coef_delivery_rfbs": "Услуги доставки Партнерами Ozon на схеме realFBS",
-    # "coef_agent_rfbs": "Агентское вознаграждение за доставку Партнерами Ozon на схеме realFBS",
-    # "coef_promotion_seller_bonus": "Услуга продвижения Бонусы продавца",
-    # "coef_review": "Приобретение отзывов на платформе",
-    # "coef_subscription_premium_plus": "Подписка Premium Plus",
-    # "coef_seller_error_cancel": "Услуга за обработку операционных ошибок продавца: отмена",
-    # "coef_seller_error_expired_shipment": "Услуга за обработку операционных ошибок продавца: просроченная отгрузка",
-    # "coef_fbo_processing": "Обработка товара в составе грузоместа на FBO",
-    # "coef_fbo_expiration_date_processing": "Обработка сроков годности на FBO",
-    # "coef_utilization": "Утилизация",
-    # "coef_booking_incomplete": "Услуга по бронированию места и персонала для поставки с неполным составом",
-    # "coef_other": "Прочее",
-}
 
 
 class IndirectPercentExpenses(models.Model):
@@ -65,7 +46,7 @@ class IndirectPercentExpenses(models.Model):
     # FACT TOTALS
     revenue = fields.Float(string="Выручка")
     total = fields.Float(string="Итого с учётом баллов")
-    orders = fields.Float(string="Сумма за заказы")
+    orders = fields.Float(string="Сумма за заказы (заказы+возвраты)")
     reward = fields.Float(string="Вознаграждение за продажу")
     processing_delivery = fields.Float(string="Обработка и доставка")
     returns_cancels = fields.Float(string="Возвраты и отмены")
@@ -78,70 +59,6 @@ class IndirectPercentExpenses(models.Model):
     theory_processing_delivery = fields.Float(string="Обработка и доставка (теоретическое значение)")
     theory_acquiring = fields.Float(string="Эквайринг (теоретическое значение)")
 
-    # BY TRANSACTION TYPE
-    refund = fields.Float(
-        string="Получение возврата, отмены, невыкупа от покупателя"
-    )
-    refund_delivery = fields.Float(
-        string="Доставка и обработка возврата, отмены, невыкупа"
-    )
-    pickup = fields.Float(
-        string="Обработка отправления «Pick-up» (отгрузка курьеру)"
-    )
-    acquiring = fields.Float(string="Оплата эквайринга")
-    delivery_rfbs = fields.Float(
-        string="Услуги доставки Партнерами Ozon на схеме realFBS"
-    )
-    agent_rfbs = fields.Float(
-        string="Агентское вознаграждение за доставку Партнерами Ozon на схеме realFBS"
-    )
-    promotion_seller_bonus = fields.Float(
-        string="Услуга продвижения Бонусы продавца"
-    )
-    review = fields.Float(string="Приобретение отзывов на платформе")
-    subscription_premium_plus = fields.Float(string="Подписка Premium Plus")
-    seller_error_cancel = fields.Float(
-        string="Услуга за обработку операционных ошибок продавца: отмена"
-    )
-    seller_error_expired_shipment = fields.Float(
-        string="Услуга за обработку операционных ошибок продавца: просроченная отгрузка"
-    )
-    fbo_processing = fields.Float(string="Обработка товара в составе грузоместа на FBO")
-    fbo_expiration_date_processing = fields.Float(string="Обработка сроков годности на FBO")
-    utilization = fields.Float(string="Утилизация")
-    booking_incomplete = fields.Float(
-        string="Услуга по бронированию места и персонала для поставки с неполным составом"
-    )
-    other = fields.Float(string="Другие транзакции")
-
-    # coefs: expenses/revenue
-    coef_refund = fields.Float(string="Получение возврата, отмены, невыкупа от покупателя")
-    coef_refund_delivery = fields.Float(string="Доставка и обработка возврата, отмены, невыкупа")
-    coef_pickup = fields.Float(string="Обработка отправления «Pick-up» (отгрузка курьеру)")
-    coef_acquiring = fields.Float(string="Оплата эквайринга")
-    coef_delivery_rfbs = fields.Float(string="Услуги доставки Партнерами Ozon на схеме realFBS")
-    coef_agent_rfbs = fields.Float(
-        string="Агентское вознаграждение за доставку Партнерами Ozon на схеме realFBS"
-    )
-    coef_promotion_seller_bonus = fields.Float(string="Услуга продвижения Бонусы продавца")
-    coef_review = fields.Float(string="Приобретение отзывов на платформе")
-    coef_subscription_premium_plus = fields.Float(string="Подписка Premium Plus")
-    coef_seller_error_cancel = fields.Float(
-        string="Услуга за обработку операционных ошибок продавца: отмена"
-    )
-    coef_seller_error_expired_shipment = fields.Float(
-        string="Услуга за обработку операционных ошибок продавца: просроченная отгрузка"
-    )
-    coef_fbo_processing = fields.Float(string="Обработка товара в составе грузоместа на FBO")
-    coef_fbo_expiration_date_processing = fields.Float(string="Обработка сроков годности на FBO")
-    coef_utilization = fields.Float(string="Утилизация")
-    coef_booking_incomplete = fields.Float(
-        string="Услуга по бронированию места и персонала для поставки с неполным составом"
-    )
-    coef_other = fields.Float(string="Другие транзакции")
-
-    # total
-    coef_total = fields.Float(string="Общий коэффициент косвенных затрат")
 
     def collect_data(self, date_from, date_to):
         domain = [("transaction_date", ">=", date_from), ("transaction_date", "<=", date_to)]
@@ -201,10 +118,10 @@ class IndirectPercentExpenses(models.Model):
             for n in s_names:
                 if n == "логистика":
                     theory_logistics = oper(
-                        theory_logistics, sum([p._logistics.value * qty for p, qty in prod_qty]))
+                        theory_logistics, sum([sum(p._logistics.mapped("value")) * qty for p, qty in prod_qty]))
                 elif n == "обработка отправления":
                     theory_processing = oper(
-                        theory_processing, sum([p._processing.value * qty for p, qty in prod_qty]))
+                        theory_processing, sum([sum(p._processing.mapped("value")) * qty for p, qty in prod_qty]))
                 elif n == "последняя миля":
                     theory_last_mile = oper(
                         theory_last_mile, sum([p._last_mile.value * qty for p, qty in prod_qty]))
@@ -230,38 +147,6 @@ class IndirectPercentExpenses(models.Model):
                      "theory_processing_delivery": theory_proc_and_deliv,
                      "theory_acquiring": theory_acquiring})
  
-        transactions = self.env["ozon.transaction"].read_group(
-            domain=[
-                ("transaction_date", ">=", date_from),
-                ("transaction_date", "<=", date_to),
-            ],
-            fields=[],
-            groupby="name",
-        )
-        if not transactions:
-            raise UserError("Транзакции за данный период не загружены.")            
-        data.update({"other": 0, "coef_total": 0})
-
-        for tran in transactions:
-            name = tran["name"]
-            if name in ["Услуги продвижения товаров"]:
-                continue
-            fieldname = STRING_FIELDNAMES.get(name)
-            amount = tran["amount"]
-            if amount > 0:
-                continue
-            if fieldname:
-                data[fieldname] = amount
-                data[f"coef_{fieldname}"] = abs(
-                    round(amount / data["revenue"], 4) * 100
-                )
-            else:
-                data["other"] += amount
-        data["coef_other"] = abs(round(data["other"] / data["revenue"], 4) * 100)
-        for k, v in data.items():
-            if k.startswith("coef") and k not in ["coef_total", "coef_acquiring"]:
-                data["coef_total"] += v
-
         return data, tran_units_data
 
     def calculate_indirect_expenses_prev_month(self):
@@ -283,7 +168,7 @@ class IndirectPercentExpenses(models.Model):
         rec = super(IndirectPercentExpenses, self).create(values)
         tran_units.indirect_percent_expenses_id = rec.id
         tran_unit_sum_model = self.env['ozon.tran_unit_sum']
-        tran_unit_sum_data = tran_unit_sum_model.collect_data_from_transaction_units(rec.id)
+        tran_unit_sum_data = tran_unit_sum_model.collect_data_from_transaction_units(report=rec)
         tran_unit_sum_model.create(tran_unit_sum_data)
         return rec
     
