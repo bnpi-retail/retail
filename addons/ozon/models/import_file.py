@@ -1420,7 +1420,6 @@ class ProcessProductFile(models.Model):
         # sup categories check and write ids
         ozon_products = self.env['ozon.products'].browse(products_ids)
         price_histories_vals_to_write = []
-        price_model = self.env["ozon.price_history"]
         for ozon_product in ozon_products:
             sup_cats_ids = products_ids_with_sup_categories_ids.get(ozon_product.id)
             if sup_cats_ids:
@@ -1479,7 +1478,7 @@ class ProcessProductFile(models.Model):
                 )
 
             # price history
-            previous_price_history = price_model.search([
+            previous_price_history = self.env["ozon.price_history"].search([
                 ('product', '=', ozon_product.id)
             ], order="create_date desc", limit=1)
             previous_price = previous_price_history.price if previous_price_history else 0
@@ -1502,7 +1501,7 @@ class ProcessProductFile(models.Model):
                 }
                 price_histories_vals_to_write.append(price_history_data)
                 qty_new_price_history += 1
-        price_model.create(price_histories_vals_to_write)
+        self.env["ozon.price_history"].create(price_histories_vals_to_write)
 
         return len(ozon_products), qty_new_price_history
 
