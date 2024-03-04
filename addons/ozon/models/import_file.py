@@ -209,7 +209,63 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
-    
+
+    def is_ozon_product_exists_by_sku_or_article(self, sku: str, article: str):
+        result = self.env["ozon.products"].search(
+            ["|", "|", "|", ("sku", "=", sku), ("fbo_sku", "=", sku), ("fbs_sku", "=", sku), ("article", "=", article)],
+            limit=1,
+        )
+        return result if result else False
+
+    def is_ozon_category_exists_by_name(self, category_name):
+        result = self.env["ozon.categories"].search(
+            [("name_categories", "=", category_name)],
+            limit=1,
+        )
+        return result if result else False
+
+    def is_ozon_category_exists_by_id(self, category_id):
+        result = self.env["ozon.categories"].search([("c_id", "=", category_id)])
+        return result if result else False
+
+    def is_retail_product_exists(self, product_id):
+        result = self.env["retail.products"].search(
+            [("product_id", "=", product_id)],
+            limit=1,
+        )
+        return result if result else False
+
+    def is_retail_seller_exists(self, seller_name):
+        result = self.env["retail.seller"].search(
+            [("name", "=", seller_name)],
+            limit=1,
+        )
+        return result if result else False
+
+    def is_ozon_fee_exists(self, category_name, commission_name):
+        result = self.env["ozon.ozon_fee"].search(
+            [
+                ("category.name_categories", "=", category_name),
+                ("name", "=", commission_name),
+            ],
+            limit=1,
+        )
+        return result if result else False
+
+    def is_ozon_transaction_exists(self, transaction_id):
+        result = self.env["ozon.transaction"].search(
+            [("transaction_id", "=", transaction_id)],
+            limit=1,
+        )
+        return result if result else False
+
+    def is_ozon_service_exists(self, service_name):
+        result = self.env["ozon.ozon_services"].search(
+            [("name", "=", service_name)],
+            limit=1,
+        )
+        return result if result else False
+
 
 
     def import_transactions(self, content) -> dict:
@@ -478,11 +534,26 @@ class ImportFile(models.Model):
                 Создаем отправление только если хотя бы один из товаров в отправлении
                 соответствует нашему товару
                 """
-                skus = ast.literal_eval(row["skus"])
+                products = ast.literal_eval(row["products"])
+                # [{'offer_id': '063478', 'price': '650.0000', 'quantity': 1, 'sku': 415273036}]
+                skus = []
                 product_ids = []
-                for sku in skus:
-                    if ozon_product := self.is_ozon_product_exists_by_sku(sku):
+                ozon_posting_product_vals_to_create = []
+                for product_data in products:
+                    sku = str(product_data['sku'])
+                    skus.append(sku)
+                    article = product_data['offer_id']
+                    if ozon_product := self.is_ozon_product_exists_by_sku_or_article(sku, article):
                         product_ids.append(ozon_product.id)
+
+                    ozon_product_id = ozon_product.id if ozon_product else False
+                    ozon_posting_product_vals_to_create.append({
+                        "ozon_products_id": ozon_product_id,
+                        "offer_id": article,
+                        "price": float(product_data['price']),
+                        "quantity": int(product_data['quantity']),
+                        "sku": sku,
+                    })
                 if not product_ids:
                     continue
 
@@ -505,6 +576,7 @@ class ImportFile(models.Model):
                         "warehouse_id": warehouse.id,
                         "cluster_from": row["cluster_from"],
                         "cluster_to": row["cluster_to"],
+                        "posting_product_ids": [(0, 0, vals) for vals in ozon_posting_product_vals_to_create]
                     }
                 )
                 qty_created += 1
@@ -1353,7 +1425,6 @@ class ProcessProductFile(models.Model):
         # sup categories check and write ids
         ozon_products = self.env['ozon.products'].browse(products_ids)
         price_histories_vals_to_write = []
-        price_model = self.env["ozon.price_history"]
         for ozon_product in ozon_products:
             sup_cats_ids = products_ids_with_sup_categories_ids.get(ozon_product.id)
             if sup_cats_ids:
@@ -1412,7 +1483,7 @@ class ProcessProductFile(models.Model):
                 )
 
             # price history
-            previous_price_history = price_model.search([
+            previous_price_history = self.env["ozon.price_history"].search([
                 ('product', '=', ozon_product.id)
             ], order="create_date desc", limit=1)
             previous_price = previous_price_history.price if previous_price_history else 0
@@ -1435,7 +1506,7 @@ class ProcessProductFile(models.Model):
                 }
                 price_histories_vals_to_write.append(price_history_data)
                 qty_new_price_history += 1
-        price_model.create(price_histories_vals_to_write)
+        self.env["ozon.price_history"].create(price_histories_vals_to_write)
 
         return len(ozon_products), qty_new_price_history
 
