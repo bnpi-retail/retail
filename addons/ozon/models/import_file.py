@@ -222,6 +222,13 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
+    def is_ozon_product_exists_by_sku_or_article(self, sku: str, article: str):
+        result = self.env["ozon.products"].search(
+            ["|", "|", "|", ("sku", "=", sku), ("fbo_sku", "=", sku), ("fbs_sku", "=", sku), ("article", "=", article)],
+            limit=1,
+        )
+        return result if result else False
+
     def is_ozon_category_exists_by_name(self, category_name):
         result = self.env["ozon.categories"].search(
             [("name_categories", "=", category_name)],
@@ -545,11 +552,26 @@ class ImportFile(models.Model):
                 Создаем отправление только если хотя бы один из товаров в отправлении
                 соответствует нашему товару
                 """
-                skus = ast.literal_eval(row["skus"])
+                products = ast.literal_eval(row["products"])
+                # [{'offer_id': '063478', 'price': '650.0000', 'quantity': 1, 'sku': 415273036}]
+                skus = []
                 product_ids = []
-                for sku in skus:
-                    if ozon_product := self.is_ozon_product_exists_by_sku(sku):
+                ozon_posting_product_vals_to_create = []
+                for product_data in products:
+                    sku = str(product_data['sku'])
+                    skus.append(sku)
+                    article = product_data['offer_id']
+                    if ozon_product := self.is_ozon_product_exists_by_sku_or_article(sku, article):
                         product_ids.append(ozon_product.id)
+
+                    ozon_product_id = ozon_product.id if ozon_product else False
+                    ozon_posting_product_vals_to_create.append({
+                        "ozon_products_id": ozon_product_id,
+                        "offer_id": article,
+                        "price": float(product_data['price']),
+                        "quantity": int(product_data['quantity']),
+                        "sku": sku,
+                    })
                 if not product_ids:
                     continue
 
@@ -572,6 +594,7 @@ class ImportFile(models.Model):
                         "warehouse_id": warehouse.id,
                         "cluster_from": row["cluster_from"],
                         "cluster_to": row["cluster_to"],
+                        "posting_product_ids": [(0, 0, vals) for vals in ozon_posting_product_vals_to_create]
                     }
                 )
                 qty_created += 1

@@ -39,7 +39,7 @@ class PostingProduct(models.Model):
     _name = "ozon.posting.product"
     _description = "Модель для записи продуктов с ценами в отправления"
 
-    ozon_products_id = fields.Many2one(string="Продукт Озон")
+    ozon_products_id = fields.Many2one("ozon.products", string="Продукт Озон")
     offer_id = fields.Char(size=50, string="Артикул (offer_id)")
     price = fields.Float(string="Цена за единицу")
     quantity = fields.Integer(string="Количество в отправлении")
