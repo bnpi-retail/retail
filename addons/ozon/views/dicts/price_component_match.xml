@@ -1,0 +1,57 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="ozon_price_component_match_form" model="ir.ui.view">
+            <field name="name">Сопоставление фактических статей затрат с плановыми</field>
+            <field name="model">ozon.price_component_match</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="name" />
+                        <field name="price_component_id" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="ozon_price_component_match_tree" model="ir.ui.view">
+            <field name="name">Сопоставление фактических статей затрат с плановыми</field>
+            <field name="model">ozon.price_component_match</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" />
+                    <field name="price_component_id" />
+                </tree>
+            </field>
+
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_price_component_match">
+            <field name="name">Сопоставление фактических статей затрат с плановыми</field>
+            <field name="res_model">ozon.price_component_match</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menu -->
+        <menuitem name="Фактические/плановые статьи"
+            id="menu_price_component_match"
+            parent="main_menu_dicts"
+            action="action_price_component_match"
+            sequence="2" />
+
+
+        <record model="ir.actions.server" id="action_refill_price_component_match_model">
+            <field name="name">Заполнить модель</field>
+            <field name="model_id" ref="model_ozon_price_component_match" />
+            <field name="binding_model_id" ref="model_ozon_price_component_match" />
+            <field name="state">code</field>
+            <field name="code">
+                records.refill_model()
+            </field>
+        </record>
+    </data>
+
+</odoo>

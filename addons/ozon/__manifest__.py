@@ -91,6 +91,7 @@
         "views/dicts/pricing_strategy.xml",
         "views/dicts/investment_expenses.xml",
         "views/dicts/price_component.xml",
+        "views/dicts/price_component_match.xml",
         "views/dicts/categories.xml",
         "views/dicts/supplementary_categories.xml",
         "views/dicts/logistics_tariff.xml",

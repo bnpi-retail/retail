@@ -101,3 +101,54 @@ class PriceComponent(models.Model):
                 for name, iden in NAME_IDENTIFIER.items()
             ]
         )
+FACT_PLAN_MATCH = {
+    "логистика": "logistics",
+    "магистраль": "logistics",
+    "Услуги доставки Партнерами Ozon на схеме realFBS": "logistics",
+    "Агентское вознаграждение за доставку Партнерами Ozon на схеме realFBS": "logistics",
+    "последняя миля": "last_mile",
+    "Оплата эквайринга": "acquiring",
+    "Комиссия за продажу или возврат комиссии за продажу": "ozon_reward",
+    "Услуги продвижения товаров": "promo",
+    "обработка отправления": "processing",
+    "сборка заказа": "processing",
+    "Обработка отправления «Pick-up» (отгрузка курьеру)": "processing",
+    "обработка возврата": "processing",
+    "обработка невыкупа": "processing",
+    "обработка отмен": "processing",
+    "обратная магистраль": "return_logistics",
+    "обратная логистика": "return_logistics",
+    "MarketplaceServiceItemRedistributionReturnsPVZ": "return_logistics",
+    "Начисление по спору": None,
+    "Начисления по претензиям": None,
+    "Перечисление за доставку от покупателя": None,
+    "Подписка Premium Plus": None,
+    "Приобретение отзывов на платформе": None,
+    "Удержание за недовложение товара": None,
+    "Услуга за обработку операционных ошибок продавца: отмена": None,
+    "Услуга за обработку операционных ошибок продавца: просроченная отгрузка": None,
+    "Услуга продвижения Бонусы продавца": None,
+    "Услуга размещения товаров на складе": None,
+    "Утилизация": None,
+}
+
+
+class PriceComponentMatch(models.Model):
+    _name = "ozon.price_component_match"
+    _description = "Сопоставление фактических статей затрат Ozon с плановыми"
+
+    name = fields.Char(string="Фактическая статья затрат Ozon")
+    price_component_id = fields.Many2one("ozon.price_component", string="Плановый компонент цены")
+
+    def refill_model(self):
+        self.env["ozon.price_component_match"].search([]).unlink()
+        pcm = self.env["ozon.price_component"]
+        pcm.fill_model()
+        data = []
+        for fact, identifier in FACT_PLAN_MATCH.items():
+            price_component = pcm.search([("identifier", "=", identifier)])
+            data.append({
+                "name": fact,
+                "price_component_id": price_component.id if price_component else None,
+            })
+        self.create(data)
