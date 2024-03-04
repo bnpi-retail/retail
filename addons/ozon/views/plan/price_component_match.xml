@@ -38,7 +38,7 @@
         <!-- Menu -->
         <menuitem name="Фактические/плановые статьи"
             id="menu_price_component_match"
-            parent="main_menu_dicts"
+            parent="main_menu_plan"
             action="action_price_component_match"
             sequence="2" />
 
