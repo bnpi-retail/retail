@@ -49,6 +49,7 @@ IDENTIFIER_NAME = {
  }
 
 BASE_CALCULATION_COMPONENTS = [
+    "cost",
     "logistics", 
     "last_mile", 
     "acquiring", 

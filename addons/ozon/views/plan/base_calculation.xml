@@ -14,7 +14,7 @@
                                 <field name="price_component_id" />
                                 <field name="kind" />
                                 <field name="value"
-                                    attrs="{'invisible': [('kind','=','depends_on_volume')]}" />
+                                    attrs="{'invisible': [('comment', '!=', False)]}" />
                                 <field name="comment" />
                             </tree>
                         </field>
