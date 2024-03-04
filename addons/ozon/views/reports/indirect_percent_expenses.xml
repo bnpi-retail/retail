@@ -20,6 +20,7 @@
                         <page id="totals" string="Общие данные">
                             <group>
                                 <group string="Фактические значения">
+                                    <field name="revenue" />
                                     <field name="total" />
                                     <field name="orders" />
                                     <field name="reward" />
@@ -40,6 +41,7 @@
                                     <tree>
                                         <field name="name" />
                                         <field name="count" />
+                                        <field name="percent" widget="percentage" />
                                         <field name="value" />
                                     </tree>
                                 </field>

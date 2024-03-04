@@ -65,7 +65,7 @@ class IndirectPercentExpenses(models.Model):
     # FACT TOTALS
     revenue = fields.Float(string="Выручка")
     total = fields.Float(string="Итого с учётом баллов")
-    orders = fields.Float(string="Сумма за заказы")
+    orders = fields.Float(string="Сумма за заказы (заказы+возвраты)")
     reward = fields.Float(string="Вознаграждение за продажу")
     processing_delivery = fields.Float(string="Обработка и доставка")
     returns_cancels = fields.Float(string="Возвраты и отмены")
@@ -283,7 +283,7 @@ class IndirectPercentExpenses(models.Model):
         rec = super(IndirectPercentExpenses, self).create(values)
         tran_units.indirect_percent_expenses_id = rec.id
         tran_unit_sum_model = self.env['ozon.tran_unit_sum']
-        tran_unit_sum_data = tran_unit_sum_model.collect_data_from_transaction_units(rec.id)
+        tran_unit_sum_data = tran_unit_sum_model.collect_data_from_transaction_units(report=rec)
         tran_unit_sum_model.create(tran_unit_sum_data)
         return rec
     

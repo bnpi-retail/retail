@@ -163,20 +163,23 @@ class TransactionUnitSummary(models.Model):
     name = fields.Char(string="Выплата")
     count = fields.Integer(string="Кол-во")
     value = fields.Float(string="Сумма")
+    percent = fields.Float(string="Процент от выручки")
 
     indirect_percent_expenses_id = fields.Many2one("ozon.indirect_percent_expenses", 
                                                    string="Отчёт о выплатах", 
                                                    ondelete="cascade")
     
-    def collect_data_from_transaction_units(self, report_id):
+    def collect_data_from_transaction_units(self, report):
         grouped_tran_units = self.env["ozon.transaction_unit"].read_group(
-            domain=[("indirect_percent_expenses_id", "=", report_id)], 
+            domain=[("indirect_percent_expenses_id", "=", report.id)], 
             fields=["name", "value"],
             groupby=["name"])
+        rev = report.revenue
         data = [
             {"name": i["name"], 
              "count": i["name_count"], 
-             "value": i["value"], 
-             "indirect_percent_expenses_id": report_id}
+             "value": i["value"],
+             "percent": i["value"] / rev if i["name"] not in ["Сумма за заказы", "Итого за заказы"] else 0, 
+             "indirect_percent_expenses_id": report.id}
              for i in grouped_tran_units]
         return data
