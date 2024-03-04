@@ -8,8 +8,7 @@ from odoo.exceptions import UserError
 
 from ..helpers import split_list_into_chunks_of_size_n
 from .indirect_percent_expenses import (
-    STRING_FIELDNAMES,
-    COEF_FIELDNAMES_STRINGS,
+    STRING_FIELDNAMES
 )
 from ..ozon_api import (
     MAX_FIX_EXPENSES_FBO,
