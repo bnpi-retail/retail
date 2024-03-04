@@ -13,6 +13,7 @@ class Posting(models.Model):
     trading_scheme = fields.Selection(
         [("FBS", "FBS"), ("FBO", "FBO")], string="Схема торговли"
     )
+    order_number = fields.Char(string="Номер заказа")
     order_id = fields.Char(
         string="Идентификатор заказа, к которому относится отправление"
     )

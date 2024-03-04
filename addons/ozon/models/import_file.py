@@ -286,20 +286,8 @@ class ImportFile(models.Model):
                 if all_transactions.get(row["transaction_id"]):
                     print(f"{i} - Transaction already exists")
                     continue
-                ozon_products = []
-                ozon_products_ids = []
-                skus = ast.literal_eval(row["product_skus"])
-                for sku in skus:
-                    if ozon_product := self.is_ozon_product_exists_by_sku(sku):
-                        ozon_products.append(ozon_product)
-                        ozon_products_ids.append(ozon_product.id)
 
-                # TODO: как быть с транзакциями, где указанных sku нет в нашей системе? 
-                # или напр. в транзакции 2 sku, один из них есть у нас, другого нет.
-                # if len(skus) != len(ozon_products):
-                #     print(f"{i} -")
-                #     continue
-
+                # services
                 ozon_services = []
                 service_list = ast.literal_eval(row["services"])
                 services_cost = 0
@@ -309,6 +297,108 @@ class ImportFile(models.Model):
                     )
                     ozon_services.append(service.id)
                     services_cost += price
+
+                # posting
+                posting_number = row["posting_number"]
+                posting = self.env["ozon.posting"].search([
+                    ('posting_number', '=', posting_number)
+                ])
+                if not posting:
+                    posting = self.env["ozon.posting"].search([
+                        ('order_number', '=', posting_number)
+                    ], order='create_date desc', limit=1)
+
+                logger.warning(posting)
+
+                vals_to_create_value_by_product = []
+                if posting:
+                    tran_accruals_for_sale = \
+                        float(row["accruals_for_sale"]) if float(row["accruals_for_sale"]) else 0.0001
+                    tran_sale_commission = float(row["sale_commission"])
+                    tran_amount = float(row["amount"])
+                    posting_products = posting.posting_product_ids
+                    for product in posting_products:
+                        qty = product.quantity
+                        product_price = product.price
+                        product_id = product.ozon_products_id.id
+                        for _ in range(qty):
+                            accruals_for_sale = product_price
+                            sale_commission = (product_price * tran_sale_commission) / tran_accruals_for_sale
+                            amount = (product_price * tran_amount) / tran_accruals_for_sale
+                            if row['name'] in [
+                                "Доставка покупателю",
+                                "Получение возврата, отмены, невыкупа от покупателя"
+                            ]:
+                                vals_to_create_value_by_product.extend([
+                                    {
+                                        "name": "Сумма за заказы",
+                                        "value": accruals_for_sale,
+                                        "ozon_products_id": product_id
+                                    },
+                                    {
+                                        "name": "Вознаграждение за продажу",
+                                        "value": sale_commission,
+                                        "ozon_products_id": product_id
+                                    },
+                                    {
+                                        "name": "Итого за заказы",
+                                        "value": amount,
+                                        "ozon_products_id": product_id
+                                    }
+                                ])
+                                for name, price in service_list:
+                                    vals_to_create_value_by_product.append({
+                                        "name": name,
+                                        "value": price,
+                                        "ozon_products_id": product_id
+                                    })
+                            elif row['name'] in ["Доставка и обработка возврата, отмены, невыкупа",
+                                              "Доставка покупателю — отмена начисления"]:
+                                for name, price in service_list:
+                                    vals_to_create_value_by_product.append({
+                                        "name": name,
+                                        "value": price,
+                                        "ozon_products_id": product_id
+                                    })
+                            else:
+                                vals_to_create_value_by_product.append({
+                                    "name": row["name"],
+                                    "value": amount,
+                                    "ozon_products_id": product_id
+                                })
+
+                else:
+                    if row['name'] in [
+                        'Услуги продвижения товаров',
+                        'Услуга размещения товаров на складе',
+                        'Приобретение отзывов на платформе',
+                        'Обработка отправления «Pick-up» (отгрузка курьеру)',
+                        'Начисления по претензиям',
+                        'Начисление по спору',
+                    ]:
+                        vals_to_create_value_by_product.append({
+                            "name": row["name"],
+                            "value": row["amount"]
+                        })
+                    else:
+                        logger.warning(f"posting_number: {posting_number}")
+                        logger.warning(row["name"])
+                        logger.warning("Импорт транзакций: не найдено отправление")
+
+                ozon_products = []
+                ozon_products_ids = []
+                skus = ast.literal_eval(row["product_skus"])
+                for sku in skus:
+                    if ozon_product := self.is_ozon_product_exists_by_sku(sku):
+                        ozon_products.append(ozon_product)
+                        ozon_products_ids.append(ozon_product.id)
+
+                # TODO: как быть с транзакциями, где указанных sku нет в нашей системе?
+                # или напр. в транзакции 2 sku, один из них есть у нас, другого нет.
+                # if len(skus) != len(ozon_products):
+                #     print(f"{i} -")
+                #     continue
+
                 tran_data = {
                     "transaction_id": str(row["transaction_id"]),
                     "transaction_date": row["transaction_date"],
@@ -322,6 +412,7 @@ class ImportFile(models.Model):
                     "products": ozon_products_ids,
                     "services": ozon_services,
                     "posting_number": row["posting_number"],
+                    "ozon_transaction_value_by_product_ids": [(0, 0, vals) for vals in vals_to_create_value_by_product]
                 }
                 transactions_data.append(tran_data)
 
@@ -568,6 +659,7 @@ class ImportFile(models.Model):
                         "in_process_at": row["in_process_at"],
                         "trading_scheme": row["trading_scheme"],
                         "order_id": row["order_id"],
+                        "order_number": row["order_number"],
                         "status": status,
                         "product_ids": product_ids,
                         "skus": skus,

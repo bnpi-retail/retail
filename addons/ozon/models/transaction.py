@@ -49,6 +49,8 @@ class Transactions(models.Model):
     transaction_unit_ids = fields.One2many("ozon.transaction_unit", "transaction_id", 
                                            string="Составляющие транзакции")
 
+    ozon_transaction_value_by_product_ids = fields.One2many("ozon.transaction.value_by_product", "transaction_id")
+
     def get_transactions_by_name_products_and_period(self, data):
         domain = []
         if name := data.get("name"):
@@ -183,3 +185,32 @@ class TransactionUnitSummary(models.Model):
              "indirect_percent_expenses_id": report.id}
              for i in grouped_tran_units]
         return data
+
+
+class TransactionValueByProduct(models.Model):
+    _name = "ozon.transaction.value_by_product"
+    _description = "Часть данных транзакции по продукту"
+
+    transaction_id = fields.Many2one("ozon.transaction", string="Транзакция")
+    transaction_date = fields.Date(related="transaction_id.transaction_date", store=True)
+    transaction_name = fields.Char(related="transaction_id.name", store=True)
+    transaction_type = fields.Char(related="transaction_id.transaction_type", store=True)
+    name = fields.Char(string="Название")
+    category = fields.Char(string="Категория", compute="_compute_category", store=True)
+    value = fields.Float(string="Значение")
+
+    ozon_products_id = fields.Many2one(
+        "ozon.products",
+        string="Товар",
+        readonly=True,
+    )
+
+    @api.depends("name")
+    def _compute_category(self):
+        for r in self:
+            if r.name in ["логистика", "последняя миля", "обработка отправления",
+                          "Обработка отправления «Pick-up» (отгрузка курьеру)",
+                          "Услуги доставки Партнерами Ozon на схеме realFBS"]:
+                r.category = "Обработка и доставка"
+            else:
+                r.category = r.name
