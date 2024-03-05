@@ -301,3 +301,52 @@ class PriceComparison(models.Model):
             data.extend(self.collect_product_data(prod, **kwargs))
             print(f"{i} - price_comparison_ids were updated")
         self.create(data)
+
+    
+    def update_plan_column_for_product(self, product):
+        pcm = self.env["ozon.price_component"]
+        # Цена для покупателя
+        buyer_price = product._price_comparison("buyer_price")
+        buyer_price.write({"plan_value": 0})
+        # Ваша цена
+        your_price = product._price_comparison("your_price")
+        your_price.write({"plan_value": self.env["ozon.base_calculation"].calculate_plan_price(product)})
+        total_expenses_sum = 0
+        # Fix
+        for pc_identifier in ["cost", "logistics", "processing", "return_logistics", 
+                              "company_processing_and_storage", "company_packaging", 
+                              "company_marketing", "company_operators"]:
+            price_comparison = product._price_comparison(pc_identifier)
+            plan_value = product._base_calculation(pc_identifier).value
+            price_comparison.write({"plan_value": plan_value})
+            total_expenses_sum += plan_value
+        # Percent
+        for pc_identifier in ["last_mile", "acquiring", "ozon_reward", "promo", "tax"]:
+            price_comparison = product._price_comparison(pc_identifier)
+            percent = product._base_calculation(pc_identifier).value / 100
+            plan_value = your_price.plan_value * percent
+            price_comparison.write({"plan_value": plan_value})
+            total_expenses_sum += plan_value
+        ### Показатели
+        # Сумма расходов
+        total_expenses = product._price_comparison("total_expenses")
+        total_expenses.write({"plan_value": total_expenses_sum})
+        # Прибыль
+        profit = product._price_comparison("profit")
+        profit.write({"plan_value": your_price.plan_value - total_expenses_sum})
+        # ROS (доходность, рентабельность продаж)
+        ros = product._price_comparison("ros")
+        ros.write({"plan_value": profit.plan_value / your_price.plan_value})
+        # Наценка
+        margin = product._price_comparison("margin")
+        cost = product._price_comparison("cost")
+        margin.write({"plan_value": your_price.plan_value - cost.plan_value})
+        # Процент наценки
+        margin_percent = product._price_comparison("margin_percent")
+        plan_value = cost.plan_value and margin.plan_value / cost.plan_value or 0
+        margin_percent.write({"plan_value": plan_value})
+        pc = pcm.get("margin_percent")
+        # ROE (рентабельность инвестиций)
+        roe = product._price_comparison("roe")
+        plan_value = cost.plan_value and profit.plan_value / cost.plan_value or 0
+        roe.write({"plan_value": plan_value})

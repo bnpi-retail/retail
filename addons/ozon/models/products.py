@@ -397,9 +397,9 @@ class Product(models.Model):
     base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Плановая цена")
     logistics_tariff_id = fields.Many2one("ozon.logistics_tariff", 
                                           string="Тариф логистики в плановом расчёте")
-    plan_calc_datetime = fields.Datetime(string="Время расчёта (План)")
-    market_calc_datetime = fields.Datetime(string="Время расчёта (Рынок)")
-    fact_calc_datetime = fields.Datetime(string="Время расчёта (Факт)")
+    plan_calc_datetime = fields.Datetime(string="Дата расчёта (План)", readonly=True)
+    market_calc_datetime = fields.Datetime(string="Дата расчёта (Рынок)", readonly=True)
+    fact_calc_datetime = fields.Datetime(string="Дата расчёта (Факт)", readonly=True)
 
     @api.onchange('use_avg_value_of_current_product')
     def _onchange_use_avg_value_of_current_product(self):
@@ -1983,11 +1983,21 @@ class Product(models.Model):
         for r in self:
             r.calculator_delta = (r.expected_price 
                                   - sum(r.all_expenses_except_roi_roe_ids.mapped("expected_value")))
+    
+    def _price_comparison(self, identifier):
+        return self.price_comparison_ids.filtered(
+            lambda r: r.price_component_id.identifier == identifier)
 
+    def _base_calculation(self, identifier):
+        return self.base_calculation_ids.filtered(
+            lambda r: r.price_component_id.identifier == identifier)
+    
     def calculate_price_comparison_ids(self):
         self.env["ozon.base_calculation"].fill_if_not_exists(self)
         calc_price = self.price_comparison_ids.filtered(lambda r: r.name == "Ваша цена").calc_value
-        self.env["ozon.price_comparison"].update_for_products(self, calc_price=calc_price)
+        # self.env["ozon.price_comparison"].update_for_products(self, calc_price=calc_price)
+        self.env["ozon.price_comparison"].update_plan_column_for_product(self)
+        self.plan_calc_datetime = fields.Datetime.now()
     
     def reset_base_calculation_ids(self):
         self.env["ozon.base_calculation"].reset_for_products(self)
