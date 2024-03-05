@@ -438,67 +438,10 @@ class Product(models.Model):
 
         # returns
         vals_to_write.append(
-            self.calculate_returns_vals_for_period(
+            self.calculate_return_logistics(
                 revenue=revenue,
                 total_revenue=total_revenue,
-                transaction_name='Получение возврата: Вознаграждение за продажу',
                 identifier=3
-            )
-        )
-        # vals_to_write.append(
-        #     self.calculate_returns_vals_for_period(
-        #         revenue=revenue,
-        #         total_revenue=total_revenue,
-        #         transaction_name='логистика',
-        #         identifier=4
-        #     )
-        # )
-        vals_to_write.append(
-            self.calculate_returns_vals_for_period(
-                revenue=revenue,
-                total_revenue=total_revenue,
-                transaction_name='обратная логистика',
-                identifier=4
-            )
-        )
-        vals_to_write.append(
-            self.calculate_returns_vals_for_period(
-                revenue=revenue,
-                total_revenue=total_revenue,
-                transaction_name='обратная магистраль',
-                identifier=5
-            )
-        )
-        vals_to_write.append(
-            self.calculate_returns_vals_for_period(
-                revenue=revenue,
-                total_revenue=total_revenue,
-                transaction_name='обработка возврата',
-                identifier=6
-            )
-        )
-        vals_to_write.append(
-            self.calculate_returns_vals_for_period(
-                revenue=revenue,
-                total_revenue=total_revenue,
-                transaction_name='MarketplaceServiceItemRedistributionReturnsPVZ',
-                identifier=7
-            )
-        )
-        vals_to_write.append(
-            self.calculate_returns_vals_for_period(
-                revenue=revenue,
-                total_revenue=total_revenue,
-                transaction_name='обработка невыкупа',
-                identifier=8
-            )
-        )
-        vals_to_write.append(
-            self.calculate_returns_vals_for_period(
-                revenue=revenue,
-                total_revenue=total_revenue,
-                transaction_name='обработка отмен',
-                identifier=9
             )
         )
 
@@ -629,28 +572,40 @@ class Product(models.Model):
 
         return accuracy
 
-    def calculate_returns_vals_for_period(
-            self, revenue: float, total_revenue: float, transaction_name: str, identifier: int) -> dict:
+    def calculate_return_logistics(
+            self, revenue: float, total_revenue: float, identifier: int) -> dict:
 
-        res = self._get_sum_value_and_qty_from_transaction_value_by_product(transaction_name)
-        total_returns_amount_services, returns_qty = res
+        ozon_price_component_id = self.env["ozon.price_component"].search([('name', '=', 'Обратная логистика')]).id
+        if not ozon_price_component_id:
+            raise UserError("Создайте справочник фактических и плановых статей затрат в Планировании"
+                            " в котором плановым будет запись 'Обратная логистика'")
+        ozon_price_component_match = self.env["ozon.price_component_match"].search([
+            ('price_component_id', '=', ozon_price_component_id)
+        ])
+        total_returns_amount_services = 0
+        returns_qty = 0
+        total_returns_expenses = 0
+        for record in ozon_price_component_match:
+            res = self._get_sum_value_and_qty_from_transaction_value_by_product(record.name)
+            total_returns_amount_services += res[0]
+            returns_qty += res[1]
+
+            total_returns_expenses += self.calc_total_sum(record.name)
 
         percent = (abs(total_returns_amount_services) * 100) / revenue if revenue else 0
-        total_returns_expenses = self.calc_total_sum(transaction_name)
         percent_from_total = (abs(total_returns_expenses) * 100) / total_revenue if total_revenue else 0
         vals = {
             'identifier': identifier,
             'ozon_products_id': self.id,
-            'name': f'{transaction_name}',
+            'name': 'Обратная логистика',
             'comment': 'Расходы на услуги Озон в транзакциях возвратов и отмен за период. '
-                       f'Для каждой транзакции типа "{transaction_name}" за искомый период '
+                       f'Для каждой транзакции типа "Обратная логистика" за искомый период '
                        'в которой присутствует текущий продукт, суммируется значение поля "Сумма услуги" '
                        'для всех записей поля "Дополнительные услуги Озон". Полученная сумма '
                        'делится на количество товаров в транзакции и умножается на количство '
                        'текущего товара в транзакци. Затем полученные значения для всех транзакций суммируются.\n'
                        'Расходы = SUM(SUM(Сумма за Доп услуги) / К-во товаров транзакции) * К-во текущего товара в '
-                       'транзакции)\n'
-                       f'Количество транзакций: {returns_qty}',
+                       'транзакции)\n',
             'value': total_returns_amount_services,
             'qty': returns_qty,
             'percent': percent,
