@@ -480,16 +480,10 @@ class Product(models.Model):
             'identifier': 1,
             'ozon_products_id': self.id,
             'name': 'Выручка за период',
-            'comment': f'Рассчитывается сложением значений поля "Стоимость товаров с учётом скидок продавца" '
-                       f'транзакций с именем "Доставка покупателю" за искомый период, '
-                       f'в которых присутствует текущий продукт.\nЕсли текущий продукт единственный для '
-                       f'транзакции - прибавляется полное значение поля. Если в транзакции несколько '
-                       f'продуктов, прибавляемое значение высчитывается как '
-                       f'(Цена текущего продукта на день продажи * Сумма транзакции) / '
-                       f'Сумма цен продуктов транзакции на день продажи.\n'
-                       f'Если текущий продукт в транзакции имеет количество более одного, '
-                       f'значение, полученное по формуле выше, умножается на это количество'
-                       f'Количество транзакций продаж: {sales_qty}',
+            'comment': 'Рассчитывается сложением значений поля "Значение" в записях в меню '
+                       '"Выплаты с разбитием на услуги по продукту" '
+                       'за искомый период, соответствующих текущему продукту и названием '
+                       '"Сумма за заказы".',
             'qty': sales_qty,
             'percent': 100,
             'value': revenue,
@@ -588,13 +582,17 @@ class Product(models.Model):
         total_returns_amount_services = 0
         returns_qty = 0
         total_returns_expenses = 0
+        components = []
         for record in ozon_price_component_match:
-            res = self._get_sum_value_and_qty_from_transaction_value_by_product(record.name)
+            name = record.name
+            res = self._get_sum_value_and_qty_from_transaction_value_by_product(name)
             total_returns_amount_services += res[0]
             returns_qty += res[1]
+            components.append(f"{name}: количество- {res[1]}, значение-{res[0]}\n")
 
-            total_returns_expenses += self.calc_total_sum(record.name)
+            total_returns_expenses += self.calc_total_sum(name)
 
+        components = ''.join(components)
         percent = (abs(total_returns_amount_services) * 100) / revenue if revenue else 0
         percent_from_total = (abs(total_returns_expenses) * 100) / total_revenue if total_revenue else 0
         vals = {
@@ -602,13 +600,12 @@ class Product(models.Model):
             'ozon_products_id': self.id,
             'name': 'Обратная логистика',
             'comment': 'Расходы на услуги Озон в транзакциях возвратов и отмен за период. '
-                       f'Для каждой транзакции типа "Обратная логистика" за искомый период '
-                       'в которой присутствует текущий продукт, суммируется значение поля "Сумма услуги" '
-                       'для всех записей поля "Дополнительные услуги Озон". Полученная сумма '
-                       'делится на количество товаров в транзакции и умножается на количство '
-                       'текущего товара в транзакци. Затем полученные значения для всех транзакций суммируются.\n'
-                       'Расходы = SUM(SUM(Сумма за Доп услуги) / К-во товаров транзакции) * К-во текущего товара в '
-                       'транзакции)\n',
+                       'Рассчитывается суммированием значений "Выплаты с разбитием на услуги по продукту" '
+                       'с названиями указанными в поле "Фактическая статья затрат Ozon" напротив '
+                       'которых указано значение "Обратная логистика" '
+                       '(в меню Планирование > Фактические/плановые статьи). '
+                       'Суммируются "Выплаты с разбитием на услуги по продукту" соответствующие искомогу периоду и '
+                       f'текущему продукту\n\n {components}',
             'value': total_returns_amount_services,
             'qty': returns_qty,
             'percent': percent,
