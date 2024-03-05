@@ -45,6 +45,7 @@
                         <field name="ozon_transaction_value_by_product_ids">
                             <tree>
                                 <field name="name" />
+                                <field name="ozon_products_id" />
                                 <field name="value" sum="1"/>
                             </tree>
                         </field>
@@ -93,6 +94,7 @@
                     <field name="transaction_name" />
                     <field name="transaction_type" />
                     <field name="category" />
+                    <field name="ozon_products_id" />
                     <field name="name" />
                     <field name="value" />
                 </tree>

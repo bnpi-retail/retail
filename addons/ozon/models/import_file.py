@@ -408,6 +408,7 @@ class ImportFile(models.Model):
                         'Обработка отправления «Pick-up» (отгрузка курьеру)',
                         'Начисления по претензиям',
                         'Начисление по спору',
+                        'Утилизация',
                     ]:
                         vals_to_create_value_by_product.append({
                             "name": row["name"],
