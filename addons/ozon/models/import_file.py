@@ -288,14 +288,11 @@ class ImportFile(models.Model):
                     continue
 
                 # services
-                ozon_services = []
                 service_list = ast.literal_eval(row["services"])
                 services_cost = 0
+                services_vals_to_create = []
                 for name, price in service_list:
-                    service = self.env["ozon.ozon_services"].create(
-                        {"name": name, "price": price}
-                    )
-                    ozon_services.append(service.id)
+                    services_vals_to_create.append({"name": name, "price": price})
                     services_cost += price
 
                 # posting
@@ -308,23 +305,43 @@ class ImportFile(models.Model):
                         ('order_number', '=', posting_number)
                     ], order='create_date desc', limit=1)
 
-                logger.warning(posting)
-
                 vals_to_create_value_by_product = []
+                by_volume = {
+                    'логистика',
+                    'магистраль',
+                    'обратная логистика',
+                    'обратная магистраль',
+                    'обработка невыкупа',
+                    'обработка отмен',
+                    'обработка возврата',
+                    'MarketplaceServiceItemRedistributionReturnsPVZ',
+                    'сборка заказа',
+                    'обработка отправления'
+                }
+                by_price = {
+                    'последняя миля',
+                }
                 if posting:
-                    tran_accruals_for_sale = \
-                        float(row["accruals_for_sale"]) if float(row["accruals_for_sale"]) else 0.0001
+                    tran_accruals_for_sale = float(row["accruals_for_sale"])
                     tran_sale_commission = float(row["sale_commission"])
                     tran_amount = float(row["amount"])
                     posting_products = posting.posting_product_ids
+                    products_t_volume = sum(product.ozon_products_id.products.volume for product in posting_products)
+                    products_t_price = sum(product.price * product.quantity for product in posting_products)
                     for product in posting_products:
                         qty = product.quantity
                         product_price = product.price
                         product_id = product.ozon_products_id.id
+                        product_volume = product.ozon_products_id.products.volume
                         for _ in range(qty):
-                            accruals_for_sale = product_price
-                            sale_commission = (product_price * tran_sale_commission) / tran_accruals_for_sale
-                            amount = (product_price * tran_amount) / tran_accruals_for_sale
+                            if tran_accruals_for_sale:
+                                sale_commission = (product_price * tran_sale_commission) / tran_accruals_for_sale
+                                amount = (product_price * tran_amount) / tran_accruals_for_sale
+                            else:
+                                tran_accruals_for_sale = products_t_price
+                                sale_commission = (product_price * tran_sale_commission) / tran_accruals_for_sale
+                                amount = (product_price * tran_amount) / tran_accruals_for_sale
+
                             if row['name'] in [
                                 "Доставка покупателю",
                                 "Получение возврата, отмены, невыкупа от покупателя"
@@ -332,7 +349,7 @@ class ImportFile(models.Model):
                                 vals_to_create_value_by_product.extend([
                                     {
                                         "name": "Сумма за заказы",
-                                        "value": accruals_for_sale,
+                                        "value": product_price,
                                         "ozon_products_id": product_id
                                     },
                                     {
@@ -346,21 +363,37 @@ class ImportFile(models.Model):
                                         "ozon_products_id": product_id
                                     }
                                 ])
+                                # {'обработка отправления', 'сборка заказа',
+                                # 'последняя миля', 'логистика', 'магистраль'}
                                 for name, price in service_list:
+                                    if name in by_volume:
+                                        service_amount = (product_volume * price) / products_t_volume
+                                    else:
+                                        service_amount = (product_price * price) / tran_accruals_for_sale
                                     vals_to_create_value_by_product.append({
                                         "name": name,
-                                        "value": price,
+                                        "value": service_amount,
                                         "ozon_products_id": product_id
                                     })
-                            elif row['name'] in ["Доставка и обработка возврата, отмены, невыкупа",
-                                              "Доставка покупателю — отмена начисления"]:
+                            elif row['name'] in [
+                                "Доставка и обработка возврата, отмены, невыкупа",
+                                "Доставка покупателю — отмена начисления"
+                            ]:
+                                # {'обработка невыкупа', 'обработка отмен', 'обработка возврата',
+                                # 'MarketplaceServiceItemRedistributionReturnsPVZ', 'последняя миля',
+                                # 'логистика', 'обратная логистика', 'обратная магистраль', 'магистраль'}
                                 for name, price in service_list:
+                                    if name in by_volume:
+                                        service_amount = (product_volume * price) / products_t_volume
+                                    else:
+                                        service_amount = (product_price * price) / tran_accruals_for_sale
                                     vals_to_create_value_by_product.append({
                                         "name": name,
-                                        "value": price,
+                                        "value": service_amount,
                                         "ozon_products_id": product_id
                                     })
                             else:
+                                # оплата эквайринга, услуга продвижения «Бонусы продавца»,
                                 vals_to_create_value_by_product.append({
                                     "name": row["name"],
                                     "value": amount,
@@ -410,7 +443,7 @@ class ImportFile(models.Model):
                     "amount": row["amount"],
                     "skus": skus,
                     "products": ozon_products_ids,
-                    "services": ozon_services,
+                    "services": [(0, 0, vals) for vals in services_vals_to_create],
                     "posting_number": row["posting_number"],
                     "ozon_transaction_value_by_product_ids": [(0, 0, vals) for vals in vals_to_create_value_by_product]
                 }
