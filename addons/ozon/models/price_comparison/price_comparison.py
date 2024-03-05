@@ -358,42 +358,8 @@ class PriceComparison(models.Model):
         # Ваша цена
         your_price = product._price_comparison("your_price")
         your_price.write({"fact_value": product.price})
-        cost_price = product.retail_product_total_cost_price
-        expenses = product.all_expenses_except_roi_roe_ids
-        used = {}
-        for i in expenses.filtered(lambda r: r.category != "Расходы компании"):
-            if i.category == "Unknown" or used.get(i.category):
-                continue
-            total = sum(product.all_expenses_ids.filtered(
-                lambda r: r.category == i.category).mapped("value"))
-            pc_identifier = NAME_IDENTIFIER[i.category]
-            price_comparison = product._price_comparison(pc_identifier)
-            price_comparison.write({"fact_value": total})
-            used.update({i.category: True})
-        for i in expenses.filtered(lambda r: r.category == "Расходы компании"):
-            pc_identifier = NAME_IDENTIFIER[i.name]
-            price_comparison = product._price_comparison(pc_identifier)
-            price_comparison.write({"fact_value": i.value})
-        ### Показатели
-        # Сумма расходов
-        total_expenses = product._price_comparison("total_expenses")
-        total_expenses.write({"fact_value": sum(
-            expenses.filtered(lambda r: r.category != "Unknown").mapped("value"))})
-        # Прибыль
-        profit = product._price_comparison("profit")
-        profit.write({"fact_value": your_price.fact_value - total_expenses.fact_value})
-        # ROS (доходность, рентабельность продаж)
-        ros = product._price_comparison("ros")
-        ros.write({"fact_value": your_price.fact_value and profit.fact_value / your_price.fact_value})
-        # Наценка
-        margin = product._price_comparison("margin")
-        margin.write({"fact_value": your_price.fact_value - cost_price})
-        # Процент наценки
-        margin_percent = product._price_comparison("margin")
-        margin_percent.write({"fact_value": cost_price and margin.fact_value / cost_price})
-        # ROE (рентабельность инвестиций)
-        roe = product._price_comparison("roe")
-        roe.write({"fact_value": cost_price and profit.fact_value / cost_price})
+        self.write_price_comparison_expenses_for_column(product, "fact_value")
+        self.write_price_comparison_indicators_for_column(product, "fact_value")
     
     def update_market_column_for_product(self, product):
         # Цена для покупателя
@@ -408,69 +374,83 @@ class PriceComparison(models.Model):
         your_price = product._price_comparison("your_price")
         yp = buyer_price.market_value / (1 - product.category_marketing_discount)
         your_price.write({"market_value": yp})
-        ### Расходы Ozon
-        # Себестоимость
-        cost_price = product.retail_product_total_cost_price
-        cost = product._price_comparison("cost")
-        cost.write({"market_value": cost_price})
-        # Логистика
-        logistics = product._price_comparison("logistics")
-        logistics.write({"market_value": sum(product._logistics.mapped("value"))})
-        # Последняя миля
-        last_mile = product._price_comparison("last_mile")
-        percent = product._last_mile.percent
-        last_mile.write({"market_value": yp * percent})
-        # Эквайринг
-        acquiring = product._price_comparison("acquiring")
-        percent = product._acquiring.percent
-        acquiring.write({"market_value": yp * percent})
-        # Вознаграждение Ozon (комиссия Ozon)
-        ozon_reward = product._price_comparison("ozon_reward")
-        percent = sum(product._ozon_reward.mapped("percent"))
-        ozon_reward.write({"market_value": yp * percent})
-        # Реклама
-        promo = product._price_comparison("promo")
-        percent = product._promo.percent
-        promo.write({"market_value": yp * percent})
-        # Обработка
-        processing = product._price_comparison("processing")
-        processing.write({"market_value": sum(product._processing.mapped("value"))})
-        # Обратная логистика
-        return_logistics = product._price_comparison("return_logistics")
-        return_logistics.write({"market_value": sum(product._return_logistics.mapped("value"))})
-        ### Расходы компании
-        for i in product.all_expenses_ids.filtered(lambda r: r.category == "Расходы компании"):
-            pc_identifier = NAME_IDENTIFIER[i.name]
-            price_comparison = product._price_comparison(pc_identifier)
-            price_comparison.write({"market_value": i.value})
-        # Налог
-        tax = product._price_comparison("tax")
-        percent = product._tax.percent
-        tax.write({"market_value": yp * percent})
-        ### Показатели
-        # Сумма расходов
-        total_expenses = product._price_comparison("total_expenses")
-        total_expenses_sum = self.get_column_expenses_sum(product, "market_value")
-        total_expenses.write({"market_value": total_expenses_sum})
-        # Прибыль
-        profit = product._price_comparison("profit")
-        profit.write({"market_value": yp - total_expenses_sum})
-        # ROS (доходность, рентабельность продаж)
-        ros = product._price_comparison("ros")
-        ros.write(
-            {"market_value": yp and profit.market_value / yp})
-        # Наценка
-        margin = product._price_comparison("margin")
-        margin.write({"market_value": yp - cost_price})
-        # Процент наценки
-        margin_percent = product._price_comparison("margin_percent")
-        margin_percent.write({"market_value": cost_price and margin.market_value / cost_price})
-        # ROE (рентабельность инвестиций)
-        roe = product._price_comparison("roe")
-        roe.write({"market_value": cost_price and profit.market_value / cost_price})
-        
+        self.write_price_comparison_expenses_for_column(product, "market_value")
+        self.write_price_comparison_indicators_for_column(product, "market_value")
+    
+    def update_calc_column_for_product(self, product):
+        self.write_price_comparison_expenses_for_column(product, "calc_value")
+        self.write_price_comparison_indicators_for_column(product, "calc_value")
     
     def get_column_expenses_sum(self, product, column):
         pc_identifiers = [i for i in BASE_CALCULATION_COMPONENTS if i != "roe"]
         return sum(product.price_comparison_ids.filtered(
             lambda r: r.price_component_id.identifier in pc_identifiers).mapped(column))
+
+
+    def write_price_comparison_expenses_for_column(self, product, column):
+        price = product._price_comparison("your_price")[column]
+        ### Расходы Ozon
+        # Себестоимость
+        cost_price = product.retail_product_total_cost_price
+        cost = product._price_comparison("cost")
+        cost.write({column: cost_price})
+        # Логистика
+        logistics = product._price_comparison("logistics")
+        logistics.write({column: sum(product._logistics.mapped("value"))})
+        # Последняя миля
+        last_mile = product._price_comparison("last_mile")
+        percent = product._last_mile.percent
+        last_mile.write({column: price * percent})
+        # Эквайринг
+        acquiring = product._price_comparison("acquiring")
+        percent = product._acquiring.percent
+        acquiring.write({column: price * percent})
+        # Вознаграждение Ozon (комиссия Ozon)
+        ozon_reward = product._price_comparison("ozon_reward")
+        percent = sum(product._ozon_reward.mapped("percent"))
+        ozon_reward.write({column: price * percent})
+        # Реклама
+        promo = product._price_comparison("promo")
+        percent = product._promo.percent
+        promo.write({column: price * percent})
+        # Обработка
+        processing = product._price_comparison("processing")
+        processing.write({column: sum(product._processing.mapped("value"))})
+        # Обратная логистика
+        return_logistics = product._price_comparison("return_logistics")
+        return_logistics.write({column: sum(product._return_logistics.mapped("value"))})
+        ### Расходы компании
+        for i in product.all_expenses_ids.filtered(lambda r: r.category == "Расходы компании"):
+            pc_identifier = NAME_IDENTIFIER[i.name]
+            price_comparison = product._price_comparison(pc_identifier)
+            price_comparison.write({column: i.value})
+        # Налог
+        tax = product._price_comparison("tax")
+        percent = product._tax.percent
+        tax.write({column: price * percent})
+
+    def write_price_comparison_indicators_for_column(self, product, column):
+        price = product._price_comparison("your_price")[column]
+        cost_price = product.retail_product_total_cost_price
+        # Показатели
+        # Сумма расходов
+        total_expenses = product._price_comparison("total_expenses")
+        total_expenses_sum = self.get_column_expenses_sum(product, column)
+        total_expenses.write({column: total_expenses_sum})
+        # Прибыль
+        profit = product._price_comparison("profit")
+        profit_val = price - total_expenses_sum
+        profit.write({column: profit_val})
+        # ROS (доходность, рентабельность продаж)
+        ros = product._price_comparison("ros")
+        ros.write({column: price and profit_val / price})
+        # Наценка
+        margin = product._price_comparison("margin")
+        margin_val = price - cost_price
+        margin.write({column: margin_val})
+        # Процент наценки
+        margin_percent = product._price_comparison("margin_percent")
+        margin_percent.write({column: cost_price and margin_val / cost_price})
+        # ROE (рентабельность инвестиций)
+        roe = product._price_comparison("roe")
+        roe.write({column: cost_price and profit_val / cost_price})
