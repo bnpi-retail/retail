@@ -385,10 +385,14 @@ class Product(models.Model):
     period_preset = fields.Selection([
         ('month', '1 месяц'), ('2month', '2 месяца'), ('3month', '3 месяца')
     ])
-    use_avg_value_of_current_product = fields.Boolean(string="Использовать средние значения по товару "
-                                                             "для расчета фактических статей затрат")
-    use_avg_value_of_all_products = fields.Boolean(string="Использовать средние значения по магазину "
-                                                          "для расчета фактических статей затрат", default=True)
+    avg_value_to_use = fields.Selection(
+        [
+            ('all_products', 'Использовать средние значения по магазину'),
+            ('current_product', 'Использовать средние значения по товару'),
+        ],
+        default='all_products',
+        string="Значения для расчета фактических статей затрат",
+    )
     is_promotion_data_correct = fields.Boolean()
     # ----------------
 
@@ -397,22 +401,6 @@ class Product(models.Model):
     base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Плановая цена")
     logistics_tariff_id = fields.Many2one("ozon.logistics_tariff", 
                                           string="Тариф логистики в плановом расчёте")
-
-    @api.onchange('use_avg_value_of_current_product')
-    def _onchange_use_avg_value_of_current_product(self):
-        if self.use_avg_value_of_current_product:
-            self.use_avg_value_of_all_products = False
-
-        elif not self.use_avg_value_of_current_product:
-            self.use_avg_value_of_all_products = True
-
-    @api.onchange('use_avg_value_of_all_products')
-    def _onchange_use_avg_value_of_all_products(self):
-        if self.use_avg_value_of_all_products:
-            self.use_avg_value_of_current_product = False
-
-        elif not self.use_avg_value_of_all_products:
-            self.use_avg_value_of_current_product = True
 
     @api.onchange('period_preset')
     def _onchange_period_preset(self):
@@ -495,6 +483,22 @@ class Product(models.Model):
                 total_revenue=total_revenue,
                 transaction_name='MarketplaceServiceItemRedistributionReturnsPVZ',
                 identifier=7
+            )
+        )
+        vals_to_write.append(
+            self.calculate_returns_vals_for_period(
+                revenue=revenue,
+                total_revenue=total_revenue,
+                transaction_name='обработка невыкупа',
+                identifier=8
+            )
+        )
+        vals_to_write.append(
+            self.calculate_returns_vals_for_period(
+                revenue=revenue,
+                total_revenue=total_revenue,
+                transaction_name='обработка отмен',
+                identifier=9
             )
         )
 
