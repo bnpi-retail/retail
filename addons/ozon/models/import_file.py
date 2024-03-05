@@ -283,7 +283,7 @@ class ImportFile(models.Model):
             for i, row in enumerate(reader):
                 imported_days_data[row["transaction_date"]] += 1
                 if all_transactions.get(row["transaction_id"]):
-                    print(f"{i} - Transaction already exists")
+                    logger.warning(f"{i} - Transaction already exists")
                     continue
 
                 # services
@@ -375,7 +375,7 @@ class ImportFile(models.Model):
                                         "value": service_amount,
                                         "ozon_products_id": product_id
                                     })
-                            if row['name'] in [
+                            elif row['name'] in [
                                 "Получение возврата, отмены, невыкупа от покупателя"
                             ]:
                                 vals_to_create_value_by_product.extend([

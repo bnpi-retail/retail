@@ -385,10 +385,14 @@ class Product(models.Model):
     period_preset = fields.Selection([
         ('month', '1 месяц'), ('2month', '2 месяца'), ('3month', '3 месяца')
     ])
-    use_avg_value_of_current_product = fields.Boolean(string="Использовать средние значения по товару "
-                                                             "для расчета фактических статей затрат")
-    use_avg_value_of_all_products = fields.Boolean(string="Использовать средние значения по магазину "
-                                                          "для расчета фактических статей затрат", default=True)
+    avg_value_to_use = fields.Selection(
+        [
+            ('all_products', 'Использовать средние значения по магазину'),
+            ('current_product', 'Использовать средние значения по товару'),
+        ],
+        default='all_products',
+        string="Значения для расчета фактических статей затрат",
+    )
     is_promotion_data_correct = fields.Boolean()
     # ----------------
 
@@ -400,22 +404,6 @@ class Product(models.Model):
     plan_calc_datetime = fields.Datetime(string="Дата расчёта (План)", readonly=True)
     market_calc_datetime = fields.Datetime(string="Дата расчёта (Рынок)", readonly=True)
     fact_calc_datetime = fields.Datetime(string="Дата расчёта (Факт)", readonly=True)
-
-    @api.onchange('use_avg_value_of_current_product')
-    def _onchange_use_avg_value_of_current_product(self):
-        if self.use_avg_value_of_current_product:
-            self.use_avg_value_of_all_products = False
-
-        elif not self.use_avg_value_of_current_product:
-            self.use_avg_value_of_all_products = True
-
-    @api.onchange('use_avg_value_of_all_products')
-    def _onchange_use_avg_value_of_all_products(self):
-        if self.use_avg_value_of_all_products:
-            self.use_avg_value_of_current_product = False
-
-        elif not self.use_avg_value_of_all_products:
-            self.use_avg_value_of_current_product = True
 
     @api.onchange('period_preset')
     def _onchange_period_preset(self):
@@ -453,70 +441,98 @@ class Product(models.Model):
 
         # returns
         vals_to_write.append(
-            *self.calculate_returns_vals_for_period(
+            self.calculate_returns_vals_for_period(
                 revenue=revenue,
                 total_revenue=total_revenue,
-                transaction_name='Доставка и обработка возврата, отмены, невыкупа',
+                transaction_name='Получение возврата: Вознаграждение за продажу',
                 identifier=3
             )
         )
+        # vals_to_write.append(
+        #     self.calculate_returns_vals_for_period(
+        #         revenue=revenue,
+        #         total_revenue=total_revenue,
+        #         transaction_name='логистика',
+        #         identifier=4
+        #     )
+        # )
         vals_to_write.append(
-            *self.calculate_returns_vals_for_period(
+            self.calculate_returns_vals_for_period(
                 revenue=revenue,
                 total_revenue=total_revenue,
-                transaction_name='Получение возврата, отмены, невыкупа от покупателя',
+                transaction_name='обратная логистика',
                 identifier=4
+            )
+        )
+        vals_to_write.append(
+            self.calculate_returns_vals_for_period(
+                revenue=revenue,
+                total_revenue=total_revenue,
+                transaction_name='обратная магистраль',
+                identifier=5
+            )
+        )
+        vals_to_write.append(
+            self.calculate_returns_vals_for_period(
+                revenue=revenue,
+                total_revenue=total_revenue,
+                transaction_name='обработка возврата',
+                identifier=6
+            )
+        )
+        vals_to_write.append(
+            self.calculate_returns_vals_for_period(
+                revenue=revenue,
+                total_revenue=total_revenue,
+                transaction_name='MarketplaceServiceItemRedistributionReturnsPVZ',
+                identifier=7
+            )
+        )
+        vals_to_write.append(
+            self.calculate_returns_vals_for_period(
+                revenue=revenue,
+                total_revenue=total_revenue,
+                transaction_name='обработка невыкупа',
+                identifier=8
+            )
+        )
+        vals_to_write.append(
+            self.calculate_returns_vals_for_period(
+                revenue=revenue,
+                total_revenue=total_revenue,
+                transaction_name='обработка отмен',
+                identifier=9
             )
         )
 
         self.env['ozon.report.products_revenue_expenses'].create(vals_to_write)
 
+    def _get_sum_value_and_qty_from_transaction_value_by_product(self, name: str) -> tuple:
+        query = """
+                SELECT
+                    SUM(value) as sum_value,
+                    COUNT(*) as qty
+                FROM 
+                    ozon_transaction_value_by_product
+                WHERE 
+                    transaction_date >= %s
+                    AND
+                    transaction_date <= %s
+                    AND
+                    ozon_products_id = %s
+                    AND
+                    name = %s
+                """
+        self.env.cr.execute(query, (self.period_start, self.period_finish, self.id, name))
+        sum_value_and_qty = self.env.cr.fetchone()
+        sum_value = sum_value_and_qty[0] if sum_value_and_qty and sum_value_and_qty[0] else 0
+        qty = sum_value_and_qty[1] if sum_value_and_qty else 0
+
+        return sum_value, qty
+
     def calculate_sales_revenue_for_period(self) -> tuple[dict, float, float]:
-        sales_transactions = self.env["ozon.transaction"].search([
-            ('transaction_date', '>=', self.period_start),
-            ('transaction_date', '<=', self.period_finish),
-            ('name', '=', 'Доставка покупателю'),
-        ])
-        revenue = 0
-        sales_qty = 0
-        for trs in sales_transactions:
-            if trs.products and self.id in trs.products.ids:
-                skus: str = trs.skus
-                products, skus = self.get_products_and_skus_from_transaction_skus(skus)
-
-                if products and self in products:
-                    if len(products) == 1:
-                        revenue += trs.accruals_for_sale
-                        sales_qty += 1
-                    else:
-                        logger.warning(products)
-                        products_prices = []
-                        for product in products:
-                            order_date = trs.order_date
-                            price_model = self.env["ozon.price_history"]
-                            previous_price_history = price_model.search([
-                                ('product', '=', product.id),
-                                ('timestamp', '<=', order_date),
-                            ], order="create_date desc", limit=1)
-                            price = previous_price_history.price \
-                                if previous_price_history \
-                                   and previous_price_history.price else product.price
-
-                            products_prices.append((product, price))
-
-                        products_prices_sum = sum(tuple_[1] for tuple_ in products_prices)
-                        accruals_for_sale = trs.accruals_for_sale
-                        if products_prices_sum and accruals_for_sale:
-                            for product, price in products_prices:
-                                if product == self:
-                                    product_revenue = (price * accruals_for_sale) / products_prices_sum
-                                    revenue += product_revenue
-                                    sales_qty += 1
-                                    logger.debug(product_revenue)
-                                    logger.debug(accruals_for_sale)
-                                    logger.debug('-----------------')
-
-        total_revenue = self.calc_total_revenue()
+        revenue, sales_qty = self._get_sum_value_and_qty_from_transaction_value_by_product('Сумма за заказы')
+        total_revenue = self.calc_total_sum('Сумма за заказы')
         return {
             'identifier': 1,
             'ozon_products_id': self.id,
@@ -544,16 +560,19 @@ class Product(models.Model):
             pe.expense for pe in promotion_expenses if self.period_finish >= pe.date >= self.period_start
         ])
         percent = (promotion_expenses_for_period * 100) / revenue if revenue else 0
-        total_promotion_expenses = -self.get_total_promotion_expenses()
+        total_promotion_expenses = self.calc_total_sum('Услуги продвижения товаров')
         percent_from_total = (abs(total_promotion_expenses) * 100) / total_revenue if total_revenue else 0
 
         accuracy = self.calc_accuracy(self.period_start, self.period_finish)
         self.is_promotion_data_correct = True if accuracy == 'a' else False
+        name = 'Расходы на продвижение продукта за период'
+        if accuracy == 'c':
+            name = 'Расходы на продвижение продукта за период*'
 
         return {
             'identifier': 2,
             'ozon_products_id': self.id,
-            'name': 'Расходы на продвижение продукта за период',
+            'name': name,
             'comment': 'Рассчитывается сложением суммы значений поля "Расход" '
                        'затрат на продвижение текущего товара за искомый период.\n',
             'value': -promotion_expenses_for_period,
@@ -614,37 +633,18 @@ class Product(models.Model):
         return accuracy
 
     def calculate_returns_vals_for_period(
-            self, revenue: float, total_revenue: float, transaction_name: str, identifier: int) -> list:
-        vals_to_write = []
-        returns = self.env["ozon.transaction"].search([
-            ('transaction_date', '>=', self.period_start),
-            ('transaction_date', '<=', self.period_finish),
-            ('name', '=', transaction_name),
-        ])
-        total_returns_amount_services = 0
-        returns_qty = 0
-        for return_ in returns:
-            if return_.products and self.id in return_.products.ids:
-                skus: str = return_.skus
-                products, skus = self.get_products_and_skus_from_transaction_skus(skus)
-                qty = products.count(self)
+            self, revenue: float, total_revenue: float, transaction_name: str, identifier: int) -> dict:
 
-                return_amount_services = sum(
-                    return_.services.mapped('price') if return_.services else (0, )
-                )
-                return_amount_for_product = (return_amount_services / len(skus)) * qty
-                total_returns_amount_services += return_amount_for_product
-                returns_qty += qty
+        res = self._get_sum_value_and_qty_from_transaction_value_by_product(transaction_name)
+        total_returns_amount_services, returns_qty = res
 
         percent = (abs(total_returns_amount_services) * 100) / revenue if revenue else 0
-        total_returns_expenses = sum(
-                    sum(trs.services.mapped('price')) for trs in returns if trs.services
-                )
+        total_returns_expenses = self.calc_total_sum(transaction_name)
         percent_from_total = (abs(total_returns_expenses) * 100) / total_revenue if total_revenue else 0
-        vals_to_write.append({
+        vals = {
             'identifier': identifier,
             'ozon_products_id': self.id,
-            'name': f'Расходы на дополнительные услуги Ozon: {transaction_name}',
+            'name': f'{transaction_name}',
             'comment': 'Расходы на услуги Озон в транзакциях возвратов и отмен за период. '
                        f'Для каждой транзакции типа "{transaction_name}" за искомый период '
                        'в которой присутствует текущий продукт, суммируется значение поля "Сумма услуги" '
@@ -659,40 +659,25 @@ class Product(models.Model):
             'percent': percent,
             'percent_from_total': percent_from_total,
             'total_value': total_returns_expenses,
-        })
-        return vals_to_write
+        }
+        return vals
 
-    def calc_total_revenue(self):
+    def calc_total_sum(self, name: str):
         query = """
                 SELECT
-                    SUM(accruals_for_sale) as total_revenue
+                    SUM(value) as total_sum_value
                 FROM 
-                    ozon_transaction
+                    ozon_transaction_value_by_product
                 WHERE 
                     transaction_date >= %s
                     AND
                     transaction_date <= %s
                     AND
-                    name = 'Доставка покупателю'
+                    name = %s
                 """
-        self.env.cr.execute(query, (self.period_start, self.period_finish))
-        total_revenue = self.env.cr.fetchone()
-        return total_revenue[0] if total_revenue else 0
-
-    def get_total_promotion_expenses(self):
-        query = """
-                SELECT
-                    SUM(expense) as total_expense
-                FROM 
-                    ozon_promotion_expenses
-                WHERE 
-                    date >= %s
-                    AND
-                    date <= %s
-                """
-        self.env.cr.execute(query, (self.period_start, self.period_finish))
-        total_revenue = self.env.cr.fetchone()
-        return total_revenue[0] if total_revenue else 0
+        self.env.cr.execute(query, (self.period_start, self.period_finish, name))
+        total_sum_value = self.env.cr.fetchone()
+        return total_sum_value[0] if total_sum_value else 0
 
     def get_products_and_skus_from_transaction_skus(self, skus: str) -> tuple[list, list]:
         products = []
