@@ -102,6 +102,7 @@ class PriceComponent(models.Model):
                 for name, iden in NAME_IDENTIFIER.items()
             ]
         )
+    
 FACT_PLAN_MATCH = {
     "логистика": "logistics",
     "магистраль": "logistics",
