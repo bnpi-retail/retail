@@ -1995,10 +1995,12 @@ class Product(models.Model):
     def calculate_price_comparison_ids(self):
         self.env["ozon.base_calculation"].fill_if_not_exists(self)
         calc_price = self.price_comparison_ids.filtered(lambda r: r.name == "Ваша цена").calc_value
-        # self.env["ozon.price_comparison"].update_for_products(self, calc_price=calc_price)
+        self.env["ozon.price_comparison"].update_for_products(self, calc_price=calc_price)
+    
+    def calculate_price_comparison_ids_plan_column(self):
         self.env["ozon.price_comparison"].update_plan_column_for_product(self)
         self.plan_calc_datetime = fields.Datetime.now()
-    
+
     def reset_base_calculation_ids(self):
         self.env["ozon.base_calculation"].reset_for_products(self)
         self.env["ozon.price_comparison"].update_for_products(self)

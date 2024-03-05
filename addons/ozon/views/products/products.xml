@@ -140,8 +140,7 @@
                                 <group>
                                     <button type="object" name="calculate_price_comparison_ids"
                                         string="Рассчитать"
-                                        class="btn-outline-primary"
-                                    />
+                                        class="btn-outline-primary" />
                                 </group>
                                 <group>
                                     <field name="plan_calc_datetime" />
@@ -168,22 +167,25 @@
                         </page>
                         <page id="page_base_calculation" string="Плановая структура затрат">
                             <group>
-                                <button type="object" name="reset_base_calculation_ids"
-                                    string="Сбросить"
-                                    class="btn-outline-primary"
-                                />
+                                <group>
+                                    <button type="object"
+                                        name="calculate_price_comparison_ids_plan_column"
+                                        string="Рассчитать «План»"
+                                        class="btn-outline-primary" />
+                                </group>
+                                <group>
+                                    <field name="plan_calc_datetime" />
+                                </group>
                             </group>
-                            <group>
-                                <field name="base_calculation_ids">
-                                    <tree editable="1">
-                                        <field name="price_component_id" />
-                                        <field name="kind" />
-                                        <field name="value"
-                                            attrs="{'readonly': [('kind','=','depends_on_volume')]}" />
-                                        <field name="comment" optional="hide" />
-                                    </tree>
-                                </field>
-                            </group>
+                            <field name="base_calculation_ids">
+                                <tree editable="1">
+                                    <field name="price_component_id" />
+                                    <field name="kind" />
+                                    <field name="value"
+                                        attrs="{'readonly': [('kind','=','depends_on_volume')]}" />
+                                    <field name="comment" optional="hide" />
+                                </tree>
+                            </field>
                         </page>
                         <page id="page_price_calculator" string="Фактическая структура затрат">
                             <group>
