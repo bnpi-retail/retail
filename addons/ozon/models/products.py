@@ -1880,13 +1880,15 @@ class Product(models.Model):
 
     def create_mass_pricing_without_dialog(self):
         self.ensure_one()
-        new_price = self.product_calculator_ids.filtered(
-            lambda r: r.name == "Ожидаемая цена по всем стратегиям"
-        ).new_value
+        competitor_pricing_strategy = self.calculated_pricing_strategy_ids.filtered(
+            lambda r: r.pricing_strategy_id.strategy_id == "lower_min_competitor")
+        competitor_pricing_strategy.ensure_one()
+        # new_price = self.product_calculator_ids.filtered(
+        #     lambda r: r.name == "Ожидаемая цена по всем стратегиям"
+        # ).new_value
+        new_price = competitor_pricing_strategy.expected_price
         self.env["ozon.mass_pricing"].create(
-            {"product": self.id, "price": self.price, "new_price": new_price},
-            product=self,
-        )
+            {"product": self.id, "price": self.price, "new_price": new_price}, product=self)
 
     def _compute_imgs(self):
         for rec in self:
@@ -2076,10 +2078,11 @@ class Product(models.Model):
 
     def _compute_is_button_create_mass_pricing_shown(self):
         for rec in self:
-            if rec.product_calculator_ids.new_value == rec.mass_pricing_ids.new_price:
-                rec.is_button_create_mass_pricing_shown = False
-            else:
+            if rec.calculated_pricing_strategy_ids.filtered(
+                lambda r: r.pricing_strategy_id.strategy_id == "lower_min_competitor"):
                 rec.is_button_create_mass_pricing_shown = True
+            else:
+                rec.is_button_create_mass_pricing_shown = False
 
     def action_run_indicators_checks(self):
         schedules = self.env["ozon.schedule"].search([])

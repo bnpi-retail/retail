@@ -126,7 +126,7 @@ class PricingStrategy(models.Model):
     strategy_id = fields.Char(
         string="ID стратегии", related="pricing_strategy_id.strategy_id"
     )
-    weight = fields.Float(string="Вес")
+    weight = fields.Float(string="Вес", default=1)
     value = fields.Float(string="Значение")
     expected_price = fields.Float(string="Цена")
     message = fields.Char(
