@@ -4,7 +4,7 @@ from itertools import chain
 
 from odoo import models, fields, api
 
-from .price_component import NAME_IDENTIFIER, BASE_CALCULATION_COMPONENTS
+from .price_component import NAME_IDENTIFIER, BASE_CALCULATION_COMPONENTS, IDENTIFIER_NAME
 
 
 class PriceComparison(models.Model):
@@ -305,6 +305,18 @@ class PriceComparison(models.Model):
         self.create(data)
 
     
+    def fill_with_blanks_if_not_exist(self, product):
+        if not product.price_comparison_ids:
+            pcm = self.env["ozon.price_component"]
+            data = []
+            for pc_identifier in IDENTIFIER_NAME:
+                pc = pcm.get(pc_identifier)
+                data.append({
+                    "product_id": product.id,
+                    "price_component_id": pc.id,
+                })
+            self.create(data)
+
     def update_plan_column_for_product(self, product):
         # Цена для покупателя
         buyer_price = product._price_comparison("buyer_price")
@@ -329,27 +341,7 @@ class PriceComparison(models.Model):
             price_comparison.write({"plan_value": plan_value})
             total_expenses_sum += plan_value
         ### Показатели
-        # Сумма расходов
-        total_expenses = product._price_comparison("total_expenses")
-        total_expenses.write({"plan_value": total_expenses_sum})
-        # Прибыль
-        profit = product._price_comparison("profit")
-        profit.write({"plan_value": your_price.plan_value - total_expenses_sum})
-        # ROS (доходность, рентабельность продаж)
-        ros = product._price_comparison("ros")
-        ros.write({"plan_value": profit.plan_value / your_price.plan_value})
-        # Наценка
-        margin = product._price_comparison("margin")
-        cost = product._price_comparison("cost")
-        margin.write({"plan_value": your_price.plan_value - cost.plan_value})
-        # Процент наценки
-        margin_percent = product._price_comparison("margin_percent")
-        plan_value = cost.plan_value and margin.plan_value / cost.plan_value
-        margin_percent.write({"plan_value": plan_value})
-        # ROE (рентабельность инвестиций)
-        roe = product._price_comparison("roe")
-        plan_value = cost.plan_value and profit.plan_value / cost.plan_value
-        roe.write({"plan_value": plan_value})
+        self.write_price_comparison_indicators_for_column(product, "plan_value")
 
     def update_fact_column_for_product(self, product):
         # Цена для покупателя

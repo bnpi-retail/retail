@@ -1998,19 +1998,23 @@ class Product(models.Model):
     #     self.env["ozon.price_comparison"].update_for_products(self, calc_price=calc_price)
     
     def calculate_price_comparison_ids_plan_column(self):
+        self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
         self.env["ozon.price_comparison"].update_plan_column_for_product(self)
         self.plan_calc_datetime = fields.Datetime.now()
     
     def calculate_price_comparison_ids_fact_column(self):
+        self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
         self.update_current_product_all_expenses(self.price)
         self.env["ozon.price_comparison"].update_fact_column_for_product(self)
         self.fact_calc_datetime = fields.Datetime.now()
 
     def calculate_price_comparison_ids_market_column(self):
+        self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
         self.env["ozon.price_comparison"].update_market_column_for_product(self)
         self.market_calc_datetime = fields.Datetime.now()
 
     def calculate_price_comparison_ids_calc_column(self):
+        self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
         self.env["ozon.price_comparison"].update_calc_column_for_product(self)
 
     def reset_base_calculation_ids(self):
