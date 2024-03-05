@@ -397,6 +397,9 @@ class Product(models.Model):
     base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Плановая цена")
     logistics_tariff_id = fields.Many2one("ozon.logistics_tariff", 
                                           string="Тариф логистики в плановом расчёте")
+    plan_calc_datetime = fields.Datetime(string="Время расчёта (План)")
+    market_calc_datetime = fields.Datetime(string="Время расчёта (Рынок)")
+    fact_calc_datetime = fields.Datetime(string="Время расчёта (Факт)")
 
     @api.onchange('use_avg_value_of_current_product')
     def _onchange_use_avg_value_of_current_product(self):
