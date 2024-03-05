@@ -326,7 +326,9 @@ class ImportFile(models.Model):
                     tran_sale_commission = float(row["sale_commission"])
                     tran_amount = float(row["amount"])
                     posting_products = posting.posting_product_ids
-                    products_t_volume = sum(product.ozon_products_id.products.volume for product in posting_products)
+                    products_t_volume = sum(
+                        product.ozon_products_id.products.volume * product.quantity for product in posting_products
+                    )
                     products_t_price = sum(product.price * product.quantity for product in posting_products)
                     for product in posting_products:
                         qty = product.quantity
