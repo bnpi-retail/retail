@@ -267,7 +267,6 @@ class ImportFile(models.Model):
         return result if result else False
 
 
-
     def import_transactions(self, content) -> dict:
         qty_new_transactions = 0
         imported_days_data = defaultdict(int)
@@ -346,7 +345,6 @@ class ImportFile(models.Model):
 
                             if row['name'] in [
                                 "Доставка покупателю",
-                                "Получение возврата, отмены, невыкупа от покупателя"
                             ]:
                                 vals_to_create_value_by_product.extend([
                                     {
@@ -361,6 +359,38 @@ class ImportFile(models.Model):
                                     },
                                     {
                                         "name": "Итого за заказы",
+                                        "value": amount,
+                                        "ozon_products_id": product_id
+                                    }
+                                ])
+                                # {'обработка отправления', 'сборка заказа',
+                                # 'последняя миля', 'логистика', 'магистраль'}
+                                for name, price in service_list:
+                                    if name in by_volume:
+                                        service_amount = (product_volume * price) / products_t_volume
+                                    else:
+                                        service_amount = (product_price * price) / tran_accruals_for_sale
+                                    vals_to_create_value_by_product.append({
+                                        "name": name,
+                                        "value": service_amount,
+                                        "ozon_products_id": product_id
+                                    })
+                            if row['name'] in [
+                                "Получение возврата, отмены, невыкупа от покупателя"
+                            ]:
+                                vals_to_create_value_by_product.extend([
+                                    {
+                                        "name": "Получение возврата: Сумма за заказы",
+                                        "value": product_price,
+                                        "ozon_products_id": product_id
+                                    },
+                                    {
+                                        "name": "Получение возврата: Вознаграждение за продажу",
+                                        "value": sale_commission,
+                                        "ozon_products_id": product_id
+                                    },
+                                    {
+                                        "name": "Получение возврата: Итого за заказы",
                                         "value": amount,
                                         "ozon_products_id": product_id
                                     }
