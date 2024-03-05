@@ -2006,6 +2006,11 @@ class Product(models.Model):
         self.env["ozon.price_comparison"].update_fact_column_for_product(self)
         self.fact_calc_datetime = fields.Datetime.now()
 
+    def calculate_price_comparison_ids_market_column(self):
+        self.env["ozon.price_comparison"].update_market_column_for_product(self)
+        self.market_calc_datetime = fields.Datetime.now()
+
+
     def reset_base_calculation_ids(self):
         self.env["ozon.base_calculation"].reset_for_products(self)
         self.env["ozon.price_comparison"].update_for_products(self)

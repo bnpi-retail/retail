@@ -137,11 +137,11 @@
                         </page>
                         <page id="page_price_comparison" string="Калькулятор">
                             <group col="4">
-                                <group>
+                                <!-- <group>
                                     <button type="object" name="calculate_price_comparison_ids"
                                         string="Рассчитать"
                                         class="btn-outline-primary" />
-                                </group>
+                                </group> -->
                                 <group>
                                     <field name="plan_calc_datetime" />
                                 </group>
@@ -346,6 +346,17 @@
                             </field>
                         </page>
                         <page id="page_lot_competitors_info" string="Конкуренты">
+                            <group>
+                                <group>
+                                    <button type="object"
+                                        name="calculate_price_comparison_ids_market_column"
+                                        string="Рассчитать «Рынок»"
+                                        class="btn-outline-primary" />
+                                </group>
+                                <group>
+                                    <field name="market_calc_datetime" />
+                                </group>
+                            </group>
                             <separator string="Конкуренты" />
                             <field name="competitors_with_price_ids" widget="one2many_list">
                                 <tree limit="10">
