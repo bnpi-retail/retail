@@ -306,7 +306,8 @@ class PriceComparison(models.Model):
 
     
     def fill_with_blanks_if_not_exist(self, product):
-        if not product.price_comparison_ids:
+        if len(product.price_comparison_ids) != len(IDENTIFIER_NAME):
+            product.price_comparison_ids.unlink()
             pcm = self.env["ozon.price_component"]
             data = []
             for pc_identifier in IDENTIFIER_NAME:
