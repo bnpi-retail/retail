@@ -2000,6 +2000,11 @@ class Product(models.Model):
     def calculate_price_comparison_ids_plan_column(self):
         self.env["ozon.price_comparison"].update_plan_column_for_product(self)
         self.plan_calc_datetime = fields.Datetime.now()
+    
+    def calculate_price_comparison_ids_fact_column(self):
+        self.update_current_product_all_expenses(self.price)
+        self.env["ozon.price_comparison"].update_fact_column_for_product(self)
+        self.fact_calc_datetime = fields.Datetime.now()
 
     def reset_base_calculation_ids(self):
         self.env["ozon.base_calculation"].reset_for_products(self)

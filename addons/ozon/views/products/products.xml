@@ -189,9 +189,16 @@
                         </page>
                         <page id="page_price_calculator" string="Фактическая структура затрат">
                             <group>
-                                <field name="expected_price" string="Цена" />
+                                <group>
+                                    <button type="object"
+                                        name="calculate_price_comparison_ids_fact_column"
+                                        string="Рассчитать «Факт»"
+                                        class="btn-outline-primary" />
+                                </group>
+                                <group>
+                                    <field name="fact_calc_datetime" />
+                                </group>
                             </group>
-
                             <field name="all_expenses_except_roi_roe_ids">
                                 <tree>
                                     <field name="identifier" />
@@ -200,10 +207,10 @@
                                     <field name="kind" />
                                     <field name="comment" optional="hide" />
                                     <field name="percent" widget="percentage" />
-                                    <field name="expected_value" sum="1" string="Значение" />
+                                    <field name="value" sum="1" string="Значение" />
                                 </tree>
                             </field>
-                            <group>
+                            <!-- <group>
                                 <field name="calculator_delta" />
                             </group>
                             <field name="all_expenses_only_roi_roe_ids">
@@ -213,33 +220,8 @@
                                     <field name="percent" widget="percentage" />
                                     <field name="expected_value" string="Значение" />
                                 </tree>
-                            </field>
+                            </field> -->
                         </page>
-                        <!-- <page id="page_all_expenses_info" string="Ожидаемая структура затрат">
-                            <group>
-                                <field name="profitability_norm" />
-                                <field name="investment_expenses_id" />
-                            </group>
-                            <group>
-                                <field name="all_expenses_ids">
-                                    <tree>
-                                        <field name="name" />
-                                        <field name="comment" optional="hide" />
-                                        <field name="expected_value" />
-                                    </tree>
-                                </field>
-                            </group>
-                            <group>
-                                <group>
-                                    <field name="expected_price" />
-                                    <field name="expected_price_error"
-                                        attrs="{'invisible': [('expected_price', '!=', 0)]}" />
-                                </group>
-                                <group>
-                                    <field name="price_delta" />
-                                </group>
-                            </group>
-                        </page> -->
                         <page id="page_lot_expenses_info" string="Комиссии и себестоимость">
                             <separator string="Фиксированные затраты" />
                             <notebook>

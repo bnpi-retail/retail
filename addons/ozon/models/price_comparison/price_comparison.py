@@ -4,6 +4,8 @@ from itertools import chain
 
 from odoo import models, fields, api
 
+from .price_component import NAME_IDENTIFIER
+
 
 class PriceComparison(models.Model):
     _name = "ozon.price_comparison"
@@ -304,7 +306,6 @@ class PriceComparison(models.Model):
 
     
     def update_plan_column_for_product(self, product):
-        pcm = self.env["ozon.price_component"]
         # Цена для покупателя
         buyer_price = product._price_comparison("buyer_price")
         buyer_price.write({"plan_value": 0})
@@ -343,10 +344,53 @@ class PriceComparison(models.Model):
         margin.write({"plan_value": your_price.plan_value - cost.plan_value})
         # Процент наценки
         margin_percent = product._price_comparison("margin_percent")
-        plan_value = cost.plan_value and margin.plan_value / cost.plan_value or 0
+        plan_value = cost.plan_value and margin.plan_value / cost.plan_value
         margin_percent.write({"plan_value": plan_value})
-        pc = pcm.get("margin_percent")
         # ROE (рентабельность инвестиций)
         roe = product._price_comparison("roe")
-        plan_value = cost.plan_value and profit.plan_value / cost.plan_value or 0
+        plan_value = cost.plan_value and profit.plan_value / cost.plan_value
         roe.write({"plan_value": plan_value})
+
+    def update_fact_column_for_product(self, product):
+        # Цена для покупателя
+        buyer_price = product._price_comparison("buyer_price")
+        buyer_price.write({"fact_value": product.marketing_price})
+        # Ваша цена
+        your_price = product._price_comparison("your_price")
+        your_price.write({"fact_value": product.price})
+        cost_price = product.retail_product_total_cost_price
+        expenses = product.all_expenses_except_roi_roe_ids
+        used = {}
+        for i in expenses.filtered(lambda r: r.category != "Расходы компании"):
+            if i.category == "Unknown" or used.get(i.category):
+                continue
+            total = sum(product.all_expenses_ids.filtered(
+                lambda r: r.category == i.category).mapped("value"))
+            pc_identifier = NAME_IDENTIFIER[i.category]
+            price_comparison = product._price_comparison(pc_identifier)
+            price_comparison.write({"fact_value": total})
+            used.update({i.category: True})
+        for i in expenses.filtered(lambda r: r.category == "Расходы компании"):
+            pc_identifier = NAME_IDENTIFIER[i.name]
+            price_comparison = product._price_comparison(pc_identifier)
+            price_comparison.write({"fact_value": i.value})
+        ### Показатели
+        # Сумма расходов
+        total_expenses = product._price_comparison("total_expenses")
+        total_expenses.write({"fact_value": sum(
+            expenses.filtered(lambda r: r.category != "Unknown").mapped("value"))})
+        # Прибыль
+        profit = product._price_comparison("profit")
+        profit.write({"fact_value": your_price.fact_value - total_expenses.fact_value})
+        # ROS (доходность, рентабельность продаж)
+        ros = product._price_comparison("ros")
+        ros.write({"fact_value": your_price.fact_value and profit.fact_value / your_price.fact_value})
+        # Наценка
+        margin = product._price_comparison("margin")
+        margin.write({"fact_value": your_price.fact_value - cost_price})
+        # Процент наценки
+        margin_percent = product._price_comparison("margin")
+        margin_percent.write({"fact_value": cost_price and margin.fact_value / cost_price})
+        # ROE (рентабельность инвестиций)
+        roe = product._price_comparison("roe")
+        roe.write({"fact_value": cost_price and profit.fact_value / cost_price})
