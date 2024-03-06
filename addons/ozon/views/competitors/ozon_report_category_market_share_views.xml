@@ -100,13 +100,13 @@
         </record>
 
         <record id="action_open_report_category_market_share" model="ir.actions.act_window">
-            <field name="name">Отчеты по продажам и долям продаж конкурентов</field>
+            <field name="name">Отчет по рынку</field>
             <field name="res_model">ozon.report_category_market_share</field>
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_report_category_market_share" name="Отчеты по продажам конкурентов"
-            parent="main_menu_competitors"
+        <menuitem id="menu_report_category_market_share" name="Отчет по рынку"
+            parent="main_menu_reports"
             action="action_open_report_category_market_share" sequence="36" />
 
     </data>
