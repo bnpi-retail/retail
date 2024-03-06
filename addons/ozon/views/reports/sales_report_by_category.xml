@@ -33,16 +33,18 @@
                             </group>
                         </group>
                         <notebook>
-                            <page id="page_total_expenses" string="Суммарные затраты">
-                                <field name="expenses_by_category_ids"
+                            <page id="page_total_expenses" string="Суммарные статьи">
+                                <field name="transaction_unit_summary_ids"
                                     attrs="{'invisible':[('id','=',False)]}">
                                     <tree>
-                                        <field name="expenses_item_id" />
-                                        <field name="expense" sum="1" />
+                                        <field name="name" />
+                                        <field name="count" />
+                                        <field name="value" />
+                                        <field name="percent" widget="percentage" />
                                     </tree>
                                 </field>
                             </page>
-                            <page id="page_products" string="Информация о товарах">
+                            <!-- <page id="page_products" string="Информация о товарах">
                                 <field name="product_in_sales_report_ids">
                                     <tree limit="3000">
                                         <field name="product_id" />
@@ -52,7 +54,7 @@
                                         <field name="profit" sum="1" />
                                     </tree>
                                 </field>
-                            </page>
+                            </page> -->
                         </notebook>
                     </sheet>
                 </form>

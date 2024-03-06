@@ -168,7 +168,8 @@ class IndirectPercentExpenses(models.Model):
         rec = super(IndirectPercentExpenses, self).create(values)
         tran_units.indirect_percent_expenses_id = rec.id
         tran_unit_sum_model = self.env['ozon.tran_unit_sum']
-        tran_unit_sum_data = tran_unit_sum_model.collect_data_from_transaction_units(report=rec)
+        tran_unit_sum_data = tran_unit_sum_model.collect_data_from_transaction_units(
+            report=rec, report_type="indirect_percent_expenses_id")
         tran_unit_sum_model.create(tran_unit_sum_data)
         return rec
     

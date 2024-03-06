@@ -2095,11 +2095,11 @@ class Product(models.Model):
         date_to = data.get("date_to")
         cat_id = data.get("category_id")
         if date_from and date_to and cat_id:
-            sales_products_ids = self.env["ozon.transaction"].search([
+            sales = self.env["ozon.transaction"].search([
                 ("name", "=", "Доставка покупателю"),
                 ("transaction_date", ">=", fields.Date.to_date(date_from)),
-                ("transaction_date", "<=", fields.Date.to_date(date_to))]).products.ids
-            return self.search([("categories", "=", cat_id), ("id", "in", sales_products_ids)])
+                ("transaction_date", "<=", fields.Date.to_date(date_to))])
+            return self.search([("categories", "=", cat_id), ("id", "in", sales.products.ids)])
         
     
     def _compute_marketing_discount(self):
