@@ -1962,6 +1962,9 @@ class Product(models.Model):
     
     def calculate_price_comparison_ids_plan_column(self):
         self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
+        if not self.base_calculation_template_id:
+            raise UserError("Шаблон планового расчёта не задан")
+        self.base_calculation_template_id.apply_to_products(self)
         self.env["ozon.price_comparison"].update_plan_column_for_product(self)
         self.plan_calc_datetime = fields.Datetime.now()
     
