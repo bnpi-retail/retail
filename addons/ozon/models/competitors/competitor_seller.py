@@ -20,14 +20,15 @@ class CompetitorSeller(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        competitor_trade_name = vals_list.get('trade_name')
-        if competitor_trade_name and isinstance(competitor_trade_name, str):
-            competitor_trade_name = competitor_trade_name.lower()
-            our_sellers = self.env["retail.seller"].search([])
-            for seller in our_sellers:
-                trade_name: str = seller.trade_name
-                trade_name = trade_name.lower()
-                if trade_name == competitor_trade_name:
-                    vals_list['trade_name'] = trade_name + '_'
+        our_sellers = self.env["retail.seller"].search([])
+        for record_vals in vals_list:
+            competitor_trade_name = record_vals.get('trade_name')
+            if competitor_trade_name and isinstance(competitor_trade_name, str):
+                competitor_trade_name = competitor_trade_name.lower()
+                for seller in our_sellers:
+                    trade_name: str = seller.trade_name
+                    trade_name = trade_name.lower()
+                    if trade_name == competitor_trade_name:
+                        record_vals['trade_name'] = trade_name + '_'
 
         return super().create(vals_list)
