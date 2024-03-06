@@ -139,8 +139,9 @@ class PriceComponentMatch(models.Model):
     _name = "ozon.price_component_match"
     _description = "Сопоставление фактических статей затрат Ozon с плановыми"
 
-    name = fields.Char(string="Фактическая статья затрат Ozon")
-    price_component_id = fields.Many2one("ozon.price_component", string="Плановый компонент цены")
+    name = fields.Char(string="Фактическая статья")
+    price_component_id = fields.Many2one("ozon.price_component", string="Плановая статья")
+    is_in_fact_calculation = fields.Boolean(string="Включить в расчёт фактических затрат")
 
     def refill_model(self):
         self.env["ozon.price_component_match"].search([]).unlink()
@@ -156,5 +157,8 @@ class PriceComponentMatch(models.Model):
         self.create(data)
     
     def get_fact_plan_match(self):
-        return {i.name: i.price_component_id.name if i.price_component_id else "Unknown" 
-                for i in self.search([])}
+        data = {}
+        for r in self.search([]):
+            if r.is_in_fact_calculation:
+                data.update({r.name: r.price_component_id.name if r.price_component_id else "Unknown"})
+        return data
