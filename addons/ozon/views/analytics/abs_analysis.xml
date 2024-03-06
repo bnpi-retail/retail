@@ -9,27 +9,37 @@
                     <sheet>
                         <group>
                             <group>
-                                <field name="period_from" string="Период с" class="oe_inline"
-                                    widget="date" />
-                                <field name="ozon_categories_id" string="Категория"
-                                    class="oe_inline" />
-                            </group>
-                            <group>
-                                <field name="period_to" string="по" class="oe_inline" widjet="date" />
+                                <field name="ozon_categories_id" string="Категория"/>
+
+                                <label for="period_start" string="Даты"/>
+                                <div class="o_row">
+                                    <field name="period_from" widget="daterange"
+                                           class="oe_inline"
+                                           options="{'related_end_date': 'period_to'}"
+                                           nolable="1"
+                                    />
+                                    <i class="fa fa-long-arrow-right mx-2"
+                                       aria-label="Arrow icon" title="To"/>
+                                    <field name="period_to" widget="daterange"
+                                           class="oe_inline"
+                                           options="{'related_start_date': 'period_from'}"
+                                           nolable="1"
+                                    />
+                                </div>
                             </group>
                             <field name="ozon_products_ids"
-                                attrs="{'invisible':[('ozon_products_ids','=',[])]}">
+                                   attrs="{'invisible':[('ozon_products_ids','=',[])]}">
                                 <tree default_order="revenue_share_temp desc"
-                                    decoration-success="abc_group=='A'"
-                                    decoration-danger="abc_group=='C'"
+                                      decoration-success="abc_group=='A'"
+                                      decoration-danger="abc_group=='C'"
                                 >
-                                    <field name="article" />
-                                    <field name="products" />
+                                    <field name="article"/>
+                                    <field name="products"/>
                                     <field name="revenue_share_temp"
-                                        string="Доля продукта в выручке, %" />
+                                           string="Доля продукта в выручке, %"/>
                                     <field name="revenue_cumulative_share_temp"
-                                        string="Накопительный вклад, %" />
-                                    <field name="abc_group" string="Группа" />
+                                           string="Накопительный вклад, %"/>
+                                    <field name="abc_group" string="Группа"/>
                                 </tree>
                             </field>
                         </group>
@@ -43,18 +53,18 @@
             <field name="model">ozon.abc_analysis</field>
             <field name="arch" type="xml">
                 <tree string="ABC анализ" default_order="create_date desc">
-                    <field name="create_date" string="Создан" />
-                    <field name="ozon_categories_id" string="Категория" />
-                    <field name="period_from" string="Начало периода" />
-                    <field name="period_to" string="Конец периода" />
+                    <field name="create_date" string="Создан"/>
+                    <field name="ozon_categories_id" string="Категория"/>
+                    <field name="period_from" string="Начало периода"/>
+                    <field name="period_to" string="Конец периода"/>
                 </tree>
             </field>
         </record>
 
         <record model="ir.actions.server" id="action_do_abc_analysis">
             <field name="name">Провести ABC Анализ</field>
-            <field name="model_id" ref="model_ozon_abc_analysis" />
-            <field name="binding_model_id" ref="model_ozon_abc_analysis" />
+            <field name="model_id" ref="model_ozon_abc_analysis"/>
+            <field name="binding_model_id" ref="model_ozon_abc_analysis"/>
             <field name="state">code</field>
             <field name="code">
                 action = records.action_do_abc_analysis()
@@ -68,8 +78,8 @@
         </record>
 
         <menuitem id="menu_ozon_abc_analysis" name="ABC Анализ внутри категории"
-            parent="main_menu_analytics"
-            action="action_open_ozon_abc_analysis" sequence="1" />
+                  parent="main_menu_analytics"
+                  action="action_open_ozon_abc_analysis" sequence="1"/>
 
     </data>
 </odoo>
