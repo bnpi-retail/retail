@@ -5,6 +5,7 @@ import logging
 import json
 import os
 import re
+import traceback
 
 from datetime import date, datetime
 from collections import defaultdict
@@ -87,7 +88,10 @@ class ImportFile(models.Model):
     @staticmethod
     def get_content(file_value):
         content = base64.b64decode(file_value)
-        content = content.decode("utf-8")
+        try:
+            content = content.decode("utf-8")
+        except UnicodeDecodeError:
+            logger.error(f"content.decode error: {traceback.format_exc()}")
         return content
 
     @api.model
