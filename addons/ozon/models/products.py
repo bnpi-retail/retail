@@ -442,10 +442,22 @@ class Product(models.Model):
 
         # returns
         vals_to_write.append(
-            self.calculate_return_logistics(
+            self.calculate_expenses_row(
                 revenue=revenue,
                 total_revenue=total_revenue,
-                identifier=3
+                identifier=3,
+                plan_name='Обратная логистика',
+                row_name='Обратная логистика',
+            )
+        )
+        # commission
+        vals_to_write.append(
+            self.calculate_expenses_row(
+                revenue=revenue,
+                total_revenue=total_revenue,
+                identifier=3,
+                plan_name='Вознаграждение Ozon',
+                row_name='Комиссия за продажу',
             )
         )
 
@@ -482,8 +494,8 @@ class Product(models.Model):
             'ozon_products_id': self.id,
             'name': 'Выручка за период',
             'comment': 'Рассчитывается сложением значений поля "Значение" в записях в меню '
-                       '"Выплаты с разбитием на услуги по продукту" '
-                       'за искомый период, соответствующих текущему продукту и названием '
+                       '"Декомпозированные транзакции" '
+                       'за искомый период, соответствующих текущему продукту и с названием '
                        '"Сумма за заказы".',
             'qty': sales_qty,
             'percent': 100,
@@ -570,48 +582,47 @@ class Product(models.Model):
 
         return accuracy
 
-    def calculate_return_logistics(
-            self, revenue: float, total_revenue: float, identifier: int) -> dict:
+    def calculate_expenses_row(
+            self, revenue: float, total_revenue: float, identifier: int, plan_name: str, row_name: str) -> dict:
 
-        ozon_price_component_id = self.env["ozon.price_component"].search([('name', '=', 'Обратная логистика')]).id
+        ozon_price_component_id = self.env["ozon.price_component"].search([('name', '=', plan_name)]).id
         if not ozon_price_component_id:
             raise UserError("Создайте справочник фактических и плановых статей затрат в Планировании"
-                            " в котором плановым будет запись 'Обратная логистика'")
+                            f" в котором плановым будет запись {plan_name}")
         ozon_price_component_match = self.env["ozon.price_component_match"].search([
             ('price_component_id', '=', ozon_price_component_id)
         ])
-        total_returns_amount_services = 0
+        total_amount_ = 0
         returns_qty = 0
-        total_returns_expenses = 0
+        all_products_amount = 0
         components = []
         for record in ozon_price_component_match:
             name = record.name
             res = self._get_sum_value_and_qty_from_transaction_value_by_product(name)
-            total_returns_amount_services += res[0]
+            total_amount_ += res[0]
             returns_qty += res[1]
             components.append(f"{name}: количество- {res[1]}, значение-{res[0]}\n")
 
-            total_returns_expenses += self.calc_total_sum(name)
+            all_products_amount += self.calc_total_sum(name)
 
         components = ''.join(components)
-        percent = (abs(total_returns_amount_services) * 100) / revenue if revenue else 0
-        percent_from_total = (abs(total_returns_expenses) * 100) / total_revenue if total_revenue else 0
+        percent = (abs(total_amount_) * 100) / revenue if revenue else 0
+        percent_from_total = (abs(all_products_amount) * 100) / total_revenue if total_revenue else 0
         vals = {
             'identifier': identifier,
             'ozon_products_id': self.id,
-            'name': 'Обратная логистика',
-            'comment': 'Расходы на услуги Озон в транзакциях возвратов и отмен за период. '
-                       'Рассчитывается суммированием значений "Выплаты с разбитием на услуги по продукту" '
+            'name': row_name,
+            'comment': 'Рассчитывается суммированием значений записей "Декомпозированые транзакции" '
                        'с названиями указанными в поле "Фактическая статья затрат Ozon" напротив '
-                       'которых указано значение "Обратная логистика" '
+                       f'которых указано значение {plan_name} '
                        '(в меню Планирование > Фактические/плановые статьи). '
-                       'Суммируются "Выплаты с разбитием на услуги по продукту" соответствующие искомогу периоду и '
+                       'Суммируются "Декомпозированые транзакции" соответствующие искомому периоду и '
                        f'текущему продукту\n\n{components}',
-            'value': total_returns_amount_services,
+            'value': total_amount_,
             'qty': returns_qty,
             'percent': percent,
             'percent_from_total': percent_from_total,
-            'total_value': total_returns_expenses,
+            'total_value': all_products_amount,
         }
         return vals
 
