@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_retail_categories_user,Access Retail Categories for Users,model_retail_categories,base.group_user,1,1,1,1
-access_retail_categories_public,Access Retail Categories for Public,model_retail_categories,base.group_public,1,1,1,1
