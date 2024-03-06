@@ -15,6 +15,9 @@
                         <button class="oe_stat_button" type="object" name="get_sales">
                             <field string="История продаж" name="get_sales_count" widget="statinfo" />
                         </button>
+                        <button class="oe_stat_button" type="object" name="smart_action_promotion_expenses">
+                            <field string="Затраты продвижение" name="promotion_expenses_count" widget="statinfo" />
+                        </button>
                         <button class="oe_stat_button" type="object" name="get_postings">
                             <field string="Отправления" name="postings_count"
                                 widget="statinfo" />
@@ -288,33 +291,75 @@
                             </notebook>
                         </page>
 
-
-                        <page id="page_lot_promotion_info" string="Продвижение">
-                            <group style="margin-bottom: 20px;">
-                                <field name="marketing_discount" widget="percentage" />
-                            </group>
-                            <group>
-                                <field name="category_marketing_discount" widget="percentage" />
-                            </group>
-                            <small>Данная скидка будет применена для расчёта "Вашей цены" в
-                                столбце "Рынок" на вкладке "Калькулятор"</small>
-                            <separator string="Поисковые запросы" />
-                            <field name="tracked_search_query_ids">
-                                <tree>
-                                    <field name="name" />
-                                </tree>
-                            </field>
-                            <separator string="Затраты на продвижение" />
-                            <field name="promotion_expenses_ids">
-                                <tree>
-                                    <field name="date" />
-                                    <field name="promotion_type" />
-                                    <field name="qty" />
-                                    <field name="percent_rate" />
-                                    <field name="expense" />
-                                </tree>
-                            </field>
+                        <page id="page_lot_promotion_info" string="Маркетинг">
+                            <notebook>
+                                <page string="Скидки и поисковые запросы">
+                                    <group style="margin-bottom: 20px;">
+                                        <field name="marketing_discount" widget="percentage"/>
+                                    </group>
+                                    <group>
+                                        <field name="category_marketing_discount" widget="percentage"/>
+                                    </group>
+                                    <small>Данная скидка будет применена для расчёта "Вашей цены" в
+                                        столбце "Рынок" на вкладке "Калькулятор"
+                                    </small>
+                                    <separator string="Поисковые запросы"/>
+                                    <br/>
+                                    <field name="tracked_search_query_ids">
+                                        <tree>
+                                            <field name="name"/>
+                                        </tree>
+                                    </field>
+                                </page>
+                                <page id="page_ozon_actions" string="Акции">
+                                    <separator string="Кандидат в акциях"/>
+                                    <br/>
+                                    <field name="action_candidate_ids">
+                                        <tree>
+                                            <field name="action_id"/>
+                                            <field name="action_start"/>
+                                            <field name="action_end"/>
+                                            <field name="action_status" widget="badge"
+                                                   decoration-success="action_status=='started'"
+                                                   decoration-muted="action_status=='not_started'"
+                                                   decoration-info="action_status=='ended'"/>
+                                            <field name="max_action_price"/>
+                                            <field name="is_participating"/>
+                                        </tree>
+                                    </field>
+                                </page>
+                                <page id="page_analysis_data_abc_analysis" string="ABC анализ">
+                                    <group>
+                                        <field name="revenue_share_temp"
+                                               string="Доля продукта в выручке, %"
+                                               readonly="1"/>
+                                        <field name="revenue_cumulative_share_temp"
+                                               string="Накопительный вклад, %"
+                                               readonly="1"/>
+                                        <field name="abc_group" string="Группа"/>
+                                    </group>
+                                </page>
+                                <page id="page_analysis_data_price_index" string="Ценовой индекс">
+                                    <group string="Ценовой индекс и цены конкурентов">
+                                        <field name="price_index"/>
+                                        <field name="ozon_comp_min_price"/>
+                                        <field name="ext_comp_min_price"/>
+                                        <field name="self_marketplaces_min_price"/>
+                                    </group>
+                                </page>
+                                <page id="page_analysis_data_abc_analysis" string="BCG Матрица">
+                                    <group>
+                                        <field name="bcg_group_is_computed" invisible="1"/>
+                                        <field name="bcg_group"
+                                               string="BCG группа"
+                                               readonly="0"
+                                               attrs="{'invisible': [('bcg_group_is_computed', '=', False)]}"
+                                        />
+                                    </group>
+                                </page>
+                            </notebook>
                         </page>
+
                         <page id="page_lot_competitors_info" string="Конкуренты">
                             <group>
                                 <group>
@@ -379,215 +424,168 @@
                                 </tree>
                             </field> -->
                         </page>
-                        <page id="page_analysis_data" string="Аналитические данные">
+                        <page id="page_analysis_data" string="Отчеты">
                             <notebook>
+                                <page string="Выручка и расходы за период">
+                                    <group>
+                                        <group>
+                                            <button string="Рассчитать"
+                                                    type="object"
+                                                    name="action_calculate_revenue_returns_promotion_for_period"
+                                                    attrs="{'invisible': [('period_start', '=', False)]}"
+                                            />
+                                        </group>
+                                        <group></group>
+                                        <group>
+                                            <field name="period_preset" class="oe_inline" string="Период"/>
+                                        </group>
+                                        <group></group>
+                                        <group>
+                                            <label for="period_start" string="Даты"/>
+                                            <div class="o_row">
+                                                <field name="period_start" widget="daterange"
+                                                       class="oe_inline"
+                                                       options="{'related_end_date': 'period_finish'}"
+                                                       nolable="1"
+                                                />
+                                                <i class="fa fa-long-arrow-right mx-2"
+                                                   aria-label="Arrow icon" title="To"/>
+                                                <field name="period_finish" widget="daterange"
+                                                       class="oe_inline"
+                                                       options="{'related_start_date': 'period_start'}"
+                                                       nolable="1"
+                                                />
+                                            </div>
+                                            <br/>
+                                        </group>
+                                        <field name="ozon_report_products_revenue_expenses_ids">
+                                            <tree create="0">
+                                                <field name="identifier"/>
+                                                <field name="name"/>
+                                                <field name="comment" optional="hide"/>
+                                                <field name="qty" decoration-warning="accuracy=='c'"/>
+                                                <field name="percent" decoration-warning="accuracy=='c'"/>
+                                                <field name="value" sum="1" decoration-warning="accuracy=='c'"/>
+                                                <field name="percent_from_total"/>
+                                                <field name="total_value" sum="1"/>
+                                                <field name="accuracy" invisible="1"/>
+                                            </tree>
+                                        </field>
+                                        <field name="is_promotion_data_correct" invisible="1"/>
+                                        <div class="o_row"
+                                             attrs="{'invisible': [('is_promotion_data_correct', '=', True)]}">
+                                            <h5>
+                                                *Данные Расходов на продвижение продуктов за период могут быть не точны.
+
+                                                Не найдены импорты Отчётов о рекламной кампании (продвижение в поиске)
+                                                покрывающие весь искомый период.
+
+                                                Пожалуйста, загрузите недостающие отчеты за период.
+                                            </h5>
+                                        </div>
+                                        <group>
+                                            <field name="avg_value_to_use" class="oe_inline"/>
+                                        </group>
+                                    </group>
+                                </page>
+
                                 <page id="page_analysis_data_plots" string="Графики">
                                     <group>
                                         <field name="img_html_sale_this_year"
-                                            string="График продаж за текущий год" />
-                                        <field name="img_data_sale_this_year" invisible="1" />
-                                        <field name="img_data_sale_last_year" invisible="1" />
-                                        <field name="img_data_sale_two_weeks" invisible="1" />
-                                        <field name="img_data_sale_six_weeks" invisible="1" />
-                                        <field name="img_data_sale_twelve_weeks" invisible="1" />
-                                        <field name="img_data_stock" invisible="1" />
-                                        <field name="img_data_analysis_data" invisible="1" />
+                                               string="График продаж за текущий год"/>
+                                        <field name="img_data_sale_this_year" invisible="1"/>
+                                        <field name="img_data_sale_last_year" invisible="1"/>
+                                        <field name="img_data_sale_two_weeks" invisible="1"/>
+                                        <field name="img_data_sale_six_weeks" invisible="1"/>
+                                        <field name="img_data_sale_twelve_weeks" invisible="1"/>
+                                        <field name="img_data_stock" invisible="1"/>
+                                        <field name="img_data_analysis_data" invisible="1"/>
                                     </group>
                                     <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_sale_this_year"
-                                        attrs="{'invisible': [('img_data_sale_this_year', '=', False)]}"
+                                            type="object"
+                                            class="oe_highlight"
+                                            icon="fa-download"
+                                            name="download_img_data_sale_this_year"
+                                            attrs="{'invisible': [('img_data_sale_this_year', '=', False)]}"
                                     />
 
                                     <group>
                                         <field name="img_html_sale_last_year"
-                                            string="График продаж за прошлый год" />
+                                               string="График продаж за прошлый год"/>
                                     </group>
                                     <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_sale_last_year"
-                                        attrs="{'invisible': [('img_data_sale_last_year', '=', False)]}"
+                                            type="object"
+                                            class="oe_highlight"
+                                            icon="fa-download"
+                                            name="download_img_data_sale_last_year"
+                                            attrs="{'invisible': [('img_data_sale_last_year', '=', False)]}"
                                     />
 
                                     <group>
                                         <field name="img_html_price_history"
-                                            string="График истории цен" />
+                                               string="График истории цен"/>
                                     </group>
                                     <group>
                                         <field name="img_html_sale_two_weeks"
-                                            string="График продаж за 2 последних недели" />
+                                               string="График продаж за 2 последних недели"/>
                                     </group>
                                     <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_sale_two_weeks"
-                                        attrs="{'invisible': [('img_data_sale_two_weeks', '=', False)]}" />
+                                            type="object"
+                                            class="oe_highlight"
+                                            icon="fa-download"
+                                            name="download_img_data_sale_two_weeks"
+                                            attrs="{'invisible': [('img_data_sale_two_weeks', '=', False)]}"/>
 
 
                                     <group>
                                         <field name="img_html_sale_six_weeks"
-                                            string="График продаж за 6 последних недели" />
+                                               string="График продаж за 6 последних недели"/>
                                     </group>
                                     <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_sale_six_weeks"
-                                        attrs="{'invisible': [('img_data_sale_six_weeks', '=', False)]}" />
+                                            type="object"
+                                            class="oe_highlight"
+                                            icon="fa-download"
+                                            name="download_img_data_sale_six_weeks"
+                                            attrs="{'invisible': [('img_data_sale_six_weeks', '=', False)]}"/>
 
 
                                     <group>
                                         <field name="img_html_sale_twelve_weeks"
-                                            string="График продаж за 12 последних недели" />
+                                               string="График продаж за 12 последних недели"/>
                                     </group>
                                     <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_sale_twelve_weeks"
-                                        attrs="{'invisible': [('img_data_sale_twelve_weeks', '=', False)]}"
+                                            type="object"
+                                            class="oe_highlight"
+                                            icon="fa-download"
+                                            name="download_img_data_sale_twelve_weeks"
+                                            attrs="{'invisible': [('img_data_sale_twelve_weeks', '=', False)]}"
                                     />
 
                                     <group>
                                         <field name="img_html_stock"
-                                            string="График остатков за текущий год" />
+                                               string="График остатков за текущий год"/>
                                     </group>
                                     <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_stock"
-                                        attrs="{'invisible': [('img_data_stock', '=', False)]}"
+                                            type="object"
+                                            class="oe_highlight"
+                                            icon="fa-download"
+                                            name="download_img_data_stock"
+                                            attrs="{'invisible': [('img_data_stock', '=', False)]}"
                                     />
 
                                     <group>
                                         <field name="img_html_analysis_data"
-                                            string="График интереса за текущий год" />
+                                               string="График интереса за текущий год"/>
                                     </group>
                                     <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_analysis_data"
-                                        attrs="{'invisible': [('img_data_analysis_data', '=', False)]}"
+                                            type="object"
+                                            class="oe_highlight"
+                                            icon="fa-download"
+                                            name="download_img_data_analysis_data"
+                                            attrs="{'invisible': [('img_data_analysis_data', '=', False)]}"
                                     />
-                                </page>
-                                <page id="page_analysis_data_abc_analysis" string="ABC анализ">
-                                    <group>
-                                        <field name="revenue_share_temp"
-                                            string="Доля продукта в выручке, %"
-                                            readonly="1" />
-                                        <field name="revenue_cumulative_share_temp"
-                                            string="Накопительный вклад, %"
-                                            readonly="1" />
-                                        <field name="abc_group" string="Группа" />
-                                    </group>
-                                </page>
-                                <page id="page_analysis_data_price_index" string="Ценовой индекс">
-                                    <group string="Ценовой индекс и цены конкурентов">
-                                        <field name="price_index" />
-                                        <field name="ozon_comp_min_price" />
-                                        <field name="ext_comp_min_price" />
-                                        <field name="self_marketplaces_min_price" />
-                                    </group>
-                                </page>
-                                <page id="page_analysis_data_abc_analysis" string="BCG Матрица">
-                                    <group>
-                                        <field name="bcg_group_is_computed" invisible="1" />
-                                        <field name="bcg_group"
-                                            string="BCG группа"
-                                            readonly="0"
-                                            attrs="{'invisible': [('bcg_group_is_computed', '=', False)]}"
-                                        />
-                                    </group>
                                 </page>
                             </notebook>
-                        </page>
-                        <page id="page_ozon_actions" string="Акции">
-                            <group>
-                                <field name="action_candidate_ids">
-                                    <tree>
-                                        <field name="action_id" />
-                                        <field name="action_start" />
-                                        <field name="action_end" />
-                                        <field name="action_status" widget="badge"
-                                            decoration-success="action_status=='started'"
-                                            decoration-muted="action_status=='not_started'"
-                                            decoration-info="action_status=='ended'" />
-                                        <field name="max_action_price" />
-                                        <field name="is_participating" />
-                                    </tree>
-                                </field>
-                            </group>
-                        </page>
-                        <page string="Выручка и расходы за период">
-                            <group>
-                                <group>
-                                    <button string="Рассчитать"
-                                        type="object"
-                                        name="action_calculate_revenue_returns_promotion_for_period"
-                                        attrs="{'invisible': [('period_start', '=', False)]}"
-                                    />
-                                </group>
-                                <group></group>
-                                <group>
-                                    <field name="period_preset" class="oe_inline" string="Период" />
-                                </group>
-                                <group></group>
-                                <group>
-                                    <label for="period_start" string="Даты" />
-                                    <div class="o_row">
-                                        <field name="period_start" widget="daterange"
-                                            class="oe_inline"
-                                            options="{'related_end_date': 'period_finish'}"
-                                            nolable="1"
-                                        />
-                                        <i class="fa fa-long-arrow-right mx-2"
-                                            aria-label="Arrow icon" title="To" />
-                                        <field name="period_finish" widget="daterange"
-                                            class="oe_inline"
-                                            options="{'related_start_date': 'period_start'}"
-                                            nolable="1"
-                                        />
-                                    </div>
-                                </group>
-                                <field name="ozon_report_products_revenue_expenses_ids">
-                                    <tree create="0">
-                                        <field name="identifier" />
-                                        <field name="name" />
-                                        <field name="comment" optional="hide" />
-                                        <field name="qty" decoration-warning="accuracy=='c'" />
-                                        <field name="percent" decoration-warning="accuracy=='c'" />
-                                        <field name="value" sum="1"
-                                            decoration-warning="accuracy=='c'" />
-                                        <field name="percent_from_total" />
-                                        <field name="total_value" sum="1" />
-                                        <field name="accuracy" invisible="1" />
-                                    </tree>
-                                </field>
-                                <field name="is_promotion_data_correct" invisible="1" />
-                                <div class="o_row"
-                                    attrs="{'invisible': [('is_promotion_data_correct', '=', True)]}">
-                                    <h5>
-                                        *Данные Расходов на продвижение продуктов за период могут
-                                        быть не точны.
-
-                                        Не найдены импорты Отчётов о рекламной кампании (продвижение
-                                        в поиске)
-                                        покрывающие весь искомый период.
-
-                                        Пожалуйста, загрузите недостающие отчеты за период.
-                                    </h5>
-                                </div>
-                                <group>
-                                    <field name="avg_value_to_use" class="oe_inline" />
-                                </group>
-                            </group>
                         </page>
                     </notebook>
                 </form>

@@ -63,9 +63,9 @@ class Product(models.Model):
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
     marketing_price = fields.Float(string="Цена на товар с учетом всех акций", readonly=True)
-    marketing_discount = fields.Float(string="Маркетинговая скидка", 
+    marketing_discount = fields.Float(string="Маркетинговая скидка Ozon",
                                       compute="_compute_marketing_discount")
-    category_marketing_discount = fields.Float(string="Средняя маркетинговая скидка категории",
+    category_marketing_discount = fields.Float(string="Средняя маркетинговая скидка Ozon по категории",
                                                related="categories.price_difference")
     calculator_delta = fields.Float(string="Дельта", compute="_compute_calculator_delta")
     calculator_profit_norm = fields.Float(string="Доходность", 
@@ -345,6 +345,7 @@ class Product(models.Model):
     )
     get_sales_count = fields.Integer(compute="compute_count_sales")
     price_history_count = fields.Integer(compute="compute_count_price_history")
+    promotion_expenses_count = fields.Integer(compute="compute_count_promotion_expenses")
     action_candidate_ids = fields.One2many(
         "ozon.action_candidate", "product_id", string="Кандидат в акциях"
     )
@@ -605,7 +606,7 @@ class Product(models.Model):
                        'которых указано значение "Обратная логистика" '
                        '(в меню Планирование > Фактические/плановые статьи). '
                        'Суммируются "Выплаты с разбитием на услуги по продукту" соответствующие искомогу периоду и '
-                       f'текущему продукту\n\n {components}',
+                       f'текущему продукту\n\n{components}',
             'value': total_returns_amount_services,
             'qty': returns_qty,
             'percent': percent,
@@ -731,6 +732,27 @@ class Product(models.Model):
                 "interval": "day",
             },
         }
+
+    def smart_action_promotion_expenses(self):
+        self.ensure_one()
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Затраты на продвижение",
+            "view_mode": "tree",
+            "res_model": "ozon.promotion_expenses",
+            "domain": [
+                ("product_id", "=", self.id),
+            ],
+            "context": {
+                "create": False,
+                "views": [(False, "tree"), (False, "form"), (False, "graph")],
+            },
+        }
+
+    @api.depends('promotion_expenses_ids')
+    def compute_count_promotion_expenses(self):
+        self.promotion_expenses_count = len(self.promotion_expenses_ids) if self.promotion_expenses_ids else 0
 
     def _compute_profit(self):
         for rec in self:
