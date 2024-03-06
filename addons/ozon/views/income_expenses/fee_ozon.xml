@@ -48,7 +48,7 @@
         <!-- Menu -->
         <menuitem name="Комиссии категорий"
             id="menu_fee_ozon"
-            parent="main_menu_finance"
+            parent="main_menu_history"
             action="action_fee_ozon"
             sequence="4" />
 
