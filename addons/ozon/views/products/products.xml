@@ -599,7 +599,6 @@
                     <field name="products" />
                     <field name="price" />
                     <field name="is_selling" />
-                    <field name="trading_scheme" />
                     <field name="abc_group" string="ABC Группа"
                         decoration-success="abc_group=='A'"
                         decoration-danger="abc_group=='C'"

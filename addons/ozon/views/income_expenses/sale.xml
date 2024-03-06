@@ -69,7 +69,7 @@
         <!-- Menu -->
         <menuitem name="Продажи"
             id="menu_sale"
-            parent="main_menu_finance"
+            parent="main_menu_history"
             action="action_sale"
             sequence="2" />
 
