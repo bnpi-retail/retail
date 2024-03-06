@@ -15,6 +15,9 @@
                         <button class="oe_stat_button" type="object" name="get_sales">
                             <field string="История продаж" name="get_sales_count" widget="statinfo" />
                         </button>
+                        <button class="oe_stat_button" type="object" name="smart_action_promotion_expenses">
+                            <field string="Затраты продвижение" name="promotion_expenses_count" widget="statinfo" />
+                        </button>
                         <button class="oe_stat_button" type="object" name="get_postings">
                             <field string="Отправления" name="postings_count"
                                 widget="statinfo" />
@@ -298,16 +301,6 @@
                             <field name="tracked_search_query_ids">
                                 <tree>
                                     <field name="name" />
-                                </tree>
-                            </field>
-                            <separator string="Затраты на продвижение" />
-                            <field name="promotion_expenses_ids">
-                                <tree>
-                                    <field name="date" />
-                                    <field name="promotion_type" />
-                                    <field name="qty" />
-                                    <field name="percent_rate" />
-                                    <field name="expense" />
                                 </tree>
                             </field>
                         </page>

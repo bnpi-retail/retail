@@ -345,6 +345,7 @@ class Product(models.Model):
     )
     get_sales_count = fields.Integer(compute="compute_count_sales")
     price_history_count = fields.Integer(compute="compute_count_price_history")
+    promotion_expenses_count = fields.Integer(compute="compute_count_promotion_expenses")
     action_candidate_ids = fields.One2many(
         "ozon.action_candidate", "product_id", string="Кандидат в акциях"
     )
@@ -731,6 +732,26 @@ class Product(models.Model):
                 "interval": "day",
             },
         }
+
+    def smart_action_promotion_expenses(self):
+        self.ensure_one()
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Затраты на продвижение",
+            "view_mode": "tree",
+            "res_model": "ozon.promotion_expenses",
+            "domain": [
+                ("product_id", "=", self.id),
+            ],
+            "context": {
+                "create": False,
+                "views": [(False, "tree"), (False, "form"), (False, "graph")],
+            },
+        }
+
+    def compute_count_promotion_expenses(self):
+        self.promotion_expenses_count = len(self.promotion_expenses_ids) if self.promotion_expenses_ids else 0
 
     def _compute_profit(self):
         for rec in self:
