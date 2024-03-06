@@ -11,7 +11,7 @@
                             <group>
                                 <field name="ozon_categories_id" string="Категория"/>
 
-                                <label for="period_start" string="Даты"/>
+                                <label for="period_from" string="Даты"/>
                                 <div class="o_row">
                                     <field name="period_from" widget="daterange"
                                            class="oe_inline"
