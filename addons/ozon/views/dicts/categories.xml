@@ -82,6 +82,17 @@
             </field>
         </record>
 
+        <!-- Search -->
+        <record id="view_main_categories_search" model="ir.ui.view">
+            <field name="name">Категории</field>
+            <field name="model">ozon.categories</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name_categories" />
+                </search>
+            </field>
+        </record>
+
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_main_categories">
             <field name="name">Основные категории</field>

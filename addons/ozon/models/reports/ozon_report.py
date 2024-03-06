@@ -139,6 +139,15 @@ class OzonReportCompetitorBCGMatrix(models.Model):
             ):
                 raise UserError('Проверьте даты выбранных периодов')
 
+            for period in record.period_prev, record.period_curr:
+                for seller in period.ozon_report_competitor_category_share_ids:
+                    if seller.category_share == 0:
+                        raise UserError("Перед тем, как рассчитать BCG матрицу, зайдите в 'Отчеты по рынку' "
+                                        "которые будете использовать как 'Первый период' и 'Период'. "
+                                        "Заполните данные в столбце 'Доля в категории' для каждого продавца "
+                                        "(данные можно получить в личном кабинете Ozon), затем кликните "
+                                        "'Action' > 'Рассчитать долю рынка товаров'")
+
             # Market growth rate
             # products growth rate
             products_with_turnovers = defaultdict(lambda: {

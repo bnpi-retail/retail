@@ -7,8 +7,8 @@ class Seller(models.Model):
 
     name = fields.Char(string="Название", index=True)
     ogrn = fields.Char(string="ОГРН")
-    trade_name = fields.Char(string="Торговое название")
-    is_my_shop = fields.Char(default=True)
+    trade_name = fields.Char(string="Торговое название", required=True)
+    is_my_shop = fields.Boolean(default=True, readonly=True)
 
     tax = fields.Float(string="Налогообложение", default=0.07)
     tax_percent = fields.Float(string="Процент налога", compute="_compute_tax_percent")
