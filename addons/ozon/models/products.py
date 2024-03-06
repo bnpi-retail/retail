@@ -2086,16 +2086,16 @@ class Product(models.Model):
             }
     
     def get_products_by_cat_with_sales_for_period(self, data):
-        domain = []
-        if cat_id := data.get("category_id"):
-            domain.append(("categories", "=", cat_id))
-        if date_from := data.get("date_from"):
-            domain.append(("sales.date", ">=", fields.Date.to_date(date_from)))
-        if date_to := data.get("date_to"):
-            domain.append(("sales.date", "<=", fields.Date.to_date(date_to)))
-        if not domain:
-            domain.append(("sales", "!=", False))
-        return self.search(domain)
+        date_from = data.get("date_from")
+        date_to = data.get("date_to")
+        cat_id = data.get("category_id")
+        if date_from and date_to and cat_id:
+            sales_products_ids = self.env["ozon.transaction"].search([
+                ("name", "=", "Доставка покупателю"),
+                ("transaction_date", ">=", fields.Date.to_date(date_from)),
+                ("transaction_date", "<=", fields.Date.to_date(date_to))]).products.ids
+            return self.search([("categories", "=", cat_id), ("id", "in", sales_products_ids)])
+        
     
     def _compute_marketing_discount(self):
         for r in self:

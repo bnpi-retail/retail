@@ -46,7 +46,8 @@ class SalesReportByCategory(models.Model):
 
         # взять все затраты (all_expenses) по всем продуктам
         for p in products:
-            prod_transactions = transactions.filtered(lambda r: p in r.products)
+            prod_transactions = transactions.filtered(lambda r: p.id in r.products.ids)
+            print(prod_transactions)
             sales_qty = len(prod_transactions)
             prod_revenue = sum(prod_transactions.mapped("accruals_for_sale"))
             expenses = p.all_expenses_ids.filtered(
