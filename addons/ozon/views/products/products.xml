@@ -452,6 +452,7 @@
                                                        nolable="1"
                                                 />
                                             </div>
+                                            <br/>
                                         </group>
                                         <field name="ozon_report_products_revenue_expenses_ids">
                                             <tree create="0">
