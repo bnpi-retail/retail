@@ -455,7 +455,7 @@ class Product(models.Model):
             self.calculate_expenses_row(
                 revenue=revenue,
                 total_revenue=total_revenue,
-                identifier=3,
+                identifier=4,
                 plan_name='Вознаграждение Ozon',
                 row_name='Комиссия за продажу',
             )
