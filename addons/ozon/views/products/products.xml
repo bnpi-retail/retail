@@ -129,6 +129,12 @@
                                 <page id="page_price_comparison" string="Калькулятор">
                                     <group col="4" style="margin-bottom: 20px;">
                                         <group>
+                                            <button type="object"
+                                                name="calculate_price_comparison_ids_calc_column"
+                                                string="Рассчитать «Калькулятор»"
+                                                class="btn-outline-primary" />
+                                        </group>
+                                        <group>
                                             <field name="plan_calc_datetime" />
                                         </group>
                                         <group>
@@ -137,16 +143,10 @@
                                         <group>
                                             <field name="fact_calc_datetime" />
                                         </group>
-                                        <group>
-                                            <button type="object"
-                                                name="calculate_price_comparison_ids_calc_column"
-                                                string="Рассчитать «Калькулятор»"
-                                                class="btn-outline-primary" />
-                                        </group>
                                     </group>
                                     <field name="price_comparison_ids">
                                         <tree editable="1">
-                                            <field name="name" />
+                                            <field name="name" string="Плановая статья" />
                                             <field name="plan_value" />
                                             <field name="market_value" />
                                             <field name="fact_value" />
@@ -171,10 +171,14 @@
                                     </group>
                                     <field name="base_calculation_ids">
                                         <tree editable="1">
-                                            <field name="price_component_id" />
+                                            <field name="price_component_id"
+                                                string="Плановая статья" />
+                                            <field name="value" string="Значение плановой статьи"
+                                                attrs="{'readonly': [('kind','=','depends_on_volume')]}"
+                                                optional="hide" />
                                             <field name="kind" />
-                                            <field name="value"
-                                                attrs="{'readonly': [('kind','=','depends_on_volume')]}" />
+                                            <field name="percent" widget="percentage" />
+                                            <field name="value_based_on_price" sum="1" />
                                             <field name="comment" optional="hide" />
                                         </tree>
                                     </field>
@@ -194,9 +198,9 @@
                                     </group>
                                     <field name="all_expenses_except_roi_roe_ids">
                                         <tree>
-                                            <field name="identifier" />
-                                            <field name="name" />
-                                            <field name="category" />
+                                            <field name="identifier" optional="hide" />
+                                            <field name="name" string="Фактическая статья" />
+                                            <field name="category" string="Плановая статья" />
                                             <field name="kind" />
                                             <field name="comment" optional="hide" />
                                             <field name="percent" widget="percentage" />
@@ -554,31 +558,34 @@
                                 </group>
                                 <field name="ozon_report_products_revenue_expenses_ids">
                                     <tree create="0">
-                                        <field name="identifier"/>
-                                        <field name="name"/>
-                                        <field name="comment" optional="hide"/>
-                                        <field name="qty" decoration-warning="accuracy=='c'"/>
-                                        <field name="percent" decoration-warning="accuracy=='c'"/>
-                                        <field name="value" sum="1" decoration-warning="accuracy=='c'"/>
-                                        <field name="percent_from_total"/>
-                                        <field name="total_value" sum="1"/>
-                                        <field name="accuracy" invisible="1"/>
+                                        <field name="identifier" />
+                                        <field name="name" />
+                                        <field name="comment" optional="hide" />
+                                        <field name="qty" decoration-warning="accuracy=='c'" />
+                                        <field name="percent" decoration-warning="accuracy=='c'" />
+                                        <field name="value" sum="1"
+                                            decoration-warning="accuracy=='c'" />
+                                        <field name="percent_from_total" />
+                                        <field name="total_value" sum="1" />
+                                        <field name="accuracy" invisible="1" />
                                     </tree>
                                 </field>
-                                <field name="is_promotion_data_correct" invisible="1"/>
-                                    <div class="o_row"
-                                         attrs="{'invisible': [('is_promotion_data_correct', '=', True)]}">
-                                        <h5>
-                                            *Данные Расходов на продвижение продуктов за период могут быть не точны.
+                                <field name="is_promotion_data_correct" invisible="1" />
+                                <div class="o_row"
+                                    attrs="{'invisible': [('is_promotion_data_correct', '=', True)]}">
+                                    <h5>
+                                        *Данные Расходов на продвижение продуктов за период могут
+                                        быть не точны.
 
-                                            Не найдены импорты Отчётов о рекламной кампании (продвижение в поиске)
-                                            покрывающие весь искомый период.
+                                        Не найдены импорты Отчётов о рекламной кампании (продвижение
+                                        в поиске)
+                                        покрывающие весь искомый период.
 
-                                            Пожалуйста, загрузите недостающие отчеты за период.
-                                        </h5>
-                                    </div>
+                                        Пожалуйста, загрузите недостающие отчеты за период.
+                                    </h5>
+                                </div>
                                 <group>
-                                    <field name="avg_value_to_use" class="oe_inline"/>
+                                    <field name="avg_value_to_use" class="oe_inline" />
                                 </group>
                             </group>
                         </page>

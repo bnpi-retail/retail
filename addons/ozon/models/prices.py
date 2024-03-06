@@ -348,7 +348,7 @@ class AllExpenses(models.Model):
     comment = fields.Text(string="Комментарий", readonly=True, compute="_compute_comment")
     kind = fields.Selection(
         [("fix", "Фиксированный"), ("percent", "Процентный")],
-        string="Тип затрат",
+        string="Тип",
         readonly=True,
     )
     category = fields.Char(string="Категория затрат", readonly=True)

@@ -18,9 +18,31 @@ class BaseCalculation(models.Model):
             ("percent_cost_price", "Процент от себестоимости"),
             ("fix", "Значение, ₽"),
             ("depends_on_volume", "Значение, ₽ (зависит от объёма)"),
-        ], string="Тип начисления", compute="_compute_kind")
-    value = fields.Float(string="Значение")
+        ], string="Тип", compute="_compute_kind")
+    value = fields.Float(string="Значение компонента цены")
+    value_based_on_price = fields.Float(string="Значение", compute="_compute_value_based_on_price")
+    percent = fields.Float(string="Процент", compute="_compute_percent")
     comment = fields.Text(string="Комментарий")
+
+    def _compute_percent(self):
+        for r in self:
+            plan_price = r.product_id._price_comparison("your_price").plan_value
+            if r.kind == "percent":
+                r.percent = r.value / 100
+            elif r.kind in ["fix", "depends_on_volume"]:
+                r.percent = plan_price and r.value / plan_price
+            elif r.kind == "percent_cost_price":
+                r.percent = (plan_price 
+                and (r.value / 100) * r.product_id.retail_product_total_cost_price / plan_price)
+
+    def _compute_value_based_on_price(self):
+        for r in self:
+            plan_price = r.product_id._price_comparison("your_price").plan_value
+            if r.kind in ["fix", "depends_on_volume"]:
+                r.value_based_on_price = r.value
+            elif r.kind in ["percent", "percent_cost_price"]:
+                r.value_based_on_price = plan_price * r.percent 
+
 
     def calculate_plan_price(self, product):
         # найти сумму фикс затрат (себестоимость + все из планового расчета)
