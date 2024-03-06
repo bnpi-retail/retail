@@ -641,7 +641,7 @@ class Product(models.Model):
                 """
         self.env.cr.execute(query, (self.period_start, self.period_finish, name))
         total_sum_value = self.env.cr.fetchone()
-        return total_sum_value[0] if total_sum_value else 0
+        return total_sum_value[0] if total_sum_value and total_sum_value[0] else 0
 
     def get_products_and_skus_from_transaction_skus(self, skus: str) -> tuple[list, list]:
         products = []
