@@ -103,24 +103,24 @@
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_transaction">
-            <field name="name">Транзакции</field>
+            <field name="name">Транзакции Ozon</field>
             <field name="res_model">ozon.transaction</field>
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem name="Выплаты"
+        <menuitem name="Транзакции Ozon"
             id="menu_transactions"
             parent="main_menu_finance"
             action="action_transaction"
             sequence="1" />
 
         <record model="ir.actions.act_window" id="action_transaction_value_by_product">
-            <field name="name">Транзакции с разбитием на услуги по продукту</field>
+            <field name="name">Транзакции декомпозированые на услуги по продукту</field>
             <field name="res_model">ozon.transaction.value_by_product</field>
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem name="Выплаты с разбитием на услуги по продукту"
+        <menuitem name="Декомпозированые транзакции"
             id="menu_transactions_value_by_product"
             parent="main_menu_finance"
             action="action_transaction_value_by_product"
