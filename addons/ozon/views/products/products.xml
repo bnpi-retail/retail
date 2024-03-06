@@ -299,69 +299,68 @@
                         <page id="page_lot_promotion_info" string="Маркетинг">
                             <notebook>
                                 <page string="Скидки и поисковые запросы">
-                                    <group style="margin-bottom: 20px;">
-                                        <field name="marketing_discount" widget="percentage" />
-                                    </group>
                                     <group>
-                                        <field name="category_marketing_discount"
-                                            widget="percentage" />
+                                        <group>
+                                            <group string="Маркетинговые скидки" style="margin-bottom: 20px;">
+                                                <field name="marketing_discount" widget="percentage"/>
+                                                <field name="category_marketing_discount"
+                                                       widget="percentage"/>
+                                            </group>
+                                            <group string="Ценовой индекс и цены конкурентов">
+                                                <field name="price_index"/>
+                                                <field name="ozon_comp_min_price"/>
+                                                <field name="ext_comp_min_price"/>
+                                                <field name="self_marketplaces_min_price"/>
+                                            </group>
+                                        </group>
+                                        <group>
+                                            <group string="ABC Анализ">
+                                                <field name="revenue_share_temp"
+                                                       string="Доля продукта в выручке, %"
+                                                       readonly="1"/>
+                                                <field name="revenue_cumulative_share_temp"
+                                                       string="Накопительный вклад, %"
+                                                       readonly="1"/>
+                                                <field name="abc_group" string="Группа"/>
+                                            </group>
+                                            <group string="BCG Матрица">
+                                                <field name="bcg_group_is_computed" invisible="1"/>
+                                                <field name="bcg_group"
+                                                       string="BCG группа"
+                                                       readonly="0"
+                                                       attrs="{'invisible': [('bcg_group_is_computed', '=', False)]}"
+                                                />
+                                            </group>
+                                        </group>
                                     </group>
-                                    <small>Данная скидка будет применена для расчёта "Вашей цены" в
+                                    <small>*Данная скидка будет применена для расчёта "Вашей цены" в
                                         столбце "Рынок" на вкладке "Калькулятор"
                                     </small>
-                                    <separator string="Поисковые запросы" />
-                                    <br />
+
+                                    <separator string="Поисковые запросы"/>
+                                    <br/>
                                     <field name="tracked_search_query_ids">
                                         <tree>
-                                            <field name="name" />
+                                            <field name="name"/>
                                         </tree>
                                     </field>
                                 </page>
                                 <page id="page_ozon_actions" string="Акции">
-                                    <separator string="Кандидат в акциях" />
-                                    <br />
+                                    <separator string="Кандидат в акциях"/>
+                                    <br/>
                                     <field name="action_candidate_ids">
                                         <tree>
-                                            <field name="action_id" />
-                                            <field name="action_start" />
-                                            <field name="action_end" />
+                                            <field name="action_id"/>
+                                            <field name="action_start"/>
+                                            <field name="action_end"/>
                                             <field name="action_status" widget="badge"
-                                                decoration-success="action_status=='started'"
-                                                decoration-muted="action_status=='not_started'"
-                                                decoration-info="action_status=='ended'" />
-                                            <field name="max_action_price" />
-                                            <field name="is_participating" />
+                                                   decoration-success="action_status=='started'"
+                                                   decoration-muted="action_status=='not_started'"
+                                                   decoration-info="action_status=='ended'"/>
+                                            <field name="max_action_price"/>
+                                            <field name="is_participating"/>
                                         </tree>
                                     </field>
-                                </page>
-                                <page id="page_analysis_data_abc_analysis" string="ABC анализ">
-                                    <group>
-                                        <field name="revenue_share_temp"
-                                            string="Доля продукта в выручке, %"
-                                            readonly="1" />
-                                        <field name="revenue_cumulative_share_temp"
-                                            string="Накопительный вклад, %"
-                                            readonly="1" />
-                                        <field name="abc_group" string="Группа" />
-                                    </group>
-                                </page>
-                                <page id="page_analysis_data_price_index" string="Ценовой индекс">
-                                    <group string="Ценовой индекс и цены конкурентов">
-                                        <field name="price_index" />
-                                        <field name="ozon_comp_min_price" />
-                                        <field name="ext_comp_min_price" />
-                                        <field name="self_marketplaces_min_price" />
-                                    </group>
-                                </page>
-                                <page id="page_analysis_data_abc_analysis" string="BCG Матрица">
-                                    <group>
-                                        <field name="bcg_group_is_computed" invisible="1" />
-                                        <field name="bcg_group"
-                                            string="BCG группа"
-                                            readonly="0"
-                                            attrs="{'invisible': [('bcg_group_is_computed', '=', False)]}"
-                                        />
-                                    </group>
                                 </page>
                             </notebook>
                         </page>
