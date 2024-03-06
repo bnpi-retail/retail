@@ -2128,6 +2128,7 @@ class ProductNameGetExtension(models.Model):
 class ProductQuikSearchExtension(models.Model):
     _inherit = "ozon.products"
 
+    @api.model
     def _name_search(
         self, name="", args=None, operator="ilike", limit=10, name_get_uid=None
     ):

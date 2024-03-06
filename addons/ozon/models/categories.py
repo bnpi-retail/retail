@@ -26,6 +26,15 @@ class Categories(models.Model):
         string="Cоотношение между нашей ценой и ценой для покупателя")
     is_price_difference_computed = fields.Boolean()
 
+    @api.model
+    def _name_search(
+        self, name="", args=None, operator="ilike", limit=10, name_get_uid=None
+    ):
+        args = list(args or [])
+        if name:
+            args += [("name_categories", operator, name)]
+        return self._search(args, limit=limit, access_rights_uid=name_get_uid)
+
     def action_compute_average_prices_difference(self):
         for record in self:
             query = """
