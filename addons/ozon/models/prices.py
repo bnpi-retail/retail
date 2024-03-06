@@ -348,7 +348,7 @@ class AllExpenses(models.Model):
     comment = fields.Text(string="Комментарий", readonly=True, compute="_compute_comment")
     kind = fields.Selection(
         [("fix", "Фиксированный"), ("percent", "Процентный")],
-        string="Тип затрат",
+        string="Тип",
         readonly=True,
     )
     category = fields.Char(string="Категория затрат", readonly=True)
@@ -515,44 +515,45 @@ class AllExpenses(models.Model):
             total_expenses += prod.products.total_cost_price
             # продвижение товара
             name = "Услуги продвижения товаров"
-            promo_expenses = prod.promotion_expenses_ids.filtered(
-                lambda r: latest_indirect_expenses.date_from <= r.date <= latest_indirect_expenses.date_to)
-            # если есть фактические данные по затратам на рекламу по данному товару
-            if promo_expenses:
-                mean_promo_expense = mean(promo_expenses.mapped("expense"))
-                percent_promo_expense = mean_promo_expense / price
-            # берем коэф. из отчета о выплатах
-            else:
-                percent_promo_expense = abs(tran_sums.filtered(lambda r: r.name == name).percent)
-                mean_promo_expense = price * percent_promo_expense
-            data.append(
-                {
-                    "product_id": prod.id,
-                    "name": name,
-                    "kind": "percent",
-                    "category": fact_plan_match.get(name, "Unknown"),
-                    "percent": percent_promo_expense,
-                    "value": mean_promo_expense,
-                    "expected_value": exp_price * percent_promo_expense,
-                }
-            )
+            # # если есть фактические данные по затратам на рекламу по данному товару
+            # promo_expenses = prod.promotion_expenses_ids.filtered(
+            #     lambda r: latest_indirect_expenses.date_from <= r.date <= latest_indirect_expenses.date_to)
+            # if promo_expenses:
+            #     mean_promo_expense = mean(promo_expenses.mapped("expense"))
+            #     percent_promo_expense = mean_promo_expense / price
+            
+            # # берем коэф. из отчета о выплатах
+            # percent_promo_expense = abs(tran_sums.filtered(lambda r: r.name == name).percent)
+            # mean_promo_expense = price * percent_promo_expense
+            # data.append(
+            #     {
+            #         "product_id": prod.id,
+            #         "name": name,
+            #         "kind": "percent",
+            #         "category": fact_plan_match.get(name, "Unknown"),
+            #         "percent": percent_promo_expense,
+            #         "value": mean_promo_expense,
+            #         "expected_value": exp_price * percent_promo_expense,
+            #     }
+            # )
             # затраты из отчета о выплатах
-            for t_sum in tran_sums.filtered(lambda r: r.name != "Услуги продвижения товаров"): 
-                percent = abs(t_sum.percent)
-                value = price * percent
-                exp_value = exp_price * percent
-                data.append(
-                    {
-                        "product_id": prod.id,
-                        "name": t_sum.name,
-                        "kind": "percent",
-                        "category": fact_plan_match.get(t_sum.name, "Unknown"),
-                        "percent": percent,
-                        "value": value,
-                        "expected_value": exp_value,
-                    }
-                )
-                total_expenses += value
+            for t_sum in tran_sums:
+                if plan_component := fact_plan_match.get(t_sum.name):
+                    percent = abs(t_sum.percent)
+                    value = price * percent
+                    exp_value = exp_price * percent
+                    data.append(
+                        {
+                            "product_id": prod.id,
+                            "name": t_sum.name,
+                            "kind": "percent",
+                            "category": plan_component,
+                            "percent": percent,
+                            "value": value,
+                            "expected_value": exp_value,
+                        }
+                    )
+                    total_expenses += value
             
 
             # # вознаграждение озон, последняя миля, логистика, обработка, эквайринг

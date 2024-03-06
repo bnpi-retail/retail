@@ -1809,7 +1809,7 @@ class Product(models.Model):
             [], limit=1, order="id desc"
         )
         if not latest_indirect_expenses:
-            raise UserError("Косвенные затраты не рассчитаны.")
+            raise UserError("Невозможно рассчитать. Отсутствует отчёт о выплатах.")
         self.env["ozon.all_expenses"].create_update_all_product_expenses(
             self, latest_indirect_expenses, expected_price
         )
