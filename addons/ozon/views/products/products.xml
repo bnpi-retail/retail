@@ -171,7 +171,12 @@
                                                 class="btn-outline-primary" />
                                         </group>
                                         <group>
-                                            <field name="plan_calc_datetime" />
+                                            <group>
+                                                <field name="plan_calc_datetime" />
+                                            </group>
+                                            <group>
+                                                <field name="base_calculation_template_id" />
+                                            </group>
                                         </group>
                                     </group>
                                     <field name="base_calculation_ids">

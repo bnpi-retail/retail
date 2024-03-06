@@ -400,6 +400,8 @@ class Product(models.Model):
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
                                            string="Сравнение цен")
     base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Плановая цена")
+    base_calculation_template_id = fields.Many2one("ozon.base_calculation_template", 
+                                                   string="Шаблон планового расчёта")
     logistics_tariff_id = fields.Many2one("ozon.logistics_tariff", 
                                           string="Тариф логистики в плановом расчёте")
     plan_calc_datetime = fields.Datetime(string="Дата расчёта (План)", readonly=True)
@@ -1971,6 +1973,9 @@ class Product(models.Model):
     
     def calculate_price_comparison_ids_plan_column(self):
         self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
+        if not self.base_calculation_template_id:
+            raise UserError("Шаблон планового расчёта не задан")
+        self.base_calculation_template_id.apply_to_products(self)
         self.env["ozon.price_comparison"].update_plan_column_for_product(self)
         self.plan_calc_datetime = fields.Datetime.now()
     
@@ -2097,16 +2102,16 @@ class Product(models.Model):
             }
     
     def get_products_by_cat_with_sales_for_period(self, data):
-        domain = []
-        if cat_id := data.get("category_id"):
-            domain.append(("categories", "=", cat_id))
-        if date_from := data.get("date_from"):
-            domain.append(("sales.date", ">=", fields.Date.to_date(date_from)))
-        if date_to := data.get("date_to"):
-            domain.append(("sales.date", "<=", fields.Date.to_date(date_to)))
-        if not domain:
-            domain.append(("sales", "!=", False))
-        return self.search(domain)
+        date_from = data.get("date_from")
+        date_to = data.get("date_to")
+        cat_id = data.get("category_id")
+        if date_from and date_to and cat_id:
+            sales = self.env["ozon.transaction"].search([
+                ("name", "=", "Доставка покупателю"),
+                ("transaction_date", ">=", fields.Date.to_date(date_from)),
+                ("transaction_date", "<=", fields.Date.to_date(date_to))])
+            return self.search([("categories", "=", cat_id), ("id", "in", sales.products.ids)])
+        
     
     def _compute_marketing_discount(self):
         for r in self:

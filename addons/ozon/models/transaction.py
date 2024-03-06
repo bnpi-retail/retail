@@ -100,6 +100,9 @@ class TransactionUnit(models.Model):
     indirect_percent_expenses_id = fields.Many2one("ozon.indirect_percent_expenses", 
                                                    string="Отчёт о косвенных затратах", 
                                                    ondelete="cascade")
+    sales_report_by_category_id = fields.Many2one("ozon.sales_report_by_category", 
+                                                   string="Отчёт о продажах категории", 
+                                                   ondelete="cascade")
     @api.depends("name")
     def _compute_category(self):
         for r in self:
@@ -170,10 +173,16 @@ class TransactionUnitSummary(models.Model):
     indirect_percent_expenses_id = fields.Many2one("ozon.indirect_percent_expenses", 
                                                    string="Отчёт о выплатах", 
                                                    ondelete="cascade")
+    sales_report_by_category_id = fields.Many2one("ozon.sales_report_by_category", 
+                                                   string="Отчёт о продажах категории", 
+                                                   ondelete="cascade")
     
-    def collect_data_from_transaction_units(self, report):
+    def collect_data_from_transaction_units(self, report, report_type):
+        """
+        Report types: 'indirect_percent_expenses_id', 'sales_report_by_category_id'
+        """
         grouped_tran_units = self.env["ozon.transaction_unit"].read_group(
-            domain=[("indirect_percent_expenses_id", "=", report.id)], 
+            domain=[(report_type, "=", report.id)], 
             fields=["name", "value"],
             groupby=["name"])
         rev = report.revenue
@@ -182,7 +191,7 @@ class TransactionUnitSummary(models.Model):
              "count": i["name_count"], 
              "value": i["value"],
              "percent": i["value"] / rev if i["name"] not in ["Сумма за заказы", "Итого за заказы"] else 0, 
-             "indirect_percent_expenses_id": report.id}
+             report_type: report.id}
              for i in grouped_tran_units]
         return data
 

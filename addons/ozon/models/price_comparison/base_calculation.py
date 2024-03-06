@@ -142,26 +142,20 @@ class BaseCalculationTemplate(models.Model):
 
     def create_if_not_exists(self):
         if not self.search([]):
-            bc_comps = self.env["ozon.base_calculation"].create_base_calculation_components()
-            self.create({"name": "Шаблон", "base_calculation_ids": bc_comps})
-
-class BaseCalculationWizard(models.Model):
-    _name = "ozon.base_calculation_wizard"
-    _description = "Wizard - Шаблон планового расчёта"
-
-    base_calculation_template_id = fields.Many2one("ozon.base_calculation_template", 
-                                                   string="Шаблон планового расчёта")
-
-    def apply_to_products(self):
+            data = []
+            for i in range(1, 4):
+                bc_comps = self.env["ozon.base_calculation"].create_base_calculation_components()
+                data.append({"name": f"Шаблон №{i}", "base_calculation_ids": bc_comps})
+            self.create(data)
+    
+    def apply_to_products(self, products):
         """Applies base_calculation_template to products"""
-        products = self.env["ozon.products"].browse(self._context["active_ids"])
         data = []
         products.base_calculation_ids.unlink()
-        template = self.base_calculation_template_id
         log_tar_model = self.env["ozon.logistics_tariff"]
         for prod in products:
             p_id = prod.id
-            for r in template.base_calculation_ids:
+            for r in self.base_calculation_ids:
                 if r.price_component_id.identifier == "logistics":
                     if not prod.logistics_tariff_id:
                         log_tar_model.assign_logistics_tariff_id(prod)
@@ -183,6 +177,18 @@ class BaseCalculationWizard(models.Model):
                             "comment": comment})
         self.env["ozon.base_calculation"].create(data)
 
+class BaseCalculationWizard(models.Model):
+    _name = "ozon.base_calculation_wizard"
+    _description = "Wizard - Шаблон планового расчёта"
+
+    base_calculation_template_id = fields.Many2one("ozon.base_calculation_template", 
+                                                   string="Шаблон планового расчёта")
+
+    def apply_to_products(self):
+        """Applies base_calculation_template to products from wizard"""
+        products = self.env["ozon.products"].browse(self._context["active_ids"])
+        products.base_calculation_template_id = self.base_calculation_template_id
+        self.base_calculation_template_id.apply_to_products(products)
 
 
 class LogisticsTariff(models.Model):
