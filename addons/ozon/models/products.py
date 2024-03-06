@@ -750,6 +750,7 @@ class Product(models.Model):
             },
         }
 
+    @api.depends('promotion_expenses_ids')
     def compute_count_promotion_expenses(self):
         self.promotion_expenses_count = len(self.promotion_expenses_ids) if self.promotion_expenses_ids else 0
 
