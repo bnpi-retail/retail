@@ -63,9 +63,9 @@ class Product(models.Model):
     products = fields.Many2one("retail.products", string="Товар")
     price = fields.Float(string="Актуальная цена", readonly=True)
     marketing_price = fields.Float(string="Цена на товар с учетом всех акций", readonly=True)
-    marketing_discount = fields.Float(string="Маркетинговая скидка", 
+    marketing_discount = fields.Float(string="Маркетинговая скидка Ozon",
                                       compute="_compute_marketing_discount")
-    category_marketing_discount = fields.Float(string="Средняя маркетинговая скидка категории",
+    category_marketing_discount = fields.Float(string="Средняя маркетинговая скидка Ozon по категории",
                                                related="categories.price_difference")
     calculator_delta = fields.Float(string="Дельта", compute="_compute_calculator_delta")
     calculator_profit_norm = fields.Float(string="Доходность", 

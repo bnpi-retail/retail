@@ -285,7 +285,7 @@
                         </page>
 
 
-                        <page id="page_lot_promotion_info" string="Продвижение">
+                        <page id="page_lot_promotion_info" string="Маркетинг">
                             <group style="margin-bottom: 20px;">
                                 <field name="marketing_discount" widget="percentage" />
                             </group>
