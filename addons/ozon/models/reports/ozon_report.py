@@ -53,6 +53,7 @@ class OzonReportCategoryMarketShare(models.Model):
     ozon_report_competitor_category_share_ids = fields.One2many(
         "ozon.report.competitor_category_share", 'ozon_report_category_market_share'
     )
+    is_calculated = fields.Boolean()
 
     def name_get(self):
         res = []
@@ -63,6 +64,8 @@ class OzonReportCategoryMarketShare(models.Model):
 
     def action_do_report_category_market_share(self):
         for record in self:
+            if not record.ozon_categories_id:
+                raise UserError("Выберите категорию")
             known_share_percentage = 0
             total_amount = 0
             for competitor_category_share in record.ozon_report_competitor_category_share_ids:
@@ -70,7 +73,9 @@ class OzonReportCategoryMarketShare(models.Model):
                 total_amount += competitor_category_share.turnover
 
             if total_amount == 0:
-                raise UserError('Суммарная стоимость всех продаж = 0. Нельзя посчитать доли рынка.')
+                raise UserError('Суммарная стоимость всех продаж = 0. Не могу посчитать доли рынка.')
+            if known_share_percentage == 0:
+                raise UserError('Суммарная доля в категории всех продавцов = 0. Не могу посчитать доли рынка.')
 
             for sale in record.ozon_products_competitors_sale_ids:
                 revenue_share_percentage = (sale.orders_sum * known_share_percentage) / total_amount
@@ -87,6 +92,8 @@ class OzonReportCategoryMarketShare(models.Model):
                     sale.ozon_products_competitors_id.market_share = revenue_share_percentage
                     if not sale.ozon_products_competitors_id.market_share_is_computed:
                         sale.ozon_products_competitors_id.market_share_is_computed = True
+
+            record.is_calculated = True
 
 
 class OzonReportCompetitorCategoryShare(models.Model):
@@ -140,13 +147,19 @@ class OzonReportCompetitorBCGMatrix(models.Model):
                 raise UserError('Проверьте даты выбранных периодов')
 
             for period in record.period_prev, record.period_curr:
+                check_list = 0
+                period_is_calculated = 1
                 for seller in period.ozon_report_competitor_category_share_ids:
-                    if seller.category_share == 0:
-                        raise UserError("Перед тем, как рассчитать BCG матрицу, зайдите в 'Отчеты по рынку' "
-                                        "которые будете использовать как 'Первый период' и 'Период'. "
-                                        "Заполните данные в столбце 'Доля в категории' для каждого продавца "
-                                        "(данные можно получить в личном кабинете Ozon), затем кликните "
-                                        "'Action' > 'Рассчитать долю рынка товаров'")
+                    check_list += seller.category_share == 0
+                    if not period.is_calculated:
+                        period_is_calculated = 0
+
+            if check_list == 0 or not period_is_calculated:
+                raise UserError("Перед тем, как рассчитать BCG матрицу, зайдите в 'Отчеты по рынку' "
+                                "которые будете использовать как 'Первый период' и 'Период'. "
+                                "Заполните данные в столбце 'Доля в категории' для каждого продавца "
+                                "(данные можно получить в личном кабинете Ozon), затем кликните "
+                                "'Action' > 'Рассчитать долю рынка товаров'")
 
             # Market growth rate
             # products growth rate
