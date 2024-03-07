@@ -10,7 +10,7 @@ class ProductCompetitors(models.Model):
     _description = "Товары конкуренты"
 
     id_product = fields.Char(string="Id товара на Ozon")
-    article = fields.Char(string="Артикул", unique=True)
+    article = fields.Char(string="Артикул")
 
     tracked_search_query_ids = fields.Many2many(
         'ozon.tracked_search_queries', 
@@ -29,7 +29,7 @@ class ProductCompetitors(models.Model):
         string="URL товара", widget="url", help="Укажите ссылку на товар в поле"
     )
 
-    product = fields.Many2one("ozon.products", string="Лот")
+    product = fields.Many2one("ozon.products", string="Наш товар")
 
     market_share = fields.Float(string='Доля рынка', digits=(12, 5))
     market_share_is_computed = fields.Boolean()

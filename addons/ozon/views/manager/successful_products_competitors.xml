@@ -9,9 +9,17 @@
                 <form>
                     <separator string="Успешный товар конкурента" />
                     <group>
-                        <field name="name" />
-                        <field name="sku" />
-                        <field name="product" />
+                        <group>
+                            <field name="sku" />
+                            <field name="name" />
+                            <field name="product" />
+                            <field name="search_query"
+                                placeholder="Введите подходящий поисковый запрос" />
+                        </group>
+                        <group>
+                            <field name="is_matched" />
+                        </group>
+
                     </group>
                 </form>
             </field>
@@ -26,6 +34,7 @@
                     <field name="sku" />
                     <field name="name" />
                     <field name="product" />
+                    <field name="is_matched" />
                 </tree>
             </field>
         </record>
