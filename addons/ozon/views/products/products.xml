@@ -498,6 +498,22 @@
                                                 Пожалуйста, загрузите недостающие отчеты за период.
                                             </p>
                                         </div>
+                                        <separator string="Комиссии" style="margin-bottom: 10px"/>
+                                        <field name="ozon_report_products_revenue_expenses_ids_commissions">
+                                            <tree create="0">
+                                                <field name="identifier" />
+                                                <field name="name" />
+                                                <field name="comment" optional="hide" />
+                                                <field name="qty" decoration-warning="accuracy=='c'" />
+                                                <field name="percent"
+                                                    decoration-warning="accuracy=='c'" />
+                                                <field name="value" sum="1"
+                                                    decoration-warning="accuracy=='c'" />
+                                                <field name="percent_from_total" />
+                                                <field name="total_value" sum="1" />
+                                                <field name="accuracy" invisible="1" />
+                                            </tree>
+                                        </field>
                                         <group>
                                             <field name="avg_value_to_use" class="oe_inline" />
                                         </group>

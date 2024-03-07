@@ -14,4 +14,7 @@ class OzonReportProductsRevenueExpenses(models.Model):
     percent = fields.Float(string="Процент от выручки товара")
     percent_from_total = fields.Float(string="Процент от выручки всех товаров")
     total_value = fields.Float(string="Значение по всем товарам")
+    percent_from_total_category = fields.Float(string="Процент от выручки товаров категории")
+    total_value_category = fields.Float(string="Значение по товарам категории")
+    table = fields.Integer()
     accuracy = fields.Char(size=2)

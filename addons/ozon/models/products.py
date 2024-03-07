@@ -380,7 +380,15 @@ class Product(models.Model):
     bcg_group_is_computed = fields.Boolean()
     # revenue returns promotion
     ozon_report_products_revenue_expenses_ids = fields.One2many(
-        'ozon.report.products_revenue_expenses', 'ozon_products_id')
+        'ozon.report.products_revenue_expenses',
+        'ozon_products_id',
+        domain=[('table', '=', 1)]
+    )
+    ozon_report_products_revenue_expenses_ids_commissions = fields.One2many(
+        'ozon.report.products_revenue_expenses',
+        'ozon_products_id',
+        domain=[('table', '=', 2)]
+    )
     period_start = fields.Date(string="Период с", default=date.today() - timedelta(days=31))
     period_finish = fields.Date(string="по", default=date.today() - timedelta(days=1))
     period_preset = fields.Selection([
@@ -429,15 +437,19 @@ class Product(models.Model):
     #     self.period_preset = False
 
     def action_calculate_revenue_returns_promotion_for_period(self):
+        ids_to_del = (
+                self.ozon_report_products_revenue_expenses_ids.ids +
+                self.ozon_report_products_revenue_expenses_ids_commissions.ids
+        )
         delete_records(
             'ozon_report_products_revenue_expenses',
-            self.ozon_report_products_revenue_expenses_ids.ids,
+            ids_to_del,
             self.env
         )
         vals_to_write = []
         # revenue
         vals, revenue, total_revenue = self.calculate_sales_revenue_for_period()
-        vals_to_write.append(vals)
+        vals_to_write.extend(vals)
 
         # promotion_expenses
         vals_to_write.append(self.calculate_promotion_expenses_for_period(revenue, total_revenue))
@@ -450,6 +462,7 @@ class Product(models.Model):
                 identifier=3,
                 plan_name='Обратная логистика',
                 row_name='Обратная логистика',
+                table=1,
             )
         )
         # commission
@@ -460,6 +473,7 @@ class Product(models.Model):
                 identifier=4,
                 plan_name='Вознаграждение Ozon',
                 row_name='Комиссия за продажу',
+                table=2,
             )
         )
 
@@ -488,23 +502,31 @@ class Product(models.Model):
 
         return sum_value, qty
 
-    def calculate_sales_revenue_for_period(self) -> tuple[dict, float, float]:
+    def calculate_sales_revenue_for_period(self) -> tuple[list, float, float]:
         revenue, sales_qty = self._get_sum_value_and_qty_from_transaction_value_by_product('Сумма за заказы')
         total_revenue = self.calc_total_sum('Сумма за заказы')
-        return {
-            'identifier': 1,
-            'ozon_products_id': self.id,
-            'name': 'Выручка за период',
-            'comment': 'Рассчитывается сложением значений поля "Значение" в записях в меню '
-                       '"Декомпозированные транзакции" '
-                       'за искомый период, соответствующих текущему продукту и с названием '
-                       '"Сумма за заказы".',
-            'qty': sales_qty,
-            'percent': 100,
-            'value': revenue,
-            'percent_from_total': 100,
-            'total_value': total_revenue,
-        }, revenue, total_revenue
+        vals = []
+        tables_qty_plus_1 = 3
+        for i in range(1, tables_qty_plus_1):
+            vals.append(
+                {
+                    'identifier': 1,
+                    'table': i,
+                    'ozon_products_id': self.id,
+                    'name': 'Выручка за период',
+                    'comment': 'Рассчитывается сложением значений поля "Значение" записей в меню '
+                               '"Декомпозированные транзакции" '
+                               'за искомый период, соответствующих текущему продукту и с названием '
+                               '"Сумма за заказы".',
+                    'qty': sales_qty,
+                    'percent': 100,
+                    'value': revenue,
+                    'percent_from_total': 100,
+                    'total_value': total_revenue,
+                }
+            )
+
+        return vals, revenue, total_revenue
 
     def calculate_promotion_expenses_for_period(self, revenue: float, total_revenue: float) -> dict:
         promotion_expenses = self.promotion_expenses_ids
@@ -585,7 +607,8 @@ class Product(models.Model):
         return accuracy
 
     def calculate_expenses_row(
-            self, revenue: float, total_revenue: float, identifier: int, plan_name: str, row_name: str) -> dict:
+            self, revenue: float, total_revenue: float, identifier: int,
+            plan_name: str, row_name: str, table: int) -> dict:
 
         ozon_price_component_id = self.env["ozon.price_component"].search([('name', '=', plan_name)]).id
         if not ozon_price_component_id:
@@ -613,6 +636,7 @@ class Product(models.Model):
         percent_from_total = (abs(all_products_amount) * 100) / total_revenue if total_revenue else 0
         vals = {
             'identifier': identifier,
+            'table': table,
             'ozon_products_id': self.id,
             'name': row_name,
             'comment': 'Рассчитывается суммированием значений записей "Декомпозированые транзакции" '
