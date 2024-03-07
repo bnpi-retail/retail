@@ -466,11 +466,11 @@ class Product(models.Model):
         )
         # commission
         vals_to_write.append(
-            self.calculate_expenses_row(
+            self.calculate_commissions_row(
                 revenue=revenue,
                 total_revenue=total_revenue,
                 category_revenue=category_revenue,
-                identifier=4,
+                identifier=2,
                 plan_name='Вознаграждение Ozon',
                 row_name='Комиссия за продажу',
                 table=2,
@@ -681,6 +681,55 @@ class Product(models.Model):
             'percent_from_total_category': percent_category,
             'total_value_category': category_amount,
         }
+        return vals
+
+    def calculate_commissions_row(
+            self, revenue: float, total_revenue: float, category_revenue: float, identifier: int,
+            plan_name: str, row_name: str, table: int) -> dict:
+
+        commission, sales_qty = self._get_sum_value_and_qty_from_transaction_value_by_product(
+            'Вознаграждение за продажу'
+        )
+        commission_returns, returns_qty = self._get_sum_value_and_qty_from_transaction_value_by_product(
+            'Получение возврата: Вознаграждение за продажу'
+        )
+        category_products_ids = self.categories.ozon_products_ids.ids
+        category_commission, cat_qty = self._get_sum_value_and_qty_from_transaction_value_by_product(
+            name='Вознаграждение за продажу',
+            ids=category_products_ids
+        )
+        category_commission_returns, cat_returns_qty = self._get_sum_value_and_qty_from_transaction_value_by_product(
+            'Получение возврата: Вознаграждение за продажу',
+            ids=category_products_ids
+        )
+        total_commission = self.calc_total_sum('Вознаграждение за продажу')
+        total_returns_commission = self.calc_total_sum('Получение возврата: Вознаграждение за продажу')
+
+        commission = commission - commission_returns
+        category_commission = category_commission - category_commission_returns
+        total_commission = total_commission - total_returns_commission
+
+        percent = (abs(commission) * 100) / revenue if revenue else 0
+        percent_category = (abs(category_commission) * 100) / category_revenue if category_revenue else 0
+        percent_from_total = (abs(total_commission) * 100) / total_revenue if total_revenue else 0
+        vals = {
+            'identifier': identifier,
+            'table': 2,
+            'ozon_products_id': self.id,
+            'name': row_name,
+            'comment': 'Рассчитывается сложением значений поля "Значение" записей в меню '
+                       '"Декомпозированные транзакции" '
+                       'за искомый период, соответствующих текущему продукту и с названием '
+                       '"Сумма за заказы".',
+            'qty': sales_qty + returns_qty,
+            'percent': percent,
+            'value': commission,
+            'percent_from_total': percent_from_total,
+            'percent_from_total_category': percent_category,
+            'total_value_category': category_commission,
+            'total_value': total_commission,
+        }
+
         return vals
 
     def calc_total_sum(self, name: str):
