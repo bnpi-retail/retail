@@ -17,6 +17,7 @@
                         <page id="page_info_competitors_history"
                             string="Информация о товаре конкурента">
                             <group>
+                                <field name="competitor_seller_id" />
                                 <field name="id_product" />
                                 <field name="article" />
                                 <field name="name" />

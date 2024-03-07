@@ -9,6 +9,9 @@ class CompetitorSeller(models.Model):
     trade_name = fields.Char(string='Торговое название')
     is_my_shop = fields.Boolean(readonly=True)
 
+    products_competitors_ids = fields.One2many("ozon.products_competitors", 
+                                               "competitor_seller_id", string="Товары")
+
     def name_get(self):
         """
         Rename name records
@@ -32,3 +35,13 @@ class CompetitorSeller(models.Model):
                         record_vals['trade_name'] = trade_name + '_'
 
         return super().create(vals_list)
+
+    def open_product_competitors_tree_view(self):
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Товары конкурента",
+            "view_mode": "tree,form",
+            "res_model": "ozon.products_competitors",
+            "domain": [("competitor_seller_id", "=", self.id)],
+            "context": {"create": False}
+        }
