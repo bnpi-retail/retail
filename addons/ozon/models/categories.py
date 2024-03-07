@@ -26,6 +26,8 @@ class Categories(models.Model):
         string="Cоотношение между нашей ценой и ценой для покупателя")
     is_price_difference_computed = fields.Boolean()
 
+    ozon_products_ids = fields.One2many('ozon.products', 'categories')
+
     @api.model
     def _name_search(
         self, name="", args=None, operator="ilike", limit=10, name_get_uid=None
