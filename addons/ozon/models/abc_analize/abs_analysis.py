@@ -89,3 +89,4 @@ class AbcAnalysis(models.Model):
                 product[0].abc_group = product[1][2]
                 product[0]._touch_abc_group_indicator(product[0])
 
+            category.abc_group_last_update = datetime.now()

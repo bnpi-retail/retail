@@ -77,7 +77,12 @@
             <field name="model">ozon.categories</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="name_categories" />
+                    <field name="name_categories"/>
+                    <field name="category_manager" string="Ответственный менеджер"/>
+                    <field name="abc_group_last_update" readonly="1"
+                           string="Последний ABC Анализ"/>
+                    <field name="bcg_matrix_last_update" readonly="1"
+                           string="Последний расчет BCG Матрицы"/>
                 </tree>
             </field>
         </record>
