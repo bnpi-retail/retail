@@ -22,7 +22,7 @@ class BaseCalculation(models.Model):
     value = fields.Float(string="Значение компонента цены")
     value_based_on_price = fields.Float(string="Значение", compute="_compute_value_based_on_price")
     percent = fields.Float(string="Процент", compute="_compute_percent")
-    comment = fields.Text(string="Комментарий")
+    comment = fields.Text(string="Комментарий", compute="_compute_comment")
 
     def _compute_percent(self):
         for r in self:
@@ -43,6 +43,53 @@ class BaseCalculation(models.Model):
             elif r.kind in ["percent", "percent_cost_price"]:
                 r.value_based_on_price = plan_price * r.percent 
 
+    def _compute_kind(self):
+        for r in self:
+            if r.price_component_id.identifier in PERCENT_COMPONENTS:
+                r.kind = "percent"
+            elif r.price_component_id.identifier in PERCENT_COST_PRICE_COMPONENTS:
+                r.kind = "percent_cost_price"
+            elif r.price_component_id.identifier in DEPENDS_ON_VOLUME_COMPONENTS:
+                r.kind = "depends_on_volume"
+            else:
+                r.kind = "fix"
+    
+    def _compute_comment(self):
+        for r in self:
+            pc_identifier = r.price_component_id.identifier
+            if pc_identifier == "cost":
+                r.comment = """Данные из "Розничная торговля" """
+                continue
+            
+            if prod := r.product_id:
+                # plan_price_comment = ("Расчёт плановой цены:\n"
+                #                       "(Фикс.затраты + ROE)/(1 - суммарный процент проц.затрат) = Плановая цена\n")
+                plan_price = round(self.calculate_plan_price(prod), 2)
+                per = r.percent * 100
+                value_based_on_price = round(r.value_based_on_price, 2)
+                if r.kind == "percent":
+                    common_part = ("Плановая цена * Процент = Значение\n"
+                                f"{plan_price} * {per}% = {value_based_on_price}")
+                    r.comment = common_part
+                elif r.kind == "fix":
+                    r.comment = "Фиксированное значение"
+                elif r.kind == "percent_cost_price":
+                    cost_price = r.product_id.retail_product_total_cost_price
+                    r.comment = ("Себестоимость * Процент из шаблона = Значение\n"
+                                f"{cost_price} * {r.value}% = {value_based_on_price}")
+                    
+                if pc_identifier == "logistics":
+                    r.comment = (f"Объём: {round(prod.products.volume, 2)}л\n"
+                                f"Тариф: {prod.logistics_tariff_id.name}")
+                elif pc_identifier == "ozon_reward":
+                    r.comment = """Данные из "Комиссии и себестоимость"\n""" + common_part
+            else:
+                if pc_identifier == "logistics":
+                    r.comment = "В зависимости от тарифа логистики"
+                elif pc_identifier == "ozon_reward":
+                    r.comment = """Данные из "Комиссии и себестоимость" """
+                else:
+                    r.comment = False
 
     def calculate_plan_price(self, product):
         # найти сумму фикс затрат (себестоимость + все из планового расчета)
@@ -59,36 +106,13 @@ class BaseCalculation(models.Model):
         # план. цена = sum_fix_expenses / (1 - total_percent)
         plan_price = total_fix_exps / (1 - total_per_exps)
         return plan_price
-        
-
-    def _compute_kind(self):
-        for r in self:
-            if r.price_component_id.identifier in PERCENT_COMPONENTS:
-                r.kind = "percent"
-            elif r.price_component_id.identifier in PERCENT_COST_PRICE_COMPONENTS:
-                r.kind = "percent_cost_price"
-            elif r.price_component_id.identifier in DEPENDS_ON_VOLUME_COMPONENTS:
-                r.kind = "depends_on_volume"
-            else:
-                r.kind = "fix"
 
     def _base_calculation_components(self):
         return self.env["ozon.price_component"].search([]).filtered(
             lambda r: r.identifier in BASE_CALCULATION_COMPONENTS)
 
     def create_base_calculation_components(self):
-        data = []
-        for pc in self._base_calculation_components():
-            if pc.identifier == "logistics":
-                comment = "В зависимости от тарифа логистики"
-            elif pc.identifier == "cost":
-                comment = """Данные из "Розничная торговля" """
-            elif pc.identifier == "ozon_reward":
-                comment = """Данные из "Комиссии категории" """
-            else:
-                comment = False
-            data.append({"price_component_id": pc.id, "comment": comment})
-        return self.create(data)
+        return self.create([{"price_component_id": pc.id} for pc in self._base_calculation_components()])
 
     def reset_for_products(self, products):
         products.base_calculation_ids.unlink()
@@ -97,35 +121,6 @@ class BaseCalculation(models.Model):
             p_id = product.id
             for pc in self._base_calculation_components():
                 data.append({"product_id": p_id, "price_component_id": pc.id, "value": 0})
-                # if pc.identifier == "logistics":
-                #     value = product.all_expenses_ids.filtered(lambda r: r.category == "Логистика").value
-                # elif pc.identifier == "last_mile":
-                #     value = product.all_expenses_ids.filtered(
-                #         lambda r: r.category == "Последняя миля").percent * 100
-                # elif pc.identifier == "acquiring":
-                #     value = product.all_expenses_ids.filtered(lambda r: r.category == "Эквайринг").percent * 100
-                # elif pc.identifier == "ozon_reward":
-                #     value = product.all_expenses_ids.filtered(
-                #         lambda r: r.category == "Вознаграждение Ozon").percent * 100
-                # elif pc.identifier == "promo":
-                #     value = 10
-                # elif pc.identifier == "tax":
-                #     value = product.all_expenses_ids.filtered(lambda r: r.name == "Налог").percent * 100
-                # elif pc.identifier == "processing":  
-                #     value = product.all_expenses_ids.filtered(lambda r: r.category == "Обработка").value
-                # elif pc.identifier == "company_processing_and_storage": 
-                #     value = 100
-                # elif pc.identifier == "company_packaging": 
-                #     value = 20
-                # elif pc.identifier == "company_marketing": 
-                #     value = 50
-                # elif pc.identifier == "company_operators": 
-                #     value = 20
-                # elif pc.identifier == "roe": 
-                #     value = 0
-                # else:
-                #     value = 0
-                # data.append({"product_id": p_id, "price_component_id": pc.id, "value": value})
         self.create(data)
 
     def fill_if_not_exists(self, product):
@@ -160,21 +155,18 @@ class BaseCalculationTemplate(models.Model):
                     if not prod.logistics_tariff_id:
                         log_tar_model.assign_logistics_tariff_id(prod)
                     value = log_tar_model.get_logistics_cost_based_on_tariff(prod)
-                    comment = (f"Объём: {round(prod.products.volume, 2)}л\n"
-                                f"Тариф: {prod.logistics_tariff_id.name}")
                 elif r.price_component_id.identifier == "cost":
                     value = prod.retail_product_total_cost_price
-                    comment = r.comment
                 elif r.price_component_id.identifier == "ozon_reward":
-                    value = prod._ozon_reward.percent * 100
-                    comment = r.comment
+                    if prod.trading_scheme == "FBO":
+                        value = float(prod.fbo_percent_expenses.discription.replace("%", ""))
+                    else:
+                        value = float(prod.fbs_percent_expenses.discription.replace("%", ""))
                 else:
                     value = r.value
-                    comment = r.comment
                 data.append({"product_id": p_id, 
                             "price_component_id": r.price_component_id.id,
-                            "value": value,
-                            "comment": comment})
+                            "value": value})
         self.env["ozon.base_calculation"].create(data)
 
 class BaseCalculationWizard(models.Model):

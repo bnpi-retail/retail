@@ -37,9 +37,9 @@
         <!-- Menu -->
         <menuitem name="Очередь для формирования поисковых запросов"
             id="menu_lots_for_gpt"
-            parent="main_menu_other"
+            parent="main_menu_chat_gpt"
             action="action_lots_for_gpt"
-            sequence="20" />
+            sequence="1" />
 
     </data>
 </odoo>

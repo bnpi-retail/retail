@@ -9,9 +9,17 @@
                 <form>
                     <separator string="Успешный товар конкурента" />
                     <group>
-                        <field name="name" />
-                        <field name="sku" />
-                        <field name="product" />
+                        <group>
+                            <field name="sku" />
+                            <field name="name" />
+                            <field name="product" />
+                            <field name="search_query"
+                                placeholder="Введите подходящий поисковый запрос" />
+                        </group>
+                        <group>
+                            <field name="is_matched" />
+                        </group>
+
                     </group>
                 </form>
             </field>
@@ -19,28 +27,29 @@
 
         <!-- Tree -->
         <record id="view_successful_product_competitors_tree" model="ir.ui.view">
-            <field name="name">Успешные товары конкурентов</field>
+            <field name="name">Необходимо сопоставить товары конкурентов с нашими</field>
             <field name="model">ozon.successful_product_competitors</field>
             <field name="arch" type="xml">
                 <tree>
                     <field name="sku" />
                     <field name="name" />
                     <field name="product" />
+                    <field name="is_matched" />
                 </tree>
             </field>
         </record>
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_successful_product_competitors">
-            <field name="name">Успешные товары конкурентов</field>
+            <field name="name">Необходимо сопоставить товары конкурентов с нашими</field>
             <field name="res_model">ozon.successful_product_competitors</field>
             <field name="view_mode">tree,form,search</field>
         </record>
 
         <!-- Menu -->
-        <menuitem name="Успешные товары конкурентов"
+        <menuitem name="Необходимо сопоставить"
             id="menu_successful_product_competitors"
-            parent="main_menu_competitors"
+            parent="main_menu_manager"
             action="action_successful_product_competitors"
             sequence="50" />
 

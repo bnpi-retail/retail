@@ -1,7 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <!-- Form -->
+        <record id="ozon_competitor_seller_view_form" model="ir.ui.view">
+            <field name="name">ozon_competitor_seller.form</field>
+            <field name="model">ozon.competitor_seller</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div name="button_box" position="inside">
+                            <button string="Товары" class="oe_stat_button" type="object"
+                                name="open_product_competitors_tree_view" />
+                        </div>
+                        <group>
+                            <field name="trade_name" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
 
+        <!-- Tree -->
         <record id="ozon_competitor_seller_view_tree" model="ir.ui.view">
             <field name="name">ozon_competitor_seller.tree</field>
             <field name="model">ozon.competitor_seller</field>
