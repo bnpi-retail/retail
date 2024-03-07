@@ -334,7 +334,17 @@ ALL_EXPENSES_NAMES_IDENTIFIERS = {
     'Обработка и хранение (компания)': 31,
     'Упаковка (компания)': 32,
     'Маркетинг (компания)': 33,
-    'Операторы (компания)': 34
+    'Операторы (компания)': 34,
+    'MarketplaceServiceItemRedistributionReturnsPVZ': 35,
+    'Комиссия за продажу или возврат комиссии за продажу': 36,
+    'Оплата эквайринга': 37,
+    'Услуга размещения товаров на складе': 38,
+    'логистика': 39,
+    'обработка невыкупа': 40,
+    'обработка отмен': 41,
+    'обработка отправления': 42,
+    'обратная логистика': 43,
+    'последняя миля': 44
 }
 
 class AllExpenses(models.Model):
@@ -375,9 +385,9 @@ class AllExpenses(models.Model):
         #           f" - {datetime.strftime(exp.date_to, '%d %b %Y')}")
         for r in self:
             name = r.name
-            val = r.value
+            val = round(r.value, 4)
             exp_val = round(r.expected_value, 2)
-            per = round(r.percent, 6)
+            per = round(r.percent * 100, 4)
             price = r.product_id.price
             exp_price = r.product_id.expected_price
             tax = r.product_id.seller.tax
@@ -397,7 +407,7 @@ class AllExpenses(models.Model):
                 r.comment = ("""Данные из "Отчёта о выплатах".\n"""
                              "Рассчитывается как цена, умноженная на процент фактической статьи затрат.\n"
                              "Цена * Фактическая статья(процент от выручки) = Значение\n"
-                             f"{price} * {per} = {val}")
+                             f"{price} * {per}% = {val}")
 
                 
     def update_all_expenses(self, products, latest_indirect_expenses):

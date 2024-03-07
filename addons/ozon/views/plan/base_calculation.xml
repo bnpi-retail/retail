@@ -11,9 +11,9 @@
                         <field name="name" />
                         <field name="base_calculation_ids">
                             <tree editable="1">
-                                <field name="price_component_id" />
+                                <field name="price_component_id" string="Плановая статья" />
                                 <field name="kind" />
-                                <field name="value"
+                                <field name="value" string="Значение"
                                     attrs="{'invisible': [('comment', '!=', False)]}" />
                                 <field name="comment" />
                             </tree>
