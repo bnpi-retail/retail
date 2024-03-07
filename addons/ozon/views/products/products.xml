@@ -133,10 +133,17 @@
                             <notebook>
                                 <page id="page_price_comparison" string="Калькулятор">
                                     <group style="margin-bottom: 20px;">
-                                        <button type="object"
-                                            name="calculate_price_comparison_ids_calc_column"
-                                            string="Рассчитать «Калькулятор»"
-                                            class="btn-outline-primary" />
+                                        <group>
+                                            <group>
+                                                <button type="object"
+                                                    name="calculate_price_comparison_ids_calc_column"
+                                                    string="Рассчитать «Калькулятор»"
+                                                    class="btn-outline-primary" />
+                                            </group>
+                                            <group>
+                                                <field name="calc_column_your_price" />
+                                            </group>
+                                        </group>
                                     </group>
                                     <field name="price_comparison_ids">
                                         <tree>

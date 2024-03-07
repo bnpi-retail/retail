@@ -402,6 +402,8 @@ class PriceComparison(models.Model):
         # Дата расчёта
         calc_datetime = product._price_comparison("calc_datetime")
         calc_datetime.write({"calc_value": datetime.now().timestamp()})
+        your_price = product._price_comparison("your_price")
+        your_price.write({"calc_value": product.calc_column_your_price})
         self.write_price_comparison_expenses_for_column(product, "calc_value")
         self.write_price_comparison_indicators_for_column(product, "calc_value")
     

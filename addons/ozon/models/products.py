@@ -396,7 +396,7 @@ class Product(models.Model):
     )
     is_promotion_data_correct = fields.Boolean()
     # ----------------
-
+    calc_column_your_price = fields.Float(string="""Цена в столбце "Калькулятор" """)
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
                                            string="Сравнение цен", readonly=True)
     base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Плановая цена")
