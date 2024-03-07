@@ -512,7 +512,7 @@
                                                         <field name="percent_from_total_category"/>
                                                         <field name="total_value_category" sum="1"/>
                                                         <field name="theoretical_value"
-                                                               string="Процент предоставленный Ozon"/>
+                                                               string="Значение с Ozon"/>
                                                     </tree>
                                                 </field>
                                             </page>

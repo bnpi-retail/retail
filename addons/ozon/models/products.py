@@ -470,6 +470,15 @@ class Product(models.Model):
                 plan_name='Вознаграждение Ozon',
             )
         )
+        # equiring
+        vals_to_write_table_2.append(
+            self.calculate_commissions_row(
+                revenue=revenue,
+                category_revenue=category_revenue,
+                identifier=3,
+                plan_name='Эквайринг',
+            )
+        )
 
         self.env['ozon.report.products_revenue_expenses'].create(vals_to_write_table_1)
         self.env['ozon.report.products_revenue_expenses_theory'].create(vals_to_write_table_2)
@@ -536,7 +545,7 @@ class Product(models.Model):
             'value': revenue,
             'percent_from_total_category': 100,
             'total_value_category': category_revenue,
-            'theoretical_value': '100%',
+            'theoretical_value': '',
         }
 
         return vals_table_1, vals_table_2, revenue, category_revenue, total_revenue
@@ -718,6 +727,12 @@ class Product(models.Model):
         percent = (abs(total_amount_) * 100) / revenue if revenue else 0
         percent_category = (abs(category_amount) * 100) / category_revenue if category_revenue else 0
         theoretical_value = self.get_theoretical_value(plan_name)
+        if plan_name == "Эквайринг":
+            if qty:
+                theoretical_value = str(round((float(theoretical_value) * 100) / (revenue / qty), 2)) + '% максимально'
+            else:
+                pass
+
         vals = {
             'identifier': identifier,
             'ozon_products_id': self.id,
@@ -737,10 +752,10 @@ class Product(models.Model):
         }
         return vals
 
-    def get_theoretical_value(self, plan_name: str) -> str:
+    def get_theoretical_value(self, plan_name: str, data_to_calc_value=None) -> str:
         value = ""
+        trading_scheme = self.trading_scheme
         if plan_name == 'Вознаграждение Ozon':
-            trading_scheme = self.trading_scheme
             if trading_scheme == "FBS":
                 for rec in self.fbs_percent_expenses:
                     if rec.name == "Процент комиссии за продажу (FBS)":
@@ -769,6 +784,36 @@ class Product(models.Model):
                     fbo = float(fbo)
                     value = max(fbs, fbo)
                     value = str(value) + '%'
+                elif fbs:
+                    value = fbs
+                elif fbo:
+                    value = fbo
+        elif plan_name == "Эквайринг":
+            if trading_scheme == "FBS":
+                for rec in self.fbs_fix_expenses_max:
+                    if rec.name == "Максимальная комиссия за эквайринг":
+                        value = rec.price
+                        break
+            elif trading_scheme == "FBO":
+                for rec in self.fbo_fix_expenses_max:
+                    if rec.name == "Максимальная комиссия за эквайринг":
+                        value = rec.price
+                        break
+            elif trading_scheme == "FBS, FBO":
+                fbs = ''
+                for rec in self.fbs_fix_expenses_max:
+                    if rec.name == "Максимальная комиссия за эквайринг":
+                        fbs = rec.price
+                        break
+                fbo = ''
+                for rec in self.fbo_fix_expenses_max:
+                    if rec.name == "Максимальная комиссия за эквайринг":
+                        fbo = rec.price
+                        break
+                if fbs and fbo:
+                    fbs = float(fbs)
+                    fbo = float(fbo)
+                    value = max(fbs, fbo)
                 elif fbs:
                     value = fbs
                 elif fbo:
