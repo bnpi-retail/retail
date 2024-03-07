@@ -12,8 +12,10 @@
     <menuitem name="Работа менеджера" id="main_menu_manager" parent="ozon.menu_root" sequence="8" />
     <menuitem name="Конкуренты" id="main_menu_competitors" parent="ozon.menu_root" sequence="9" />
     <menuitem name="Акции" id="main_menu_actions" parent="ozon.menu_root" sequence="10" />
-    <menuitem name="Справочники" id="main_menu_dicts" parent="ozon.menu_root" sequence="11" />
-    <menuitem name="Импорт" id="main_menu_import" parent="ozon.menu_root" sequence="12" />
+    <menuitem name="Перемещение товаров" id="main_menu_products_logistics" parent="ozon.menu_root"
+      sequence="11" />
+    <menuitem name="Справочники" id="main_menu_dicts" parent="ozon.menu_root" sequence="12" />
+    <menuitem name="Импорт" id="main_menu_import" parent="ozon.menu_root" sequence="13" />
     <menuitem name="Другое" id="main_menu_other" parent="ozon.menu_root" sequence="20" />
   </data>
 </odoo>

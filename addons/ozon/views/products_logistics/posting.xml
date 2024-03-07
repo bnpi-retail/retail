@@ -8,30 +8,31 @@
                 <form>
                     <group>
                         <group>
-                            <field name="in_process_at"/>
-                            <field name="trading_scheme"/>
-                            <field name="posting_number"/>
-                            <field name="order_number"/>
-                            <field name="order_id"/>
-                            <field name="status" widget="badge" decoration-success="status=='delivered'"
-                                   decoration-danger="status=='cancelled'"/>
-                            <field name="skus"/>
-                            <field name="product_ids"/>
-                            <field name="region"/>
-                            <field name="city"/>
-                            <field name="warehouse_id"/>
-                            <field name="cluster_from"/>
-                            <field name="cluster_to"/>
+                            <field name="in_process_at" />
+                            <field name="trading_scheme" />
+                            <field name="posting_number" />
+                            <field name="order_number" />
+                            <field name="order_id" />
+                            <field name="status" widget="badge"
+                                decoration-success="status=='delivered'"
+                                decoration-danger="status=='cancelled'" />
+                            <field name="skus" />
+                            <field name="product_ids" />
+                            <field name="region" />
+                            <field name="city" />
+                            <field name="warehouse_id" />
+                            <field name="cluster_from" />
+                            <field name="cluster_to" />
                         </group>
                         <notebook>
                             <page string="Products">
                                 <field name="posting_product_ids">
                                     <tree>
-                                        <field name="ozon_products_id"/>
-                                        <field name="sku"/>
-                                        <field name="offer_id"/>
-                                        <field name="price"/>
-                                        <field name="quantity"/>
+                                        <field name="ozon_products_id" />
+                                        <field name="sku" />
+                                        <field name="offer_id" />
+                                        <field name="price" />
+                                        <field name="quantity" />
                                     </tree>
                                 </field>
                             </page>
@@ -70,7 +71,7 @@
         <!-- Menu -->
         <menuitem name="Отправления Ozon"
             id="menu_postings_ozon"
-            parent="main_menu_other"
+            parent="main_menu_products_logistics"
             action="action_postings_ozon"
             sequence="1" />
 
