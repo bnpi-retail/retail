@@ -9,17 +9,26 @@
                     <sheet>
                         <group>
                             <group string="Первый период">
-                                <group>
-                                    <field name="first_period_from" string="С" widget="date" />
-                                </group>
-                                <group>
-                                    <field name="first_period_to" string="по" widjet="date" />
-                                </group>
+                                <label for="first_period_from" string="Даты"/>
+                                <div class="o_row">
+                                    <field name="first_period_from" widget="daterange"
+                                           class="oe_inline"
+                                           options="{'related_end_date': 'first_period_to'}"
+                                           nolable="1"
+                                    />
+                                    <i class="fa fa-long-arrow-right mx-2"
+                                       aria-label="Arrow icon" title="To"/>
+                                    <field name="first_period_to" widget="daterange"
+                                           class="oe_inline"
+                                           options="{'related_start_date': 'first_period_from'}"
+                                           nolable="1"
+                                    />
+                                </div>
                             </group>
                             <group string="Пороговые значения">
                                 <group>
                                     <field name="threshold_growth"
-                                        string="Пороговое значение для темпов роста"
+                                           string="Пороговое значение для темпов роста"
                                         help="Продукты выше этого значения будут либо звездами, либо проблемами."
                                     />
                                 </group>
@@ -31,21 +40,24 @@
                                 </group>
                             </group>
                             <group string="Второй период">
-                                <group>
-                                    <field name="second_period_from" string="С" widget="date" />
-                                </group>
-                                <group>
-                                    <field name="second_period_to" string="по" widjet="date" />
-                                </group>
-                            </group>
-                            <group></group>
-                            <separator />
-                            <group>
+                                <label for="second_period_from" string="Даты"/>
+                                <div class="o_row">
+                                    <field name="second_period_from" widget="daterange"
+                                           class="oe_inline"
+                                           options="{'related_end_date': 'second_period_to'}"
+                                           nolable="1"
+                                    />
+                                    <i class="fa fa-long-arrow-right mx-2"
+                                       aria-label="Arrow icon" title="To"/>
+                                    <field name="second_period_to" widget="daterange"
+                                           class="oe_inline"
+                                           options="{'related_start_date': 'second_period_from'}"
+                                           nolable="1"
+                                    />
+                                </div>
                                 <field name="ozon_categories_id" string="Категория" />
                             </group>
-                            <group>
 
-                            </group>
                             <notebook>
                                 <page string="Данные по продуктам">
                                     <field name="ozon_report_interest_data_ids">
