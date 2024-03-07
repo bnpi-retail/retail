@@ -77,7 +77,7 @@
         <!-- Menu -->
         <menuitem name="Мониторинг товаров конкурентов"
             id="menu_name_competitors"
-            parent="main_menu_competitors"
+            parent="main_menu_history"
             action="action_name_competitors"
             sequence="50" />
 
