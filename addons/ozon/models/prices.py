@@ -373,95 +373,32 @@ class AllExpenses(models.Model):
 
         # period = (f"{datetime.strftime(exp.date_from, '%d %b %Y')}" 
         #           f" - {datetime.strftime(exp.date_to, '%d %b %Y')}")
-        # for r in self:
-        #     name = r.name
-        #     val = r.value
-        #     category = r.category
-        #     exp_val = round(r.expected_value, 2)
-        #     per = round(r.percent, 6)
-        #     price = r.product_id.price
-        #     exp_price = r.product_id.expected_price
-        #     tax = r.product_id.seller.tax
-        #     tax_percent = r.product_id.seller.tax_percent
-        #     tax_string = r.product_id.seller.tax_description
-        #     if name == "Себестоимость товара":
-        #         if val == 0:
-        #             r.comment = "Себестоимость товара не указана."
-        #         else:
-        #             r.comment = "Себестоимость из модуля 'Розничная торговля'"
-        #     elif name == "Средняя стоимость продвижения товара":
-        #         if val == 0:
-        #             r.comment = "Нет данных о продвижении товара."
-        #         else:
-        #             promo_expenses = r.product_id.promotion_expenses_ids.filtered(
-        #                 lambda r: exp.date_from <= r.date <= exp.date_to)
-        #             total_promo_expenses = round(sum(promo_expenses.mapped("expense")), 2)
-        #             r.comment = (f"Продвижение товара (Арт: {r.product_id.article}) за период {period}\n"
-        #                 f"Cумма расходов на продвижение в поиске / " 
-        #             f"кол-во заказов, полученных из рекламных кампаний по продвижению в поиске\n"
-        #             f"{total_promo_expenses} / {len(promo_expenses)} = {exp_val}")
-        #     elif name == "Процент комиссии за продажу (FBS)":
-        #         r.comment = ("Процент комиссии за продажу (FBS) * цена = значение\n"
-        #                      f"{per} * {exp_price} = {exp_val}")
-        #     elif name in ["Последняя миля (FBS)", "Магистраль до (FBS)", "Максимальная комиссия за эквайринг"]:
-        #         r.comment = ("Рассчитывается как процент от текущей цены, умноженный на цену.\n"
-        #                      f"Текущая стоимость '{name}': {val}\n"
-        #                      f"Текущая цена: {price}\n"
-        #                      f"Процент от текущей цены: {val} / {price} = {per}\n"
-        #                      f"Значение: {per} * {exp_price} = {exp_val}")
-        #     elif name == "Максимальная комиссия за обработку отправления (FBS) — 25 рублей":
-        #         r.comment = f"Фиксированное значение"
-        #     elif name in ["Доходность", "Investment"]:
-        #         if exp_val == 0:
-        #             r.comment = f"{name} не задан(а)."
-        #         else:
-        #             r.comment = (f"{name} * цена = значение\n"
-        #                          f"{per} * {exp_price} = {exp_val}")
-        #     elif name == "Налог":
-        #         if not tax:
-        #             r.comment = f"{name} не задан у продавца."
-        #         else:
-        #             r.comment = ("Цена * процент налогообложения = текущий налог\n"
-        #                         f"{exp_price} * {tax_percent} = {exp_val}\n")
-        #             # exp_except_tax_roe_roi = r.product_id.total_all_expenses_ids_except_tax_roe_roi
-        #             # ozon_exp = exp_except_tax_roe_roi - r.product_id.products.total_cost_price
-        #             # if tax.startswith("earnings_minus_expenses"):
-        #             #     if r.value == 0:
-        #             #         r.comment = (f"Схема налогообложения: {tax_string}.\n"
-        #             #                     f"Цена < все затраты. Налог = 0.")
-        #             #     else:
-        #             #         r.comment = ("(Цена - все затраты) * процент налогообложения = текущий налог\n"
-        #             #                     f"({price} - {exp_except_tax_roe_roi}) * {tax_percent} = {val}\n"
-        #             #                     f"Текущий налог / текущая цена = процент от текущей цены\n"
-        #             #                     f"{val} / {price} = {per}\n"
-        #             #                     f"Процент от текущей цены * цена = значение\n"
-        #             #                     f"{per} * {exp_price} = {exp_val}")
-        #             # else:
-        #             #     if val == 0:
-        #             #         r.comment = (f"Схема налогообложения: {tax_string}.\n"
-        #             #                     f"Цена < затраты Ozon. Налог = 0.")
-        #             #     else:
-        #             #         r.comment = ("(Цена - затраты Ozon) * процент налогообложения = текущий налог\n"
-        #             #                     f"({price} - {ozon_exp}) * {tax_percent} = {val}\n"
-        #             #                     f"Текущий налог / текущая цена = процент от текущей цены\n"
-        #             #                     f"{val} / {price} = {per}\n"
-        #             #                     f"Процент от текущей цены * цена = значение\n"
-        #             #                     f"{per} * {exp_price} = {exp_val}")
-        #     elif category == "Расходы компании":
-        #         r.comment = "Фиксированное значение"
-        #     elif not name:
-        #         r.comment = ""                        
-        #     else:
-        #         rev = round(exp.revenue)
-        #         str_fieldname = STRING_FIELDNAMES.get(name)
-        #         exp_amt = round(exp[str_fieldname])
-        #         r.comment = (f"Рассчитывается, исходя из косвенных затрат за период {period} по магазину в целом.\n"
-        #                      f"Общая выручка за период: {rev}\n"
-        #                      f"""Общие затраты по "{name}" за период: {exp_amt}\n"""
-        #                      f"""Затраты / выручка = коэффициент\n"""
-        #                      f"""{abs(exp_amt)} / {rev} = {per}\n"""
-        #                      f"""Коэффициент * цена = значение\n"""
-        #                      f"""{per} * {exp_price} = {exp_val}\n""")
+        for r in self:
+            name = r.name
+            val = r.value
+            exp_val = round(r.expected_value, 2)
+            per = round(r.percent, 6)
+            price = r.product_id.price
+            exp_price = r.product_id.expected_price
+            tax = r.product_id.seller.tax
+            tax_percent = r.product_id.seller.tax_percent
+            if name == "Себестоимость товара":
+                if val == 0:
+                    r.comment = "Себестоимость товара не указана"
+                else:
+                    r.comment = """Себестоимость из модуля "Розничная торговля" """
+            elif name == "Налог":
+                if not tax:
+                    r.comment = f"{name} не задан у продавца."
+                else:
+                    r.comment = ("Цена * процент налогообложения = текущий налог\n"
+                                f"{price} * {tax_percent} = {val}\n")
+            else:
+                r.comment = ("""Данные из "Отчёта о выплатах".\n"""
+                             "Рассчитывается как цена, умноженная на процент фактической статьи затрат.\n"
+                             "Цена * Фактическая статья(процент от выручки) = Значение\n"
+                             f"{price} * {per} = {val}")
+
                 
     def update_all_expenses(self, products, latest_indirect_expenses):
         for idx, prod in enumerate(products):
