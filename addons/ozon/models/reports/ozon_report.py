@@ -68,7 +68,10 @@ class OzonReportCategoryMarketShare(models.Model):
                 raise UserError("Выберите категорию")
             known_share_percentage = 0
             total_amount = 0
+            has_null = 0
             for competitor_category_share in record.ozon_report_competitor_category_share_ids:
+                if competitor_category_share.category_share == 0:
+                    has_null = 1
                 known_share_percentage += competitor_category_share.category_share
                 total_amount += competitor_category_share.turnover
 
@@ -94,6 +97,17 @@ class OzonReportCategoryMarketShare(models.Model):
                         sale.ozon_products_competitors_id.market_share_is_computed = True
 
             record.is_calculated = True
+
+            if has_null:
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'message': f'Один из продавцов имеет 0 в столбце Доля в категории. Убедитесь что данные точны.',
+                        'type': 'warning',
+                        'sticky': True,
+                    }
+                }
 
 
 class OzonReportCompetitorCategoryShare(models.Model):
