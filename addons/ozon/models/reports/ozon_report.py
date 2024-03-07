@@ -150,7 +150,7 @@ class OzonReportCompetitorBCGMatrix(models.Model):
                 check_list = 0
                 period_is_calculated = 1
                 for seller in period.ozon_report_competitor_category_share_ids:
-                    check_list += seller.category_share == 0
+                    check_list += seller.category_share
                     if not period.is_calculated:
                         period_is_calculated = 0
 
@@ -159,7 +159,7 @@ class OzonReportCompetitorBCGMatrix(models.Model):
                                 "которые будете использовать как 'Первый период' и 'Период'. "
                                 "Заполните данные в столбце 'Доля в категории' для каждого продавца "
                                 "(данные можно получить в личном кабинете Ozon), затем кликните "
-                                "'Action' > 'Рассчитать долю рынка товаров'")
+                                "'Операции' > 'Рассчитать долю рынка товаров'")
 
             # Market growth rate
             # products growth rate
