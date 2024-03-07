@@ -19,7 +19,7 @@
 
         <!-- Tree -->
         <record id="view_successful_product_competitors_tree" model="ir.ui.view">
-            <field name="name">Успешные товары конкурентов</field>
+            <field name="name">Необходимо сопоставить товары конкурентов с нашими</field>
             <field name="model">ozon.successful_product_competitors</field>
             <field name="arch" type="xml">
                 <tree>
@@ -32,15 +32,15 @@
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_successful_product_competitors">
-            <field name="name">Успешные товары конкурентов</field>
+            <field name="name">Необходимо сопоставить товары конкурентов с нашими</field>
             <field name="res_model">ozon.successful_product_competitors</field>
             <field name="view_mode">tree,form,search</field>
         </record>
 
         <!-- Menu -->
-        <menuitem name="Успешные товары конкурентов"
+        <menuitem name="Необходимо сопоставить"
             id="menu_successful_product_competitors"
-            parent="main_menu_competitors"
+            parent="main_menu_manager"
             action="action_successful_product_competitors"
             sequence="50" />
 

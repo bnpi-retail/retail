@@ -7,7 +7,7 @@ class SuccessfulProductCompetitors(models.Model):
 
     name = fields.Char(string='Наименование')
     sku = fields.Char(string='SKU')
-    product = fields.Many2one("ozon.products", string="Лот")
+    product = fields.Many2one("ozon.products", string="Наш товар")
     
     def name_get(self):
         """
