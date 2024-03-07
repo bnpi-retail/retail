@@ -105,7 +105,7 @@
         "views/import/import.xml",
         "views/import/mass_data_import_views.xml",
         "views/import/mass_data_import_log_views.xml",
-        "views/other/lots_for_gpt.xml",
+        "views/chat_gpt/lots_for_gpt.xml",
         # cron
         "crone/ir_cron_data.xml",
     ],

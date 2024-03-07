@@ -16,6 +16,6 @@
       sequence="11" />
     <menuitem name="Справочники" id="main_menu_dicts" parent="ozon.menu_root" sequence="12" />
     <menuitem name="Импорт" id="main_menu_import" parent="ozon.menu_root" sequence="13" />
-    <menuitem name="Другое" id="main_menu_other" parent="ozon.menu_root" sequence="20" />
+    <menuitem name="Chat GPT" id="main_menu_chat_gpt" parent="ozon.menu_root" sequence="14" />
   </data>
 </odoo>
