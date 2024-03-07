@@ -496,22 +496,25 @@
                                                 Пожалуйста, загрузите недостающие отчеты за период.
                                             </p>
                                         </div>
-                                        <separator string="Комиссии"/>
-                                        <field name="ozon_report_products_revenue_expenses_ids_commissions">
-                                            <tree create="0">
-                                                <field name="identifier" />
-                                                <field name="name" />
-                                                <field name="comment" optional="hide" />
-                                                <field name="qty" />
-                                                <field name="percent" />
-                                                <field name="value" sum="1" />
-                                                <field name="percent_from_total_category" />
-                                                <field name="total_value_category" sum="1" />
-                                                <field name="percent_from_total" />
-                                                <field name="total_value" sum="1" />
-                                                <field name="accuracy" invisible="1" />
-                                            </tree>
-                                        </field>
+                                        <notebook>
+                                            <page string="Комиссии">
+                                                <field name="ozon_report_products_revenue_expenses_ids_commissions">
+                                                    <tree create="0">
+                                                        <field name="identifier"/>
+                                                        <field name="name"/>
+                                                        <field name="comment" optional="hide"/>
+                                                        <field name="qty"/>
+                                                        <field name="percent"/>
+                                                        <field name="value" sum="1"/>
+                                                        <field name="percent_from_total_category"/>
+                                                        <field name="total_value_category" sum="1"/>
+                                                        <field name="percent_from_total"/>
+                                                        <field name="total_value" sum="1"/>
+                                                        <field name="accuracy" invisible="1"/>
+                                                    </tree>
+                                                </field>
+                                            </page>
+                                        </notebook>
                                         <group>
                                             <field name="avg_value_to_use" class="oe_inline" />
                                         </group>
