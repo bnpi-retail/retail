@@ -595,18 +595,19 @@ class Product(models.Model):
             ('price_component_id', '=', ozon_price_component_id)
         ])
         total_amount_ = 0
-        returns_qty = 0
+        qty = []
         all_products_amount = 0
         components = []
         for record in ozon_price_component_match:
             name = record.name
             res = self._get_sum_value_and_qty_from_transaction_value_by_product(name)
             total_amount_ += res[0]
-            returns_qty += res[1]
+            qty.append(res[1])
             components.append(f"{name}: количество- {res[1]}, значение-{res[0]}\n")
 
             all_products_amount += self.calc_total_sum(name)
 
+        qty = max(qty) if qty else 0
         components = ''.join(components)
         percent = (abs(total_amount_) * 100) / revenue if revenue else 0
         percent_from_total = (abs(all_products_amount) * 100) / total_revenue if total_revenue else 0
@@ -621,7 +622,7 @@ class Product(models.Model):
                        'Суммируются "Декомпозированые транзакции" соответствующие искомому периоду и '
                        f'текущему продукту\n\n{components}',
             'value': total_amount_,
-            'qty': returns_qty,
+            'qty': qty,
             'percent': percent,
             'percent_from_total': percent_from_total,
             'total_value': all_products_amount,

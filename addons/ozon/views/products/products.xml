@@ -487,7 +487,7 @@
                                         <field name="is_promotion_data_correct" invisible="1" />
                                         <div class="o_row"
                                             attrs="{'invisible': [('is_promotion_data_correct', '=', True)]}">
-                                            <h5>
+                                            <p>
                                                 *Данные Расходов на продвижение продуктов за период
                                                 могут быть не точны.
 
@@ -496,7 +496,7 @@
                                                 покрывающие весь искомый период.
 
                                                 Пожалуйста, загрузите недостающие отчеты за период.
-                                            </h5>
+                                            </p>
                                         </div>
                                         <group>
                                             <field name="avg_value_to_use" class="oe_inline" />
