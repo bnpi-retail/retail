@@ -25,6 +25,7 @@ NAME_IDENTIFIER = {
 }
 
 IDENTIFIER_NAME = {
+     "calc_datetime": "Дата расчёта",
      "buyer_price": "Цена для покупателя",
      "your_price": "Ваша цена",
      "cost": "Себестоимость",

@@ -396,17 +396,15 @@ class Product(models.Model):
     )
     is_promotion_data_correct = fields.Boolean()
     # ----------------
-
+    calc_column_your_price = fields.Float(string="""Цена в столбце "Калькулятор" """)
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
-                                           string="Сравнение цен")
+                                           string="Сравнение цен", readonly=True)
     base_calculation_ids = fields.One2many("ozon.base_calculation", "product_id", string="Плановая цена")
     base_calculation_template_id = fields.Many2one("ozon.base_calculation_template", 
                                                    string="Шаблон планового расчёта")
     logistics_tariff_id = fields.Many2one("ozon.logistics_tariff", 
                                           string="Тариф логистики в плановом расчёте")
-    plan_calc_datetime = fields.Datetime(string="Дата расчёта (План)", readonly=True)
-    market_calc_datetime = fields.Datetime(string="Дата расчёта (Рынок)", readonly=True)
-    fact_calc_datetime = fields.Datetime(string="Дата расчёта (Факт)", readonly=True)
+   
 
     @api.onchange('period_preset')
     def _onchange_period_preset(self):
@@ -1978,18 +1976,15 @@ class Product(models.Model):
             raise UserError("Шаблон планового расчёта не задан")
         self.base_calculation_template_id.apply_to_products(self)
         self.env["ozon.price_comparison"].update_plan_column_for_product(self)
-        self.plan_calc_datetime = fields.Datetime.now()
     
     def calculate_price_comparison_ids_fact_column(self):
         self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
         self.update_current_product_all_expenses(self.price)
         self.env["ozon.price_comparison"].update_fact_column_for_product(self)
-        self.fact_calc_datetime = fields.Datetime.now()
 
     def calculate_price_comparison_ids_market_column(self):
         self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
         self.env["ozon.price_comparison"].update_market_column_for_product(self)
-        self.market_calc_datetime = fields.Datetime.now()
 
     def calculate_price_comparison_ids_calc_column(self):
         self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)

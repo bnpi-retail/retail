@@ -34,8 +34,27 @@ class PriceComparison(models.Model):
     calc_value = fields.Float(string="Калькулятор")
 
     comment = fields.Text(string="Комментарий")
+    # String representations
+    string_plan_value = fields.Char(string="План", compute="_compute_string")
+    string_market_value = fields.Char(string="Рынок", compute="_compute_string")
+    string_fact_value = fields.Char(string="Факт", compute="_compute_string")
+    string_calc_value = fields.Char(string="Калькулятор", compute="_compute_string")
 
     # Compute methods
+    def _compute_string(self):
+        str_format = "%d.%m.%Y %H:%M:%S"
+        for r in self:
+            if r.name == "Дата расчёта":
+                r.string_plan_value = datetime.fromtimestamp(r.plan_value).strftime(str_format)
+                r.string_market_value = datetime.fromtimestamp(r.market_value).strftime(str_format)
+                r.string_fact_value = datetime.fromtimestamp(r.fact_value).strftime(str_format)
+                r.string_calc_value = datetime.fromtimestamp(r.calc_value).strftime(str_format)
+            else:
+                r.string_plan_value = str(round(r.plan_value, 2))
+                r.string_market_value = str(round(r.market_value, 2))
+                r.string_fact_value = str(round(r.fact_value, 2))
+                r.string_calc_value = str(round(r.calc_value, 2))
+
     def _compute_diff_fact_market(self):
         for r in self:
             r.diff_fact_market = r.fact_value - r.market_value
@@ -319,12 +338,14 @@ class PriceComparison(models.Model):
             self.create(data)
 
     def update_plan_column_for_product(self, product):
-        # Цена для покупателя
-        buyer_price = product._price_comparison("buyer_price")
-        buyer_price.write({"plan_value": 0})
         # Ваша цена
         your_price = product._price_comparison("your_price")
-        your_price.write({"plan_value": self.env["ozon.base_calculation"].calculate_plan_price(product)})
+        your_price_plan_val = self.env["ozon.base_calculation"].calculate_plan_price(product)
+        your_price.write({"plan_value": your_price_plan_val})
+        # Цена для покупателя
+        buyer_price = product._price_comparison("buyer_price")
+        buyer_price.write({"plan_value": (your_price_plan_val 
+                                          - your_price_plan_val * product.category_marketing_discount)})
         total_expenses_sum = 0
         # Fix
         for pc_identifier in ["cost", "logistics", "processing", "return_logistics", 
@@ -371,6 +392,12 @@ class PriceComparison(models.Model):
         self.write_price_comparison_indicators_for_column(product, "market_value")
     
     def update_calc_column_for_product(self, product):
+        your_price = product._price_comparison("your_price")
+        your_price_calc_value = product.calc_column_your_price
+        your_price.write({"calc_value": your_price_calc_value})
+        buyer_price = product._price_comparison("buyer_price")
+        buyer_price.write({"calc_value": (your_price_calc_value
+                                          - your_price_calc_value * product.category_marketing_discount)})
         self.write_price_comparison_expenses_for_column(product, "calc_value")
         self.write_price_comparison_indicators_for_column(product, "calc_value")
     
@@ -378,7 +405,6 @@ class PriceComparison(models.Model):
         pc_identifiers = [i for i in BASE_CALCULATION_COMPONENTS if i != "roe"]
         return sum(product.price_comparison_ids.filtered(
             lambda r: r.price_component_id.identifier in pc_identifiers).mapped(column))
-
 
     def write_price_comparison_expenses_for_column(self, product, column):
         price = product._price_comparison("your_price")[column]
@@ -447,3 +473,6 @@ class PriceComparison(models.Model):
         # ROE (рентабельность инвестиций)
         roe = product._price_comparison("roe")
         roe.write({column: cost_price and profit_val / cost_price})
+        # Дата расчёта
+        calc_datetime = product._price_comparison("calc_datetime")
+        calc_datetime.write({column: datetime.now().timestamp()})
