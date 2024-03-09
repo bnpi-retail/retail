@@ -49,7 +49,8 @@ class Transactions(models.Model):
     transaction_unit_ids = fields.One2many("ozon.transaction_unit", "transaction_id", 
                                            string="Составляющие транзакции")
 
-    ozon_transaction_value_by_product_ids = fields.One2many("ozon.transaction.value_by_product", "transaction_id")
+    ozon_transaction_value_by_product_ids = fields.One2many(
+        "ozon.transaction.value_by_product", "transaction_id", string="Декомпозированые транзакции")
 
     def get_transactions_by_name_products_and_period(self, data):
         domain = []
