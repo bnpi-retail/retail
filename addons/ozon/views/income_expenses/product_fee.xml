@@ -69,12 +69,6 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Комиссии товаров"
-            id="menu_product_fee"
-            parent="main_menu_history"
-            action="action_product_fee"
-            sequence="4" />
 
     </data>
 </odoo>

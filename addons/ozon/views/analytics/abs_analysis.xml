@@ -77,9 +77,5 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_ozon_abc_analysis" name="ABC Анализ внутри категории"
-                  parent="main_menu_analytics"
-                  action="action_open_ozon_abc_analysis" sequence="1"/>
-
     </data>
 </odoo>

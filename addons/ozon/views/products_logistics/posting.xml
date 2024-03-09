@@ -68,12 +68,6 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Отправления Ozon"
-            id="menu_postings_ozon"
-            parent="main_menu_products_logistics"
-            action="action_postings_ozon"
-            sequence="1" />
 
     </data>
 </odoo>

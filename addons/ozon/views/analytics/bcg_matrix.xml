@@ -158,9 +158,5 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_indicators_reports_bcg_matrix" name="BCG матрицы"
-                  parent="main_menu_analytics"
-                  action="action_open_ozon_report_bcg_matrix" sequence="2"/>
-
     </data>
 </odoo>

@@ -23,12 +23,6 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="История наших цен"
-            id="menu_our_price_history"
-            parent="main_menu_competitors"
-            action="action_our_price_history"
-            sequence="50" />
 
     </data>
 </odoo>

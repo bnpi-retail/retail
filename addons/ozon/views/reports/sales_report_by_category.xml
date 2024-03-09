@@ -106,9 +106,5 @@
             <field name="view_mode">tree,form,pivot</field>
         </record>
 
-        <menuitem id="menu_sales_report_by_category" name="Отчеты по продажам категории"
-            parent="main_menu_reports"
-            action="action_sales_report_by_category" sequence="2" />
-
     </data>
 </odoo>

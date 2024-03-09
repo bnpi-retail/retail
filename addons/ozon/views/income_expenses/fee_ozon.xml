@@ -45,12 +45,5 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Комиссии категорий"
-            id="menu_fee_ozon"
-            parent="main_menu_history"
-            action="action_fee_ozon"
-            sequence="4" />
-
     </data>
 </odoo>

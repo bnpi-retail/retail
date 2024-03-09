@@ -74,12 +74,5 @@
             <field name="context">{"graph_mode": "line", "measure": "price_with_card"}</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Мониторинг товаров конкурентов"
-            id="menu_name_competitors"
-            parent="main_menu_history"
-            action="action_name_competitors"
-            sequence="50" />
-
     </data>
 </odoo>

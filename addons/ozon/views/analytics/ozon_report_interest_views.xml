@@ -161,9 +161,5 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_ozon_report_interest" name="Отчеты по интересу к продуктам"
-            parent="main_menu_analytics"
-            action="action_open_ozon_report_interest" sequence="40" />
-
     </data>
 </odoo>

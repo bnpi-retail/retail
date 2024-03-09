@@ -35,12 +35,6 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Investment"
-            id="menu_investment_expenses"
-            parent="main_menu_dicts"
-            action="action_investment_expenses"
-            sequence="4" />
 
         <!-- Investment expenses wizard form -->
         <record id="wizard_view_investment_expenses_form" model="ir.ui.view">

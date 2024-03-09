@@ -114,11 +114,5 @@
             <field name="view_mode">tree,form,kanban</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Анализ конкурентов"
-            id="menu_analysis_competitors"
-            parent="main_menu_competitors"
-            action="action_analysis_competitors"
-            sequence="100" />
     </data>
 </odoo>

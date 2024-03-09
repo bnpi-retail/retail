@@ -93,12 +93,7 @@
         </record>
 
 
-        <!-- Menu -->
-        <menuitem name="Акции"
-            id="menu_action"
-            parent="main_menu_actions"
-            action="action_ozon_action"
-            sequence="39" />
+
 
     </data>
 </odoo>

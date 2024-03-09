@@ -34,12 +34,5 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Очередь для формирования поисковых запросов"
-            id="menu_lots_for_gpt"
-            parent="main_menu_chat_gpt"
-            action="action_lots_for_gpt"
-            sequence="1" />
-
     </data>
 </odoo>

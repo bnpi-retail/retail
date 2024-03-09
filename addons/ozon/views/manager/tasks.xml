@@ -63,12 +63,5 @@
             <field name="view_mode">kanban,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Задачи"
-            id="menu_tasks"
-            parent="main_menu_manager"
-            action="action_tasks"
-            sequence="4" />
-
     </data>
 </odoo>

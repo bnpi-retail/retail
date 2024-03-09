@@ -46,12 +46,5 @@
             <field name="view_mode">tree,form,search</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Необходимо сопоставить"
-            id="menu_successful_product_competitors"
-            parent="main_menu_manager"
-            action="action_successful_product_competitors"
-            sequence="50" />
-
     </data>
 </odoo>

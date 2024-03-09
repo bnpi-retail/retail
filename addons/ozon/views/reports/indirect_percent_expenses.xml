@@ -72,12 +72,5 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Отчёт о выплатах"
-            id="menu_indirect_percent_expenses"
-            parent="main_menu_reports"
-            action="action_indirect_percent_expenses"
-            sequence="1" />
-
     </data>
 </odoo>

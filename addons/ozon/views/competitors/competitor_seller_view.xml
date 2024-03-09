@@ -37,9 +37,5 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_ozon_competitor_seller" name="Магазины-конкуренты"
-            parent="main_menu_competitors"
-            action="action_open_ozon_competitor_seller" sequence="100" />
-
     </data>
 </odoo>

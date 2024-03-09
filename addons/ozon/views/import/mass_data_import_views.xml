@@ -74,8 +74,5 @@
         </record>
 
 
-        <menuitem id="menu_mass_data_import" name="Массовый импорт данных" parent="main_menu_import"
-            action="action_open_ozon_mass_data_import" sequence="2" />
-
     </data>
 </odoo>

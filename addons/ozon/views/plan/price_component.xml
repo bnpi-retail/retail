@@ -34,13 +34,6 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Компоненты цены"
-            id="menu_price_component"
-            parent="main_menu_plan"
-            action="action_price_component"
-            sequence="1" />
-
 
     </data>
 

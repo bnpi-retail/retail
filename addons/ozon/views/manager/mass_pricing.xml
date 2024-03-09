@@ -53,12 +53,6 @@
             </field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Задание для изменения цены"
-            id="menu_mass_pricing"
-            parent="main_menu_manager"
-            action="action_mass_pricing"
-            sequence="1" />
     </data>
 
 </odoo>

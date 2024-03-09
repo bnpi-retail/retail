@@ -38,15 +38,6 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-
-        <!-- Menu -->
-        <menuitem name="Стратегии назначения цен"
-            id="menu_pricing_strategy"
-            parent="main_menu_dicts"
-            action="action_pricing_strategy"
-            sequence="5" />
-
-
     </data>
 
 </odoo>

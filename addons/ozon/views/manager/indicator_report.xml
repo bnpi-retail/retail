@@ -99,9 +99,6 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_indicators_reports" name="Отчеты по индикаторам"
-            parent="main_menu_manager"
-            action="action_open_ozon_report" sequence="3" />
 
     </data>
 </odoo>

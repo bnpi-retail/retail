@@ -105,9 +105,5 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_report_category_market_share" name="Отчет по рынку"
-            parent="main_menu_reports"
-            action="action_open_report_category_market_share" sequence="36" />
-
     </data>
 </odoo>

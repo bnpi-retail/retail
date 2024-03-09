@@ -51,12 +51,6 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Затраты на продвижение"
-            id="menu_promotion_expenses"
-            parent="main_menu_finance"
-            action="action_promotion_expenses"
-            sequence="3" />
     </data>
 
 </odoo>

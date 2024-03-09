@@ -72,8 +72,5 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="menu_indicators" name="Мониторинг индикаторов" parent="main_menu_manager"
-            action="action_open_ozon_products_indicator" sequence="2" />
-
     </data>
 </odoo>

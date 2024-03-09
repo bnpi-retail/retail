@@ -125,12 +125,6 @@
             </field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Основные категории"
-            id="menu_main_categories"
-            parent="main_menu_dicts"
-            action="action_main_categories"
-            sequence="1" />
 
     </data>
 </odoo>

@@ -30,13 +30,6 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Шаблоны планового расчёта"
-            id="menu_base_calculation_template"
-            parent="main_menu_plan"
-            action="action_base_calculation_template"
-            sequence="3" />
-
 
         <!-- Base calculation wizard - Form -->
         <record id="ozon_base_calculation_wizard_view_form" model="ir.ui.view">

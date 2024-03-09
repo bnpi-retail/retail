@@ -49,12 +49,5 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Накладные по отгрузкам на склад FBO"
-            id="menu_fbo_supply_order"
-            parent="main_menu_products_logistics"
-            action="action_fbo_supply_order"
-            sequence="2" />
-
     </data>
 </odoo>

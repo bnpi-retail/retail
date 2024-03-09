@@ -89,12 +89,5 @@
             <field name="context">{"graph_mode": "line", "measure": "profit"}</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Цены"
-            id="menu_price_history"
-            parent="main_menu_history"
-            action="action_price_history"
-            sequence="1" />
-
     </data>
 </odoo>

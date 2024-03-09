@@ -18,12 +18,5 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Вспомогательные категории"
-            id="menu_supplementary_categories"
-            parent="main_menu_dicts"
-            action="action_supplementary_categories"
-            sequence="2" />
-
     </data>
 </odoo>

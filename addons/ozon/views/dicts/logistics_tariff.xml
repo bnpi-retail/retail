@@ -36,12 +36,5 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Тарифы логистики"
-            id="menu_logistics_tariff"
-            parent="main_menu_dicts"
-            action="action_logistics_tariff"
-            sequence="7" />
-
     </data>
 </odoo>

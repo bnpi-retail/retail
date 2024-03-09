@@ -1,21 +1,291 @@
 <odoo>
-  <data>
-    <menuitem name="Ozon" id="ozon.menu_root" sequence="1" />
+    <data>
+        <menuitem name="Ozon" id="ozon.menu_root" sequence="1"/>
 
-    <menuitem name="Продукты" id="main_menu_products" parent="ozon.menu_root" sequence="2"
-      action="action_products" />
-    <menuitem name="Доходы/расходы" id="main_menu_finance" parent="ozon.menu_root" sequence="3" />
-    <menuitem name="История" id="main_menu_history" parent="ozon.menu_root" sequence="4" />
-    <menuitem name="Планирование" id="main_menu_plan" parent="ozon.menu_root" sequence="5" />
-    <menuitem name="Отчёты" id="main_menu_reports" parent="ozon.menu_root" sequence="6" />
-    <menuitem name="Когортный анализ" id="main_menu_analytics" parent="ozon.menu_root" sequence="7" />
-    <menuitem name="Работа менеджера" id="main_menu_manager" parent="ozon.menu_root" sequence="8" />
-    <menuitem name="Конкуренты" id="main_menu_competitors" parent="ozon.menu_root" sequence="9" />
-    <menuitem name="Акции" id="main_menu_actions" parent="ozon.menu_root" sequence="10" />
-    <menuitem name="Перемещение товаров" id="main_menu_products_logistics" parent="ozon.menu_root"
-      sequence="11" />
-    <menuitem name="Справочники" id="main_menu_dicts" parent="ozon.menu_root" sequence="12" />
-    <menuitem name="Импорт" id="main_menu_import" parent="ozon.menu_root" sequence="13" />
-    <menuitem name="Chat GPT" id="main_menu_chat_gpt" parent="ozon.menu_root" sequence="14" />
-  </data>
+        <menuitem name="Продукты" id="main_menu_products" parent="ozon.menu_root" sequence="2"
+                  action="action_products"/>
+        <menuitem name="Доходы/расходы" id="main_menu_finance" parent="ozon.menu_root" sequence="3"/>
+        <menuitem name="История" id="main_menu_history" parent="ozon.menu_root" sequence="4"/>
+        <menuitem name="Планирование" id="main_menu_plan" parent="ozon.menu_root" sequence="5"/>
+        <menuitem name="Отчёты" id="main_menu_reports" parent="ozon.menu_root" sequence="6"/>
+        <menuitem name="Когортный анализ" id="main_menu_analytics" parent="ozon.menu_root" sequence="7"/>
+        <menuitem name="Работа менеджера" id="main_menu_manager" parent="ozon.menu_root" sequence="8"/>
+        <menuitem name="Конкуренты" id="main_menu_competitors" parent="ozon.menu_root" sequence="9"/>
+        <menuitem name="Акции" id="main_menu_actions" parent="ozon.menu_root" sequence="10"/>
+        <menuitem name="Перемещение товаров" id="main_menu_products_logistics" parent="ozon.menu_root"
+                  sequence="11"/>
+        <menuitem name="Справочники" id="main_menu_dicts" parent="ozon.menu_root" sequence="12"/>
+        <menuitem name="Импорт" id="main_menu_import" parent="ozon.menu_root" sequence="13"/>
+        <menuitem name="Chat GPT" id="main_menu_chat_gpt" parent="ozon.menu_root" sequence="14"/>
+
+        <menuitem name="Ожидаемая доходность"
+                  id="menu_profitability_norm"
+                  parent="main_menu_dicts"
+                  action="action_profitability_norm"
+                  sequence="3"/>
+
+        <menuitem name="Транзакции Ozon"
+                  id="menu_transactions"
+                  parent="main_menu_finance"
+                  action="action_transaction"
+                  sequence="1"/>
+
+<!--        <menuitem name="История наших цен"-->
+<!--                  id="menu_our_price_history"-->
+<!--                  parent="main_menu_competitors"-->
+<!--                  action="action_our_price_history"-->
+<!--                  sequence="50"/>-->
+
+        <menuitem name="Мониторинг товаров конкурентов"
+                  id="menu_name_competitors"
+                  parent="main_menu_history"
+                  action="action_name_competitors"
+                  sequence="50"/>
+
+        <menuitem name="Очередь для формирования поисковых запросов"
+                  id="menu_lots_for_gpt"
+                  parent="main_menu_chat_gpt"
+                  action="action_lots_for_gpt"
+                  sequence="1"/>
+
+        <menuitem name="Анализ конкурентов"
+                  id="menu_analysis_competitors"
+                  parent="main_menu_competitors"
+                  action="action_analysis_competitors"
+                  sequence="100"/>
+
+        <menuitem name="Фактические/плановые статьи"
+                  id="menu_price_component_match"
+                  parent="main_menu_plan"
+                  action="action_price_component_match"
+                  sequence="2"/>
+
+        <menuitem name="Компоненты цены"
+                  id="menu_price_component"
+                  parent="main_menu_plan"
+                  action="action_price_component"
+                  sequence="1"/>
+
+        <menuitem name="Товары конкурентов"
+                  id="menu_products_competitors"
+                  parent="main_menu_competitors"
+                  action="action_products_competitors"
+                  sequence="50"/>
+
+        <menuitem name="Основные категории"
+                  id="menu_main_categories"
+                  parent="main_menu_dicts"
+                  action="action_main_categories"
+                  sequence="1"/>
+
+        <menuitem name="Investment"
+                  id="menu_investment_expenses"
+                  parent="main_menu_dicts"
+                  action="action_investment_expenses"
+                  sequence="4"/>
+        <!-- Menu -->
+        <menuitem name="Тарифы логистики"
+                  id="menu_logistics_tariff"
+                  parent="main_menu_dicts"
+                  action="action_logistics_tariff"
+                  sequence="7"/>
+        <!-- Menu -->
+        <menuitem name="Шаблоны планового расчёта"
+                  id="menu_base_calculation_template"
+                  parent="main_menu_plan"
+                  action="action_base_calculation_template"
+                  sequence="3"/>
+        <!-- Menu -->
+        <menuitem name="Комиссии товаров"
+                  id="menu_product_fee"
+                  parent="main_menu_history"
+                  action="action_product_fee"
+                  sequence="4"/>
+
+        <!-- Menu -->
+        <menuitem name="Стратегии назначения цен"
+                  id="menu_pricing_strategy"
+                  parent="main_menu_dicts"
+                  action="action_pricing_strategy"
+                  sequence="5"/>
+        <!-- Menu -->
+        <menuitem name="Комиссии категорий"
+                  id="menu_fee_ozon"
+                  parent="main_menu_history"
+                  action="action_fee_ozon"
+                  sequence="4"/>
+
+        <!-- Menu -->
+        <menuitem name="Отчёт о выплатах"
+                  id="menu_indirect_percent_expenses"
+                  parent="main_menu_reports"
+                  action="action_indirect_percent_expenses"
+                  sequence="1"/>
+
+        <!-- Menu -->
+        <menuitem name="Накладные по отгрузкам на склад FBO"
+                  id="menu_fbo_supply_order"
+                  parent="main_menu_products_logistics"
+                  action="action_fbo_supply_order"
+                  sequence="2"/>
+
+        <!-- Menu -->
+        <menuitem name="Отправления Ozon"
+                  id="menu_postings_ozon"
+                  parent="main_menu_products_logistics"
+                  action="action_postings_ozon"
+                  sequence="1"/>
+
+        <!-- Menu -->
+        <menuitem name="Ключевые слова"
+                  id="menu_search_queries"
+                  parent="main_menu_dicts"
+                  action="action_search_queries"
+                  sequence="38"/>
+
+        <!-- Menu -->
+        <menuitem name="Настройки"
+                  id="menu_settings"
+                  parent="main_menu_dicts"
+                  action="action_settings"
+                  sequence="42"/>
+
+        <!-- Menu -->
+        <menuitem name="Импорт"
+                  id="menu_import_file"
+                  parent="main_menu_import"
+                  action="action_import_file"
+                  sequence="1"/>
+
+        <!-- Menu -->
+        <menuitem name="Вспомогательные категории"
+                  id="menu_supplementary_categories"
+                  parent="main_menu_dicts"
+                  action="action_supplementary_categories"
+                  sequence="2"/>
+
+        <!-- Menu -->
+        <menuitem name="Поисковые запросы"
+                  id="menu_search_queries_parser"
+                  parent="main_menu_dicts"
+                  action="action_tracked_search_queries"
+                  sequence="30"/>
+
+        <!-- Menu -->
+        <menuitem name="Продажи"
+                  id="menu_sale"
+                  parent="main_menu_history"
+                  action="action_sale"
+                  sequence="2"/>
+
+        <!-- Menu -->
+        <menuitem name="Склады FBS"
+                  id="menu_warehouse"
+                  parent="main_menu_dicts"
+                  action="action_warehouse"
+                  sequence="2"/>
+
+        <!-- Menu -->
+        <menuitem name="Интерес к продуктам"
+                  id="menu_analysis_data"
+                  parent="main_menu_history"
+                  action="action_analysis_data"
+                  sequence="3"/>
+
+        <!-- Menu -->
+        <menuitem name="Позиции товаров"
+                  id="menu_history_of_product_positions"
+                  parent="main_menu_history"
+                  action="action_history_of_product_positions"
+                  sequence="4"/>
+
+        <!-- Menu -->
+        <menuitem name="Цены"
+                  id="menu_price_history"
+                  parent="main_menu_history"
+                  action="action_price_history"
+                  sequence="1"/>
+
+        <!-- Menu -->
+        <menuitem name="Остатки"
+                  id="menu_stock"
+                  parent="main_menu_history"
+                  action="action_stocks"
+                  sequence="2"/>
+
+        <!-- Menu -->
+        <menuitem name="Затраты на продвижение"
+                  id="menu_promotion_expenses"
+                  parent="main_menu_finance"
+                  action="action_promotion_expenses"
+                  sequence="3"/>
+
+        <menuitem name="Декомпозированые транзакции"
+                  id="menu_transactions_value_by_product"
+                  parent="main_menu_finance"
+                  action="action_transaction_value_by_product"
+                  sequence="1"/>
+
+        <!-- Menu -->
+        <menuitem name="Задание для изменения цены"
+                  id="menu_mass_pricing"
+                  parent="main_menu_manager"
+                  action="action_mass_pricing"
+                  sequence="1"/>
+
+        <!-- Menu -->
+        <menuitem name="Необходимо сопоставить"
+                  id="menu_successful_product_competitors"
+                  parent="main_menu_manager"
+                  action="action_successful_product_competitors"
+                  sequence="50"/>
+
+        <!-- Menu -->
+        <menuitem name="Задачи"
+                  id="menu_tasks"
+                  parent="main_menu_manager"
+                  action="action_tasks"
+                  sequence="4"/>
+
+        <menuitem id="menu_sales_report_by_category" name="Отчеты по продажам категории"
+                  parent="main_menu_reports"
+                  action="action_sales_report_by_category" sequence="2"/>
+
+        <menuitem id="menu_realisation_report" name="Отчеты Ozon о реализации товаров"
+                  parent="main_menu_reports"
+                  action="action_realisation_report" sequence="3"/>
+
+        <menuitem id="menu_ozon_report_interest" name="Отчеты по интересу к продуктам"
+                  parent="main_menu_analytics"
+                  action="action_open_ozon_report_interest" sequence="40"/>
+
+        <menuitem id="menu_ozon_abc_analysis" name="ABC Анализ внутри категории"
+                  parent="main_menu_analytics"
+                  action="action_open_ozon_abc_analysis" sequence="1"/>
+
+        <menuitem id="menu_indicators_reports_bcg_matrix" name="BCG матрицы"
+                  parent="main_menu_analytics"
+                  action="action_open_ozon_report_bcg_matrix" sequence="2"/>
+
+
+        <menuitem id="menu_ozon_competitor_seller" name="Магазины-конкуренты"
+                  parent="main_menu_competitors"
+                  action="action_open_ozon_competitor_seller" sequence="100"/>
+
+        <menuitem id="menu_report_category_market_share" name="Отчет по рынку"
+                  parent="main_menu_reports"
+                  action="action_open_report_category_market_share" sequence="36"/>
+
+        <menuitem id="menu_mass_data_import" name="Массовый импорт данных" parent="main_menu_import"
+                  action="action_open_ozon_mass_data_import" sequence="2"/>
+
+        <menuitem id="menu_indicators" name="Мониторинг индикаторов" parent="main_menu_manager"
+                  action="action_open_ozon_products_indicator" sequence="2"/>
+
+        <menuitem id="menu_indicators_reports" name="Отчеты по индикаторам"
+                  parent="main_menu_manager"
+                  action="action_open_ozon_report" sequence="3"/>
+
+
+    </data>
 </odoo>

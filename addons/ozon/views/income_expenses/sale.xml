@@ -66,12 +66,5 @@
             <field name="context">{"graph_mode": "line", "measure": "revenue"}</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Продажи"
-            id="menu_sale"
-            parent="main_menu_history"
-            action="action_sale"
-            sequence="2" />
-
     </data>
 </odoo>

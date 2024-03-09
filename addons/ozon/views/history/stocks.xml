@@ -61,12 +61,6 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <!-- Menu -->
-        <menuitem name="Остатки"
-            id="menu_stock"
-            parent="main_menu_history"
-            action="action_stocks"
-            sequence="2" />
 
     </data>
 </odoo>
