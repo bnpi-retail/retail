@@ -1,6 +1,7 @@
 import ast
 import base64
 import csv
+import io
 import logging
 import json
 import os
@@ -11,6 +12,7 @@ from datetime import date, datetime
 from collections import defaultdict
 from io import BytesIO, StringIO
 from typing import Any, Optional
+from ..ozon_api import get_posting_from_ozon_api
 
 from ..helpers import (
     split_list,
@@ -270,9 +272,210 @@ class ImportFile(models.Model):
         )
         return result if result else False
 
+    def get_posting(self, posting_number: str):
+        posting = self.env["ozon.posting"].search([
+            ('posting_number', '=', posting_number)
+        ])
+        if not posting:
+            posting = self.env["ozon.posting"].search([
+                ('order_number', '=', posting_number)
+            ], order='create_date desc', limit=1)
+            if not posting:
+                try:
+                    posting_data = get_posting_from_ozon_api(posting_number)
+                    if posting_data:
+                        self.import_postings(posting_data)
+
+                        posting = self.env["ozon.posting"].search([
+                            ('posting_number', '=', posting_number)
+                        ])
+                        if not posting:
+                            posting = self.env["ozon.posting"].search([
+                                ('order_number', '=', posting_number)
+                            ], order='create_date desc', limit=1)
+                except Exception:
+                    logger.warning(f"Exception get_posting: {traceback.format_exc()}")
+
+        return posting
+
+    @staticmethod
+    def get_vals_to_create_value_by_product(posting, row, service_list, posting_number):
+        vals_to_create_value_by_product = []
+        qty_new_decomposed_transactions = 0
+        by_volume = {
+            'логистика',
+            'магистраль',
+            'обратная логистика',
+            'обратная магистраль',
+            'обработка невыкупа',
+            'обработка отмен',
+            'обработка возврата',
+            'MarketplaceServiceItemRedistributionReturnsPVZ',
+            'сборка заказа',
+            'обработка отправления'
+        }
+        by_price = {
+            'последняя миля',
+        }
+        if posting:
+            tran_accruals_for_sale = float(row["accruals_for_sale"])
+            tran_sale_commission = float(row["sale_commission"])
+            tran_amount = float(row["amount"])
+            posting_products = posting.posting_product_ids
+            products_t_volume = sum(
+                product.ozon_products_id.products.volume * product.quantity for product in posting_products
+            )
+            products_t_price = sum(product.price * product.quantity for product in posting_products)
+            for product in posting_products:
+                qty = product.quantity
+                product_price = product.price
+                product_id = product.ozon_products_id.id
+                product_volume = product.ozon_products_id.products.volume
+                for _ in range(qty):
+                    if tran_accruals_for_sale:
+                        accruals_for_sale = product_price if tran_accruals_for_sale >= 0 else -product_price
+                        sale_commission = abs((product_price * tran_sale_commission) / tran_accruals_for_sale)
+                        if tran_sale_commission < 0:
+                            sale_commission = -sale_commission
+                        amount = (product_price * tran_amount) / tran_accruals_for_sale
+                        if tran_amount < 0:
+                            amount = -amount if amount >= 0 else amount
+                    else:
+                        tran_accruals_for_sale = products_t_price
+                        accruals_for_sale = product_price
+                        sale_commission = abs((product_price * tran_sale_commission) / tran_accruals_for_sale)
+                        if tran_sale_commission < 0:
+                            sale_commission = -sale_commission
+                        amount = (product_price * tran_amount) / tran_accruals_for_sale
+                        if tran_amount < 0:
+                            amount = -amount if amount >= 0 else amount
+
+                    if row['name'] in [
+                        "Доставка покупателю",
+                    ]:
+                        vals_to_create_value_by_product.extend([
+                            {
+                                "name": "Сумма за заказы",
+                                "value": accruals_for_sale,
+                                "ozon_products_id": product_id
+                            },
+                            {
+                                "name": "Вознаграждение за продажу",
+                                "value": sale_commission,
+                                "ozon_products_id": product_id
+                            },
+                            {
+                                "name": "Итого за заказы",
+                                "value": amount,
+                                "ozon_products_id": product_id
+                            }
+                        ])
+                        qty_new_decomposed_transactions += 3
+                        # {'обработка отправления', 'сборка заказа',
+                        # 'последняя миля', 'логистика', 'магистраль'}
+                        for name, price in service_list:
+                            if name in by_volume:
+                                service_amount = (product_volume * price) / products_t_volume
+                            else:
+                                service_amount = (product_price * price) / tran_accruals_for_sale
+                            vals_to_create_value_by_product.append({
+                                "name": name,
+                                "value": service_amount,
+                                "ozon_products_id": product_id
+                            })
+                            qty_new_decomposed_transactions += 1
+                    elif row['name'] in [
+                        "Получение возврата, отмены, невыкупа от покупателя"
+                    ]:
+                        vals_to_create_value_by_product.extend([
+                            {
+                                "name": "Получение возврата: Сумма за заказы",
+                                "value": accruals_for_sale,
+                                "ozon_products_id": product_id
+                            },
+                            {
+                                "name": "Получение возврата: Вознаграждение за продажу",
+                                "value": sale_commission,
+                                "ozon_products_id": product_id
+                            },
+                            {
+                                "name": "Получение возврата: Итого за заказы",
+                                "value": amount,
+                                "ozon_products_id": product_id
+                            }
+                        ])
+                        qty_new_decomposed_transactions += 3
+                        # {'обработка отправления', 'сборка заказа',
+                        # 'последняя миля', 'логистика', 'магистраль'}
+                        for name, price in service_list:
+                            if name in by_volume:
+                                service_amount = (product_volume * price) / products_t_volume
+                            else:
+                                service_amount = (product_price * price) / tran_accruals_for_sale
+                            vals_to_create_value_by_product.append({
+                                "name": name,
+                                "value": service_amount,
+                                "ozon_products_id": product_id
+                            })
+                            qty_new_decomposed_transactions += 1
+                    elif row['name'] in [
+                        "Доставка и обработка возврата, отмены, невыкупа",
+                        "Доставка покупателю — отмена начисления"
+                    ]:
+                        # {'обработка невыкупа', 'обработка отмен', 'обработка возврата',
+                        # 'MarketplaceServiceItemRedistributionReturnsPVZ', 'последняя миля',
+                        # 'логистика', 'обратная логистика', 'обратная магистраль', 'магистраль'}
+                        for name, price in service_list:
+                            if name in by_volume:
+                                service_amount = (product_volume * price) / products_t_volume
+                            else:
+                                service_amount = (product_price * price) / tran_accruals_for_sale
+                            vals_to_create_value_by_product.append({
+                                "name": name,
+                                "value": service_amount,
+                                "ozon_products_id": product_id
+                            })
+                            qty_new_decomposed_transactions += 1
+                    else:
+                        # оплата эквайринга, услуга продвижения «Бонусы продавца»,
+                        vals_to_create_value_by_product.append({
+                            "name": row["name"],
+                            "value": amount,
+                            "ozon_products_id": product_id
+                        })
+                        qty_new_decomposed_transactions += 1
+
+        else:
+            if row['name'] in [
+                'Услуги продвижения товаров',
+                'Услуга размещения товаров на складе',
+                'Приобретение отзывов на платформе',
+                'Обработка отправления «Pick-up» (отгрузка курьеру)',
+                'Начисления по претензиям',
+                'Начисление по спору',
+                'Утилизация',
+            ]:
+                vals_to_create_value_by_product.append({
+                    "name": row["name"],
+                    "value": row["amount"]
+                })
+                qty_new_decomposed_transactions += 1
+            else:
+                vals_to_create_value_by_product.append({
+                    "name": row["name"],
+                    "value": row["amount"]
+                })
+                qty_new_decomposed_transactions += 1
+                logger.warning(f"posting_number: {posting_number}")
+                logger.warning(row["name"])
+                logger.warning("Импорт транзакций: не найдено отправление. "
+                               "Декомпозированая транзакция создана без разделения на товары.")
+
+        return vals_to_create_value_by_product, qty_new_decomposed_transactions
 
     def import_transactions(self, content) -> dict:
         qty_new_transactions = 0
+        qty_new_decomposed_transactions = 0
         imported_days_data = defaultdict(int)
         with StringIO(content) as csvfile:
             reader = csv.DictReader(csvfile)
@@ -300,160 +503,16 @@ class ImportFile(models.Model):
 
                 # posting
                 posting_number = row["posting_number"]
-                posting = self.env["ozon.posting"].search([
-                    ('posting_number', '=', posting_number)
-                ])
-                if not posting:
-                    posting = self.env["ozon.posting"].search([
-                        ('order_number', '=', posting_number)
-                    ], order='create_date desc', limit=1)
+                posting = self.get_posting(posting_number)
 
-                vals_to_create_value_by_product = []
-                by_volume = {
-                    'логистика',
-                    'магистраль',
-                    'обратная логистика',
-                    'обратная магистраль',
-                    'обработка невыкупа',
-                    'обработка отмен',
-                    'обработка возврата',
-                    'MarketplaceServiceItemRedistributionReturnsPVZ',
-                    'сборка заказа',
-                    'обработка отправления'
-                }
-                by_price = {
-                    'последняя миля',
-                }
-                if posting:
-                    tran_accruals_for_sale = float(row["accruals_for_sale"])
-                    tran_sale_commission = float(row["sale_commission"])
-                    tran_amount = float(row["amount"])
-                    posting_products = posting.posting_product_ids
-                    products_t_volume = sum(
-                        product.ozon_products_id.products.volume * product.quantity for product in posting_products
-                    )
-                    products_t_price = sum(product.price * product.quantity for product in posting_products)
-                    for product in posting_products:
-                        qty = product.quantity
-                        product_price = product.price
-                        product_id = product.ozon_products_id.id
-                        product_volume = product.ozon_products_id.products.volume
-                        for _ in range(qty):
-                            if tran_accruals_for_sale:
-                                sale_commission = (product_price * tran_sale_commission) / tran_accruals_for_sale
-                                amount = (product_price * tran_amount) / tran_accruals_for_sale
-                            else:
-                                tran_accruals_for_sale = products_t_price
-                                sale_commission = (product_price * tran_sale_commission) / tran_accruals_for_sale
-                                amount = (product_price * tran_amount) / tran_accruals_for_sale
-
-                            if row['name'] in [
-                                "Доставка покупателю",
-                            ]:
-                                vals_to_create_value_by_product.extend([
-                                    {
-                                        "name": "Сумма за заказы",
-                                        "value": product_price,
-                                        "ozon_products_id": product_id
-                                    },
-                                    {
-                                        "name": "Вознаграждение за продажу",
-                                        "value": sale_commission,
-                                        "ozon_products_id": product_id
-                                    },
-                                    {
-                                        "name": "Итого за заказы",
-                                        "value": amount,
-                                        "ozon_products_id": product_id
-                                    }
-                                ])
-                                # {'обработка отправления', 'сборка заказа',
-                                # 'последняя миля', 'логистика', 'магистраль'}
-                                for name, price in service_list:
-                                    if name in by_volume:
-                                        service_amount = (product_volume * price) / products_t_volume
-                                    else:
-                                        service_amount = (product_price * price) / tran_accruals_for_sale
-                                    vals_to_create_value_by_product.append({
-                                        "name": name,
-                                        "value": service_amount,
-                                        "ozon_products_id": product_id
-                                    })
-                            elif row['name'] in [
-                                "Получение возврата, отмены, невыкупа от покупателя"
-                            ]:
-                                vals_to_create_value_by_product.extend([
-                                    {
-                                        "name": "Получение возврата: Сумма за заказы",
-                                        "value": product_price,
-                                        "ozon_products_id": product_id
-                                    },
-                                    {
-                                        "name": "Получение возврата: Вознаграждение за продажу",
-                                        "value": sale_commission,
-                                        "ozon_products_id": product_id
-                                    },
-                                    {
-                                        "name": "Получение возврата: Итого за заказы",
-                                        "value": amount,
-                                        "ozon_products_id": product_id
-                                    }
-                                ])
-                                # {'обработка отправления', 'сборка заказа',
-                                # 'последняя миля', 'логистика', 'магистраль'}
-                                for name, price in service_list:
-                                    if name in by_volume:
-                                        service_amount = (product_volume * price) / products_t_volume
-                                    else:
-                                        service_amount = (product_price * price) / tran_accruals_for_sale
-                                    vals_to_create_value_by_product.append({
-                                        "name": name,
-                                        "value": service_amount,
-                                        "ozon_products_id": product_id
-                                    })
-                            elif row['name'] in [
-                                "Доставка и обработка возврата, отмены, невыкупа",
-                                "Доставка покупателю — отмена начисления"
-                            ]:
-                                # {'обработка невыкупа', 'обработка отмен', 'обработка возврата',
-                                # 'MarketplaceServiceItemRedistributionReturnsPVZ', 'последняя миля',
-                                # 'логистика', 'обратная логистика', 'обратная магистраль', 'магистраль'}
-                                for name, price in service_list:
-                                    if name in by_volume:
-                                        service_amount = (product_volume * price) / products_t_volume
-                                    else:
-                                        service_amount = (product_price * price) / tran_accruals_for_sale
-                                    vals_to_create_value_by_product.append({
-                                        "name": name,
-                                        "value": service_amount,
-                                        "ozon_products_id": product_id
-                                    })
-                            else:
-                                # оплата эквайринга, услуга продвижения «Бонусы продавца»,
-                                vals_to_create_value_by_product.append({
-                                    "name": row["name"],
-                                    "value": amount,
-                                    "ozon_products_id": product_id
-                                })
-
-                else:
-                    if row['name'] in [
-                        'Услуги продвижения товаров',
-                        'Услуга размещения товаров на складе',
-                        'Приобретение отзывов на платформе',
-                        'Обработка отправления «Pick-up» (отгрузка курьеру)',
-                        'Начисления по претензиям',
-                        'Начисление по спору',
-                        'Утилизация',
-                    ]:
-                        vals_to_create_value_by_product.append({
-                            "name": row["name"],
-                            "value": row["amount"]
-                        })
-                    else:
-                        logger.warning(f"posting_number: {posting_number}")
-                        logger.warning(row["name"])
-                        logger.warning("Импорт транзакций: не найдено отправление")
+                decomposed_transactions = self.get_vals_to_create_value_by_product(
+                    posting=posting,
+                    row=row,
+                    service_list=service_list,
+                    posting_number=posting_number
+                )
+                vals_to_create_value_by_product, qty = decomposed_transactions
+                qty_new_decomposed_transactions += qty
 
                 ozon_products = []
                 ozon_products_ids = []
@@ -494,7 +553,10 @@ class ImportFile(models.Model):
                         products=ozon_products, services_cost=services_cost)
             self.env["ozon.transaction"].create(transactions_data)
 
-        log_data = {'Новых транзакций импортировано': qty_new_transactions, 'Записей получено по датам': ''}
+        log_data = {
+            'Новых транзакций импортировано': qty_new_transactions,
+            'Декомпозированых транзакций создано': qty_new_transactions,
+            'Записей получено по датам': ''}
         for date_, qty in imported_days_data.items():
             log_data[date_] = qty
 
@@ -1413,6 +1475,7 @@ class ProcessProductFile(models.Model):
         if not seller:
             seller = model_seller.create({
                 "name": "Продавец",
+                "trade_name": "mobparts",
             })
         return seller
 
