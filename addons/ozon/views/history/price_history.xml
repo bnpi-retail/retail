@@ -19,49 +19,17 @@
             <field name="model">ozon.price_history</field>
             <field name="arch" type="xml">
                 <form>
-
                     <group>
                         <field name="timestamp" />
-                        <field name="product" />
-                        <field name="id_on_platform" />
-                        <field name="provider" />
+                        <field name="product" readonly="1"/>
                     </group>
                     <group string='Цены'>
                         <field name="price" />
+                        <field name="marketing_price" string="Цена для покупателя"/>
+
                         <field name="previous_price" />
-                        <field name="marketing_price" />
                         <field name="previous_marketing_price" />
                     </group>
-                    <group string="Фиксированные затраты максимальные">
-                        <field name="fix_expenses">
-                            <tree>
-                                <field name="name" />
-                                <field name="price" />
-                            </tree>
-                        </field>
-                        <field name="total_cost_fix" />
-                    </group>
-                    <group string="Процент от продаж">
-                        <field name="costs" widget="many2many_pills">
-                            <tree>
-                                <field name="name" />
-                                <field name="discription" />
-                                <field name="price" />
-                            </tree>
-                        </field>
-                        <field name="total_cost_percent" />
-                    </group>
-
-                    <group string='Прибыль'>
-                        <field name="profit" />
-                        <field name="profit_ideal" />
-                        <field name="profit_delta" />
-                    </group>
-
-                    <group string='Информация о ценах'>
-                        <field name="competitors" />
-                    </group>
-
                 </form>
             </field>
         </record>
