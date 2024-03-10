@@ -1,7 +1,14 @@
+import io
 import json
-
 import os
+import re
+import csv
 import requests
+import logging
+
+from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 OZON_CLIENT_ID = os.getenv("OZON_CLIENT_ID")
 OZON_API_KEY = os.getenv("OZON_API_KEY")
@@ -178,3 +185,143 @@ def delete_products_from_action(action_id, product_ids: list):
     ).json()
 
     return response["result"]
+
+
+def postings_fbs_get(posting_number: str) -> dict:
+    response = requests.post(
+        "https://api-seller.ozon.ru/v3/posting/fbs/get",
+        headers=headers,
+        data=json.dumps({
+            "posting_number": posting_number,
+            "with": {
+                "analytics_data": True,
+                "barcodes": True,
+                "financial_data": True,
+                "product_exemplars": True,
+                "translit": True
+            }
+        }),
+    ).json()
+
+    return response
+
+
+def postings_fbo_get(posting_number: str) -> dict:
+    response = requests.post(
+        "https://api-seller.ozon.ru/v2/posting/fbo/get",
+        headers=headers,
+        data=json.dumps({
+            "posting_number": posting_number,
+            "with": {
+                "analytics_data": True,
+                "barcodes": True,
+                "financial_data": True,
+                "product_exemplars": True,
+                "translit": True
+            }
+        }),
+    ).json()
+
+    return response
+
+
+def get_posting_data(posting_number):
+    res = None
+    pattern = r"-\d{1,2}$"
+    is_posting_number = True if re.search(pattern, posting_number) else False
+    if is_posting_number:
+        result = postings_fbs_get(posting_number)
+        if result.get('result'):
+            res = result.get('result')
+        if not res:
+            result = postings_fbo_get(posting_number)
+            if result.get('result'):
+                res = result.get('result')
+    else:
+        count = 1
+        while count <= 10:
+            probably_posting_number = posting_number + f'-{count}'
+            result = postings_fbs_get(probably_posting_number)
+            if result.get('result'):
+                res = result.get('result')
+                break
+            result = postings_fbo_get(probably_posting_number)
+            if result.get('result'):
+                res = result.get('result')
+                break
+            count += 1
+
+    return res
+
+
+def get_posting_from_ozon_api(posting_number: str):
+    fieldnames = [
+        "in_process_at",
+        "trading_scheme",
+        "posting_number",
+        "order_id",
+        "order_number",
+        "status",
+        "region",
+        "city",
+        "warehouse_id",
+        "warehouse_name",
+        "cluster_from",
+        "cluster_to",
+        "products",
+    ]
+    posting_data = None
+    result = get_posting_data(posting_number)
+
+    if result:
+        posting = result
+        in_process_at = posting["in_process_at"]
+        trading_scheme = "FBS" if posting.get("delivery_method") else "FBO"
+        posting_number = posting["posting_number"]
+        order_id = posting["order_id"]
+        order_number = posting["order_number"]
+        status = posting["status"]
+        products = [{
+            "offer_id": product["offer_id"],
+            "price": product["price"],
+            "quantity": product["quantity"],
+            "sku": product["sku"],
+        } for product in posting["products"]]
+
+        if analytics_data := posting.get("analytics_data"):
+            region = analytics_data["region"]
+            city = analytics_data["city"]
+            warehouse_id = analytics_data["warehouse_id"]
+            if trading_scheme == "FBS":
+                warehouse_name = posting["analytics_data"]["warehouse"]
+            else:
+                warehouse_name = posting["analytics_data"]["warehouse_name"]
+        else:
+            region, city, warehouse_id, warehouse_name = "", "", "", ""
+
+        cluster_from = posting["financial_data"]["cluster_from"]
+        cluster_to = posting["financial_data"]["cluster_to"]
+        posting_data = {
+            "in_process_at": in_process_at,
+            "trading_scheme": trading_scheme,
+            "posting_number": posting_number,
+            "order_id": order_id,
+            "order_number": order_number,
+            "status": status,
+            "region": region,
+            "city": city,
+            "warehouse_id": warehouse_id,
+            "warehouse_name": warehouse_name,
+            "cluster_from": cluster_from,
+            "cluster_to": cluster_to,
+            "products": products,
+        }
+        virtual_file = io.StringIO()
+        writer = csv.DictWriter(virtual_file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerow(posting_data)
+        virtual_file.seek(0)
+        posting_data = virtual_file.getvalue()
+        virtual_file.close()
+
+    return posting_data
