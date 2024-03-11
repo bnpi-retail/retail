@@ -9,9 +9,28 @@
                 <form>
                     <group>
                         <field name="name" />
-                        <field name="cost_price" />
                         <field name="category_id" />
-                        <field name="base_calculation_ids" />
+                    </group>
+                    <group style="margin-bottom: 20px;">
+                        <button type="object"
+                            name="update_base_calculation_ids"
+                            string="Рассчитать"
+                            class="btn-outline-primary" />
+                    </group>
+                    <group>
+                        <field name="base_calculation_ids">
+                            <tree editable="1">
+                                <field name="price_component_id"
+                                    string="Плановая статья" />
+                                <field name="value" string="Значение плановой статьи" />
+                                <field name="kind" />
+                                <field name="percent" string="Процент от плановой цены"
+                                    widget="percentage" />
+                                <field name="value_based_on_price"
+                                    readonly="1" />
+                                <!-- <field name="comment" optional="hide" /> -->
+                            </tree>
+                        </field>
                     </group>
                 </form>
             </field>
