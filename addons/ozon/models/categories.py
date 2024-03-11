@@ -348,3 +348,10 @@ class NameGetCustom(models.Model):
         for record in self:
             result.append((record.id, record.name_categories))
         return result
+
+class CategoryFees(models.Model):
+    _inherit = "ozon.categories"
+
+    def _trading_scheme_fees(self):
+        ozon_fee_recs = self.env["ozon.ozon_fee"].search([("category", "=", self.id)])
+        return {fee.name: fee.value for fee in ozon_fee_recs}

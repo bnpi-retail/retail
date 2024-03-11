@@ -1,7 +1,48 @@
 <odoo>
     <data>
+        <!-- Base calculation Form -->
+        <record id="ozon_base_calculation_view_form" model="ir.ui.view">
+            <field name="name">Плановая структура затрат</field>
+            <field name="model">ozon.base_calculation</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="price_component_id"
+                            string="Плановая статья" />
+                        <field name="value" string="Значение плановой статьи" optional="hide" />
+                        <!-- attrs="{'readonly': [('kind','=','depends_on_volume')]}" -->
+                        <field name="kind" />
+                        <field name="percent" string="Процент от плановой цены"
+                            widget="percentage" />
+                        <field name="value_based_on_price" sum="1" />
+                        <field name="comment" optional="hide" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Base calculation Tree -->
+        <record id="ozon_base_calculation_view_tree" model="ir.ui.view">
+            <field name="name">Плановая структура затрат</field>
+            <field name="model">ozon.base_calculation</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="price_component_id"
+                        string="Плановая статья" />
+                    <field name="value" string="Значение плановой статьи"
+                        attrs="{'readonly': [('kind','=','depends_on_volume')]}"
+                        optional="hide" />
+                    <field name="kind" />
+                    <field name="percent" string="Процент от плановой цены"
+                        widget="percentage" />
+                    <field name="value_based_on_price" sum="1" />
+                    <field name="comment" optional="hide" />
+                </tree>
+            </field>
+        </record>
 
 
+        <!-- Base calculation template Form -->
         <record id="ozon_base_calculation_template_view_form" model="ir.ui.view">
             <field name="name">Шаблон назначения планового расчёта</field>
             <field name="model">ozon.base_calculation_template</field>
@@ -22,6 +63,7 @@
                 </form>
             </field>
         </record>
+
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_base_calculation_template">

@@ -5,3 +5,4 @@ access_ozon_lots_for_gpt,Access Ozon Lots For Gpt,model_ozon_lots_for_gpt,base.g
 access_ozon_analysis_data,Access Ozon Analysis Data,model_ozon_analysis_data,base.group_user,1,1,1,1
 access_ozon_product_calculator,Access Ozon Product Calculator,model_ozon_product_calculator,base.group_user,1,1,1,1
 access_ozon_products_mass_pricing_wizard,Access Ozon Products Mass Pricing Wizzard,model_ozon_products_mass_pricing_wizard,base.group_user,1,1,1,1
+access_ozon_draft_product,Access Ozon Draft Product,model_ozon_draft_product,base.group_user,1,1,1,1
