@@ -10,6 +10,7 @@ from ..helpers import split_list_into_chunks_of_size_n
 from .indirect_percent_expenses import (
     STRING_FIELDNAMES
 )
+from .price_comparison.price_component import IDENTIFIER_NAME
 from ..ozon_api import (
     MAX_FIX_EXPENSES_FBO,
     MAX_FIX_EXPENSES_FBS,
@@ -303,6 +304,7 @@ class InvestmentExpensesWizard(models.TransientModel):
 ALL_EXPENSES_NAMES_IDENTIFIERS = {
     'Себестоимость товара': 1,
     'Услуги продвижения товаров': 2,
+    'Реклама': 2,
     'Получение возврата, отмены, невыкупа от покупателя': 3, 
     'Доставка и обработка возврата, отмены, невыкупа': 4, 
     'Обработка отправления «Pick-up» (отгрузка курьеру)': 5, 
@@ -318,9 +320,6 @@ ALL_EXPENSES_NAMES_IDENTIFIERS = {
     'Утилизация': 15, 
     'Услуга по бронированию места и персонала для поставки с неполным составом': 16, 
     'Прочее': 17,
-    'Процент комиссии за продажу (FBS)': 18,
-    'Процент комиссии за продажу (FBO)': 19,
-    'Процент комиссии за продажу (rFBS)': 20,
     'Последняя миля (FBO)': 21,
     'Магистраль до (FBO)': 22,
     'Комиссия за сборку заказа (FBO)': 23,
@@ -337,14 +336,20 @@ ALL_EXPENSES_NAMES_IDENTIFIERS = {
     'Операторы (компания)': 34,
     'MarketplaceServiceItemRedistributionReturnsPVZ': 35,
     'Комиссия за продажу или возврат комиссии за продажу': 36,
+    'Вознаграждение Ozon': 36,
+    'Процент комиссии за продажу (FBS)': 36,
+    'Процент комиссии за продажу (FBO)': 36,
+    'Процент комиссии за продажу (rFBS)': 36,
     'Оплата эквайринга': 37,
+    'Эквайринг': 37,
     'Услуга размещения товаров на складе': 38,
     'логистика': 39,
     'обработка невыкупа': 40,
     'обработка отмен': 41,
     'обработка отправления': 42,
     'обратная логистика': 43,
-    'последняя миля': 44
+    'Обратная логистика': 43,
+    'последняя миля': 44,
 }
 
 class AllExpenses(models.Model):
@@ -460,32 +465,31 @@ class AllExpenses(models.Model):
                 }
             )
             total_expenses += prod.products.total_cost_price
-            # продвижение товара
-            name = "Услуги продвижения товаров"
-            # # если есть фактические данные по затратам на рекламу по данному товару
-            # promo_expenses = prod.promotion_expenses_ids.filtered(
-            #     lambda r: latest_indirect_expenses.date_from <= r.date <= latest_indirect_expenses.date_to)
-            # if promo_expenses:
-            #     mean_promo_expense = mean(promo_expenses.mapped("expense"))
-            #     percent_promo_expense = mean_promo_expense / price
-            
-            # # берем коэф. из отчета о выплатах
-            # percent_promo_expense = abs(tran_sums.filtered(lambda r: r.name == name).percent)
-            # mean_promo_expense = price * percent_promo_expense
-            # data.append(
-            #     {
-            #         "product_id": prod.id,
-            #         "name": name,
-            #         "kind": "percent",
-            #         "category": fact_plan_match.get(name, "Unknown"),
-            #         "percent": percent_promo_expense,
-            #         "value": mean_promo_expense,
-            #         "expected_value": exp_price * percent_promo_expense,
-            #     }
-            # )
+            # используем значения, заданные пользователем вручную на вкладке "отчеты"
+            used_expenses_categories = []
+            for pc_identifier in prod._expenses_to_use_from_input:
+                name = IDENTIFIER_NAME[pc_identifier]
+                percent = prod[pc_identifier]
+                value = price * percent
+                exp_value = exp_price * percent
+                data.append(
+                    {
+                        "product_id": prod.id,
+                        "name": name,
+                        "kind": "percent",
+                        "category": name,
+                        "percent": percent,
+                        "value": value,
+                        "expected_value": exp_value,
+                    }
+                )
+                total_expenses += value
+                used_expenses_categories.append(name)
             # затраты из отчета о выплатах
             for t_sum in tran_sums:
                 if plan_component := fact_plan_match.get(t_sum.name):
+                    if plan_component in used_expenses_categories:
+                        continue
                     percent = abs(t_sum.percent)
                     value = price * percent
                     exp_value = exp_price * percent

@@ -2874,3 +2874,16 @@ class ProductAllExpensesCalculation(models.Model):
     acquiring = fields.Float(string="Эквайринг (процент)")
     promo = fields.Float(string="Расходы на продвижение (процент)")
     return_logistics = fields.Float(string="Обратная логистика (процент)")
+
+    @property
+    def _expenses_to_use_from_input(self):
+        data = []
+        if self.ozon_reward != 0:
+            data.append("ozon_reward")
+        if self.acquiring != 0:
+            data.append("acquiring")
+        if self.promo != 0:
+            data.append("promo")
+        if self.return_logistics != 0:
+            data.append("return_logistics")
+        return data

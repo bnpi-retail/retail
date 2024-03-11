@@ -511,16 +511,16 @@
                                     <group col="4"
                                         string="Значения для расчета фактических статей затрат">
                                         <group>
-                                            <field name="promo" />
+                                            <field name="promo" widget="percentage" />
                                         </group>
                                         <group>
-                                            <field name="return_logistics" />
+                                            <field name="return_logistics" widget="percentage" />
                                         </group>
                                         <group>
-                                            <field name="ozon_reward" />
+                                            <field name="ozon_reward" widget="percentage" />
                                         </group>
                                         <group>
-                                            <field name="acquiring" />
+                                            <field name="acquiring" widget="percentage" />
                                         </group>
                                         <!-- <field name="avg_value_to_use" class="oe_inline" /> -->
                                     </group>
