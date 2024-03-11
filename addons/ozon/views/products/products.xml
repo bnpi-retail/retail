@@ -507,9 +507,22 @@
                                                 </field>
                                             </page>
                                         </notebook>
+                                    </group>
+                                    <group col="4"
+                                        string="Значения для расчета фактических статей затрат">
                                         <group>
-                                            <field name="avg_value_to_use" class="oe_inline" />
+                                            <field name="promo" />
                                         </group>
+                                        <group>
+                                            <field name="return_logistics" />
+                                        </group>
+                                        <group>
+                                            <field name="ozon_reward" />
+                                        </group>
+                                        <group>
+                                            <field name="acquiring" />
+                                        </group>
+                                        <!-- <field name="avg_value_to_use" class="oe_inline" /> -->
                                     </group>
                                 </page>
 

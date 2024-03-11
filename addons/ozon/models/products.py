@@ -2866,3 +2866,11 @@ class ProductCalculator(models.Model):
     name = fields.Char(string="Параметр", readonly=True)
     value = fields.Float(string="Текущее значение", readonly=True)
     new_value = fields.Float(string="Новое значение")
+
+class ProductAllExpensesCalculation(models.Model):
+    _inherit = "ozon.products"
+
+    ozon_reward = fields.Float(string="Вознаграждение Озон (процент)")
+    acquiring = fields.Float(string="Эквайринг (процент)")
+    promo = fields.Float(string="Расходы на продвижение (процент)")
+    return_logistics = fields.Float(string="Обратная логистика (процент)")
