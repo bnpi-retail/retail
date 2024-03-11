@@ -42,7 +42,7 @@ class PriceComparison(models.Model):
 
     # Compute methods
     def _compute_string(self):
-        str_format = "%d.%m.%Y %H:%M:%S"
+        str_format = "%d.%m.%Y"
         for r in self:
             if r.name == "Дата расчёта":
                 r.string_plan_value = datetime.fromtimestamp(r.plan_value).strftime(str_format)
