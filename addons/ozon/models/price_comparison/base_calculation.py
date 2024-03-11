@@ -126,7 +126,8 @@ class BaseCalculation(models.Model):
     def fill_if_not_exists(self, product):
         if product.base_calculation_ids:
             return
-        self.reset_for_products(product)  
+        self.reset_for_products(product)
+
 
 class BaseCalculationTemplate(models.Model):
     _name = "ozon.base_calculation_template"
@@ -236,3 +237,10 @@ class LogisticsTariff(models.Model):
             return log_cost
         else:
             return 1615
+        
+
+class DraftProductBaseCalculation(models.Model):
+    _inherit = "ozon.base_calculation"
+    _description = "Плановый расчёт для товара-черновика"
+
+    draft_product_id = fields.Many2one("ozon.draft_product", string="Товар-черновик Ozon")

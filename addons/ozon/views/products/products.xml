@@ -179,20 +179,7 @@
                                             </group>
                                         </group>
                                     </group>
-                                    <field name="base_calculation_ids">
-                                        <tree editable="1">
-                                            <field name="price_component_id"
-                                                string="Плановая статья" />
-                                            <field name="value" string="Значение плановой статьи"
-                                                attrs="{'readonly': [('kind','=','depends_on_volume')]}"
-                                                optional="hide" />
-                                            <field name="kind" />
-                                            <field name="percent" string="Процент от плановой цены"
-                                                widget="percentage" />
-                                            <field name="value_based_on_price" sum="1" />
-                                            <field name="comment" optional="hide" />
-                                        </tree>
-                                    </field>
+                                    <field name="base_calculation_ids" />
                                 </page>
                                 <page id="page_price_calculator"
                                     string="Фактическая структура затрат">
@@ -464,23 +451,25 @@
                                         </group>
                                         <notebook>
                                             <page string="Сравнение с фактическими данными">
-                                                <field name="ozon_report_products_revenue_expenses_ids">
+                                                <field
+                                                    name="ozon_report_products_revenue_expenses_ids">
                                                     <tree create="0">
-                                                        <field name="identifier"/>
-                                                        <field name="name"/>
-                                                        <field name="comment" optional="hide"/>
-                                                        <field name="qty" decoration-warning="accuracy=='c'"/>
+                                                        <field name="identifier" />
+                                                        <field name="name" />
+                                                        <field name="comment" optional="hide" />
+                                                        <field name="qty"
+                                                            decoration-warning="accuracy=='c'" />
                                                         <field name="percent"
-                                                               decoration-warning="accuracy=='c'"/>
+                                                            decoration-warning="accuracy=='c'" />
                                                         <field name="value" sum="1"
-                                                               decoration-warning="accuracy=='c'"/>
+                                                            decoration-warning="accuracy=='c'" />
                                                         <field name="percent_from_total_category"
-                                                               decoration-warning="accuracy=='c'"/>
+                                                            decoration-warning="accuracy=='c'" />
                                                         <field name="total_value_category" sum="1"
-                                                               decoration-warning="accuracy=='c'"/>
-                                                        <field name="percent_from_total"/>
-                                                        <field name="total_value" sum="1"/>
-                                                        <field name="accuracy" invisible="1"/>
+                                                            decoration-warning="accuracy=='c'" />
+                                                        <field name="percent_from_total" />
+                                                        <field name="total_value" sum="1" />
+                                                        <field name="accuracy" invisible="1" />
                                                     </tree>
                                                 </field>
                                             </page>
@@ -501,18 +490,19 @@
                                         </div>
                                         <notebook>
                                             <page string="Сравнение с теоретическими данными">
-                                                <field name="ozon_report_products_revenue_expenses_theory_ids">
+                                                <field
+                                                    name="ozon_report_products_revenue_expenses_theory_ids">
                                                     <tree create="0">
-                                                        <field name="identifier"/>
-                                                        <field name="name"/>
-                                                        <field name="comment" optional="hide"/>
-                                                        <field name="qty"/>
-                                                        <field name="percent"/>
-                                                        <field name="value" sum="1"/>
-                                                        <field name="percent_from_total_category"/>
-                                                        <field name="total_value_category" sum="1"/>
+                                                        <field name="identifier" />
+                                                        <field name="name" />
+                                                        <field name="comment" optional="hide" />
+                                                        <field name="qty" />
+                                                        <field name="percent" />
+                                                        <field name="value" sum="1" />
+                                                        <field name="percent_from_total_category" />
+                                                        <field name="total_value_category" sum="1" />
                                                         <field name="theoretical_value"
-                                                               string="Значение с Ozon"/>
+                                                            string="Значение с Ozon" />
                                                     </tree>
                                                 </field>
                                             </page>

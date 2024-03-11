@@ -57,17 +57,29 @@
             action="action_analysis_competitors"
             sequence="100" />
 
+        <menuitem name="Плановые статьи"
+            id="menu_price_component"
+            parent="main_menu_plan"
+            action="action_price_component"
+            sequence="1" />
+
         <menuitem name="Фактические/плановые статьи"
             id="menu_price_component_match"
             parent="main_menu_plan"
             action="action_price_component_match"
             sequence="2" />
 
-        <menuitem name="Плановые статьи"
-            id="menu_price_component"
+        <menuitem name="Шаблоны планового расчёта"
+            id="menu_base_calculation_template"
             parent="main_menu_plan"
-            action="action_price_component"
-            sequence="1" />
+            action="action_base_calculation_template"
+            sequence="3" />
+
+        <menuitem name="Калькулятор"
+            id="menu_draft_product_calculator"
+            parent="main_menu_plan"
+            action="action_draft_product"
+            sequence="4" />
 
         <menuitem name="Товары конкурентов"
             id="menu_products_competitors"
@@ -92,12 +104,8 @@
             parent="main_menu_dicts"
             action="action_logistics_tariff"
             sequence="7" />
-        <!-- Menu -->
-        <menuitem name="Шаблоны планового расчёта"
-            id="menu_base_calculation_template"
-            parent="main_menu_plan"
-            action="action_base_calculation_template"
-            sequence="3" />
+
+
         <!-- Menu -->
         <menuitem name="Комиссии товаров"
             id="menu_product_fee"
