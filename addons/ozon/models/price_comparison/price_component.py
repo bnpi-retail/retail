@@ -71,7 +71,8 @@ PERCENT_COMPONENTS = [
     "acquiring", 
     "ozon_reward", 
     "promo",
-    "tax"
+    "tax",
+    "ros",
 ]
 DEPENDS_ON_VOLUME_COMPONENTS = [
     "logistics"

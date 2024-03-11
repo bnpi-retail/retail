@@ -13,6 +13,7 @@ class BaseCalculation(models.Model):
 
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
     price_component_id = fields.Many2one("ozon.price_component", string="Компонент цены", readonly=True)
+    pc_identifier = fields.Char(related="price_component_id.identifier", store=True)
     kind = fields.Selection([
             ("percent", "Процент от цены"),
             ("percent_cost_price", "Процент от себестоимости"),

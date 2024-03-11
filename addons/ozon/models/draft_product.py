@@ -52,7 +52,7 @@ class DraftProduct(models.Model):
         profit_value = price - total_expenses_value
         profit.write({"value": profit_value})
         ros = self._base_calculation("ros")
-        ros.write({"value": price and profit_value / price})
+        ros.write({"value": price and (profit_value / price) * 100})
         margin = self._base_calculation("margin")
         margin_value = price - cost_price
         margin.write({"value": margin_value})
