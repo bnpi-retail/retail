@@ -1,6 +1,7 @@
 from odoo import models, fields, api
 
 NAME_IDENTIFIER = {
+    "Дата расчёта": "calc_datetime",
     "Цена для покупателя": "buyer_price",
     "Ваша цена": "your_price",
     "Себестоимость": "cost",
