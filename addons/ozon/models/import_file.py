@@ -995,19 +995,33 @@ class ImportFile(models.Model):
         return start_date, end_date
 
     def import_ozon_price_template(self, content):
-        pass
-        # df = pd.read_excel(io=content, 
-        #            engine="calamine", 
-        #            sheet_name="Товары и цены", 
-        #            skiprows=[0,1], 
-        #            usecols=['Артикул', 'Ozon SKU ID', 'Ссылка на рыночную цену конкурентов'],
-        #            dtype=str)
-        # for index, row in df.iterrows():
-        #     print(row["Артикул"], row["Ozon SKU ID"], row["Ссылка на рыночную цену конкурентов"])
-        #     if index == 5:
-        #         break
-        # raise
-        
+        df = pd.read_excel(io=content, 
+                   engine="calamine", 
+                   sheet_name="Товары и цены", 
+                   skiprows=[0,1], 
+                   usecols=['Артикул', 'Ozon SKU ID', 'Ссылка на рыночную цену конкурентов', 'Рыночная цена конкурентов, руб.'],
+                   dtype=str)
+        our_products = {i["article"]: i["id"] 
+                        for i in self.env["ozon.products"].search([]).read(["article"])}
+        data = []
+        # TODO: add check if competitor already exists by article or url
+        for index, row in df.iterrows():
+            url = row.get('Ссылка на рыночную цену конкурентов')
+            if not isinstance(url, str):
+                continue
+            article = row["Артикул"]
+            p_id = our_products.get(article)
+            if not p_id:
+                continue
+            data.append({
+                "product_id": p_id,
+                "url": row.get('Ссылка на рыночную цену конкурентов'),
+                "price": int(row.get('Рыночная цена конкурентов, руб.', 0))
+                })
+            print(f"{index} - Other marketplace competitor for product {p_id} added.")
+        self.env["ozon.competitor_other_mpl"].create(data)
+
+                
 
     def import_ozon_realisation_report(self, content):
         with StringIO(content) as jsonfile:

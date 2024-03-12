@@ -12,12 +12,7 @@
                         <field name="url" widget="url" readonly="1" />
                         <field name="article" />
                         <field name="marketplace" />
-                        <field name="competitor_other_mpl_price_ids">
-                            <tree>
-                                <field name="timestamp" />
-                                <field name="price" />
-                            </tree>
-                        </field>
+                        <field name="price" />
                     </group>
 
                 </form>
