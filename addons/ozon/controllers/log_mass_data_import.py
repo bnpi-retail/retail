@@ -38,16 +38,29 @@ class MassDataImportController(http.Controller):
         if http.request.httprequest.method == 'POST':
             try:
                 request_data = http.Request.get_json_data(http.request).get('data')
+
                 mass_import_id = http.request.env["ozon.mass_data_import"].search([
                     ('create_date', '>', datetime.date.today() - datetime.timedelta(days=1)),
-                    ('state', '=', 'running')
-                ], order='create_date desc', limit=1).id
+                    ('state', '=', 'running'),
+                    ('name', '=',  request_data.get('workflow_name')),
+                ], limit=1).id
+                if not mass_import_id:
+                    mass_import_id = http.request.env["ozon.mass_data_import"].search([
+                        ('create_date', '>', datetime.date.today() - datetime.timedelta(days=1)),
+                        ('state', '=', 'running'),
+                    ], order='create_date desc', limit=1).id
 
-                mdi_model = http.request.env["ozon.mass_data_import.log"]
-                log = mdi_model.create({
-                    'name': request_data.get('name'),
-                    'ozon_mass_data_import_id': mass_import_id,
-                })
+                mdil_model = http.request.env["ozon.mass_data_import.log"]
+
+                log = mdil_model.search([
+                    ('name', '=', request_data.get('name')),
+                    ('ozon_mass_data_import_id', '=', mass_import_id)
+                ])
+                if not log:
+                    log = mdil_model.create({
+                        'name': request_data.get('name'),
+                        'ozon_mass_data_import_id': mass_import_id,
+                    })
                 log_id = log.id
 
                 response_data = {"response": "success", "message": "Processed successfully", 'log_id': log_id}
