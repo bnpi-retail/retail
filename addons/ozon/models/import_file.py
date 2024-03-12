@@ -24,6 +24,7 @@ from ..helpers import (
 )
 
 import openpyxl
+import pandas as pd
 from odoo import models, fields, api, exceptions
 from odoo.exceptions import UserError
 
@@ -66,6 +67,7 @@ class ImportFile(models.Model):
                 "Отчёт о рекламной кампании (продвижение в поиске)",
             ),
             ("ozon_realisation_report", "Отчёт о реализации товаров"),
+            ("ozon_price_template", "Шаблон цен из ЛК Ozon"),
         ],
         string="Данные для загрузки",
     )
@@ -153,6 +155,9 @@ class ImportFile(models.Model):
 
         elif values["data_for_download"] == "ozon_realisation_report":
             self.import_ozon_realisation_report(content)
+        
+        elif values["data_for_download"] == "ozon_price_template":
+            self.import_ozon_price_template(content)
 
         elif values["data_for_download"] == "ozon_products":
             log_data = self.process_products_imported_data(content)
@@ -988,6 +993,11 @@ class ImportFile(models.Model):
         os.remove(f_path)
 
         return start_date, end_date
+
+    def import_ozon_price_template(self, content):
+        print('here')
+        raise
+        pass
 
     def import_ozon_realisation_report(self, content):
         with StringIO(content) as jsonfile:

@@ -9,6 +9,7 @@ FROM base AS builder-client
 WORKDIR /home/node/app
 COPY --chown=node:node . ./
 USER node
+RUN npm config set registry http://registry.npmjs.org/
 RUN npm install --loglevel warn
 EXPOSE 3000
 CMD ["npm", "start"]
