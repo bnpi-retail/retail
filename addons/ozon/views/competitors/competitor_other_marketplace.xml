@@ -1,0 +1,50 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="view_ozon_competitor_other_marketplace_form" model="ir.ui.view">
+            <field name="name">Товары конкурентов на других площадках</field>
+            <field name="model">ozon.competitor_other_mpl</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="product_id" />
+                        <field name="url" widget="url" readonly="1" />
+                        <field name="article" />
+                        <field name="marketplace" />
+                        <field name="competitor_other_mpl_price_ids">
+                            <tree>
+                                <field name="timestamp" />
+                                <field name="price" />
+                            </tree>
+                        </field>
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+
+        <!-- Tree -->
+        <record id="view_ozon_competitor_other_marketplace_tree" model="ir.ui.view">
+            <field name="name">Товары конкурентов на других площадках</field>
+            <field name="model">ozon.competitor_other_mpl</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="product_id" />
+                    <field name="marketplace" />
+                    <field name="url" widget="url" readonly="1" />
+                </tree>
+            </field>
+        </record>
+
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_ozon_competitor_other_marketplace">
+            <field name="name">Товары конкурентов на других площадках</field>
+            <field name="res_model">ozon.competitor_other_mpl</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+    </data>
+</odoo>
