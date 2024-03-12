@@ -402,8 +402,8 @@ class Product(models.Model):
     )
     is_promotion_data_correct = fields.Boolean()
     # ----------------
-    plan_calc_datetime = fields.Date(string="Дата расчёта (План)", readonly=True)
-    fact_calc_datetime = fields.Date(string="Дата расчёта (Факт)", readonly=True)
+    plan_calc_date = fields.Date(string="Дата расчёта (План)", readonly=True)
+    fact_calc_date = fields.Date(string="Дата расчёта (Факт)", readonly=True)
     calc_column_your_price = fields.Float(string="""Цена в столбце "Калькулятор" """)
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
                                            string="Сравнение цен", readonly=True)
@@ -2172,13 +2172,13 @@ class Product(models.Model):
             raise UserError("Шаблон планового расчёта не задан")
         self.base_calculation_template_id.apply_to_products(self)
         self.env["ozon.price_comparison"].update_plan_column_for_product(self)
-        self.plan_calc_datetime = fields.Date.today()
+        self.plan_calc_date = fields.Date.today()
     
     def calculate_price_comparison_ids_fact_column(self):
         self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
         self.update_current_product_all_expenses(self.price)
         self.env["ozon.price_comparison"].update_fact_column_for_product(self)
-        self.fact_calc_datetime = fields.Date.today()
+        self.fact_calc_date = fields.Date.today()
 
     def calculate_price_comparison_ids_market_column(self):
         self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)

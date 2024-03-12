@@ -172,7 +172,7 @@
                                                     class="btn-outline-primary" />
                                             </group>
                                             <group>
-                                                <field name="plan_calc_datetime" />
+                                                <field name="plan_calc_date" />
                                             </group>
                                         </group>
 
@@ -194,7 +194,7 @@
                                                     class="btn-outline-primary" />
                                             </group>
                                             <group>
-                                                <field name="fact_calc_datetime" />
+                                                <field name="fact_calc_date" />
                                             </group>
                                         </group>
                                     </group>
