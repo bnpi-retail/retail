@@ -34,8 +34,9 @@ class DrawGraph:
             res = self.draw_graph_sale_by_week(payload, model)
             return res
 
-        # elif model == "competitors_products":
-        #     payload_file, payload = self.draw_graph_competitors_products(request, model)
+        elif model == "competitors_products":
+            bytes_plot, data_current = self.draw_graph_competitors_products(payload, model)
+            return bytes_plot, data_current
 
         elif model == "price_history":
             bytes_plot, data_current = self.draw_graph_price_history(payload, model)
@@ -177,14 +178,14 @@ class DrawGraph:
 
         return res
 
-    def draw_graph_competitors_products(self, request, model):
-        product_id = request.data.get('product_id', None)
-        data_current = request.data.get('current', None)
+    def draw_graph_competitors_products(self, payload: dict, model):
+        product_id = payload.get('product_id', None)
+        data_current = payload.get('current', None)
 
         year = datetime.now().year
         zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
         grouped_dates, grouped_num = self.data_group(data_current, zero_dates, mean=True)
-        url = self.generate_url_image(
+        bytes_plot = self.generate_url_image(
             label='Текущий год',
             product_id=product_id,
             dates=grouped_dates,
@@ -194,9 +195,7 @@ class DrawGraph:
             ylabel='Средняя цена за неделю, руб.',
         )
 
-        data = [product_id, url, str(data_current).replace(',', '|')]
-        csv_file = self.get_csv_file(data)
-        return {'file': ('output.csv', csv_file)}, {'model': model}
+        return bytes_plot, data_current
 
     def draw_graph_price_history(self, payload: dict, model):
         product_id = payload.get('product_id', None)

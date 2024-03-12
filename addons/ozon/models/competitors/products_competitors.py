@@ -3,6 +3,7 @@ import requests
 from os import getenv
 from datetime import datetime, timedelta
 from odoo import models, fields, api
+from ..drawing_graphs import DrawGraph as df
 
 
 class ProductCompetitors(models.Model):
@@ -44,12 +45,8 @@ class ProductCompetitors(models.Model):
     )
 
     imgs_data_graph_this_year = fields.Text()
-    imgs_html_graph_this_year = fields.Html(
-        compute="_compute_imgs_analysis_data_this_year",
+    imgs_graph_this_year = fields.Binary(
         string="График истории цен"
-    )
-    imgs_url_this_year = fields.Char(
-        string="Ссылка на объект аналитический данных за этот год"
     )
 
     def download_data_graph_this_year(self):
@@ -60,14 +57,6 @@ class ProductCompetitors(models.Model):
             'url': url,
             'target': 'new',
         }
-
-    def _compute_imgs_analysis_data_this_year(self):
-        for rec in self:
-            rec.imgs_html_graph_this_year = False
-            if rec.imgs_url_this_year:
-                rec.imgs_html_graph_this_year = (
-                    f"<img src='{rec.imgs_url_this_year}' width='600'/>"
-                )
 
     def draw_plot(self):
         model_price_history_competitors = self.env["ozon.price_history_competitors"]
@@ -86,19 +75,15 @@ class ProductCompetitors(models.Model):
                     )
                     records_current_year["num"].append(record.price)
 
-            endpoint = "http://django:8000/api/v1/draw_graph"
             payload = {
                 "model": "competitors_products",
                 "product_id": rec.id,
                 "current": records_current_year,
             }
-            api_token = getenv("API_TOKEN_DJANGO")
-            headers = {"Authorization": f"Token {api_token}"}
-            response = requests.post(endpoint, json=payload, headers=headers)
+            bytes_plot, data_current = df().post(payload)
+            rec.imgs_graph_this_year = bytes_plot
+            rec.imgs_data_graph_this_year = data_current
 
-            if response.status_code != 200:
-                raise ValueError(f"{response.status_code}--{response.text}")
-            
     @api.depends("price_competitors_count")
     def compute_count_price_competitors(self):
         current_time = datetime.now()
