@@ -28,6 +28,7 @@ from .competitors import analysis_competitors
 from .competitors import successful_product_competitors
 from .competitors import competitor_sale
 from .competitors import competitor_seller
+from .competitors import competitor_other_marketplace
 from .pricing import pricing
 from .pricing import mass_pricing
 from .search_queries import search_queries

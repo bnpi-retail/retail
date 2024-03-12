@@ -86,6 +86,7 @@
         "views/competitors/analysis_competitors.xml",
         "views/competitors/ozon_report_category_market_share_views.xml",
         "views/competitors/competitor_seller_view.xml",
+        "views/competitors/competitor_other_marketplace.xml",
         # "views/competitors/our_price_history.xml",
         "views/actions/action.xml",
         "views/actions/action_candidate.xml",

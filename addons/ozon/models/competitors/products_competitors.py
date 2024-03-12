@@ -12,7 +12,13 @@ class ProductCompetitors(models.Model):
 
     id_product = fields.Char(string="Id товара на Ozon")
     article = fields.Char(string="Артикул")
-
+    name = fields.Char(string="Наименование товара")
+    competitor_seller_id = fields.Many2one("ozon.competitor_seller", string="Продавец")
+    ozon_products_competitors_sale_ids = fields.One2many('ozon.products_competitors.sale', 'ozon_products_competitors_id')
+    url = fields.Char(string="URL товара", help="Укажите ссылку на товар в поле")
+    product = fields.Many2one("ozon.products", string="Наш товар")
+    market_share = fields.Float(string='Доля рынка', digits=(12, 5))
+    market_share_is_computed = fields.Boolean()
     tracked_search_query_ids = fields.Many2many(
         'ozon.tracked_search_queries', 
         'product_competitor_tracked_search_rel', 
@@ -20,21 +26,6 @@ class ProductCompetitors(models.Model):
         'tracked_search_query_id', 
         string="Отслеживаемые поисковые запросы"
     )
-
-    name = fields.Char(string="Наименование товара")
-
-    competitor_seller_id = fields.Many2one("ozon.competitor_seller", string="Продавец")
-    ozon_products_competitors_sale_ids = fields.One2many('ozon.products_competitors.sale', 'ozon_products_competitors_id')
-
-    url = fields.Char(
-        string="URL товара", widget="url", help="Укажите ссылку на товар в поле"
-    )
-
-    product = fields.Many2one("ozon.products", string="Наш товар")
-
-    market_share = fields.Float(string='Доля рынка', digits=(12, 5))
-    market_share_is_computed = fields.Boolean()
-
     price_competitors_count = fields.One2many(
         "ozon.price_history_competitors",
         "product_competitors",
@@ -43,7 +34,6 @@ class ProductCompetitors(models.Model):
     get_price_competitors_count = fields.Integer(
         compute="compute_count_price_competitors"
     )
-
     imgs_data_graph_this_year = fields.Text()
     imgs_graph_this_year = fields.Binary(
         string="График истории цен"

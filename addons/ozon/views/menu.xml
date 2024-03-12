@@ -87,6 +87,12 @@
             action="action_products_competitors"
             sequence="50" />
 
+        <menuitem name="Товары-конкуренты на других площадках"
+            id="menu_competitors_other_marketplace"
+            parent="main_menu_competitors"
+            action="action_ozon_competitor_other_marketplace"
+            sequence="50" />
+
         <menuitem name="Основные категории"
             id="menu_main_categories"
             parent="main_menu_dicts"

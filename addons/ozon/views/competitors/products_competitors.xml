@@ -22,7 +22,7 @@
                                 <field name="article" />
                                 <field name="name" />
                                 <field name="product" />
-                                <field name="url" />
+                                <field name="url" widget="url" readonly="1" />
                                 <field name="market_share" readonly="1"
                                     attrs="{'invisible': [('market_share_is_computed', '=', False)]}"
                                 />
