@@ -1,3 +1,4 @@
+import base64
 import io
 import csv
 import json
@@ -412,14 +413,9 @@ class DrawGraphSale(DataFunction):
         buffer = io.BytesIO()
         plt.savefig(buffer, format='png')
         buffer.seek(0)
-
-        filename = f'graph.png'
-        file_path = default_storage.save(filename, ContentFile(buffer.read()))
-        file_url = default_storage.url(file_path)
-
         plt.close()
 
-        return f"{getenv('DJANGO_DOMAIN')}{file_url}"
+        return base64.b64encode(buffer.read())
 
 
 class DrawGraphCategoriesThisYear(DataFunction):

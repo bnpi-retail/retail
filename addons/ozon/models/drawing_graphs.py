@@ -27,7 +27,8 @@ class DrawGraph:
         model = payload.get('model', None)
 
         if model == "sale":
-            payload_file, payload = self.draw_graph_sale(payload, model)
+            res = self.draw_graph_sale(payload, model)
+            return res
         #
         # elif model == "sale_by_week":
         #     payload_file, payload = self.draw_graph_sale_by_week(request, model)
@@ -83,38 +84,35 @@ class DrawGraph:
         endpoint = "http://odoo-web:8069/import/images"
         # response = requests.post(endpoint, headers=headers, files=payload_file, data=payload)
 
-    def draw_graph_sale(self, request, model):
-        product_id = request.data.get('product_id', None)
+    def draw_graph_sale(self, payload: dict, model):
+        product_id = payload.get('product_id', None)
 
-        data_graph_current = request.data.get('current', None)
+        data_graph_current = payload.get('current', None)
 
         dict = {
             "data": data_graph_current,
-            "data_average": request.data.get('average_graph_this_year', None),
+            "data_average": payload.get('average_graph_this_year', None),
             "year": datetime.now().year,
         }
 
         graph = DrawGraphSale(dict)
-        current_url = graph()
+        current_bytes_plot = graph()
 
-        data_graph_last = request.data.get('last', None)
+        data_graph_last = payload.get('last', None)
 
         dict = {
             "data": data_graph_last,
-            "data_average": request.data.get('average_graph_last_year', None),
+            "data_average": payload.get('average_graph_last_year', None),
             "year": datetime.now().year - 1,
         }
 
         graph = DrawGraphSale(dict)
-        last_url = graph()
+        last_bytes_plot = graph()
 
         data_graph_current['dates'] = data_graph_current['dates'].strftime('%Y-%m-%d').tolist()
         data_graph_last['dates'] = data_graph_last['dates'].strftime('%Y-%m-%d').tolist()
 
-        data = [product_id, current_url, last_url, str(data_graph_current).replace(',', '|'),
-                str(data_graph_last).replace(',', '|')]
-        csv_file = self.get_csv_file(data)
-        return {'file': ('output.csv', csv_file)}, {'model': model}
+        return current_bytes_plot, last_bytes_plot, data_graph_current, data_graph_last
 
     def draw_graph_sale_by_week(self, request, model):
         product_id = request.data.get('product_id', None)
@@ -213,10 +211,6 @@ class DrawGraph:
             ylabel='Средняя цена за неделю, руб.',
         )
         return bytes_plot, data_current
-
-        # data = [product_id, url, str(data_current).replace(',', '|')]
-        # csv_file = self.get_csv_file(data)
-        # return {'file': ('output.csv', csv_file)}, {'model': model}
 
     def draw_graph_stock(self, request, model):
         product_id = request.data.get('product_id', None)
