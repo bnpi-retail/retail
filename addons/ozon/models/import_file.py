@@ -995,9 +995,19 @@ class ImportFile(models.Model):
         return start_date, end_date
 
     def import_ozon_price_template(self, content):
-        print('here')
-        raise
         pass
+        # df = pd.read_excel(io=content, 
+        #            engine="calamine", 
+        #            sheet_name="Товары и цены", 
+        #            skiprows=[0,1], 
+        #            usecols=['Артикул', 'Ozon SKU ID', 'Ссылка на рыночную цену конкурентов'],
+        #            dtype=str)
+        # for index, row in df.iterrows():
+        #     print(row["Артикул"], row["Ozon SKU ID"], row["Ссылка на рыночную цену конкурентов"])
+        #     if index == 5:
+        #         break
+        # raise
+        
 
     def import_ozon_realisation_report(self, content):
         with StringIO(content) as jsonfile:
