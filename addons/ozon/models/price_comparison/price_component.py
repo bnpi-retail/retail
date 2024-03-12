@@ -1,6 +1,7 @@
 from odoo import models, fields, api
 
 NAME_IDENTIFIER = {
+    "Дата расчёта": "calc_datetime",
     "Цена для покупателя": "buyer_price",
     "Ваша цена": "your_price",
     "Себестоимость": "cost",
@@ -70,7 +71,8 @@ PERCENT_COMPONENTS = [
     "acquiring", 
     "ozon_reward", 
     "promo",
-    "tax"
+    "tax",
+    "ros",
 ]
 DEPENDS_ON_VOLUME_COMPONENTS = [
     "logistics"

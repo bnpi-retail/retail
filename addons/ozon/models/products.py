@@ -400,6 +400,8 @@ class Product(models.Model):
     )
     is_promotion_data_correct = fields.Boolean()
     # ----------------
+    plan_calc_date = fields.Date(string="Дата расчёта (План)", readonly=True)
+    fact_calc_date = fields.Date(string="Дата расчёта (Факт)", readonly=True)
     calc_column_your_price = fields.Float(string="""Цена в столбце "Калькулятор" """)
     price_comparison_ids = fields.One2many("ozon.price_comparison", "product_id", 
                                            string="Сравнение цен", readonly=True)
@@ -2168,11 +2170,13 @@ class Product(models.Model):
             raise UserError("Шаблон планового расчёта не задан")
         self.base_calculation_template_id.apply_to_products(self)
         self.env["ozon.price_comparison"].update_plan_column_for_product(self)
+        self.plan_calc_date = fields.Date.today()
     
     def calculate_price_comparison_ids_fact_column(self):
         self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
         self.update_current_product_all_expenses(self.price)
         self.env["ozon.price_comparison"].update_fact_column_for_product(self)
+        self.fact_calc_date = fields.Date.today()
 
     def calculate_price_comparison_ids_market_column(self):
         self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
@@ -2786,3 +2790,24 @@ class ProductCalculator(models.Model):
     name = fields.Char(string="Параметр", readonly=True)
     value = fields.Float(string="Текущее значение", readonly=True)
     new_value = fields.Float(string="Новое значение")
+
+class ProductAllExpensesCalculation(models.Model):
+    _inherit = "ozon.products"
+
+    ozon_reward = fields.Float(string="Вознаграждение Озон (процент)")
+    acquiring = fields.Float(string="Эквайринг (процент)")
+    promo = fields.Float(string="Расходы на продвижение (процент)")
+    return_logistics = fields.Float(string="Обратная логистика (процент)")
+
+    @property
+    def _expenses_to_use_from_input(self):
+        data = []
+        if self.ozon_reward != 0:
+            data.append("ozon_reward")
+        if self.acquiring != 0:
+            data.append("acquiring")
+        if self.promo != 0:
+            data.append("promo")
+        if self.return_logistics != 0:
+            data.append("return_logistics")
+        return data

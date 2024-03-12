@@ -10,6 +10,7 @@ from ..helpers import split_list_into_chunks_of_size_n
 from .indirect_percent_expenses import (
     STRING_FIELDNAMES
 )
+from .price_comparison.price_component import IDENTIFIER_NAME
 from ..ozon_api import (
     MAX_FIX_EXPENSES_FBO,
     MAX_FIX_EXPENSES_FBS,
@@ -300,58 +301,77 @@ class InvestmentExpensesWizard(models.TransientModel):
         products.write({"investment_expenses_id": self.investment_expenses_id})
 
 
+# ALL_EXPENSES_NAMES_IDENTIFIERS = {
+#     'Себестоимость товара': 1,
+#     'логистика': 2,
+#     'Логистика': 2,
+#     'Агентское вознаграждение за доставку Партнерами Ozon на схеме realFBS': 2, 
+#     'Услуги доставки Партнерами Ozon на схеме realFBS': 2, 
+#     'Услуги продвижения товаров': 2,
+#     'Реклама': 2,
+#     'Получение возврата, отмены, невыкупа от покупателя': 3, 
+#     'Доставка и обработка возврата, отмены, невыкупа': 4, 
+#     'Обработка отправления «Pick-up» (отгрузка курьеру)': 5, 
+#     'Услуга продвижения Бонусы продавца': 8, 
+#     'Приобретение отзывов на платформе': 9, 
+#     'Подписка Premium Plus': 10, 
+#     'Услуга за обработку операционных ошибок продавца: отмена': 11, 
+#     'Услуга за обработку операционных ошибок продавца: просроченная отгрузка': 12, 
+#     'Обработка товара в составе грузоместа на FBO': 13, 
+#     'Обработка сроков годности на FBO': 14, 
+#     'Утилизация': 15, 
+#     'Услуга по бронированию места и персонала для поставки с неполным составом': 16, 
+#     'Прочее': 17,
+#     'Последняя миля (FBO)': 21,
+#     'Магистраль до (FBO)': 22,
+#     'Комиссия за сборку заказа (FBO)': 23,
+#     'Последняя миля (FBS)': 24,
+#     'Магистраль до (FBS)': 25,
+#     'Максимальная комиссия за обработку отправления (FBS) — 25 рублей': 26,
+#     'Максимальная комиссия за эквайринг': 27,
+#     'Налог': 28,
+#     'Доходность': 29,
+#     'Investment': 30,
+#     'Обработка и хранение (компания)': 31,
+#     'Упаковка (компания)': 32,
+#     'Маркетинг (компания)': 33,
+#     'Операторы (компания)': 34,
+#     'MarketplaceServiceItemRedistributionReturnsPVZ': 35,
+#     'Комиссия за продажу или возврат комиссии за продажу': 36,
+#     'Вознаграждение Ozon': 36,
+#     'Процент комиссии за продажу (FBS)': 36,
+#     'Процент комиссии за продажу (FBO)': 36,
+#     'Процент комиссии за продажу (rFBS)': 36,
+#     'Оплата эквайринга': 37,
+#     'Эквайринг': 37,
+#     'Услуга размещения товаров на складе': 38,
+#     'обработка невыкупа': 40,
+#     'обработка отмен': 41,
+#     'обработка отправления': 42,
+#     'обратная логистика': 43,
+#     'Обратная логистика': 43,
+#     'последняя миля': 44,
+# }
+
 ALL_EXPENSES_NAMES_IDENTIFIERS = {
-    'Себестоимость товара': 1,
-    'Услуги продвижения товаров': 2,
-    'Получение возврата, отмены, невыкупа от покупателя': 3, 
-    'Доставка и обработка возврата, отмены, невыкупа': 4, 
-    'Обработка отправления «Pick-up» (отгрузка курьеру)': 5, 
-    'Услуги доставки Партнерами Ozon на схеме realFBS': 6, 
-    'Агентское вознаграждение за доставку Партнерами Ozon на схеме realFBS': 7, 
-    'Услуга продвижения Бонусы продавца': 8, 
-    'Приобретение отзывов на платформе': 9, 
-    'Подписка Premium Plus': 10, 
-    'Услуга за обработку операционных ошибок продавца: отмена': 11, 
-    'Услуга за обработку операционных ошибок продавца: просроченная отгрузка': 12, 
-    'Обработка товара в составе грузоместа на FBO': 13, 
-    'Обработка сроков годности на FBO': 14, 
-    'Утилизация': 15, 
-    'Услуга по бронированию места и персонала для поставки с неполным составом': 16, 
-    'Прочее': 17,
-    'Процент комиссии за продажу (FBS)': 18,
-    'Процент комиссии за продажу (FBO)': 19,
-    'Процент комиссии за продажу (rFBS)': 20,
-    'Последняя миля (FBO)': 21,
-    'Магистраль до (FBO)': 22,
-    'Комиссия за сборку заказа (FBO)': 23,
-    'Последняя миля (FBS)': 24,
-    'Магистраль до (FBS)': 25,
-    'Максимальная комиссия за обработку отправления (FBS) — 25 рублей': 26,
-    'Максимальная комиссия за эквайринг': 27,
-    'Налог': 28,
-    'Доходность': 29,
-    'Investment': 30,
-    'Обработка и хранение (компания)': 31,
-    'Упаковка (компания)': 32,
-    'Маркетинг (компания)': 33,
-    'Операторы (компания)': 34,
-    'MarketplaceServiceItemRedistributionReturnsPVZ': 35,
-    'Комиссия за продажу или возврат комиссии за продажу': 36,
-    'Оплата эквайринга': 37,
-    'Услуга размещения товаров на складе': 38,
-    'логистика': 39,
-    'обработка невыкупа': 40,
-    'обработка отмен': 41,
-    'обработка отправления': 42,
-    'обратная логистика': 43,
-    'последняя миля': 44
+    "Себестоимость": 1,
+    "Логистика": 2,
+    "Последняя миля": 3,
+    "Эквайринг": 4,
+    "Вознаграждение Ozon": 5,
+    "Реклама": 6,
+    "Обработка": 7,
+    "Обратная логистика": 8,
+    "Расходы компании": 9,
+    "Налог": 10,
 }
 
 class AllExpenses(models.Model):
     _name = "ozon.all_expenses"
     _description = "Все затраты по товару Ozon"
+    _order = "identifier"
 
-    identifier = fields.Integer(string="Идентификатор", compute="_compute_identifier")
+    identifier = fields.Integer(string="Идентификатор", compute="_compute_identifier", store=True)
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
     name = fields.Char(string="Название")
     description = fields.Char(string="Описание")
@@ -366,9 +386,10 @@ class AllExpenses(models.Model):
     value = fields.Float(string="Абсолютное значение в руб, исходя из текущей цены")
     expected_value = fields.Float(string="Ожидаемое значение")
 
+    @api.depends("category")
     def _compute_identifier(self):
         for r in self:
-            r.identifier = ALL_EXPENSES_NAMES_IDENTIFIERS.get(r.name, 0)
+            r.identifier = ALL_EXPENSES_NAMES_IDENTIFIERS.get(r.category, 99)
 
     def _compute_comment(self):
         for r in self:
@@ -460,32 +481,31 @@ class AllExpenses(models.Model):
                 }
             )
             total_expenses += prod.products.total_cost_price
-            # продвижение товара
-            name = "Услуги продвижения товаров"
-            # # если есть фактические данные по затратам на рекламу по данному товару
-            # promo_expenses = prod.promotion_expenses_ids.filtered(
-            #     lambda r: latest_indirect_expenses.date_from <= r.date <= latest_indirect_expenses.date_to)
-            # if promo_expenses:
-            #     mean_promo_expense = mean(promo_expenses.mapped("expense"))
-            #     percent_promo_expense = mean_promo_expense / price
-            
-            # # берем коэф. из отчета о выплатах
-            # percent_promo_expense = abs(tran_sums.filtered(lambda r: r.name == name).percent)
-            # mean_promo_expense = price * percent_promo_expense
-            # data.append(
-            #     {
-            #         "product_id": prod.id,
-            #         "name": name,
-            #         "kind": "percent",
-            #         "category": fact_plan_match.get(name, "Unknown"),
-            #         "percent": percent_promo_expense,
-            #         "value": mean_promo_expense,
-            #         "expected_value": exp_price * percent_promo_expense,
-            #     }
-            # )
+            # используем значения, заданные пользователем вручную на вкладке "отчеты"
+            used_expenses_categories = []
+            for pc_identifier in prod._expenses_to_use_from_input:
+                name = IDENTIFIER_NAME[pc_identifier]
+                percent = prod[pc_identifier]
+                value = price * percent
+                exp_value = exp_price * percent
+                data.append(
+                    {
+                        "product_id": prod.id,
+                        "name": name,
+                        "kind": "percent",
+                        "category": name,
+                        "percent": percent,
+                        "value": value,
+                        "expected_value": exp_value,
+                    }
+                )
+                total_expenses += value
+                used_expenses_categories.append(name)
             # затраты из отчета о выплатах
             for t_sum in tran_sums:
                 if plan_component := fact_plan_match.get(t_sum.name):
+                    if plan_component in used_expenses_categories:
+                        continue
                     percent = abs(t_sum.percent)
                     value = price * percent
                     exp_value = exp_price * percent

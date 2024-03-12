@@ -1,0 +1,66 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="ozon_draft_product_form" model="ir.ui.view">
+            <field name="name">Товар-черновик</field>
+            <field name="model">ozon.draft_product</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="name" />
+                        <field name="category_id" />
+                    </group>
+                    <group style="margin-bottom: 20px;">
+                        <button type="object"
+                            name="update_base_calculation_ids"
+                            string="Рассчитать"
+                            class="btn-outline-primary" />
+                    </group>
+                    <group>
+                        <field name="base_calculation_ids">
+                            <tree editable="1">
+                                <field name="pc_identifier" invisible="1" />
+                                <field name="price_component_id"
+                                    string="Плановая статья" />
+                                <field name="value" string="Значение плановой статьи" />
+                                <field name="kind" />
+                                <field name="percent" string="Процент от плановой цены"
+                                    widget="percentage"
+                                    attrs="{'invisible': [('pc_identifier', '=', 'margin_percent')]}" />
+                                <field name="value_based_on_price"
+                                    readonly="1"
+                                    attrs="{'invisible': [('pc_identifier', '=', 'margin_percent')]}"
+                                />
+
+                                <!-- <field name="comment" optional="hide" /> -->
+                            </tree>
+                        </field>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="ozon_draft_product_tree" model="ir.ui.view">
+            <field name="name">Товар-черновик</field>
+            <field name="model">ozon.draft_product</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" />
+                </tree>
+            </field>
+
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_draft_product">
+            <field name="name">Товар-черновик</field>
+            <field name="res_model">ozon.draft_product</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+
+    </data>
+
+</odoo>

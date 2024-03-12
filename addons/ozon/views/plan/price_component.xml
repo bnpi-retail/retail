@@ -3,7 +3,7 @@
 
         <!-- Form -->
         <record id="ozon_price_component_form" model="ir.ui.view">
-            <field name="name">Компоненты цены</field>
+            <field name="name">Плановые статьи</field>
             <field name="model">ozon.price_component</field>
             <field name="arch" type="xml">
                 <form>
@@ -17,7 +17,7 @@
 
         <!-- Tree -->
         <record id="ozon_price_component_tree" model="ir.ui.view">
-            <field name="name">Компоненты цены</field>
+            <field name="name">Плановые статьи</field>
             <field name="model">ozon.price_component</field>
             <field name="arch" type="xml">
                 <tree>
@@ -29,7 +29,7 @@
 
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_price_component">
-            <field name="name">Компоненты цены</field>
+            <field name="name">Плановые статьи</field>
             <field name="res_model">ozon.price_component</field>
             <field name="view_mode">tree,form</field>
         </record>
