@@ -51,7 +51,7 @@
                     <group>
                         <field name="name" />
                         <field name="base_calculation_ids">
-                            <tree editable="1">
+                            <tree editable="top" edit="True">
                                 <field name="price_component_id" string="Плановая статья" />
                                 <field name="kind" />
                                 <field name="value" string="Значение"
@@ -64,8 +64,15 @@
             </field>
         </record>
 
+        <!-- Action Base calculation -->
+        <!-- <record model="ir.actions.act_window" id="action_base_calculation">
+            <field name="name">Шаблоны планового расчёта</field>
+            <field name="res_model">ozon.base_calculation</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('id','=',0)]</field>
+        </record> -->
 
-        <!-- Action -->
+        <!-- Action Base calculation template -->
         <record model="ir.actions.act_window" id="action_base_calculation_template">
             <field name="name">Шаблоны планового расчёта</field>
             <field name="res_model">ozon.base_calculation_template</field>

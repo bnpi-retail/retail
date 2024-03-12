@@ -12,7 +12,7 @@ class BaseCalculation(models.Model):
     _description = "Плановый расчёт"
 
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
-    price_component_id = fields.Many2one("ozon.price_component", string="Компонент цены", readonly=True)
+    price_component_id = fields.Many2one("ozon.price_component", string="Компонент цены")
     pc_identifier = fields.Char(related="price_component_id.identifier", store=True)
     kind = fields.Selection([
             ("percent", "Процент от цены"),
@@ -24,7 +24,7 @@ class BaseCalculation(models.Model):
     value_based_on_price = fields.Float(string="Значение", compute="_compute_value_based_on_price")
     percent = fields.Float(string="Процент", compute="_compute_percent")
     comment = fields.Text(string="Комментарий", compute="_compute_comment")
-
+        
     def _compute_percent(self):
         for r in self:
             if r.product_id:
@@ -32,6 +32,8 @@ class BaseCalculation(models.Model):
             elif r.draft_product_id:
                 plan_price = r.draft_product_id._base_calculation("your_price").value
                 cost_price = r.draft_product_id._base_calculation("cost").value
+            else:
+                plan_price = 0
 
             if r.kind == "percent":
                 r.percent = r.value / 100
@@ -49,6 +51,8 @@ class BaseCalculation(models.Model):
                 plan_price = r.product_id._price_comparison("your_price").plan_value
             elif r.draft_product_id:
                 plan_price = r.draft_product_id._base_calculation("your_price").value
+            else:
+                plan_price = 0
 
             if r.kind in ["fix", "depends_on_volume"]:
                 r.value_based_on_price = r.value
