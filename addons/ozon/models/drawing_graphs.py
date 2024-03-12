@@ -1,5 +1,7 @@
+import base64
 import io
 import csv
+import logging
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,10 +18,12 @@ from .drawing_graphs_services import (
     DrawGraphCategoriesLastYear,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class DrawGraph:
     def post(self, payload: dict):
-        # payload_file, payload = False, False
+        payload_file = False
         model = payload.get('model', None)
 
         if model == "sale":
@@ -31,9 +35,10 @@ class DrawGraph:
         # elif model == "competitors_products":
         #     payload_file, payload = self.draw_graph_competitors_products(request, model)
         #
-        # elif model == "price_history":
-        #     payload_file, payload = self.draw_graph_price_history(request, model)
-        #
+        elif model == "price_history":
+            bytes_plot, data_current = self.draw_graph_price_history(payload, model)
+            return bytes_plot, data_current
+
         # elif model == "stock":
         #     payload_file, payload = self.draw_graph_stock(request, model)
         #
@@ -72,18 +77,11 @@ class DrawGraph:
         #     if data is not None:
         #         payload_file, payload = graph.draw_graph(data, model, categorie_id)
         #
-        # if payload_file is False: return Response({'status': 'payload file is empty'})
-        #
-        # session_id = connect_to_odoo_api_with_auth()
-        # if session_id is False: return Response({'status': False})
-        # headers = {"Cookie": f"session_id={session_id}"}
-        #
-        # endpoint = "http://odoo-web:8069/import/images"
+        if payload_file is False:
+            return {'status': 'payload file is empty'}
+
+        endpoint = "http://odoo-web:8069/import/images"
         # response = requests.post(endpoint, headers=headers, files=payload_file, data=payload)
-        #
-        # if response.status_code != 200:
-        #     return Response({'message': response.text}, status=400)
-        # return Response({'message': f"Success!"})
 
     def draw_graph_sale(self, request, model):
         product_id = request.data.get('product_id', None)
@@ -198,14 +196,14 @@ class DrawGraph:
         csv_file = self.get_csv_file(data)
         return {'file': ('output.csv', csv_file)}, {'model': model}
 
-    def draw_graph_price_history(self, request, model):
-        product_id = request.data.get('product_id', None)
-        data_current = request.data.get('current', None)
+    def draw_graph_price_history(self, payload: dict, model):
+        product_id = payload.get('product_id', None)
+        data_current = payload.get('current', None)
 
         year = datetime.now().year
         zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
         grouped_dates, grouped_num = self.data_group(data_current, zero_dates, mean=True)
-        url = self.generate_url_image(
+        bytes_plot = self.generate_url_image(
             label='График истории цен',
             product_id=product_id,
             dates=grouped_dates,
@@ -214,10 +212,11 @@ class DrawGraph:
             name_images='График истории цен за текущий год',
             ylabel='Средняя цена за неделю, руб.',
         )
+        return bytes_plot, data_current
 
-        data = [product_id, url, str(data_current).replace(',', '|')]
-        csv_file = self.get_csv_file(data)
-        return {'file': ('output.csv', csv_file)}, {'model': model}
+        # data = [product_id, url, str(data_current).replace(',', '|')]
+        # csv_file = self.get_csv_file(data)
+        # return {'file': ('output.csv', csv_file)}, {'model': model}
 
     def draw_graph_stock(self, request, model):
         product_id = request.data.get('product_id', None)
@@ -364,13 +363,15 @@ class DrawGraph:
         plt.savefig(buffer, format='png')
         buffer.seek(0)
 
-        filename = f'graph_{product_id}.png'
-        file_path = default_storage.save(filename, ContentFile(buffer.read()))
-        file_url = default_storage.url(file_path)
+        # filename = f'graph_{product_id}.png'
+        # file_path = default_storage.save(filename, ContentFile(buffer.read()))
+        # file_url = default_storage.url(file_path)
 
         plt.close()
 
-        return f"{getenv('DJANGO_DOMAIN')}{file_url}"
+        return base64.b64encode(buffer.read())
+
+        # return f"{getenv('DJANGO_DOMAIN')}{file_url}"
 
     def generate_url_analysis_data(self, product_id, dates_hits_view, num_hits_view, dates_hits_tocart,
                                    num_hits_tocart):
@@ -421,10 +422,10 @@ class DrawGraph:
         plt.savefig(buffer, format='png')
         buffer.seek(0)
 
-        filename = f'graph_{product_id}.png'
-        file_path = default_storage.save(filename, ContentFile(buffer.read()))
-        file_url = default_storage.url(file_path)
+        # filename = f'graph_{product_id}.png'
+        # file_path = default_storage.save(filename, ContentFile(buffer.read()))
+        # file_url = default_storage.url(file_path)
 
         plt.close()
 
-        return f"{getenv('DJANGO_DOMAIN')}{file_url}"
+        # return f"{getenv('DJANGO_DOMAIN')}{file_url}"
