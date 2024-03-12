@@ -134,15 +134,13 @@
                                 <page id="page_price_comparison" string="Калькулятор">
                                     <group style="margin-bottom: 20px;">
                                         <group>
-                                            <group>
-                                                <button type="object"
-                                                    name="calculate_price_comparison_ids_calc_column"
-                                                    string="Рассчитать «Калькулятор»"
-                                                    class="btn-outline-primary" />
-                                            </group>
-                                            <group>
-                                                <field name="calc_column_your_price" />
-                                            </group>
+                                            <button type="object"
+                                                name="calculate_price_comparison_ids_calc_column"
+                                                string="Рассчитать «Калькулятор»"
+                                                class="btn-outline-primary" />
+                                        </group>
+                                        <group>
+                                            <field name="calc_column_your_price" />
                                         </group>
                                     </group>
                                     <field name="price_comparison_ids">
@@ -167,17 +165,21 @@
                                 <page id="page_base_calculation" string="Плановая структура затрат">
                                     <group>
                                         <group style="margin-bottom: 20px;">
-                                            <button type="object"
-                                                name="calculate_price_comparison_ids_plan_column"
-                                                string="Рассчитать «План»"
-                                                class="btn-outline-primary" />
-                                        </group>
-                                        <group>
-
                                             <group>
-                                                <field name="base_calculation_template_id" />
+                                                <button type="object"
+                                                    name="calculate_price_comparison_ids_plan_column"
+                                                    string="Рассчитать «План»"
+                                                    class="btn-outline-primary" />
+                                            </group>
+                                            <group>
+                                                <field name="plan_calc_date" />
                                             </group>
                                         </group>
+
+                                        <group>
+                                            <field name="base_calculation_template_id" />
+                                        </group>
+
                                     </group>
                                     <field name="base_calculation_ids" />
                                 </page>
@@ -185,12 +187,16 @@
                                     string="Фактическая структура затрат">
                                     <group style="margin-bottom: 20px;">
                                         <group>
-                                            <button type="object"
-                                                name="calculate_price_comparison_ids_fact_column"
-                                                string="Рассчитать «Факт»"
-                                                class="btn-outline-primary" />
+                                            <group>
+                                                <button type="object"
+                                                    name="calculate_price_comparison_ids_fact_column"
+                                                    string="Рассчитать «Факт»"
+                                                    class="btn-outline-primary" />
+                                            </group>
+                                            <group>
+                                                <field name="fact_calc_date" />
+                                            </group>
                                         </group>
-
                                     </group>
                                     <field name="all_expenses_except_roi_roe_ids">
                                         <tree>

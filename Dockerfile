@@ -4,7 +4,7 @@ USER root
 
 COPY ./requirements.txt /etc/odoo/
 
-RUN pip3 install --no-cache-dir -r /etc/odoo/requirements.txt
+RUN pip install -r /etc/odoo/requirements.txt --no-cache-dir
 
 # RUN mkdir /var/lib/odoo/.local
 
