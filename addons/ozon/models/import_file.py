@@ -1010,47 +1010,47 @@ class ImportFile(models.Model):
                     print(f"{i} - Product {product_id_on_platform} added to realisation report")
             self.env["ozon.realisation_report_product"].create(products_in_report_data)
 
-    def import_images_sale(self, content):
-        model_products = self.env["ozon.products"]
+    # def import_images_sale(self, content):
+    #     model_products = self.env["ozon.products"]
+    #
+    #     (
+    #         product_id,
+    #         url_this_year,
+    #         url_last_year,
+    #         data_this_year,
+    #         data_last_year,
+    #     ) = content.split(",")
+    #
+    #     record = model_products.search([("id", "=", product_id)])
+    #
+    #     record.img_url_sale_this_year = url_this_year
+    #     record.img_url_sale_last_year = url_last_year
+    #
+    #     record.img_data_sale_this_year = data_this_year.replace("|", ",")
+    #     record.img_data_sale_last_year = data_last_year.replace("|", ",")
 
-        (
-            product_id,
-            url_this_year,
-            url_last_year,
-            data_this_year,
-            data_last_year,
-        ) = content.split(",")
-
-        record = model_products.search([("id", "=", product_id)])
-
-        record.img_url_sale_this_year = url_this_year
-        record.img_url_sale_last_year = url_last_year
-
-        record.img_data_sale_this_year = data_this_year.replace("|", ",")
-        record.img_data_sale_last_year = data_last_year.replace("|", ",")
-
-    def import_images_sale_by_week(self, content):
-        model_products = self.env["ozon.products"]
-
-        (
-            product_id,
-            url_two_weeks,
-            url_six_weeks,
-            url_twelve_weeks,
-            data_two_weeks,
-            data_six_week,
-            data_twelve_week,
-        ) = content.split(",")
-
-        record = model_products.search([("id", "=", product_id)])
-
-        record.img_url_sale_two_weeks = url_two_weeks
-        record.img_url_sale_six_weeks = url_six_weeks
-        record.img_url_sale_twelve_weeks = url_twelve_weeks
-
-        record.img_data_sale_two_weeks = data_two_weeks.replace("|", ",")
-        record.img_data_sale_six_weeks = data_six_week.replace("|", ",")
-        record.img_data_sale_twelve_weeks = data_twelve_week.replace("|", ",")
+    # def import_images_sale_by_week(self, content):
+    #     model_products = self.env["ozon.products"]
+    #
+    #     (
+    #         product_id,
+    #         url_two_weeks,
+    #         url_six_weeks,
+    #         url_twelve_weeks,
+    #         data_two_weeks,
+    #         data_six_week,
+    #         data_twelve_week,
+    #     ) = content.split(",")
+    #
+    #     record = model_products.search([("id", "=", product_id)])
+    #
+    #     record.img_url_sale_two_weeks = url_two_weeks
+    #     record.img_url_sale_six_weeks = url_six_weeks
+    #     record.img_url_sale_twelve_weeks = url_twelve_weeks
+    #
+    #     record.img_data_sale_two_weeks = data_two_weeks.replace("|", ",")
+    #     record.img_data_sale_six_weeks = data_six_week.replace("|", ",")
+    #     record.img_data_sale_twelve_weeks = data_twelve_week.replace("|", ",")
 
     def import_images_competitors_products(self, content):
         model_competitors_products = self.env["ozon.products_competitors"]
@@ -1061,25 +1061,25 @@ class ImportFile(models.Model):
         record.imgs_url_this_year = url
         record.imgs_data_graph_this_year = data.replace("|", ",")
 
-    def import_images_price_history(self, content):
-        model_products = self.env["ozon.products"]
+    # def import_images_price_history(self, content):
+    #     model_products = self.env["ozon.products"]
+    #
+    #     product_id, url, data = content.split(",")
+    #
+    #     record = model_products.search([("id", "=", product_id)])
+    #
+    #     record.img_url_price_history = url
+    #     record.img_data_price_history = data.replace("|", ",")
 
-        product_id, url, data = content.split(",")
-
-        record = model_products.search([("id", "=", product_id)])
-
-        record.img_url_price_history = url
-        record.img_data_price_history = data.replace("|", ",")
-
-    def import_images_stock(self, content):
-        model_products = self.env["ozon.products"]
-
-        product_id, url, data = content.split(",")
-
-        record = model_products.search([("id", "=", product_id)])
-
-        record.img_url_stock = url
-        record.img_data_stock = data.replace("|", ",")
+    # def import_images_stock(self, content):
+    #     model_products = self.env["ozon.products"]
+    #
+    #     product_id, url, data = content.split(",")
+    #
+    #     record = model_products.search([("id", "=", product_id)])
+    #
+    #     record.img_url_stock = url
+    #     record.img_data_stock = data.replace("|", ",")
 
     def import_images_analysis_data(self, content):
         model_products = self.env["ozon.products"]

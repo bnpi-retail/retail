@@ -1,14 +1,12 @@
 import ast
 import logging
-import requests
 from copy import copy
 from typing import Iterable
 from collections import defaultdict
-from os import getenv
 from datetime import datetime, time, timedelta, date
 from operator import itemgetter
 from lxml import etree
-
+from .drawing_graphs import DrawGraph as df
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 
@@ -2363,18 +2361,7 @@ class ProductGraphExtension(models.Model):
 
     ### История цен (модель: ozon.price_history)
     img_data_price_history = fields.Text(string="Данные графика")
-    img_url_price_history = fields.Char(string="Ссылка на объект")
-    img_html_price_history = fields.Html(compute="_compute_img_price_history")
-
-    def _compute_img_price_history(self):
-        for rec in self:
-            rec.img_html_price_history = False
-            if not rec.img_url_price_history:
-                continue
-
-            rec.img_html_price_history = (
-                f"<img src='{rec.img_url_price_history}' width='600'/>"
-            )
+    img_price_history = fields.Binary()
 
     def draw_price_history(self):
         model_price_history = self.env["ozon.price_history"]
@@ -2401,12 +2388,13 @@ class ProductGraphExtension(models.Model):
 
             # rec.img_data_price_history = graph_data
 
-            self._send_request(payload)
+            bytes_plot, data_current = df().post(payload)
+            rec.img_price_history = bytes_plot
+            rec.img_data_price_history = data_current
 
     ### История продаж по неделям (модель: ozon.sale)
     img_data_sale_two_weeks = fields.Text(string="Данные графика")
-    img_url_sale_two_weeks = fields.Char(string="Ссылка на объект")
-    img_html_sale_two_weeks = fields.Html(compute="_compute_img_sale_two_weeks")
+    img_sale_two_weeks = fields.Binary()
 
     def download_img_data_sale_two_weeks(self):
         field_name = "img_data_sale_two_weeks"
@@ -2417,19 +2405,8 @@ class ProductGraphExtension(models.Model):
             "target": "new",
         }
 
-    def _compute_img_sale_two_weeks(self):
-        for rec in self:
-            rec.img_html_sale_two_weeks = False
-            if not rec.img_url_sale_two_weeks:
-                continue
-
-            rec.img_html_sale_two_weeks = (
-                f"<img src='{rec.img_url_sale_two_weeks}' width='600'/>"
-            )
-
     img_data_sale_six_weeks = fields.Text(string="Данные графика")
-    img_url_sale_six_weeks = fields.Char(string="Ссылка на объект")
-    img_html_sale_six_weeks = fields.Html(compute="_compute_img_sale_six_weeks")
+    img_sale_six_weeks = fields.Binary()
 
     def download_img_data_sale_six_weeks(self):
         field_name = "img_data_sale_six_weeks"
@@ -2440,19 +2417,8 @@ class ProductGraphExtension(models.Model):
             "target": "new",
         }
 
-    def _compute_img_sale_six_weeks(self):
-        for rec in self:
-            rec.img_html_sale_six_weeks = False
-            if not rec.img_url_sale_six_weeks:
-                continue
-
-            rec.img_html_sale_six_weeks = (
-                f"<img src='{rec.img_url_sale_six_weeks}' width='600'/>"
-            )
-
     img_data_sale_twelve_weeks = fields.Text(string="Данные графика")
-    img_url_sale_twelve_weeks = fields.Char(string="Ссылка на объект")
-    img_html_sale_twelve_weeks = fields.Html(compute="_compute_img_sale_twelve_weeks")
+    img_sale_twelve_weeks = fields.Binary()
 
     def download_img_data_sale_twelve_weeks(self):
         field_name = "img_data_sale_twelve_weeks"
@@ -2462,16 +2428,6 @@ class ProductGraphExtension(models.Model):
             "url": url,
             "target": "new",
         }
-
-    def _compute_img_sale_twelve_weeks(self):
-        for rec in self:
-            rec.img_html_sale_twelve_weeks = False
-            if not rec.img_url_sale_twelve_weeks:
-                continue
-
-            rec.img_html_sale_twelve_weeks = (
-                f"<img src='{rec.img_url_sale_twelve_weeks}' width='600'/>"
-            )
 
     def draw_sale_per_weeks(self):
         model_sale = self.env["ozon.sale"]
@@ -2500,8 +2456,6 @@ class ProductGraphExtension(models.Model):
                 graph_data["num"].append(record.qty)
             payload["two_weeks"] = graph_data
 
-            # rec.img_data_sale_two_weeks = graph_data
-
             records = model_sale.search(
                 [
                     ("product", "=", rec.id),
@@ -2514,8 +2468,6 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(record.date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.qty)
             payload["six_week"] = graph_data
-
-            # rec.img_data_sale_six_weeks = graph_data
 
             records = model_sale.search(
                 [
@@ -2530,14 +2482,23 @@ class ProductGraphExtension(models.Model):
                 graph_data["num"].append(record.qty)
             payload["twelve_week"] = graph_data
 
-            # rec.img_data_sale_twelve_weeks = graph_data
+            (
+                two_week_bytes_plot, six_week_bytes_plot, twelve_week_bytes_plot,
+                data_two_weeks, data_six_week, data_twelve_week
+            ) = df().post(payload)
+            rec.img_sale_two_weeks = two_week_bytes_plot
+            rec.img_data_sale_two_weeks = data_two_weeks
 
-            self._send_request(payload)
+            rec.img_sale_six_weeks = six_week_bytes_plot
+            rec.img_data_sale_six_weeks = data_six_week
+
+            rec.img_sale_twelve_weeks = twelve_week_bytes_plot
+            rec.img_data_sale_twelve_weeks = data_twelve_week
+
 
     ### История продаж (модель: ozon.sale)
     img_data_sale_this_year = fields.Text(string="Данные графика")
-    img_url_sale_this_year = fields.Char(string="Ссылка на объект")
-    img_html_sale_this_year = fields.Html(compute="_compute_img_sale_this_year")
+    img_sale_this_year = fields.Binary()
 
     def download_img_data_sale_this_year(self):
         field_name = "img_data_sale_this_year"
@@ -2548,19 +2509,9 @@ class ProductGraphExtension(models.Model):
             "target": "new",
         }
 
-    def _compute_img_sale_this_year(self):
-        for rec in self:
-            rec.img_html_sale_this_year = False
-            if not rec.img_url_sale_this_year:
-                continue
 
-            rec.img_html_sale_this_year = (
-                f"<img src='{rec.img_url_sale_this_year}' width='600'/>"
-            )
-
-    img_data_sale_last_year = fields.Text(string="Ссылки на объект")
-    img_url_sale_last_year = fields.Char(string="Ссылки на объект")
-    img_html_sale_last_year = fields.Html(compute="_compute_img_sale_last_year")
+    img_data_sale_last_year = fields.Text(string="Данные графика")
+    img_sale_last_year = fields.Binary()
 
     def download_img_data_sale_last_year(self):
         field_name = "img_data_sale_last_year"
@@ -2570,16 +2521,6 @@ class ProductGraphExtension(models.Model):
             "url": url,
             "target": "new",
         }
-
-    def _compute_img_sale_last_year(self):
-        for rec in self:
-            rec.img_html_sale_last_year = False
-            if not rec.img_url_sale_last_year:
-                continue
-
-            rec.img_html_sale_last_year = (
-                f"<img src='{rec.img_url_sale_last_year}' width='600'/>"
-            )
 
     def draw_sale(self):
         model_sale = self.env["ozon.sale"]
@@ -2630,12 +2571,16 @@ class ProductGraphExtension(models.Model):
                     rec.categories.img_data_sale_last_year
                 )
 
-            self._send_request(payload)
+            res = df().post(payload)
+            current_bytes_plot, last_bytes_plot, data_graph_current, data_graph_last = res
+            rec.img_sale_this_year = current_bytes_plot
+            rec.img_sale_last_year = last_bytes_plot
+            rec.img_data_sale_this_year = data_graph_current
+            rec.img_data_sale_last_year = data_graph_last
 
     ### История остатков (модель: ozon.stock)
     img_data_stock = fields.Text(string="Данные графика")
-    img_url_stock = fields.Char(string="Ссылка на объект")
-    img_html_stock = fields.Html(compute="_compute_img_stock")
+    img_stock = fields.Binary()
 
     def download_img_data_stock(self):
         field_name = "img_data_stock"
@@ -2645,14 +2590,6 @@ class ProductGraphExtension(models.Model):
             "url": url,
             "target": "new",
         }
-
-    def _compute_img_stock(self):
-        for rec in self:
-            rec.img_html_stock = False
-            if not rec.img_url_stock:
-                continue
-
-            rec.img_html_stock = f"<img src='{rec.img_url_stock}' width='600'/>"
 
     def draw_stock(self):
         model_stock = self.env["ozon.stock"]
@@ -2678,12 +2615,13 @@ class ProductGraphExtension(models.Model):
                 graph_data["num"].append(record.stocks_fbs)
             payload["current"] = graph_data
 
-            self._send_request(payload)
+            bytes_plot, data_current = df().post(payload)
+            rec.img_stock = bytes_plot
+            rec.img_data_stock = bytes_plot
 
     ### График интереса (модель: ozon.analysis_data)
     img_data_analysis_data = fields.Text(string="Данные графика")
-    img_url_analysis_data = fields.Char(string="Ссылка на объект")
-    img_html_analysis_data = fields.Html(compute="_compute_img_analysis_data")
+    img_analysis_data = fields.Binary()
 
     def download_img_data_analysis_data(self):
         field_name = "img_data_analysis_data"
@@ -2694,16 +2632,6 @@ class ProductGraphExtension(models.Model):
             "target": "new",
         }
 
-    def _compute_img_analysis_data(self):
-        for rec in self:
-            rec.img_html_analysis_data = False
-            if not rec.img_url_analysis_data:
-                continue
-
-            rec.img_html_analysis_data = (
-                f"<img src='{rec.img_url_analysis_data}' width='600'/>"
-            )
-
     def draw_analysis_data(self):
         model_analysis_data = self.env["ozon.analysis_data"]
         year = self._get_year()
@@ -2712,8 +2640,8 @@ class ProductGraphExtension(models.Model):
             records = model_analysis_data.search(
                 [
                     ("product", "=", rec.id),
-                    ("timestamp_from", ">=", f"{year}-01-01"),
-                    ("timestamp_to", "<=", f"{year}-12-31"),
+                    ("date", ">=", f"{year}-01-01"),
+                    ("date", "<=", f"{year}-12-31"),
                 ]
             )
 
@@ -2727,9 +2655,7 @@ class ProductGraphExtension(models.Model):
 
             graph_data = {"dates": [], "num": []}
             for record in records:
-                start_date = record.timestamp_from
-                end_date = record.timestamp_to
-                average_date = start_date + (end_date - start_date) / 2
+                average_date = record.date
 
                 graph_data["dates"].append(average_date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.hits_view)
@@ -2737,9 +2663,7 @@ class ProductGraphExtension(models.Model):
 
             graph_data = {"dates": [], "num": []}
             for record in records:
-                start_date = record.timestamp_from
-                end_date = record.timestamp_to
-                average_date = start_date + (end_date - start_date) / 2
+                average_date = record.date
 
                 graph_data["dates"].append(average_date.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.hits_tocart)
@@ -2750,7 +2674,12 @@ class ProductGraphExtension(models.Model):
                     rec.categories.img_data_analysis_data_this_year
                 )
 
-            self._send_request(payload)
+            bytes_plot, hits_view, hits_tocart = df().post(payload)
+            rec.img_analysis_data = bytes_plot
+            rec.img_data_analysis_data = {
+                "hits_view": hits_view,
+                "hits_tocart": hits_tocart,
+            }
 
     def _get_year(self):
         return datetime.now().year
@@ -2763,15 +2692,6 @@ class ProductGraphExtension(models.Model):
                 (timestamp_field, "<=", f"{year}-12-31"),
             ]
         )
-
-    def _send_request(self, payload):
-        endpoint = "http://django:8000/api/v1/draw_graph"
-        api_token = getenv("API_TOKEN_DJANGO")
-        headers = {"Authorization": f"Token {api_token}"}
-        response = requests.post(endpoint, json=payload, headers=headers)
-
-        if response.status_code != 200:
-            raise ValueError(f"{response.status_code}--{response.text}")
 
     def action_open_lot_full_screen(self):
         return {

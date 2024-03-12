@@ -525,8 +525,11 @@
 
                                 <page id="page_analysis_data_plots" string="Графики">
                                     <group>
-                                        <field name="img_html_sale_this_year"
-                                            string="График продаж за текущий год" />
+                                        <field name="img_sale_this_year"
+                                               string="График продаж за текущий год" readonly="1"
+                                               widget="image"
+                                        />
+
                                         <field name="img_data_sale_this_year" invisible="1" />
                                         <field name="img_data_sale_last_year" invisible="1" />
                                         <field name="img_data_sale_two_weeks" invisible="1" />
@@ -544,8 +547,10 @@
                                     />
 
                                     <group>
-                                        <field name="img_html_sale_last_year"
-                                            string="График продаж за прошлый год" />
+                                        <field name="img_sale_last_year"
+                                               string="График продаж за прошлый год" readonly="1"
+                                               widget="image"
+                                        />
                                     </group>
                                     <button string="Скачать данные"
                                         type="object"
@@ -556,12 +561,16 @@
                                     />
 
                                     <group>
-                                        <field name="img_html_price_history"
-                                            string="График истории цен" />
+                                        <field name="img_price_history"
+                                               string="График истории цен" readonly="1"
+                                               widget="image"
+                                        />
                                     </group>
                                     <group>
-                                        <field name="img_html_sale_two_weeks"
-                                            string="График продаж за 2 последних недели" />
+                                        <field name="img_sale_two_weeks"
+                                               string="График продаж за 2 последних недели" readonly="1"
+                                               widget="image"
+                                        />
                                     </group>
                                     <button string="Скачать данные"
                                         type="object"
@@ -572,8 +581,10 @@
 
 
                                     <group>
-                                        <field name="img_html_sale_six_weeks"
-                                            string="График продаж за 6 последних недели" />
+                                        <field name="img_sale_six_weeks"
+                                               string="График продаж за 6 последних недель" readonly="1"
+                                               widget="image"
+                                        />
                                     </group>
                                     <button string="Скачать данные"
                                         type="object"
@@ -584,8 +595,10 @@
 
 
                                     <group>
-                                        <field name="img_html_sale_twelve_weeks"
-                                            string="График продаж за 12 последних недели" />
+                                        <field name="img_sale_twelve_weeks"
+                                               string="График продаж за 12 последних недель" readonly="1"
+                                               widget="image"
+                                        />
                                     </group>
                                     <button string="Скачать данные"
                                         type="object"
@@ -596,8 +609,10 @@
                                     />
 
                                     <group>
-                                        <field name="img_html_stock"
-                                            string="График остатков за текущий год" />
+                                        <field name="img_stock"
+                                               string="График остатков за текущий год" readonly="1"
+                                               widget="image"
+                                        />
                                     </group>
                                     <button string="Скачать данные"
                                         type="object"
@@ -608,8 +623,10 @@
                                     />
 
                                     <group>
-                                        <field name="img_html_analysis_data"
-                                            string="График интереса за текущий год" />
+                                         <field name="img_analysis_data"
+                                               string="График интереса за текущий год" readonly="1"
+                                               widget="image"
+                                        />
                                     </group>
                                     <button string="Скачать данные"
                                         type="object"

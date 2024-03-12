@@ -144,14 +144,6 @@ class OnePlots:
         )
 
     @staticmethod
-    def generate_url(png) -> str:
-        filename = f'graph.png'
-        file_path = default_storage.save(filename, ContentFile(png))
-        file_url = default_storage.url(file_path)
-
-        return f"{getenv('DJANGO_DOMAIN')}{file_url}"
-
-    @staticmethod
     def save_to_buffer(plt_instance):
         buffer = io.BytesIO()
         plt_instance.savefig(buffer, format='png')
@@ -185,15 +177,9 @@ class InterestGraph(GroupData, Fill_Data, TwoPlots):
 
     def main(self) -> tuple:
         data_views, data_tocart, average_data = self.process_data()
-        png = self.draw(data_views, data_tocart, average_data)
-        url = self.generate_url(png)
-        data = [
-            self.product_id, url,
-            str(self.hits_view).replace(',', '|'),
-            str(self.hits_tocart).replace(',', '|'),
-        ]
-        csv_file = self.get_csv_file(data)
-        return {'file': ('output.csv', csv_file)}, {'model': self.model}
+        bytes_plot = self.draw(data_views, data_tocart, average_data)
+
+        return bytes_plot, self.hits_view, self.hits_tocart
 
     def process_data(self) -> tuple:
         year = datetime.now().year

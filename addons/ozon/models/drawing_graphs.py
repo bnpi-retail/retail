@@ -29,31 +29,34 @@ class DrawGraph:
         if model == "sale":
             res = self.draw_graph_sale(payload, model)
             return res
-        #
-        # elif model == "sale_by_week":
-        #     payload_file, payload = self.draw_graph_sale_by_week(request, model)
-        #
+
+        elif model == "sale_by_week":
+            res = self.draw_graph_sale_by_week(payload, model)
+            return res
+
         # elif model == "competitors_products":
         #     payload_file, payload = self.draw_graph_competitors_products(request, model)
-        #
+
         elif model == "price_history":
             bytes_plot, data_current = self.draw_graph_price_history(payload, model)
             return bytes_plot, data_current
 
-        # elif model == "stock":
-        #     payload_file, payload = self.draw_graph_stock(request, model)
-        #
-        # elif model == "analysis_data":
-        #     data = {
-        #         "model": model,
-        #         "product_id": request.data.get('product_id', None),
-        #         "hits_view": request.data.get('hits_view', None),
-        #         "hits_tocart": request.data.get('hits_tocart', None),
-        #         "average_data": request.data.get('average_data', None),
-        #     }
-        #     graph = InterestGraph(data)
-        #     payload_file, payload = graph.main()
-        #
+        elif model == "stock":
+            bytes_plot, data_current = self.draw_graph_stock(payload, model)
+            return bytes_plot, data_current
+
+        elif model == "analysis_data":
+            data = {
+                "model": model,
+                "product_id": payload.get('product_id', None),
+                "hits_view": payload.get('hits_view', None),
+                "hits_tocart": payload.get('hits_tocart', None),
+                "average_data": payload.get('average_data', None),
+            }
+            graph = InterestGraph(data)
+            res = graph.main()
+            return res
+
         # elif model == "categorie_analysis_data":
         #     graph = DrawGraphCategoriesInterest()
         #     data = request.data.get('data', None)
@@ -114,11 +117,11 @@ class DrawGraph:
 
         return current_bytes_plot, last_bytes_plot, data_graph_current, data_graph_last
 
-    def draw_graph_sale_by_week(self, request, model):
-        product_id = request.data.get('product_id', None)
-        data_two_weeks = request.data.get('two_weeks', None)
-        data_six_week = request.data.get('six_week', None)
-        data_twelve_week = request.data.get('twelve_week', None)
+    def draw_graph_sale_by_week(self, payload: dict, model):
+        product_id = payload.get('product_id', None)
+        data_two_weeks = payload.get('two_weeks', None)
+        data_six_week = payload.get('six_week', None)
+        data_twelve_week = payload.get('twelve_week', None)
 
         current_date = datetime.now()
         date_two_weeks_ago = current_date - timedelta(weeks=2)
@@ -130,7 +133,7 @@ class DrawGraph:
         zero_dates_twelve_weeks_ago = pd.date_range(start=date_twelve_weeks_ago, end=current_date)
 
         grouped_dates, grouped_num = self.data_group(data_two_weeks, zero_dates_two_weeks_ago, sum_group=False)
-        two_week_url = self.generate_url_image(
+        two_week_bytes_plot = self.generate_url_image(
             label='График остатков',
             product_id=product_id,
             dates=grouped_dates,
@@ -143,7 +146,7 @@ class DrawGraph:
         )
 
         grouped_dates, grouped_num = self.data_group(data_six_week, zero_dates_six_weeks_ago, sum_group=False)
-        six_week_url = self.generate_url_image(
+        six_week_bytes_plot = self.generate_url_image(
             label='График остатков',
             product_id=product_id,
             dates=grouped_dates,
@@ -156,7 +159,7 @@ class DrawGraph:
         )
 
         grouped_dates, grouped_num = self.data_group(data_twelve_week, zero_dates_twelve_weeks_ago, sum_group=False)
-        twelve_week_url = self.generate_url_image(
+        twelve_week_bytes_plot = self.generate_url_image(
             label='График остатков',
             product_id=product_id,
             dates=grouped_dates,
@@ -167,11 +170,12 @@ class DrawGraph:
             month_xaxis=False,
             day_xaxis=True,
         )
+        res = (
+            two_week_bytes_plot, six_week_bytes_plot, twelve_week_bytes_plot,
+            data_two_weeks, data_six_week, data_twelve_week
+        )
 
-        data = [product_id, two_week_url, six_week_url, twelve_week_url, str(data_two_weeks).replace(',', '|'),
-                str(data_six_week).replace(',', '|'), str(data_twelve_week).replace(',', '|')]
-        csv_file = self.get_csv_file(data)
-        return {'file': ('output.csv', csv_file)}, {'model': model}
+        return res
 
     def draw_graph_competitors_products(self, request, model):
         product_id = request.data.get('product_id', None)
@@ -212,14 +216,14 @@ class DrawGraph:
         )
         return bytes_plot, data_current
 
-    def draw_graph_stock(self, request, model):
-        product_id = request.data.get('product_id', None)
-        data_current = request.data.get('current', None)
+    def draw_graph_stock(self, payload: dict, model):
+        product_id = payload.get('product_id', None)
+        data_current = payload.get('current', None)
 
         year = datetime.now().year
         zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
         grouped_dates, grouped_num = self.data_group(data_current, zero_dates, sum_group=True)
-        url = self.generate_url_image(
+        bytes_plot = self.generate_url_image(
             label='График остатков',
             product_id=product_id,
             dates=grouped_dates,
@@ -229,9 +233,7 @@ class DrawGraph:
             ylabel='Остатки товара, кол.',
         )
 
-        data = [product_id, url, str(data_current).replace(',', '|')]
-        csv_file = self.get_csv_file(data)
-        return {'file': ('output.csv', csv_file)}, {'model': model}
+        return bytes_plot, data_current
 
     def draw_graph_analysis_data(self, request, model):
         product_id = request.data.get('product_id', None)
