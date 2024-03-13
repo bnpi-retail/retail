@@ -8,11 +8,17 @@
             <field name="arch" type="xml">
                 <form>
                     <div name="button_box" position="inside">
-                        <button string="Калькулятор" class="oe_stat_button" type="object"
+                        <button string="Результат расчёта" class="oe_stat_button" type="object"
                             name="open_mass_calculator" />
                     </div>
                     <group>
+                        <button string="Рассчитать" class="oe_highlight" type="object"
+                            name="calculate" />
+                    </group>
+                    <group>
                         <field name="category_id" />
+                    </group>
+                    <group>
                         <field name="draft_product_ids">
                             <tree>
                                 <field name="article" />

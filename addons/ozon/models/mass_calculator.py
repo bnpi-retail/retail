@@ -19,3 +19,11 @@ class MassCalculator(models.Model):
             "domain": [("mass_calculator_id", "=", self.id)],
             "views": [[view.id, "tree"], [False, "form"]],
         }
+    
+
+    def calculate(self):
+        self.draft_product_ids.categories = self.category_id
+
+        for prod in self.draft_product_ids:
+            prod.base_calculation_template_id.apply_to_products(prod)
+    

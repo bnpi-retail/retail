@@ -7,6 +7,10 @@ class DraftProduct(models.Model):
     name = fields.Char(string="Название")
     article = fields.Char(string="Артикул")
     retail_product_total_cost_price = fields.Float(string="Себестоимость")
+    trading_scheme = fields.Selection(
+        [("FBS", "FBS"), ("FBO", "FBO")],
+        string="Схема торговли",
+    )
     categories = fields.Many2one("ozon.categories", string="Категория Ozon")
     base_calculation_ids = fields.One2many ("ozon.base_calculation", "draft_product_id", 
                                             string="Плановый расчёт", 
@@ -22,22 +26,22 @@ class DraftProduct(models.Model):
     @api.model
     def create(self, values):
         rec = super(DraftProduct, self).create(values)
-        base_calculation_data = []
-        for pc in self.env["ozon.price_component"].search([]):
-            data = {}
-            if pc.identifier == "ozon_reward":
-                if values.get("categories"):
-                    ozon_fees = rec.categories._trading_scheme_fees()
-                    data.update({
-                        "value": ozon_fees.get("Процент комиссии за продажу (FBS)", 0),
-                        "comment":(f"Комиссии категории:\n"
-                                            f"{ozon_fees}"
-                                            f"По умолчанию берётся комиссия категори по схеме FBS")})
-            data.update({"draft_product_id": rec.id, "price_component_id": pc.id})
+        # base_calculation_data = []
+        # for pc in self.env["ozon.price_component"].search([]):
+        #     data = {}
+        #     if pc.identifier == "ozon_reward":
+        #         if values.get("categories"):
+        #             ozon_fees = rec.categories._trading_scheme_fees()
+        #             data.update({
+        #                 "value": ozon_fees.get("Процент комиссии за продажу (FBS)", 0),
+        #                 "comment":(f"Комиссии категории:\n"
+        #                                     f"{ozon_fees}"
+        #                                     f"По умолчанию берётся комиссия категори по схеме FBS")})
+        #     data.update({"draft_product_id": rec.id, "price_component_id": pc.id})
 
-            base_calculation_data.append(data)
+        #     base_calculation_data.append(data)
 
-        self.env["ozon.base_calculation"].create(base_calculation_data)
+        # self.env["ozon.base_calculation"].create(base_calculation_data)
         return rec
     
 
@@ -72,7 +76,7 @@ class DraftProduct(models.Model):
     def _default_logistics_tariff_id(self):
         return self.env["ozon.logistics_tariff"].search(
             [("name", "=", "От 0,1 до 5 литров включительно — 76 рублей")]).id
-        
+
 class DraftProductPlanCalculation(models.Model):
     _inherit = "ozon.draft_product"
 
@@ -91,7 +95,7 @@ class DraftProductPlanCalculation(models.Model):
     plan_margin = fields.Float(string="Наценка (План)", help="Наценка (План)")
     plan_roe = fields.Float(string="ROE (План)", help="ROE (План)")
 
-    def calculate_plan_items(self):
+    def fill_plan_fields(self):
         pass
 
 class DraftProductMarketCalculation(models.Model):

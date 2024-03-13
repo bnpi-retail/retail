@@ -8,14 +8,26 @@
             <field
                 name="arch" type="xml">
                 <form>
-                    <group>
-                        <field name="name" />
-                        <field name="article" />
-                        <field name="retail_product_total_cost_price" />
-                        <field name="logistics_tariff_id" />
-                        <field name="base_calculation_template_id" />
-                        <field name="products_competitors_ids" />
-                    </group>
+
+                    <notebook>
+                        <page id="draft_product_main_info" string="Карточка товара">
+                            <group>
+                                <field name="name" />
+                                <field name="article" />
+                                <field name="retail_product_total_cost_price" />
+                                <field name="trading_scheme" />
+                                <field name="logistics_tariff_id" />
+                                <field name="base_calculation_template_id" />
+                                <field name="products_competitors_ids" />
+                            </group>
+                        </page>
+                        <page id="draft_product_base_calculation" string="Плановая структура затрат">
+                            <group>
+                                <field name="base_calculation_ids" />
+                            </group>
+                        </page>
+
+                    </notebook>
                     <!-- <group style="margin-bottom: 20px;">
                         <button type="object"
                             name="update_base_calculation_ids"

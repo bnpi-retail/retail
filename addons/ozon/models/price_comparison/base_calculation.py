@@ -23,7 +23,7 @@ class BaseCalculation(models.Model):
     value = fields.Float(string="Значение компонента цены")
     value_based_on_price = fields.Float(string="Значение", compute="_compute_value_based_on_price", store=True)
     percent = fields.Float(string="Процент", compute="_compute_percent", store=True)
-    comment = fields.Text(string="Комментарий", compute="_compute_comment", store=True)
+    comment = fields.Text(string="Комментарий", compute="_compute_comment")
 
     base_calculation_template_id = fields.Many2one("ozon.base_calculation_template")
     
@@ -75,7 +75,6 @@ class BaseCalculation(models.Model):
             else:
                 r.kind = "fix"
     
-    @api.depends("draft_product_id", "price_component_id", "percent", "value_based_on_price", "kind")
     def _compute_comment(self):
         for r in self:
             common_part = ""
@@ -88,8 +87,6 @@ class BaseCalculation(models.Model):
                 continue
             
             if prod := r.product_id:
-                # plan_price_comment = ("Расчёт плановой цены:\n"
-                #                       "(Фикс.затраты + ROE)/(1 - суммарный процент проц.затрат) = Плановая цена\n")
                 plan_price = round(self.calculate_plan_price(prod), 2)
                 per = r.percent * 100
                 value_based_on_price = round(r.value_based_on_price, 2)
@@ -193,9 +190,14 @@ class BaseCalculationTemplate(models.Model):
                         value = prod.categories._trading_scheme_fees().get("Процент комиссии за продажу (FBS)", 0)
                 else:
                     value = r.value
-                data.append({"product_id": p_id, 
-                            "price_component_id": r.price_component_id.id,
-                            "value": value})
+                
+                _ = {"price_component_id": r.price_component_id.id, "value": value}
+                if isinstance(products, type(self.env["ozon.products"])):
+                    _.update({"product_id": p_id}) 
+                elif isinstance(products, type(self.env["ozon.draft_product"])):
+                    _.update({"draft_product_id": p_id})
+                data.append(_)
+                
         self.env["ozon.base_calculation"].create(data)
 
 class BaseCalculationWizard(models.Model):
