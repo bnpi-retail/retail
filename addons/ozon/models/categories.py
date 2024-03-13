@@ -129,8 +129,11 @@ class ActionGraphs(models.Model):
     _inherit = "ozon.categories"
 
     def action_draw_graphs_by_categories(self):
+        logger.info('draw_sale_this_year')
         self.draw_sale_this_year()
+        logger.info('draw_sale_last_year')
         self.draw_sale_last_year()
+        logger.info('draw_graph_interest')
         self.draw_graph_interest()
         self.draw_graphs_products(self.ozon_products_ids)
 
