@@ -20,3 +20,12 @@ class ImportedReport(models.Model):
             ("start_date", "<=", end_date),
         ])
         return report if report else None
+
+    def name_get(self):
+        result = []
+        for r in self:
+            result.append(
+                (r.id, f"{r.report_type} №{r.ad_campaign_identifier} "
+                 f"за период: {r.start_date} - {r.end_date}")
+            )
+        return result

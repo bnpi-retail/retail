@@ -937,7 +937,7 @@ class ImportFile(models.Model):
                      f"Уже существует отчёт по рекламной кампании №{ad_campaign} за период: {report.start_date} - {report.end_date}\n"
                      "Пожалуйста, загрузите отчёт за период, который не пересекается с этими датами"))
             else:
-                self.env["ozon.imported_report"].create(_)
+                report = self.env["ozon.imported_report"].create(_)
                 
             reader = csv.DictReader(csvfile, delimiter=";")
             if reader.fieldnames != [
@@ -990,6 +990,7 @@ class ImportFile(models.Model):
                             "percent_rate": row["Ставка, %"].replace(",", "."),
                             "abs_rate": row["Ставка, ₽"].replace(",", "."),
                             "expense": row["Расход, ₽"].replace(",", "."),
+                            "imported_report_id": report.id
                         }
                     )
                     print(f"{i} - Product (SKU: {sku}) promotion expenses were added")
