@@ -268,8 +268,6 @@ class ActionGraphs(models.Model):
 
         bytes_plot, data_views, data_tocart = df().post(payload)
 
-        logger.warning(type(bytes_plot))
-
         self.img_analysis_data_this_year = bytes_plot
         self.img_data_analysis_data_this_year = {
             "hits_view": data_views,
@@ -284,15 +282,6 @@ class ActionGraphs(models.Model):
         for index, product_record in enumerate(products_records):
             product_record.action_draw_graphs()
             print(index + 1)
-
-    def _send_request(self, payload):
-        endpoint = "http://django:8000/api/v1/draw_graph"
-        api_token = getenv("API_TOKEN_DJANGO")
-        headers = {"Authorization": f"Token {api_token}"}
-        response = requests.post(endpoint, json=payload, headers=headers)
-
-        if response.status_code != 200:
-            raise ValueError(f"{response.status_code}--{response.text}")
 
     def _get_year(self) -> str:
         return datetime.now().year
