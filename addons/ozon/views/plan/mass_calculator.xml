@@ -7,9 +7,18 @@
             <field name="model">ozon.mass_calculator</field>
             <field name="arch" type="xml">
                 <form>
+                    <div name="button_box" position="inside">
+                        <button string="Калькулятор" class="oe_stat_button" type="object"
+                            name="open_mass_calculator" />
+                    </div>
                     <group>
                         <field name="category_id" />
-                        <field name="draft_product_ids" />
+                        <field name="draft_product_ids">
+                            <tree>
+                                <field name="article" />
+                                <field name="name" />
+                            </tree>
+                        </field>
                     </group>
                 </form>
             </field>

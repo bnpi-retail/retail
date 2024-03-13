@@ -44,7 +44,18 @@
             </field>
         </record>
 
-        <!-- Tree -->
+        <!-- Tree View Inside Mass Calculator smart button -->
+        <record id="ozon_draft_product_in_mass_calculator_tree" model="ir.ui.view">
+            <field name="name">Расчет товаров-черновиков</field>
+            <field name="model">ozon.draft_product</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Default Tree View -->
         <record id="ozon_draft_product_tree" model="ir.ui.view">
             <field name="name">Товар-черновик</field>
             <field name="model">ozon.draft_product</field>
@@ -53,7 +64,6 @@
                     <field name="name" />
                 </tree>
             </field>
-
         </record>
 
         <!-- Action -->
@@ -61,6 +71,7 @@
             <field name="name">Товар-черновик</field>
             <field name="res_model">ozon.draft_product</field>
             <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="ozon_draft_product_tree" />
         </record>
 
 
