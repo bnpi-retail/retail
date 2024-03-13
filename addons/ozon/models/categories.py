@@ -115,7 +115,7 @@ class GraphInterest(models.Model):
     _inherit = "ozon.categories"
 
     img_data_analysis_data_this_year = fields.Text(string="Json data filed")
-    img_analysis_data_this_year = fields.Html(string="График интереса текущий год")
+    img_analysis_data_this_year = fields.Binary(string="График интереса текущий год")
 
     def download_data_analysis_data_this_year(self):
         field_name = "img_data_analysis_data_this_year"
@@ -131,10 +131,11 @@ class ActionGraphs(models.Model):
     _inherit = "ozon.categories"
 
     def action_draw_graphs_by_categories(self):
-        products_records = self.draw_sale_this_year()
-        products_records += self.draw_sale_last_year()
-        products_records += self.draw_graph_interest()
-        self.draw_graphs_products(list(set(products_records)))
+        # products_records = self.draw_sale_this_year()
+        # products_records += self.draw_sale_last_year()
+        # products_records += self.draw_graph_interest()
+        self.draw_graph_interest()
+        # self.draw_graphs_products(list(set(products_records)))
 
     def draw_sale_this_year(self):
         year = self._get_year()
@@ -273,6 +274,9 @@ class ActionGraphs(models.Model):
         }
 
         bytes_plot, data_views, data_tocart = df().post(payload)
+
+        logger.warning(type(bytes_plot))
+
         self.img_analysis_data_this_year = bytes_plot
         self.img_data_analysis_data_this_year = {
             "hits_view": data_views,
