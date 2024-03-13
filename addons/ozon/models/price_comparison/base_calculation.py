@@ -12,19 +12,22 @@ class BaseCalculation(models.Model):
     _description = "Плановый расчёт"
 
     product_id = fields.Many2one("ozon.products", string="Товар Ozon")
-    price_component_id = fields.Many2one("ozon.price_component", string="Компонент цены", readonly=True)
+    price_component_id = fields.Many2one("ozon.price_component", string="Компонент цены")
     pc_identifier = fields.Char(related="price_component_id.identifier", store=True)
     kind = fields.Selection([
             ("percent", "Процент от цены"),
             ("percent_cost_price", "Процент от себестоимости"),
             ("fix", "Значение, ₽"),
             ("depends_on_volume", "Значение, ₽ (зависит от объёма)"),
-        ], string="Тип", compute="_compute_kind")
+        ], string="Тип", compute="_compute_kind", store=True)
     value = fields.Float(string="Значение компонента цены")
-    value_based_on_price = fields.Float(string="Значение", compute="_compute_value_based_on_price")
-    percent = fields.Float(string="Процент", compute="_compute_percent")
-    comment = fields.Text(string="Комментарий", compute="_compute_comment")
+    value_based_on_price = fields.Float(string="Значение", compute="_compute_value_based_on_price", store=True)
+    percent = fields.Float(string="Процент", compute="_compute_percent", store=True)
+    comment = fields.Text(string="Комментарий", compute="_compute_comment", store=True)
 
+    base_calculation_template_id = fields.Many2one("ozon.base_calculation_template")
+    
+    @api.depends("product_id", "draft_product_id", "kind", "value")
     def _compute_percent(self):
         for r in self:
             if r.product_id:
@@ -32,6 +35,8 @@ class BaseCalculation(models.Model):
             elif r.draft_product_id:
                 plan_price = r.draft_product_id._base_calculation("your_price").value
                 cost_price = r.draft_product_id._base_calculation("cost").value
+            else:
+                plan_price = 0
 
             if r.kind == "percent":
                 r.percent = r.value / 100
@@ -43,18 +48,22 @@ class BaseCalculation(models.Model):
                 if r.draft_product_id:
                     r.percent = plan_price and r.value * cost_price / plan_price
 
+    @api.depends("product_id", "draft_product_id", "value", "percent")
     def _compute_value_based_on_price(self):
         for r in self:
             if r.product_id:
                 plan_price = r.product_id._price_comparison("your_price").plan_value
             elif r.draft_product_id:
                 plan_price = r.draft_product_id._base_calculation("your_price").value
+            else:
+                plan_price = 0
 
             if r.kind in ["fix", "depends_on_volume"]:
                 r.value_based_on_price = r.value
             elif r.kind in ["percent", "percent_cost_price"]:
                 r.value_based_on_price = plan_price * r.percent 
 
+    @api.depends("price_component_id.identifier")
     def _compute_kind(self):
         for r in self:
             if r.price_component_id.identifier in PERCENT_COMPONENTS:
@@ -66,8 +75,10 @@ class BaseCalculation(models.Model):
             else:
                 r.kind = "fix"
     
+    @api.depends("draft_product_id", "price_component_id", "percent", "value_based_on_price", "kind")
     def _compute_comment(self):
         for r in self:
+            common_part = ""
             if r.draft_product_id:
                 r.comment = ""
                 continue
@@ -150,7 +161,8 @@ class BaseCalculationTemplate(models.Model):
     _description = "Шаблон планового расчёта"
 
     name = fields.Char(string="Название")
-    base_calculation_ids = fields.Many2many("ozon.base_calculation", string="Плановый расчёт")
+    base_calculation_ids = fields.One2many("ozon.base_calculation", 
+                                           "base_calculation_template_id", string="Плановый расчёт")
 
     def create_if_not_exists(self):
         if not self.search([]):
