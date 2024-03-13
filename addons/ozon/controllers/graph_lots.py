@@ -1,24 +1,39 @@
 from odoo import http
 import base64
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class ImportImagesSale(http.Controller):
     @http.route(
-        "/import/images",
+        "/api/v1/draw_graphs_categories_products",
         auth="user",
         csrf=False,
         methods=["POST"],
     )
-    def import_images_sale(self, **kwargs):
-        model_ozon_import_file = http.request.env["ozon.import_file"]
-        uploaded_file = http.request.httprequest.files.get('file')
-        file_binary_data = uploaded_file.read()
-        model = http.request.params.get('model')
+    def run_draw_graphs(self, **kwargs):
+        # categories = http.request.env["ozon.categories"].search([])
+        categories = http.request.env["ozon.categories"].search([("name_categories", '=', 'Аккумулятор для ноутбука')])
+        count = 0
+        for cat in categories:
+            logger.info(f"run_draw_graphs: {cat.name_categories} + category products")
+            cat.action_draw_graphs_by_categories()
+            count += 1
 
-        values = {
-            "model": model,
-            "data_for_download": "ozon_images",
-            "file": base64.b64encode(file_binary_data),
-        }
-        model_ozon_import_file.create(values)
+        logger.info(f"run_draw_graphs complete: all- {len(categories)}, done- {count}")
 
-        return "File uploaded and processed successfully."
+        return "Graphs drawing processed successfully."
+
+    @http.route(
+        "/api/v1/draw_graphs_competitors_products",
+        auth="user",
+        csrf=False,
+        methods=["POST"],
+    )
+    def run_draw_graphs_competitors_products(self, **kwargs):
+        products_competitors = http.request.env["ozon.products_competitors"].search([])
+        for prod in products_competitors:
+            prod.draw_plot()
+
+        return "Graphs drawing processed successfully."

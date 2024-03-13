@@ -1,7 +1,5 @@
-import requests
 import logging
 
-from os import getenv
 from datetime import datetime
 from odoo import models, fields, api
 from .drawing_graphs import DrawGraph as df
@@ -135,6 +133,8 @@ class ActionGraphs(models.Model):
         self.draw_sale_last_year()
         self.draw_graph_interest()
         self.draw_graphs_products(self.ozon_products_ids)
+
+        return True
 
     def draw_sale_this_year(self):
         year = self._get_year()
@@ -277,11 +277,11 @@ class ActionGraphs(models.Model):
         return products_records
 
     def draw_graphs_products(self, products_records):
-        print(f"All records: {len(products_records)}")
+        logger.info(f"All records: {len(products_records)}")
 
         for index, product_record in enumerate(products_records):
             product_record.action_draw_graphs()
-            print(index + 1)
+            logger.info(index + 1)
 
     def _get_year(self) -> str:
         return datetime.now().year
