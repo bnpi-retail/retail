@@ -1,0 +1,54 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="ozon_mass_calculator_form" model="ir.ui.view">
+            <field name="name">Массовый калькулятор</field>
+            <field name="model">ozon.mass_calculator</field>
+            <field name="arch" type="xml">
+                <form>
+                    <div name="button_box" position="inside">
+                        <button string="Результат расчёта" class="oe_stat_button" type="object"
+                            name="open_mass_calculator" />
+                    </div>
+                    <group>
+                        <button string="Рассчитать" class="oe_highlight" type="object"
+                            name="calculate" />
+                    </group>
+                    <group>
+                        <field name="category_id" />
+                    </group>
+                    <group>
+                        <field name="draft_product_ids">
+                            <tree>
+                                <field name="article" />
+                                <field name="name" />
+                            </tree>
+                        </field>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="ozon_mass_calculator_tree" model="ir.ui.view">
+            <field name="name">Массовый калькулятор</field>
+            <field name="model">ozon.mass_calculator</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="category_id" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_mass_calculator">
+            <field name="name">Массовый калькулятор</field>
+            <field name="res_model">ozon.mass_calculator</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+
+    </data>
+
+</odoo>

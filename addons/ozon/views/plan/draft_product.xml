@@ -5,13 +5,30 @@
         <record id="ozon_draft_product_form" model="ir.ui.view">
             <field name="name">Товар-черновик</field>
             <field name="model">ozon.draft_product</field>
-            <field name="arch" type="xml">
+            <field
+                name="arch" type="xml">
                 <form>
-                    <group>
-                        <field name="name" />
-                        <field name="category_id" />
-                    </group>
-                    <group style="margin-bottom: 20px;">
+
+                    <notebook>
+                        <page id="draft_product_main_info" string="Карточка товара">
+                            <group>
+                                <field name="name" />
+                                <field name="article" />
+                                <field name="retail_product_total_cost_price" />
+                                <field name="trading_scheme" />
+                                <field name="logistics_tariff_id" />
+                                <field name="base_calculation_template_id" />
+                                <field name="products_competitors_ids" />
+                            </group>
+                        </page>
+                        <page id="draft_product_base_calculation" string="Плановая структура затрат">
+                            <group>
+                                <field name="base_calculation_ids" />
+                            </group>
+                        </page>
+
+                    </notebook>
+                    <!-- <group style="margin-bottom: 20px;">
                         <button type="object"
                             name="update_base_calculation_ids"
                             string="Рассчитать"
@@ -33,15 +50,55 @@
                                     attrs="{'invisible': [('pc_identifier', '=', 'margin_percent')]}"
                                 />
 
-                                <!-- <field name="comment" optional="hide" /> -->
-                            </tree>
-                        </field>
-                    </group>
+                </tree>
+            </field>
+                    </group> -->
                 </form>
             </field>
         </record>
 
-        <!-- Tree -->
+        <!-- Tree View Inside Mass Calculator smart button -->
+        <record id="ozon_draft_product_in_mass_calculator_tree" model="ir.ui.view">
+            <field name="name">Расчет товаров-черновиков</field>
+            <field name="model">ozon.draft_product</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name" />
+
+                    <field name="plan_your_price" />
+                    <field name="plan_logistics" />
+                    <field name="plan_last_mile" />
+                    <field name="plan_acquiring" />
+                    <field name="plan_ozon_reward" />
+                    <field name="plan_promo" />
+                    <field name="plan_processing" />
+                    <field name="plan_return_logistics" />
+                    <field name="plan_tax" />
+                    <field name="plan_total_expenses" />
+                    <field name="plan_profit" />
+                    <field name="plan_ros" />
+                    <field name="plan_margin" />
+                    <field name="plan_roe" />
+
+                    <field name="market_your_price" />
+                    <field name="market_logistics" />
+                    <field name="market_last_mile" />
+                    <field name="market_acquiring" />
+                    <field name="market_ozon_reward" />
+                    <field name="market_promo" />
+                    <field name="market_processing" />
+                    <field name="market_return_logistics" />
+                    <field name="market_tax" />
+                    <field name="market_total_expenses" />
+                    <field name="market_profit" />
+                    <field name="market_ros" />
+                    <field name="market_margin" />
+                    <field name="market_roe" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Default Tree View -->
         <record id="ozon_draft_product_tree" model="ir.ui.view">
             <field name="name">Товар-черновик</field>
             <field name="model">ozon.draft_product</field>
@@ -50,7 +107,6 @@
                     <field name="name" />
                 </tree>
             </field>
-
         </record>
 
         <!-- Action -->
@@ -58,6 +114,7 @@
             <field name="name">Товар-черновик</field>
             <field name="res_model">ozon.draft_product</field>
             <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="ozon_draft_product_tree" />
         </record>
 
 
