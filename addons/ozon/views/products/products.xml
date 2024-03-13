@@ -534,116 +534,125 @@
 
                                 <page id="page_analysis_data_plots" string="Графики">
                                     <group>
-                                        <field name="img_sale_this_year"
-                                               string="График продаж за текущий год" readonly="1"
-                                               widget="image"
-                                        />
+                                        <group>
+                                            <field name="img_sale_this_year"
+                                                   string="График продаж за текущий год" readonly="1"
+                                                   widget="image"
+                                            />
+                                            <button string="Скачать данные"
+                                                    type="object"
+                                                    class="oe_highlight"
+                                                    icon="fa-download"
+                                                    name="download_img_data_sale_this_year"
+                                                    attrs="{'invisible': [('img_data_sale_this_year', '=', False)]}"
+                                            />
 
-                                        <field name="img_data_sale_this_year" invisible="1" />
-                                        <field name="img_data_sale_last_year" invisible="1" />
-                                        <field name="img_data_sale_two_weeks" invisible="1" />
-                                        <field name="img_data_sale_six_weeks" invisible="1" />
-                                        <field name="img_data_sale_twelve_weeks" invisible="1" />
-                                        <field name="img_data_stock" invisible="1" />
-                                        <field name="img_data_analysis_data" invisible="1" />
+                                            <field name="img_data_sale_this_year" invisible="1"/>
+                                            <field name="img_data_sale_last_year" invisible="1"/>
+                                            <field name="img_data_sale_two_weeks" invisible="1"/>
+                                            <field name="img_data_sale_six_weeks" invisible="1"/>
+                                            <field name="img_data_sale_twelve_weeks" invisible="1"/>
+                                            <field name="img_data_stock" invisible="1"/>
+                                            <field name="img_data_analysis_data" invisible="1"/>
+                                        </group>
+
+                                        <group>
+                                            <field name="img_sale_last_year"
+                                                   string="График продаж за прошлый год" readonly="1"
+                                                   widget="image"
+                                            />
+                                            <button string="Скачать данные"
+                                                    type="object"
+                                                    class="oe_highlight"
+                                                    icon="fa-download"
+                                                    name="download_img_data_sale_last_year"
+                                                    attrs="{'invisible': [('img_data_sale_last_year', '=', False)]}"
+                                            />
+                                        </group>
                                     </group>
-                                    <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_sale_this_year"
-                                        attrs="{'invisible': [('img_data_sale_this_year', '=', False)]}"
-                                    />
+
+                                    <separator/>
 
                                     <group>
-                                        <field name="img_sale_last_year"
-                                               string="График продаж за прошлый год" readonly="1"
-                                               widget="image"
-                                        />
+                                        <group>
+                                            <field name="img_sale_two_weeks"
+                                                   string="График продаж за 2 последних недели" readonly="1"
+                                                   widget="image"
+                                            />
+                                            <button string="Скачать данные"
+                                                type="object"
+                                                class="oe_highlight"
+                                                icon="fa-download"
+                                                name="download_img_data_sale_two_weeks"
+                                                attrs="{'invisible': [('img_data_sale_two_weeks', '=', False)]}"/>
+                                        </group>
+
+                                        <group>
+                                            <field name="img_sale_six_weeks"
+                                                   string="График продаж за 6 последних недель" readonly="1"
+                                                   widget="image"
+                                            />
+                                            <button string="Скачать данные"
+                                                type="object"
+                                                class="oe_highlight"
+                                                icon="fa-download"
+                                                name="download_img_data_sale_six_weeks"
+                                                attrs="{'invisible': [('img_data_sale_six_weeks', '=', False)]}"/>
+                                        </group>
                                     </group>
-                                    <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_sale_last_year"
-                                        attrs="{'invisible': [('img_data_sale_last_year', '=', False)]}"
-                                    />
 
                                     <group>
-                                        <field name="img_price_history"
-                                               string="График истории цен" readonly="1"
-                                               widget="image"
-                                        />
-                                    </group>
-                                    <group>
-                                        <field name="img_sale_two_weeks"
-                                               string="График продаж за 2 последних недели" readonly="1"
-                                               widget="image"
-                                        />
-                                    </group>
-                                    <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_sale_two_weeks"
-                                        attrs="{'invisible': [('img_data_sale_two_weeks', '=', False)]}" />
+                                        <group>
+                                            <field name="img_sale_twelve_weeks"
+                                                   string="График продаж за 12 последних недель" readonly="1"
+                                                   widget="image"
+                                            />
+                                            <button string="Скачать данные"
+                                                    type="object"
+                                                    class="oe_highlight"
+                                                    icon="fa-download"
+                                                    name="download_img_data_sale_twelve_weeks"
+                                                    attrs="{'invisible': [('img_data_sale_twelve_weeks', '=', False)]}"
+                                            />
+                                        </group>
 
-
-                                    <group>
-                                        <field name="img_sale_six_weeks"
-                                               string="График продаж за 6 последних недель" readonly="1"
-                                               widget="image"
-                                        />
+                                        <group>
+                                            <field name="img_price_history"
+                                                   string="График истории цен" readonly="1"
+                                                   widget="image"
+                                            />
+                                        </group>
                                     </group>
-                                    <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_sale_six_weeks"
-                                        attrs="{'invisible': [('img_data_sale_six_weeks', '=', False)]}" />
-
 
                                     <group>
-                                        <field name="img_sale_twelve_weeks"
-                                               string="График продаж за 12 последних недель" readonly="1"
-                                               widget="image"
-                                        />
+                                        <group>
+                                            <field name="img_stock"
+                                                   string="График остатков за текущий год" readonly="1"
+                                                   widget="image"
+                                            />
+                                            <button string="Скачать данные"
+                                                    type="object"
+                                                    class="oe_highlight"
+                                                    icon="fa-download"
+                                                    name="download_img_data_stock"
+                                                    attrs="{'invisible': [('img_data_stock', '=', False)]}"
+                                            />
+                                        </group>
+                                        <group>
+                                            <field name="img_analysis_data"
+                                                   string="График интереса за текущий год" readonly="1"
+                                                   widget="image"
+                                            />
+                                            <button string="Скачать данные"
+                                                    type="object"
+                                                    class="oe_highlight"
+                                                    icon="fa-download"
+                                                    name="download_img_data_analysis_data"
+                                                    attrs="{'invisible': [('img_data_analysis_data', '=', False)]}"
+                                            />
+                                        </group>
                                     </group>
-                                    <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_sale_twelve_weeks"
-                                        attrs="{'invisible': [('img_data_sale_twelve_weeks', '=', False)]}"
-                                    />
 
-                                    <group>
-                                        <field name="img_stock"
-                                               string="График остатков за текущий год" readonly="1"
-                                               widget="image"
-                                        />
-                                    </group>
-                                    <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_stock"
-                                        attrs="{'invisible': [('img_data_stock', '=', False)]}"
-                                    />
-
-                                    <group>
-                                         <field name="img_analysis_data"
-                                               string="График интереса за текущий год" readonly="1"
-                                               widget="image"
-                                        />
-                                    </group>
-                                    <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_img_data_analysis_data"
-                                        attrs="{'invisible': [('img_data_analysis_data', '=', False)]}"
-                                    />
                                 </page>
                             </notebook>
                         </page>
