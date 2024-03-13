@@ -10,7 +10,10 @@
                 <form>
                     <group>
                         <field name="name" />
-                        <field name="category_id" />
+                        <field name="article" />
+                        <field name="cost_price" />
+                        <field name="base_calculation_template_id" />
+                        <field name="products_competitors_ids" />
                     </group>
                     <!-- <group style="margin-bottom: 20px;">
                         <button type="object"

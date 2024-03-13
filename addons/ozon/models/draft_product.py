@@ -5,10 +5,15 @@ class DraftProduct(models.Model):
     _description = "Товар-черновик"
 
     name = fields.Char(string="Название")
+    article = fields.Char(string="Артикул")
+    cost_price = fields.Float(string="Себестоимость")
     category_id = fields.Many2one("ozon.categories", string="Категория Ozon")
     base_calculation_ids = fields.One2many ("ozon.base_calculation", "draft_product_id", 
                                             string="Плановый расчёт", 
         domain=[("price_component_id.identifier", "not in", ["calc_datetime", "buyer_price"])])
+    base_calculation_template_id = fields.Many2one("ozon.base_calculation_template", 
+                                                   string="Шаблон планового расчёта")
+    products_competitors_ids = fields.Many2many("ozon.products_competitors", string="Товары-конкуренты" )
     mass_calculator_id = fields.Many2one("ozon.mass_calculator", string="Массовый калькулятор")
 
     @api.model
