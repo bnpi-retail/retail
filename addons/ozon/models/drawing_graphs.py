@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 class DrawGraph:
     def post(self, payload: dict):
-        payload_file = False
         model = payload.get('model', None)
 
         if model == "sale":
@@ -58,39 +57,34 @@ class DrawGraph:
             res = graph.main()
             return res
 
-        # elif model == "categorie_analysis_data":
-        #     graph = DrawGraphCategoriesInterest()
-        #     data = request.data.get('data', None)
-        #     categorie_id = request.data.get('categorie_id', None)
-        #
-        #     if data is not None:
-        #         payload_file, payload = graph.draw_graph(data, model, categorie_id)
-        #
-        # elif model == "categorie_sale_this_year":
-        #     graph = DrawGraphCategoriesThisYear()
-        #     data = request.data.get('data', None)
-        #     categorie_id = request.data.get('categorie_id', None)
-        #
-        #     if data is not None:
-        #         payload_file, payload = graph.draw_graph(data, model, categorie_id)
-        #
-        # elif model == "categorie_sale_last_year":
-        #     graph = DrawGraphCategoriesLastYear()
-        #     data = request.data.get('data', None)
-        #     categorie_id = request.data.get('categorie_id', None)
-        #
-        #     if data is not None:
-        #         payload_file, payload = graph.draw_graph(data, model, categorie_id)
-        #
-        if payload_file is False:
-            return {'status': 'payload file is empty'}
+        elif model == "categorie_analysis_data":
+            graph = DrawGraphCategoriesInterest()
+            data = payload.get('data', None)
+            categorie_id = payload.get('categorie_id', None)
 
-        endpoint = "http://odoo-web:8069/import/images"
-        # response = requests.post(endpoint, headers=headers, files=payload_file, data=payload)
+            if data is not None:
+                res = graph.draw_graph(data, model, categorie_id)
+                return res
+
+        elif model == "categorie_sale_this_year":
+            graph = DrawGraphCategoriesThisYear()
+            data = payload.get('data', None)
+            categorie_id = payload.get('categorie_id', None)
+
+            if data is not None:
+                bytes_plot, data_current = graph.draw_graph(data, model, categorie_id)
+                return bytes_plot, data_current
+
+        elif model == "categorie_sale_last_year":
+            graph = DrawGraphCategoriesLastYear()
+            data = payload.get('data', None)
+            categorie_id = payload.get('categorie_id', None)
+
+            if data is not None:
+                bytes_plot, data_current = graph.draw_graph(data, model, categorie_id)
+                return bytes_plot, data_current
 
     def draw_graph_sale(self, payload: dict, model):
-        product_id = payload.get('product_id', None)
-
         data_graph_current = payload.get('current', None)
 
         dict = {

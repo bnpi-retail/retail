@@ -1,7 +1,9 @@
+import ast
 import base64
 import io
 import csv
 import json
+import logging
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,6 +13,8 @@ import matplotlib.ticker as ticker
 from os import getenv
 from datetime import datetime
 from matplotlib.ticker import FuncFormatter
+
+logger = logging.getLogger(__name__)
 
 
 class GroupData:
@@ -290,20 +294,13 @@ class DataFunction:
     def get_year(self) -> int:
         return datetime.now().year
 
-    def get_csv_file(self, data: list):
-        csv_data = io.StringIO()
-        csv_writer = csv.writer(csv_data)
-        csv_writer.writerow(data)
-        csv_data.seek(0)
-        return csv_data
-
 
 class DrawGraphSale(DataFunction):
     def __init__(self, dict: dict) -> None:
         self.year = dict["year"]
         self.data = dict["data"]
         if dict["data_average"] is not None:
-            self.data_average = json.loads(dict["data_average"].replace("'", "\""))
+            self.data_average = ast.literal_eval(dict["data_average"])
         else:
             self.data_average = None
         self.title = "Всего проданного товара"
@@ -311,11 +308,11 @@ class DrawGraphSale(DataFunction):
         self.label_moving_average = "Средняя скользящая"
         self.label_category_average = "Средняя по категории"
 
-    def __call__(self) -> str:
-        url = self.main()
-        return url
+    def __call__(self) -> bytes:
+        bytes_plot = self.main()
+        return bytes_plot
 
-    def main(self) -> str:
+    def main(self) -> bytes:
         dates, values = self.data_process(self.data)
 
         average_dates, average_values = None, None
@@ -323,9 +320,9 @@ class DrawGraphSale(DataFunction):
         if self.data_average is not None:
             average_dates, average_values = self.data_process_average(self.data_average)
 
-        url = self.create_graph(dates, values, average_dates, average_values)
+        bytes_plot = self.create_graph(dates, values, average_dates, average_values)
 
-        return url
+        return bytes_plot
 
     def data_process_average(self, data: dict) -> tuple:
         return np.array(data["dates"], dtype='datetime64'), data["values"]
@@ -405,7 +402,7 @@ class DrawGraphSale(DataFunction):
 
 
 class DrawGraphCategoriesThisYear(DataFunction):
-    def draw_graph(self, data: dict, model, categorie_id) -> None:
+    def draw_graph(self, data: dict, model, categorie_id) -> tuple:
         dates_all = []
         values = []
 
@@ -423,12 +420,11 @@ class DrawGraphCategoriesThisYear(DataFunction):
         self.data_sorted(data)
         self.data_group(data, sum_group=True)
 
-        url = self.create_graph(data)
+        bytes_plot = self.create_graph(data)
 
         data['dates'] = data['dates'].strftime('%Y-%m-%d').tolist()
-        csv_content = [model, categorie_id, url, str(data).replace(',', '|')]
-        csv_file = self.get_csv_file(csv_content)
-        return {'file': ('output.csv', csv_file)}, {'model': model}
+
+        return bytes_plot, data
 
     def create_graph(self, data_views):
         plt.figure(figsize=(10, 5))
@@ -479,17 +475,13 @@ class DrawGraphCategoriesThisYear(DataFunction):
         plt.savefig(buffer, format='png')
         buffer.seek(0)
 
-        filename = f'graph.png'
-        file_path = default_storage.save(filename, ContentFile(buffer.read()))
-        file_url = default_storage.url(file_path)
-
         plt.close()
 
-        return f"{getenv('DJANGO_DOMAIN')}{file_url}"
+        return base64.b64encode(buffer.read())
 
 
 class DrawGraphCategoriesLastYear(DataFunction):
-    def draw_graph(self, data: dict, model, categorie_id) -> None:
+    def draw_graph(self, data: dict, model, categorie_id) -> tuple:
         dates_all = []
         values = []
 
@@ -508,12 +500,11 @@ class DrawGraphCategoriesLastYear(DataFunction):
         self.data_sorted(data)
         self.data_group(data, mean=True)
 
-        url = self.create_graph(data)
+        bytes_plot = self.create_graph(data)
 
         data['dates'] = data['dates'].strftime('%Y-%m-%d').tolist()
-        data = [model, categorie_id, url, str(data).replace(',', '|')]
-        csv_file = self.get_csv_file(data)
-        return {'file': ('output.csv', csv_file)}, {'model': model}
+
+        return bytes_plot, data
 
     def create_graph(self, data_views):
         plt.figure(figsize=(10, 5))
@@ -564,17 +555,13 @@ class DrawGraphCategoriesLastYear(DataFunction):
         plt.savefig(buffer, format='png')
         buffer.seek(0)
 
-        filename = f'graph.png'
-        file_path = default_storage.save(filename, ContentFile(buffer.read()))
-        file_url = default_storage.url(file_path)
-
         plt.close()
 
-        return f"{getenv('DJANGO_DOMAIN')}{file_url}"
+        return base64.b64encode(buffer.read())
 
 
 class DrawGraphCategoriesInterest(DataFunction):
-    def draw_graph(self, data: dict, model, categorie_id) -> None:
+    def draw_graph(self, data: dict, model, categorie_id) -> tuple:
         dates_all = []
         hits_view_all = []
         hits_tocart_all = []
@@ -603,14 +590,12 @@ class DrawGraphCategoriesInterest(DataFunction):
         self.data_sorted(data_tocart)
         self.data_group(data_tocart, sum_group=True)
 
-        url = self.create_graph(data_views, data_tocart)
+        bytes_plot = self.create_graph(data_views, data_tocart)
 
         data_views['dates'] = data_views['dates'].strftime('%Y-%m-%d').tolist()
         data_tocart['dates'] = data_tocart['dates'].strftime('%Y-%m-%d').tolist()
 
-        data = [model, categorie_id, url, str(data_views).replace(',', '|'), str(data_tocart).replace(',', '|')]
-        csv_file = self.get_csv_file(data)
-        return {'file': ('output.csv', csv_file)}, {'model': model}
+        return bytes_plot, data_views, data_tocart
 
     def create_graph(self, data_views, data_tocart):
         fig, ax1 = plt.subplots(figsize=(10, 5))
@@ -656,10 +641,6 @@ class DrawGraphCategoriesInterest(DataFunction):
         plt.savefig(buffer, format='png')
         buffer.seek(0)
 
-        filename = f'graph_.png'
-        file_path = default_storage.save(filename, ContentFile(buffer.read()))
-        file_url = default_storage.url(file_path)
-
         plt.close()
 
-        return f"{getenv('DJANGO_DOMAIN')}{file_url}"
+        return base64.b64encode(buffer.read())

@@ -4,6 +4,7 @@ import logging
 from os import getenv
 from datetime import datetime
 from odoo import models, fields, api
+from .drawing_graphs import DrawGraph as df
 
 logger = logging.getLogger(__name__)
 
@@ -82,10 +83,7 @@ class GraphSaleThisYear(models.Model):
     _inherit = "ozon.categories"
 
     img_data_sale_this_year = fields.Text(string="Json data filed")
-    img_url_sale_this_year = fields.Char(string="Ссылка на объект")
-    img_html_sale_this_year = fields.Html(
-        compute="_compute_img_sale_this_year", string="График продаж за текущий год"
-    )
+    img_sale_this_year = fields.Binary(string="График продаж за текущий год")
 
     def download_data_sale_this_year(self):
         field_name = "img_data_sale_this_year"
@@ -97,25 +95,11 @@ class GraphSaleThisYear(models.Model):
         }
 
 
-    def _compute_img_sale_this_year(self):
-        for rec in self:
-            rec.img_html_sale_this_year = False
-            if not rec.img_url_sale_this_year:
-                continue
-
-            rec.img_html_sale_this_year = (
-                f"<img src='{rec.img_url_sale_this_year}' width='600'/>"
-            )
-
-
 class GraphSaleLastYear(models.Model):
     _inherit = "ozon.categories"
 
     img_data_sale_last_year = fields.Text(string="Json data filed")
-    img_url_sale_last_year = fields.Char(string="Ссылка на объект")
-    img_html_sale_last_year = fields.Html(
-        compute="_compute_img_sale_last_year", string="График продаж за прошлый год"
-    )
+    img_sale_last_year = fields.Binary(string="График продаж за прошлый год")
 
     def download_data_sale_last_year(self):
         field_name = "img_data_sale_last_year"
@@ -125,27 +109,13 @@ class GraphSaleLastYear(models.Model):
             'url': url,
             'target': 'new',
         }
-    
-    def _compute_img_sale_last_year(self):
-        for rec in self:
-            rec.img_html_sale_last_year = False
-            if not rec.img_url_sale_last_year:
-                continue
-
-            rec.img_html_sale_last_year = (
-                f"<img src='{rec.img_url_sale_last_year}' width='600'/>"
-            )
 
 
 class GraphInterest(models.Model):
     _inherit = "ozon.categories"
 
     img_data_analysis_data_this_year = fields.Text(string="Json data filed")
-    img_url_analysis_data_this_year = fields.Char(string="Ссылка на объект")
-    img_html_analysis_data_this_year = fields.Html(
-        compute="_compute_img_analysis_data_this_year",
-        string="График интереса тукущий год",
-    )
+    img_analysis_data_this_year = fields.Html(string="График интереса текущий год")
 
     def download_data_analysis_data_this_year(self):
         field_name = "img_data_analysis_data_this_year"
@@ -155,16 +125,6 @@ class GraphInterest(models.Model):
             'url': url,
             'target': 'new',
         }
-
-    def _compute_img_analysis_data_this_year(self):
-        for rec in self:
-            rec.img_html_analysis_data_this_year = False
-            if not rec.img_url_analysis_data_this_year:
-                continue
-
-            rec.img_html_analysis_data_this_year = (
-                f"<img src='{rec.img_url_analysis_data_this_year}' width='600'/>"
-            )
 
 
 class ActionGraphs(models.Model):
@@ -217,7 +177,8 @@ class ActionGraphs(models.Model):
             "data": data_for_send,
         }
 
-        self._send_request(payload)
+        bytes_plot, data_current = df().post(payload)
+        self.img_sale_this_year, self.img_data_sale_this_year = bytes_plot, data_current
 
         return products_records
 
@@ -262,8 +223,8 @@ class ActionGraphs(models.Model):
             "data": data_for_send,
         }
 
-
-        self._send_request(payload)
+        bytes_plot, data_current = df().post(payload)
+        self.img_sale_last_year, self.img_data_sale_last_year = bytes_plot, data_current
 
         return products_records
 
@@ -286,8 +247,8 @@ class ActionGraphs(models.Model):
             analysis_data_records = self.env["ozon.analysis_data"].search(
                 [
                     ("product", "=", product_record.id),
-                    ("timestamp_from", ">=", f"{year}-01-01"),
-                    ("timestamp_to", "<=", f"{year}-12-31"),
+                    ("date", ">=", f"{year}-01-01"),
+                    ("date", "<=", f"{year}-12-31"),
                 ]
             )
 
@@ -297,9 +258,7 @@ class ActionGraphs(models.Model):
             graph_data = {"dates": [], "hits_view": [], "hits_tocart": []}
 
             for analysis_data_record in analysis_data_records:
-                start_date = analysis_data_record.timestamp_from
-                end_date = analysis_data_record.timestamp_to
-                average_date = start_date + (end_date - start_date) / 2
+                average_date = analysis_data_record.date
 
                 graph_data["dates"].append(average_date.strftime("%Y-%m-%d"))
                 graph_data["hits_view"].append(analysis_data_record.hits_view)
@@ -313,7 +272,12 @@ class ActionGraphs(models.Model):
             "data": data_for_send,
         }
 
-        self._send_request(payload)
+        bytes_plot, data_views, data_tocart = df().post(payload)
+        self.img_analysis_data_this_year = bytes_plot
+        self.img_data_analysis_data_this_year = {
+            "hits_view": data_views,
+            "hits_tocart": data_tocart,
+        }
 
         return products_records
 
