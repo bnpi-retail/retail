@@ -1,6 +1,3 @@
-import requests
-
-from os import getenv
 from datetime import datetime, timedelta
 from odoo import models, fields, api
 from ..drawing_graphs import DrawGraph as df
