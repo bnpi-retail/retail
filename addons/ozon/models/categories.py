@@ -131,11 +131,10 @@ class ActionGraphs(models.Model):
     _inherit = "ozon.categories"
 
     def action_draw_graphs_by_categories(self):
-        # products_records = self.draw_sale_this_year()
-        # products_records += self.draw_sale_last_year()
-        # products_records += self.draw_graph_interest()
+        self.draw_sale_this_year()
+        self.draw_sale_last_year()
         self.draw_graph_interest()
-        # self.draw_graphs_products(list(set(products_records)))
+        self.draw_graphs_products(self.ozon_products_ids)
 
     def draw_sale_this_year(self):
         year = self._get_year()
@@ -190,13 +189,7 @@ class ActionGraphs(models.Model):
 
         categorie_record = self[0]
 
-        products_records = self.env["ozon.products"].search(
-            [
-                ("categories", "=", categorie_record.id),
-                # ("is_alive", "=", True),
-                # ("is_selling", "=", True),
-            ]
-        )
+        products_records = self.ozon_products_ids
 
         for product_record in products_records:
             sale_records = self.env["ozon.sale"].search(
