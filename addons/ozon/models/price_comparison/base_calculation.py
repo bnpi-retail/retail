@@ -188,13 +188,9 @@ class BaseCalculationTemplate(models.Model):
                     value = prod.retail_product_total_cost_price
                 elif r.price_component_id.identifier == "ozon_reward":
                     if prod.trading_scheme == "FBO":
-                        per_exp_rec = prod.fbo_percent_expenses.filtered(lambda r: r.name.startswith(
-                            "Процент комиссии за продажу"))
-                        value = float(per_exp_rec.discription.replace("%", ""))
+                        value = prod.categories._trading_scheme_fees().get("Процент комиссии за продажу (FBO)", 0)
                     else:
-                        per_exp_rec = prod.fbs_percent_expenses.filtered(lambda r: r.name.startswith(
-                            "Процент комиссии за продажу"))
-                        value = float(per_exp_rec.discription.replace("%", ""))
+                        value = prod.categories._trading_scheme_fees().get("Процент комиссии за продажу (FBS)", 0)
                 else:
                     value = r.value
                 data.append({"product_id": p_id, 

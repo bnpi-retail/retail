@@ -7,7 +7,7 @@ class DraftProduct(models.Model):
     name = fields.Char(string="Название")
     article = fields.Char(string="Артикул")
     retail_product_total_cost_price = fields.Float(string="Себестоимость")
-    category_id = fields.Many2one("ozon.categories", string="Категория Ozon")
+    categories = fields.Many2one("ozon.categories", string="Категория Ozon")
     base_calculation_ids = fields.One2many ("ozon.base_calculation", "draft_product_id", 
                                             string="Плановый расчёт", 
         domain=[("price_component_id.identifier", "not in", ["calc_datetime", "buyer_price"])])
@@ -26,8 +26,8 @@ class DraftProduct(models.Model):
         for pc in self.env["ozon.price_component"].search([]):
             data = {}
             if pc.identifier == "ozon_reward":
-                if values.get("category_id"):
-                    ozon_fees = rec.category_id._trading_scheme_fees()
+                if values.get("categories"):
+                    ozon_fees = rec.categories._trading_scheme_fees()
                     data.update({
                         "value": ozon_fees.get("Процент комиссии за продажу (FBS)", 0),
                         "comment":(f"Комиссии категории:\n"
@@ -49,8 +49,8 @@ class DraftProduct(models.Model):
     def update_base_calculation_ids(self):
         price = self._base_calculation("your_price").value
         cost_price = self._base_calculation("cost").value
-        if self.category_id:
-            ozon_reward_value = self.category_id._trading_scheme_fees().get("Процент комиссии за продажу (FBS)", 0)
+        if self.categories:
+            ozon_reward_value = self.categories._trading_scheme_fees().get("Процент комиссии за продажу (FBS)", 0)
             ozon_reward = self._base_calculation("ozon_reward")
             ozon_reward.write({"value": ozon_reward_value})
         total_expenses_value = self.base_calculation_ids.calculate_total_expenses()
