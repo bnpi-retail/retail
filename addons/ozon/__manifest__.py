@@ -70,6 +70,7 @@
         "views/plan/price_component_match.xml",
         "views/plan/base_calculation.xml",
         "views/plan/draft_product.xml",
+        "views/plan/mass_calculator.xml",
         "views/reports/indirect_percent_expenses.xml",
         "views/reports/sales_report_by_category.xml",
         "views/reports/realisation_report.xml",

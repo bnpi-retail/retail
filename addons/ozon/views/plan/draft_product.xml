@@ -5,13 +5,14 @@
         <record id="ozon_draft_product_form" model="ir.ui.view">
             <field name="name">Товар-черновик</field>
             <field name="model">ozon.draft_product</field>
-            <field name="arch" type="xml">
+            <field
+                name="arch" type="xml">
                 <form>
                     <group>
                         <field name="name" />
                         <field name="category_id" />
                     </group>
-                    <group style="margin-bottom: 20px;">
+                    <!-- <group style="margin-bottom: 20px;">
                         <button type="object"
                             name="update_base_calculation_ids"
                             string="Рассчитать"
@@ -33,10 +34,9 @@
                                     attrs="{'invisible': [('pc_identifier', '=', 'margin_percent')]}"
                                 />
 
-                                <!-- <field name="comment" optional="hide" /> -->
-                            </tree>
-                        </field>
-                    </group>
+                </tree>
+            </field>
+                    </group> -->
                 </form>
             </field>
         </record>

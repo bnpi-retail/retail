@@ -9,7 +9,7 @@ class DraftProduct(models.Model):
     base_calculation_ids = fields.One2many ("ozon.base_calculation", "draft_product_id", 
                                             string="Плановый расчёт", 
         domain=[("price_component_id.identifier", "not in", ["calc_datetime", "buyer_price"])])
-    
+    mass_calculator_id = fields.Many2one("ozon.mass_calculator", string="Массовый калькулятор")
 
     @api.model
     def create(self, values):
