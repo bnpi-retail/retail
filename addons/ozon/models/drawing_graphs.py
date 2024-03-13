@@ -197,7 +197,7 @@ class DrawGraph:
 
         year = datetime.now().year
         zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
-        grouped_dates, grouped_num = self.data_group(data_current, zero_dates, mean=True)
+        grouped_dates, grouped_num = self.data_group(data_current, zero_dates, mean=True, use_last_value=True)
         bytes_plot = self.generate_url_image(
             label='График истории цен',
             product_id=product_id,
@@ -228,41 +228,7 @@ class DrawGraph:
 
         return bytes_plot, data_current
 
-    def draw_graph_analysis_data(self, request, model):
-        product_id = request.data.get('product_id', None)
-        hits_view = request.data.get('hits_view', None)
-        hits_tocart = request.data.get('hits_tocart', None)
-        average_hits_view = request.data.get('average_hits_view', None)
-        average_to_cart = request.data.get('average_to_cart', None)
-
-        year = datetime.now().year
-        zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
-
-        grouped_dates_hits_view, grouped_num_hits_view = self.data_group(hits_view, zero_dates, sum_group=True)
-        grouped_dates_hits_tocart, grouped_num_hits_tocart = self.data_group(hits_tocart, zero_dates, sum_group=True)
-
-        url = self.generate_url_analysis_data(
-            product_id=product_id,
-
-            dates_hits_view=grouped_dates_hits_view,
-            num_hits_view=grouped_num_hits_view,
-
-            dates_hits_tocart=grouped_dates_hits_tocart,
-            num_hits_tocart=grouped_num_hits_tocart,
-        )
-
-        data = [product_id, url, str(hits_view).replace(',', '|'), str(hits_tocart).replace(',', '|')]
-        csv_file = self.get_csv_file(data)
-        return {'file': ('output.csv', csv_file)}, {'model': model}
-
-    def get_csv_file(self, data: list):
-        csv_data = io.StringIO()
-        csv_writer = csv.writer(csv_data)
-        csv_writer.writerow(data)
-        csv_data.seek(0)
-        return csv_data
-
-    def data_group(self, data_graph, zero_dates, mean=False, sum_group=False):
+    def data_group(self, data_graph, zero_dates, mean=False, sum_group=False, use_last_value=False):
         if data_graph:
             dates = data_graph.get('dates', None)
             num = data_graph.get('num', None)
@@ -277,6 +243,18 @@ class DrawGraph:
         num.extend(all_nums)
 
         sorted_data = sorted(set(zip(dates, num)), key=lambda x: x[0])
+
+        if use_last_value:
+            today = datetime.today().strftime('%Y-%m-%d')
+            last_value = sorted_data[0][1] if sorted_data else 0
+            for i in range(len(sorted_data)):
+                if sorted_data[i][0] == today:
+                    break
+                if sorted_data[i][1] == 0 and last_value != 0:
+                    sorted_data[i] = (sorted_data[i][0], last_value)
+                else:
+                    last_value = sorted_data[i][1]
+
         sorted_dates, sorted_num = zip(*sorted_data)
 
         df = pd.DataFrame({'date': pd.to_datetime(sorted_dates), 'num': sorted_num})
