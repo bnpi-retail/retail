@@ -6,14 +6,17 @@ class DraftProduct(models.Model):
 
     name = fields.Char(string="Название")
     article = fields.Char(string="Артикул")
-    cost_price = fields.Float(string="Себестоимость")
+    retail_product_total_cost_price = fields.Float(string="Себестоимость")
     category_id = fields.Many2one("ozon.categories", string="Категория Ozon")
     base_calculation_ids = fields.One2many ("ozon.base_calculation", "draft_product_id", 
                                             string="Плановый расчёт", 
         domain=[("price_component_id.identifier", "not in", ["calc_datetime", "buyer_price"])])
     base_calculation_template_id = fields.Many2one("ozon.base_calculation_template", 
                                                    string="Шаблон планового расчёта")
-    products_competitors_ids = fields.Many2many("ozon.products_competitors", string="Товары-конкуренты" )
+    products_competitors_ids = fields.Many2many("ozon.products_competitors", string="Товары-конкуренты")
+    logistics_tariff_id = fields.Many2one("ozon.logistics_tariff", 
+                                          string="Тариф логистики в плановом расчёте",
+                                          default=lambda self: self._default_logistics_tariff_id())
     mass_calculator_id = fields.Many2one("ozon.mass_calculator", string="Массовый калькулятор")
 
     @api.model
@@ -65,6 +68,10 @@ class DraftProduct(models.Model):
         margin_percent.write({"value": cost_price and margin_value / cost_price})
         roe = self._base_calculation("roe")
         roe.write({"value": cost_price and profit_value / cost_price})
+    
+    def _default_logistics_tariff_id(self):
+        return self.env["ozon.logistics_tariff"].search(
+            [("name", "=", "От 0,1 до 5 литров включительно — 76 рублей")]).id
         
 class DraftProductPlanCalculation(models.Model):
     _inherit = "ozon.draft_product"
@@ -84,6 +91,9 @@ class DraftProductPlanCalculation(models.Model):
     plan_margin = fields.Float(string="Наценка (План)", help="Наценка (План)")
     plan_roe = fields.Float(string="ROE (План)", help="ROE (План)")
 
+    def calculate_plan_items(self):
+        pass
+
 class DraftProductMarketCalculation(models.Model):
     _inherit = "ozon.draft_product"
 
@@ -101,3 +111,4 @@ class DraftProductMarketCalculation(models.Model):
     market_ros = fields.Float(string="ROS (Рынок)", help="ROS (Рынок)")
     market_margin = fields.Float(string="Наценка (Рынок)", help="Наценка (Рынок)")
     market_roe = fields.Float(string="ROE (Рынок)", help="ROE (Рынок)")
+
