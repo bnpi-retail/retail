@@ -29,42 +29,54 @@
                                 <field name="price_difference" readonly="1" widget="percentage" />
                                 <field name="is_price_difference_computed" invisible="1" />
                             </group>
-                            <group string="Графические данные">
+                            <separator string="Графические данные"/>
+                            <group>
+                            <group>
                                 <field name="img_sale_this_year" widget="image" readonly="1"/>
 
                                 <field name="img_data_sale_this_year" invisible="1" />
                                 <field name="img_data_sale_last_year" invisible="1" />
-                                <field name="img_data_analysis_data_this_year" invisible="1" />
+                                <field name="img_data_analysis_data_this_year" invisible="1"/>
+
+                                <button string="Скачать данные"
+                                        type="object"
+                                        class="oe_highlight"
+                                        icon="fa-download"
+                                        name="download_data_sale_this_year"
+                                        attrs="{'invisible': [('img_data_sale_this_year', '=', False)]}"
+                                />
                             </group>
-                            <button string="Скачать данные"
-                                type="object"
-                                class="oe_highlight"
-                                icon="fa-download"
-                                name="download_data_sale_this_year"
-                                attrs="{'invisible': [('img_data_sale_this_year', '=', False)]}"
-                            />
 
                             <group>
                                 <field name="img_sale_last_year" widget="image" readonly="1"/>
+                                <button string="Скачать данные"
+                                        type="object"
+                                        class="oe_highlight"
+                                        icon="fa-download"
+                                        name="download_data_sale_last_year"
+                                        attrs="{'invisible': [('img_data_sale_last_year', '=', False)]}"
+                                />
                             </group>
-                            <button string="Скачать данные"
-                                type="object"
-                                class="oe_highlight"
-                                icon="fa-download"
-                                name="download_data_sale_last_year"
-                                attrs="{'invisible': [('img_data_sale_last_year', '=', False)]}"
-                            />
+                            </group>
+
+                            <separator/>
 
                             <group>
-                                <field name="img_analysis_data_this_year" widget="image" readonly="1"/>
+                                <group>
+                                    <field name="img_analysis_data_this_year" widget="image" readonly="1"/>
+                                    <button string="Скачать данные"
+                                            type="object"
+                                            class="oe_highlight"
+                                            icon="fa-download"
+                                            name="download_data_analysis_data_this_year"
+                                            attrs="{'invisible': [('img_data_analysis_data_this_year', '=', False)]}"
+                                    />
+                                </group>
+                                <group>
+
+                                </group>
                             </group>
-                            <button string="Скачать данные"
-                                type="object"
-                                class="oe_highlight"
-                                icon="fa-download"
-                                name="download_data_analysis_data_this_year"
-                                attrs="{'invisible': [('img_data_analysis_data_this_year', '=', False)]}"
-                            />
+
 
                         </page>
                     </notebook>
