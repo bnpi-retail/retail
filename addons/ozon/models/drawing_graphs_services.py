@@ -246,7 +246,7 @@ class InterestGraph(GroupData, Fill_Data, TwoPlots):
 
         plt.close()
 
-        return buffer.read()
+        return base64.b64encode(buffer.read())
 
 
 class DataFunction:
