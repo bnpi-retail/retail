@@ -1,6 +1,7 @@
 from . import ozon_fee
 from . import prices
 from . import import_file
+from . import imported_report
 from . import categories
 from . import transaction
 from . import stock
