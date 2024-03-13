@@ -66,3 +66,38 @@ class DraftProduct(models.Model):
         roe = self._base_calculation("roe")
         roe.write({"value": cost_price and profit_value / cost_price})
         
+class DraftProductPlanCalculation(models.Model):
+    _inherit = "ozon.draft_product"
+
+    plan_your_price = fields.Float(string="Ваша цена (План)", help="Ваша цена (План)")
+    plan_logistics = fields.Float(string="Логистика (План)", help="Логистика (План)")
+    plan_last_mile = fields.Float(string="Последняя миля (План)", help="Последняя миля (План)")
+    plan_acquiring = fields.Float(string="Эквайринг (План)", help="Эквайринг (План)")
+    plan_ozon_reward = fields.Float(string="Вознаграждение Ozon (План)", help="Вознаграждение Ozon (План)")
+    plan_promo = fields.Float(string="Реклама (План)", help="Реклама (План)")
+    plan_processing = fields.Float(string="Обработка (План)", help="Обработка (План)")
+    plan_return_logistics = fields.Float(string="Обратная логистика (План)", help="Обратная логистика (План)")
+    plan_tax = fields.Float(string="Налог (План)", help="Налог (План)")
+    plan_total_expenses = fields.Float(string="Сумма расходов (План)", help="Сумма расходов (План)")
+    plan_profit = fields.Float(string="Прибыль (План)", help="Прибыль (План)")
+    plan_ros = fields.Float(string="ROS (План)", help="ROS (План)")
+    plan_margin = fields.Float(string="Наценка (План)", help="Наценка (План)")
+    plan_roe = fields.Float(string="ROE (План)", help="ROE (План)")
+
+class DraftProductMarketCalculation(models.Model):
+    _inherit = "ozon.draft_product"
+
+    market_your_price = fields.Float(string="Ваша цена (Рынок)", help="Ваша цена (Рынок)")
+    market_logistics = fields.Float(string="Логистика (Рынок)", help="Логистика (Рынок)")
+    market_last_mile = fields.Float(string="Последняя миля (Рынок)", help="Последняя миля (Рынок)")
+    market_acquiring = fields.Float(string="Эквайринг (Рынок)", help="Эквайринг (Рынок)")
+    market_ozon_reward = fields.Float(string="Вознаграждение Ozon (Рынок)", help="Вознаграждение Ozon (Рынок)")
+    market_promo = fields.Float(string="Реклама (Рынок)", help="Реклама (Рынок)")
+    market_processing = fields.Float(string="Обработка (Рынок)", help="Обработка (Рынок)")
+    market_return_logistics = fields.Float(string="Обратная логистика (Рынок)", help="Обратная логистика (Рынок)")
+    market_tax = fields.Float(string="Налог (Рынок)", help="Налог (Рынок)")
+    market_total_expenses = fields.Float(string="Сумма расходов (Рынок)", help="Сумма расходов (Рынок)")
+    market_profit = fields.Float(string="Прибыль (Рынок)", help="Прибыль (Рынок)")
+    market_ros = fields.Float(string="ROS (Рынок)", help="ROS (Рынок)")
+    market_margin = fields.Float(string="Наценка (Рынок)", help="Наценка (Рынок)")
+    market_roe = fields.Float(string="ROE (Рынок)", help="ROE (Рынок)")

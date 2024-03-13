@@ -51,6 +51,36 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="name" />
+
+                    <field name="plan_your_price" />
+                    <field name="plan_logistics" />
+                    <field name="plan_last_mile" />
+                    <field name="plan_acquiring" />
+                    <field name="plan_ozon_reward" />
+                    <field name="plan_promo" />
+                    <field name="plan_processing" />
+                    <field name="plan_return_logistics" />
+                    <field name="plan_tax" />
+                    <field name="plan_total_expenses" />
+                    <field name="plan_profit" />
+                    <field name="plan_ros" />
+                    <field name="plan_margin" />
+                    <field name="plan_roe" />
+
+                    <field name="market_your_price" />
+                    <field name="market_logistics" />
+                    <field name="market_last_mile" />
+                    <field name="market_acquiring" />
+                    <field name="market_ozon_reward" />
+                    <field name="market_promo" />
+                    <field name="market_processing" />
+                    <field name="market_return_logistics" />
+                    <field name="market_tax" />
+                    <field name="market_total_expenses" />
+                    <field name="market_profit" />
+                    <field name="market_ros" />
+                    <field name="market_margin" />
+                    <field name="market_roe" />
                 </tree>
             </field>
         </record>
