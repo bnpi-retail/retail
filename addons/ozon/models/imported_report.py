@@ -10,3 +10,13 @@ class ImportedReport(models.Model):
     start_date = fields.Date(string="Начало периода", readonly=True)
     end_date = fields.Date(string="Конец периода", readonly=True)
     
+    def get_report(self, data):
+        ad_campaign_identifier = data.get("ad_campaign_identifier")
+        start_date = data.get("start_date")
+        end_date = data.get("end_date")
+        report = self.search([
+            ("ad_campaign_identifier", "=", ad_campaign_identifier),
+            ("start_date", ">=", start_date),
+            ("start_date", "<=", end_date),
+        ])
+        return report if report else None

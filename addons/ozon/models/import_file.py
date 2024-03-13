@@ -926,7 +926,19 @@ class ImportFile(models.Model):
             else:
                 raise UserError("Файл должен содержать даты начала и конца периода в первой строке"
                                 " в формате 01.01.2024-05.02.2024")
-
+            
+            _ = {"ad_campaign_identifier": ad_campaign, 
+                 "start_date": start_date, 
+                 "end_date": end_date, 
+                 "report_type": "Отчёт о рекламной кампании (продвижение в поиске)"}
+            if report := self.env["ozon.imported_report"].get_report(_):
+                raise UserError(
+                    (f"Вы пытались загрузить отчёт за период: {start_date} - {end_date}\n"
+                     f"Уже существует отчёт по рекламной кампании №{ad_campaign} за период: {report.start_date} - {report.end_date}\n"
+                     "Пожалуйста, загрузите отчёт за период, который не пересекается с этими датами"))
+            else:
+                self.env["ozon.imported_report"].create(_)
+                
             reader = csv.DictReader(csvfile, delimiter=";")
             if reader.fieldnames != [
                 "Дата",
@@ -959,15 +971,7 @@ class ImportFile(models.Model):
                 ):
                     continue
                 if ozon_product := self.is_ozon_product_exists_by_sku(sku):
-                    if (
-                        posting_ids := self.env["ozon.posting"]
-                        .search(
-                            [
-                                ("order_id", "=", order_id),
-                            ]
-                        )
-                        .ids
-                    ):
+                    if posting_ids := self.env["ozon.posting"].search([("order_id", "=", order_id)]).ids:
                         pass
                     else:
                         posting_ids = None
