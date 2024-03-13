@@ -105,6 +105,7 @@
         "views/import/import.xml",
         "views/import/mass_data_import_views.xml",
         "views/import/mass_data_import_log_views.xml",
+        "views/import/imported_report.xml",
         "views/chat_gpt/lots_for_gpt.xml",
         "views/products/wizards.xml",
         "views/products/products.xml",

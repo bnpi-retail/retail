@@ -174,6 +174,12 @@
             action="action_import_file"
             sequence="1" />
 
+        <menuitem name="Импортированные отчёты"
+            id="menu_imported_report"
+            parent="main_menu_import"
+            action="action_imported_report"
+            sequence="3" />
+
         <!-- Menu -->
         <menuitem name="Вспомогательные категории"
             id="menu_supplementary_categories"

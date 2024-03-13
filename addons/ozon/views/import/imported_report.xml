@@ -1,0 +1,44 @@
+<odoo>
+    <data>
+
+        <!-- Form -->
+        <record id="imported_report_form" model="ir.ui.view">
+            <field name="name">Импортированный отчёт</field>
+            <field name="model">ozon.imported_report</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="create_date" string="Дата импорта" readonly="True" />
+                        <field name="report_type" />
+                        <field name="ad_campaign_identifier" />
+                        <field name="start_date" />
+                        <field name="end_date" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree -->
+        <record id="imported_report_tree" model="ir.ui.view">
+            <field name="name">Импортированный отчёт</field>
+            <field name="model">ozon.imported_report</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="create_date" string="Дата импорта" />
+                    <field name="report_type" />
+                    <field name="ad_campaign_identifier" />
+                    <field name="start_date" />
+                    <field name="end_date" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record model="ir.actions.act_window" id="action_imported_report">
+            <field name="name">Импортированные отчёты</field>
+            <field name="res_model">ozon.imported_report</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+    </data>
+</odoo>
