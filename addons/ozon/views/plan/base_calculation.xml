@@ -51,7 +51,7 @@
                     <group>
                         <field name="name" />
                         <field name="base_calculation_ids">
-                            <tree editable="top" edit="True">
+                            <tree editable="bottom" edit="True">
                                 <field name="price_component_id" string="Плановая статья" />
                                 <field name="kind" />
                                 <field name="value" string="Значение"
