@@ -7,56 +7,146 @@
             <field name="model">ozon.categories</field>
             <field name="arch" type="xml">
                 <form>
+                    <group>
+                        <group string="Основные данные">
+                            <field name="c_id"/>
+                            <field name="name_categories"/>
+                            <field name="category_manager" string="Ответственный менеджер"/>
+                            <field name="abc_group_last_update" readonly="1"
+                                   string="Последний ABC Анализ"/>
+                            <field name="bcg_matrix_last_update" readonly="1"
+                                   string="Последний расчет BCG Матрицы"/>
+                        </group>
+                        <group string="Разница между нашей ценой и ценой для покупателя"
+                               attrs="{'invisible': [('is_price_difference_computed', '=', False)]}"
+                        >
+                            <field name="category_total_price" readonly="1"/>
+                            <field name="category_total_marketing_price" readonly="1"/>
+                            <field name="price_difference" readonly="1" widget="percentage"/>
+                            <field name="is_price_difference_computed" invisible="1"/>
+                        </group>
+                    </group>
                     <notebook>
-                        <page string="Основная информация">
+                        <page string="Выручка и расходы за период">
                             <group>
-                                <field name="c_id" />
-                                <field name="name_categories" />
-                                <field name="category_manager" string="Ответственный менеджер" />
-                                <field name="abc_group_last_update" readonly="1"
-                                    string="Последний ABC Анализ" />
-                                <field name="bcg_matrix_last_update" readonly="1"
-                                    string="Последний расчет BCG Матрицы" />
+                                <group>
+                                    <button string="Рассчитать"
+                                            type="object"
+                                            name="action_calculate_revenue_returns_promotion_for_period"
+                                            attrs="{'invisible': [('period_start', '=', False)]}"
+                                    />
+                                </group>
+                                <group></group>
+                                <group>
+                                    <field name="period_preset" class="oe_inline"
+                                           string="Период"/>
+                                </group>
+                                <group></group>
+                                <group>
+                                    <label for="period_start" string="Даты"/>
+                                    <div class="o_row">
+                                        <field name="period_start" widget="daterange"
+                                               class="oe_inline"
+                                               options="{'related_end_date': 'period_finish'}"
+                                               nolable="1"
+                                        />
+                                        <i class="fa fa-long-arrow-right mx-2"
+                                           aria-label="Arrow icon" title="To"/>
+                                        <field name="period_finish" widget="daterange"
+                                               class="oe_inline"
+                                               options="{'related_start_date': 'period_start'}"
+                                               nolable="1"
+                                        />
+                                    </div>
+                                </group>
+                                <notebook>
+                                    <page string="Сравнение с фактическими данными">
+                                        <field
+                                                name="ozon_report_products_revenue_expenses_ids">
+                                            <tree create="0">
+                                                <field name="identifier"/>
+                                                <field name="name"/>
+                                                <field name="comment" optional="hide"/>
+                                                <field name="qty"
+                                                       decoration-warning="accuracy=='c'"/>
+                                                <field name="percent"
+                                                       decoration-warning="accuracy=='c'"/>
+                                                <field name="value" sum="1"
+                                                       decoration-warning="accuracy=='c'"/>
+                                                <field name="percent_from_total_category"
+                                                       decoration-warning="accuracy=='c'"/>
+                                                <field name="total_value_category" sum="1"
+                                                       decoration-warning="accuracy=='c'"/>
+                                                <field name="percent_from_total"/>
+                                                <field name="total_value" sum="1"/>
+                                                <field name="accuracy" invisible="1"/>
+                                            </tree>
+                                        </field>
+                                    </page>
+                                </notebook>
+                                <field name="is_promotion_data_correct" invisible="1"/>
+                                <div class="o_row"
+                                     attrs="{'invisible': [('is_promotion_data_correct', '=', True)]}">
+                                    <p>
+                                        *Данные Расходов на продвижение продуктов за период
+                                        могут быть не точны.
+
+                                        Не найдены импорты Отчётов о рекламной кампании
+                                        (продвижение в поиске)
+                                        покрывающие весь искомый период.
+
+                                        Пожалуйста, загрузите недостающие отчеты за период.
+                                    </p>
+                                </div>
+                                <notebook>
+                                    <page string="Сравнение с теоретическими данными">
+                                        <field
+                                                name="ozon_report_products_revenue_expenses_theory_ids">
+                                            <tree create="0">
+                                                <field name="identifier"/>
+                                                <field name="name"/>
+                                                <field name="comment" optional="hide"/>
+                                                <field name="qty"/>
+                                                <field name="percent"/>
+                                                <field name="value" sum="1"/>
+                                                <field name="percent_from_total_category"/>
+                                                <field name="total_value_category" sum="1"/>
+                                                <field name="theoretical_value"
+                                                       string="Значение с Ozon"/>
+                                            </tree>
+                                        </field>
+                                    </page>
+                                </notebook>
                             </group>
                         </page>
-
-                        <page string="Аналитические данные">
-                            <group string="Разница между нашей ценой и ценой для покупателя"
-                                attrs="{'invisible': [('is_price_difference_computed', '=', False)]}"
-                            >
-                                <field name="category_total_price" readonly="1" />
-                                <field name="category_total_marketing_price" readonly="1" />
-                                <field name="price_difference" readonly="1" widget="percentage" />
-                                <field name="is_price_difference_computed" invisible="1" />
-                            </group>
-                            <separator string="Графические данные"/>
+                        <page string="Графики">
                             <group>
-                            <group>
-                                <field name="img_sale_this_year" widget="image" readonly="0"/>
+                                <group>
+                                    <field name="img_sale_this_year" widget="image" readonly="0"/>
 
-                                <field name="img_data_sale_this_year" invisible="1" />
-                                <field name="img_data_sale_last_year" invisible="1" />
-                                <field name="img_data_analysis_data_this_year" invisible="1"/>
+                                    <field name="img_data_sale_this_year" invisible="1"/>
+                                    <field name="img_data_sale_last_year" invisible="1"/>
+                                    <field name="img_data_analysis_data_this_year" invisible="1"/>
 
-                                <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_data_sale_this_year"
-                                        attrs="{'invisible': [('img_data_sale_this_year', '=', False)]}"
-                                />
-                            </group>
+                                    <button string="Скачать данные"
+                                            type="object"
+                                            class="oe_highlight"
+                                            icon="fa-download"
+                                            name="download_data_sale_this_year"
+                                            attrs="{'invisible': [('img_data_sale_this_year', '=', False)]}"
+                                    />
+                                </group>
 
-                            <group>
-                                <field name="img_sale_last_year" widget="image" readonly="0"/>
-                                <button string="Скачать данные"
-                                        type="object"
-                                        class="oe_highlight"
-                                        icon="fa-download"
-                                        name="download_data_sale_last_year"
-                                        attrs="{'invisible': [('img_data_sale_last_year', '=', False)]}"
-                                />
-                            </group>
+                                <group>
+                                    <field name="img_sale_last_year" widget="image" readonly="0"/>
+                                    <button string="Скачать данные"
+                                            type="object"
+                                            class="oe_highlight"
+                                            icon="fa-download"
+                                            name="download_data_sale_last_year"
+                                            attrs="{'invisible': [('img_data_sale_last_year', '=', False)]}"
+                                    />
+                                </group>
                             </group>
 
                             <separator/>
@@ -76,8 +166,6 @@
 
                                 </group>
                             </group>
-
-
                         </page>
                     </notebook>
                 </form>
@@ -106,7 +194,7 @@
             <field name="model">ozon.categories</field>
             <field name="arch" type="xml">
                 <search>
-                    <field name="name_categories" />
+                    <field name="name_categories"/>
                 </search>
             </field>
         </record>
@@ -120,8 +208,8 @@
 
         <record model="ir.actions.server" id="action_draw_graphs_for_categores">
             <field name="name">Рассчитать "Аналитические данные"</field>
-            <field name="model_id" ref="model_ozon_categories" />
-            <field name="binding_model_id" ref="model_ozon_categories" />
+            <field name="model_id" ref="model_ozon_categories"/>
+            <field name="binding_model_id" ref="model_ozon_categories"/>
             <field name="state">code</field>
             <field name="code">
                 records.action_draw_graphs_by_categories()
@@ -130,8 +218,8 @@
 
         <record model="ir.actions.server" id="action_compute_average_prices_difference">
             <field name="name">Рассчитать среднее значение разницы наших цен и цен для покупателя</field>
-            <field name="model_id" ref="model_ozon_categories" />
-            <field name="binding_model_id" ref="model_ozon_categories" />
+            <field name="model_id" ref="model_ozon_categories"/>
+            <field name="binding_model_id" ref="model_ozon_categories"/>
             <field name="state">code</field>
             <field name="code">
                 records.action_compute_average_prices_difference()

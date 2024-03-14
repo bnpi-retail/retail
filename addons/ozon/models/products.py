@@ -376,7 +376,7 @@ class Product(models.Model):
         ('a', 'Звезда'), ('b', 'Дойная корова'), ('c', 'Проблема'), ('d', 'Собака'), ('e', 'Нет данных')
     ], default='e')
     bcg_group_is_computed = fields.Boolean()
-    # revenue returns promotion
+    # revenue and expenses
     ozon_report_products_revenue_expenses_ids = fields.One2many(
         'ozon.report.products_revenue_expenses',
         'ozon_products_id',
