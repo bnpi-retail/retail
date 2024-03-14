@@ -7,6 +7,7 @@ class OzonReportProductsRevenueExpenses(models.Model):
 
     identifier = fields.Integer(string="Идентификатор")
     ozon_products_id = fields.Many2one("ozon.products", string="Товар Ozon")
+    ozon_categories_id = fields.Many2one("ozon.categories", string="Категория Ozon")
     name = fields.Char(string="Название")
     comment = fields.Text(string="Комментарий", readonly=True)
     value = fields.Float(string="Значение для товара")
@@ -25,6 +26,7 @@ class OzonReportProductsRevenueExpensesTheory(models.Model):
 
     identifier = fields.Integer(string="Идентификатор")
     ozon_products_id = fields.Many2one("ozon.products", string="Товар Ozon")
+    ozon_categories_id = fields.Many2one("ozon.categories", string="Категория Ozon")
     name = fields.Char(string="Название")
     comment = fields.Text(string="Комментарий", readonly=True)
     value = fields.Float(string="Значение для товара")
