@@ -32,7 +32,7 @@
                             <separator string="Графические данные"/>
                             <group>
                             <group>
-                                <field name="img_sale_this_year" widget="image" readonly="1"/>
+                                <field name="img_sale_this_year" widget="image" readonly="0"/>
 
                                 <field name="img_data_sale_this_year" invisible="1" />
                                 <field name="img_data_sale_last_year" invisible="1" />
@@ -48,7 +48,7 @@
                             </group>
 
                             <group>
-                                <field name="img_sale_last_year" widget="image" readonly="1"/>
+                                <field name="img_sale_last_year" widget="image" readonly="0"/>
                                 <button string="Скачать данные"
                                         type="object"
                                         class="oe_highlight"
@@ -63,7 +63,7 @@
 
                             <group>
                                 <group>
-                                    <field name="img_analysis_data_this_year" widget="image" readonly="1"/>
+                                    <field name="img_analysis_data_this_year" widget="image" readonly="0"/>
                                     <button string="Скачать данные"
                                             type="object"
                                             class="oe_highlight"
