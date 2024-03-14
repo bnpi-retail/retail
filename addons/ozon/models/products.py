@@ -392,10 +392,10 @@ class Product(models.Model):
     ])
     avg_value_to_use = fields.Selection(
         [
-            ('all_products', 'Использовать средние значения по магазину'),
-            ('current_product', 'Использовать средние значения по товару'),
+            ('input', 'Использовать значения, введённые вручную'),
+            ('report', 'Использовать значения из отчёта о выплатах'),
         ],
-        default='all_products',
+        default='input',
         string="Значения для расчета фактических статей затрат",
     )
     is_promotion_data_correct = fields.Boolean()
@@ -2803,13 +2803,7 @@ class ProductAllExpensesCalculation(models.Model):
 
     @property
     def _expenses_to_use_from_input(self):
-        data = []
-        if self.ozon_reward != 0:
-            data.append("ozon_reward")
-        if self.acquiring != 0:
-            data.append("acquiring")
-        if self.promo != 0:
-            data.append("promo")
-        if self.return_logistics != 0:
-            data.append("return_logistics")
-        return data
+        if self.avg_value_to_use == "input":
+            return ["ozon_reward", "acquiring", "promo", "return_logistics"]
+        else:
+            return []

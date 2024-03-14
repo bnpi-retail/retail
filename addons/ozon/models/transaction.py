@@ -90,7 +90,7 @@ class TransactionUnit(models.Model):
     _name = "ozon.transaction_unit"
     _description = "Составляющая транзакции"
 
-    transaction_id = fields.Many2one("ozon.transaction", string="Транзакция")
+    transaction_id = fields.Many2one("ozon.transaction", string="Транзакция", ondelete="cascade")
     transaction_date = fields.Date(related="transaction_id.transaction_date", store=True)
     transaction_name = fields.Char(related="transaction_id.name", store=True)
     transaction_type = fields.Char(related="transaction_id.transaction_type", store=True)
@@ -194,6 +194,25 @@ class TransactionUnitSummary(models.Model):
              "percent": i["value"] / rev if i["name"] not in ["Сумма за заказы", "Итого за заказы"] else 0, 
              report_type: report.id}
              for i in grouped_tran_units]
+        return data
+    
+    def collect_data_from_decomposed_transactions(self, date_from, date_to):
+        """Report types: 'indirect_percent_expenses_id'."""
+        domain = [("transaction_date", ">=", date_from), ("transaction_date", "<=", date_to)]
+        grouped_decomposed_transactions = self.env["ozon.transaction.value_by_product"].read_group(
+            domain=domain, 
+            fields=["name", "value"],
+            groupby=["name"])
+        rev = [i for i in grouped_decomposed_transactions if i["name"] == "Сумма за заказы"][0]["value"]
+        data = [
+            {
+                "name": i["name"], 
+                "count": i["name_count"], 
+                "value": i["value"],
+                "percent": i["value"] / rev if i["name"] not in [
+                    "Сумма за заказы", "Итого за заказы"] else 0
+             }
+             for i in grouped_decomposed_transactions]
         return data
 
 

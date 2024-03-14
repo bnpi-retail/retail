@@ -514,8 +514,9 @@
                                             </page>
                                         </notebook>
                                     </group>
-                                    <group col="4"
-                                        string="Значения для расчета фактических статей затрат">
+                                    <group
+                                        col="4"
+                                        string="Ручной ввод значений для расчета фактических статей затрат">
                                         <group>
                                             <field name="promo" widget="percentage" />
                                         </group>
@@ -528,10 +529,11 @@
                                         <group>
                                             <field name="acquiring" widget="percentage" />
                                         </group>
-                                        <!-- <field name="avg_value_to_use" class="oe_inline" /> -->
+                                    </group>
+                                    <group>
+                                        <field name="avg_value_to_use" />
                                     </group>
                                 </page>
-
                                 <page id="page_analysis_data_plots" string="Графики">
                                     <group>
                                         <group>

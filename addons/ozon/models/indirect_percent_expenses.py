@@ -163,28 +163,18 @@ class IndirectPercentExpenses(models.Model):
     @api.model
     def create(self, values):
         data, transaction_units_data = self.collect_data(values["date_from"], values["date_to"])
-        tran_units = self.env["ozon.transaction_unit"].create(transaction_units_data)
+        # tran_units = self.env["ozon.transaction_unit"].create(transaction_units_data)
         values.update(data)
         rec = super(IndirectPercentExpenses, self).create(values)
-        tran_units.indirect_percent_expenses_id = rec.id
+        # tran_units.indirect_percent_expenses_id = rec.id
         tran_unit_sum_model = self.env['ozon.tran_unit_sum']
-        tran_unit_sum_data = tran_unit_sum_model.collect_data_from_transaction_units(
-            report=rec, report_type="indirect_percent_expenses_id")
-        tran_unit_sum_model.create(tran_unit_sum_data)
+        tran_unit_sum_data = tran_unit_sum_model.collect_data_from_decomposed_transactions(
+            values["date_from"], values["date_to"])
+        tran_unit_sum_recs = tran_unit_sum_model.create(tran_unit_sum_data)
+        tran_unit_sum_recs.write({"indirect_percent_expenses_id": rec.id})
         return rec
     
-    def write(self, values):
-        date_from = values.get("date_from", self.date_from)
-        date_to = values.get("date_to", self.date_to)
-        data, transaction_units_data = self.collect_data(date_from, date_to)
-        values.update(data)
-        record = super(IndirectPercentExpenses, self).write(values)
-        return record
-    
     def name_get(self):
-        """
-        Rename records
-        """
         result = []
         for record in self:
             result.append((record.id, f"С {record.date_from} по {record.date_to}"))
@@ -197,5 +187,16 @@ class IndirectPercentExpenses(models.Model):
             "view_mode": "tree,form",
             "res_model": "ozon.transaction_unit",
             "domain": [("indirect_percent_expenses_id", "=", self.id)],
+            "context": {"create": False},
+        }
+
+    def open_decomposed_transactions_view(self):
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Декомпозированные транзакции",
+            "view_mode": "tree,form",
+            "res_model": "ozon.transaction.value_by_product",
+            "domain": [("transaction_date", ">=", self.date_from), 
+                       ("transaction_date", "<=", self.date_to)],
             "context": {"create": False},
         }

@@ -301,58 +301,6 @@ class InvestmentExpensesWizard(models.TransientModel):
         products.write({"investment_expenses_id": self.investment_expenses_id})
 
 
-# ALL_EXPENSES_NAMES_IDENTIFIERS = {
-#     'Себестоимость товара': 1,
-#     'логистика': 2,
-#     'Логистика': 2,
-#     'Агентское вознаграждение за доставку Партнерами Ozon на схеме realFBS': 2, 
-#     'Услуги доставки Партнерами Ozon на схеме realFBS': 2, 
-#     'Услуги продвижения товаров': 2,
-#     'Реклама': 2,
-#     'Получение возврата, отмены, невыкупа от покупателя': 3, 
-#     'Доставка и обработка возврата, отмены, невыкупа': 4, 
-#     'Обработка отправления «Pick-up» (отгрузка курьеру)': 5, 
-#     'Услуга продвижения Бонусы продавца': 8, 
-#     'Приобретение отзывов на платформе': 9, 
-#     'Подписка Premium Plus': 10, 
-#     'Услуга за обработку операционных ошибок продавца: отмена': 11, 
-#     'Услуга за обработку операционных ошибок продавца: просроченная отгрузка': 12, 
-#     'Обработка товара в составе грузоместа на FBO': 13, 
-#     'Обработка сроков годности на FBO': 14, 
-#     'Утилизация': 15, 
-#     'Услуга по бронированию места и персонала для поставки с неполным составом': 16, 
-#     'Прочее': 17,
-#     'Последняя миля (FBO)': 21,
-#     'Магистраль до (FBO)': 22,
-#     'Комиссия за сборку заказа (FBO)': 23,
-#     'Последняя миля (FBS)': 24,
-#     'Магистраль до (FBS)': 25,
-#     'Максимальная комиссия за обработку отправления (FBS) — 25 рублей': 26,
-#     'Максимальная комиссия за эквайринг': 27,
-#     'Налог': 28,
-#     'Доходность': 29,
-#     'Investment': 30,
-#     'Обработка и хранение (компания)': 31,
-#     'Упаковка (компания)': 32,
-#     'Маркетинг (компания)': 33,
-#     'Операторы (компания)': 34,
-#     'MarketplaceServiceItemRedistributionReturnsPVZ': 35,
-#     'Комиссия за продажу или возврат комиссии за продажу': 36,
-#     'Вознаграждение Ozon': 36,
-#     'Процент комиссии за продажу (FBS)': 36,
-#     'Процент комиссии за продажу (FBO)': 36,
-#     'Процент комиссии за продажу (rFBS)': 36,
-#     'Оплата эквайринга': 37,
-#     'Эквайринг': 37,
-#     'Услуга размещения товаров на складе': 38,
-#     'обработка невыкупа': 40,
-#     'обработка отмен': 41,
-#     'обработка отправления': 42,
-#     'обратная логистика': 43,
-#     'Обратная логистика': 43,
-#     'последняя миля': 44,
-# }
-
 ALL_EXPENSES_NAMES_IDENTIFIERS = {
     "Себестоимость": 1,
     "Логистика": 2,
@@ -392,8 +340,6 @@ class AllExpenses(models.Model):
             r.identifier = ALL_EXPENSES_NAMES_IDENTIFIERS.get(r.category, 99)
 
     def _compute_comment(self):
-        for r in self:
-            r.comment = ""
         # exp = self.env["ozon.indirect_percent_expenses"].search(
         #     [],
         #     limit=1,
@@ -405,6 +351,7 @@ class AllExpenses(models.Model):
         # period = (f"{datetime.strftime(exp.date_from, '%d %b %Y')}" 
         #           f" - {datetime.strftime(exp.date_to, '%d %b %Y')}")
         for r in self:
+            avg_value_to_use = r.product_id.avg_value_to_use
             name = r.name
             val = round(r.value, 4)
             exp_val = round(r.expected_value, 2)
@@ -425,8 +372,11 @@ class AllExpenses(models.Model):
                     r.comment = ("Цена * процент налогообложения = текущий налог\n"
                                 f"{price} * {tax_percent} = {val}\n")
             else:
-                r.comment = ("""Данные из "Отчёта о выплатах".\n"""
-                             "Рассчитывается как цена, умноженная на процент фактической статьи затрат.\n"
+                if avg_value_to_use == "input" and r.identifier in [4,5,6,8]:
+                    prefix = "Данные, введённые пользователем вручную\n"
+                else:
+                    prefix = "Данные из отчёта о выплатах\n"
+                r.comment = prefix + ("Рассчитывается как цена, умноженная на процент фактической статьи затрат.\n"
                              "Цена * Фактическая статья(процент от выручки) = Значение\n"
                              f"{price} * {per}% = {val}")
 
@@ -617,6 +567,9 @@ class AllExpenses(models.Model):
             #     + acquiring.price
             # )
             ### расходы компании
+            # for i in prod.base_calculation_ids:
+            #     print(i.price_component_id.identifier)
+            # raise
             base_calc_company_expenses = prod.base_calculation_ids.filtered(
                 lambda r: r.price_component_id.identifier.startswith("company_"))
             for i in base_calc_company_expenses:

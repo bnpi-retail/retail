@@ -9,7 +9,7 @@
                 <form>
                     <div name="button_box" position="inside">
                         <button string="Подробнее" class="oe_stat_button" type="object"
-                            name="open_transaction_unit_view" />
+                            name="open_decomposed_transactions_view" />
                     </div>
                     <group style="margin-top: 20px; margin-bottom: 20px;">
                         <field name="timestamp" style="margin-bottom: 20px;" />
