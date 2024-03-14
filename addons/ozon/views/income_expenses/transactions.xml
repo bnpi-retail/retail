@@ -46,7 +46,7 @@
                             <tree>
                                 <field name="name" />
                                 <field name="ozon_products_id" />
-                                <field name="value" sum="1"/>
+                                <field name="value" sum="1" />
                             </tree>
                         </field>
                     </group>
@@ -101,6 +101,16 @@
             </field>
         </record>
 
+        <record id="view_transaction_value_by_product_search" model="ir.ui.view">
+            <field name="name">Транзакции с разбитием на услуги по продукту</field>
+            <field name="model">ozon.transaction.value_by_product</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="article" />
+                </search>
+            </field>
+        </record>
+
         <!-- Action -->
         <record model="ir.actions.act_window" id="action_transaction">
             <field name="name">Транзакции Ozon</field>
@@ -111,7 +121,7 @@
         <record model="ir.actions.act_window" id="action_transaction_value_by_product">
             <field name="name">Транзакции декомпозированые на услуги по продукту</field>
             <field name="res_model">ozon.transaction.value_by_product</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">tree,form,search</field>
         </record>
 
     </data>

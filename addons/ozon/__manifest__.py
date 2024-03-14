@@ -114,6 +114,11 @@
         # cron
         "crone/ir_cron_data.xml",
     ],
+    "assets": {
+        "web.assets_backend": {
+                "ozon/static/src/css/price_comparison.css",
+            }
+        },
     "demo": [
         "demo/demo.xml",
     ],

@@ -214,6 +214,7 @@ class TransactionValueByProduct(models.Model):
         string="Товар",
         readonly=True,
     )
+    article = fields.Char(string="Артикул", related="ozon_products_id.article", store=True)
 
     @api.depends("name")
     def _compute_category(self):
