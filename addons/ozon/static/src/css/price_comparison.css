@@ -3,15 +3,15 @@
 }
 
 .ozon_price_comparison_tree_view [data-name="string_plan_value"] {
-    width: 7%;
+    width: 11%;
 }
 
 .ozon_price_comparison_tree_view [data-name="string_market_value"] {
-    width: 7%;
+    width: 11%;
 }
 
 .ozon_price_comparison_tree_view [data-name="string_fact_value"] {
-    width: 7%;
+    width: 11%;
 }
 
 .ozon_price_comparison_tree_view [data-name="diff_fact_market"] {
@@ -20,8 +20,9 @@
 
 .ozon_price_comparison_tree_view [data-name="diff_plan_fact"] {
     width: 11%;
+    text-wrap: wrap;
 }
 
 .ozon_price_comparison_tree_view [data-name="string_calc_value"] {
-    width: 7%;
+    width: 11%;
 }
