@@ -70,6 +70,7 @@
         "views/plan/price_component_match.xml",
         "views/plan/base_calculation.xml",
         "views/plan/draft_product.xml",
+        "views/plan/mass_calculator.xml",
         "views/reports/indirect_percent_expenses.xml",
         "views/reports/sales_report_by_category.xml",
         "views/reports/realisation_report.xml",
@@ -105,6 +106,7 @@
         "views/import/import.xml",
         "views/import/mass_data_import_views.xml",
         "views/import/mass_data_import_log_views.xml",
+        "views/import/imported_report.xml",
         "views/chat_gpt/lots_for_gpt.xml",
         "views/products/wizards.xml",
         "views/products/products.xml",
@@ -112,6 +114,11 @@
         # cron
         "crone/ir_cron_data.xml",
     ],
+    "assets": {
+        "web.assets_backend": {
+                "ozon/static/src/css/price_comparison.css",
+            }
+        },
     "demo": [
         "demo/demo.xml",
     ],

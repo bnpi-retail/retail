@@ -8,7 +8,7 @@ class ProductCompetitors(models.Model):
     _description = "Товары конкуренты"
 
     id_product = fields.Char(string="Id товара на Ozon")
-    article = fields.Char(string="Артикул")
+    article = fields.Char(string="Наш артикул")
     name = fields.Char(string="Наименование товара")
     competitor_seller_id = fields.Many2one("ozon.competitor_seller", string="Продавец")
     ozon_products_competitors_sale_ids = fields.One2many('ozon.products_competitors.sale', 'ozon_products_competitors_id')

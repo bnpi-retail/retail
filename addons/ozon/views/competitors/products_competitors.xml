@@ -19,9 +19,9 @@
                             <group>
                                 <field name="competitor_seller_id" />
                                 <field name="id_product" />
-                                <field name="article" />
                                 <field name="name" />
                                 <field name="product" />
+                                <field name="article" />
                                 <field name="url" widget="url" readonly="1" />
                                 <field name="market_share" readonly="1"
                                     attrs="{'invisible': [('market_share_is_computed', '=', False)]}"
@@ -40,7 +40,7 @@
                         <page id="page_graph_history" string="Аналитические данные">
                             <group>
                                 <field name="imgs_graph_this_year"
-                                       readonly="1" widget="image"
+                                    readonly="1" widget="image"
                                 />
                                 <field name="imgs_data_graph_this_year" invisible="1" />
                             </group>

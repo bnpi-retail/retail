@@ -6,3 +6,4 @@ access_ozon_base_calculation,Access Ozon Base Calculation,model_ozon_base_calcul
 access_ozon_base_calculation_wizard,Access Ozon Base Calculation Wizard,model_ozon_base_calculation_wizard,base.group_user,1,1,1,1
 access_ozon_base_calculation_template,Access Ozon Base Calculation Template,model_ozon_base_calculation_template,base.group_user,1,1,1,1
 access_ozon_logistics_tariff,Access Ozon Logistics Tariff,model_ozon_logistics_tariff,base.group_user,1,1,1,1
+access_ozon_mass_calculator,Access Ozon Mass Calculator,model_ozon_mass_calculator,base.group_user,1,1,1,1

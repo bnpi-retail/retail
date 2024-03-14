@@ -719,3 +719,7 @@ class PromotionExpenses(models.Model):
     percent_rate = fields.Float(string="Ставка, %", readonly=True)
     abs_rate = fields.Float(string="Ставка, ₽", readonly=True)
     expense = fields.Float(string="Расход, ₽", readonly=True)
+
+    imported_report_id = fields.Many2one("ozon.imported_report", 
+                                         string="Импортированный отчёт по рекламной кампании",
+                                         readonly=True)

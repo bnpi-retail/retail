@@ -7,6 +7,7 @@
             <field name="arch" type="xml">
                 <form>
                     <group>
+                        <field name="imported_report_id" />
                         <field name="ad_campaign" />
                         <field name="date" />
                         <field name="promotion_type" />
