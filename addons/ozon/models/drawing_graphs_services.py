@@ -17,6 +17,19 @@ from matplotlib.ticker import FuncFormatter
 logger = logging.getLogger(__name__)
 
 
+def round_step(step) -> int:
+    bases = [10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000, 100000000000]
+    nearest_base = bases[0]
+    min_difference = abs(step - bases[0])
+    for base in bases[1:]:
+        difference = abs(step - base)
+        if difference < min_difference:
+            min_difference = difference
+            nearest_base = base
+
+    return round(step / nearest_base) * nearest_base
+
+
 class GroupData:
     @staticmethod
     def __create_dataframe(data: dict) -> pd.DataFrame:
@@ -610,14 +623,22 @@ class DrawGraphCategoriesInterest(DataFunction):
         ax1.plot(data_views["dates"], data_views["values"], marker='o', label="График показа товаров")
         ax1.set_ylabel('Показы, кол.')
         ax1.tick_params('y')
-        ax1.set_yticks(range(0, max(data_views["values"]) + 1, 10))
+
+        max_val = max(data_views["values"])
+        step = max_val // 10
+        rounded_step = round_step(step)
+        ax1.set_yticks(range(0, max_val + rounded_step, rounded_step))
 
         ax2 = ax1.twinx()
         ax2.plot(data_tocart["dates"], data_tocart["values"], marker='o', label="График добавления в корзину",
                  color='orange')
         ax2.set_ylabel('Добавление в корзину, кол')
         ax2.tick_params('y')
-        ax2.set_yticks(range(0, max(data_tocart["values"]) + 1, 10))
+
+        max_val = max(data_tocart["values"])
+        step = max_val // 10
+        rounded_step = round_step(step)
+        ax2.set_yticks(range(0, max_val + rounded_step, rounded_step))
 
         plt.title("График интереса за текущий год")
 

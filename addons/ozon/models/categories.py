@@ -1,6 +1,7 @@
 import logging
+from collections import defaultdict
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from odoo import models, fields, api
 from .drawing_graphs import DrawGraph as df
 
@@ -128,14 +129,15 @@ class GraphInterest(models.Model):
 class ActionGraphs(models.Model):
     _inherit = "ozon.categories"
 
-    def action_draw_graphs_by_categories(self):
+    def action_draw_graphs_by_categories(self, auto=None):
         logger.info('draw_sale_this_year')
         self.draw_sale_this_year()
         logger.info('draw_sale_last_year')
         self.draw_sale_last_year()
         logger.info('draw_graph_interest')
         self.draw_graph_interest()
-        self.draw_graphs_products(self.ozon_products_ids)
+        logger.info('draw_graphs_products')
+        self.draw_graphs_products(self.ozon_products_ids, auto)
 
         return True
 
@@ -228,45 +230,41 @@ class ActionGraphs(models.Model):
     def draw_graph_interest(self):
         year = self._get_year()
 
-        data_for_send = {}
+        data_for_send = defaultdict(lambda: {
+            "hits_view": 0,
+            "hits_tocart": 0,
+        })
 
         categorie_record = self[0]
 
-        products_records = self.env["ozon.products"].search(
+        products_ids = self.ozon_products_ids.ids
+
+        analysis_data_records = self.env["ozon.analysis_data"].search(
             [
-                ("categories", "=", categorie_record.id),
-                # ("is_alive", "=", True),
-                # ("is_selling", "=", True),
+                ("product", "in", products_ids),
+                ("date", ">=", f"{year}-01-01"),
+                ("date", "<=", f"{year}-12-31"),
             ]
         )
 
-        for product_record in products_records:
-            analysis_data_records = self.env["ozon.analysis_data"].search(
-                [
-                    ("product", "=", product_record.id),
-                    ("date", ">=", f"{year}-01-01"),
-                    ("date", "<=", f"{year}-12-31"),
-                ]
-            )
+        graph_data = {"dates": [], "hits_view": [], "hits_tocart": []}
 
-            if not analysis_data_records:
-                continue
+        for analysis_data_record in analysis_data_records:
+            average_date = analysis_data_record.date
+            data_for_send[average_date.strftime("%Y-%m-%d")]["hits_view"] += analysis_data_record.hits_view
+            data_for_send[average_date.strftime("%Y-%m-%d")]["hits_tocart"] += analysis_data_record.hits_tocart
 
-            graph_data = {"dates": [], "hits_view": [], "hits_tocart": []}
+        for date, vals in data_for_send.items():
+            graph_data['dates'].append(date)
+            graph_data['hits_view'].append(vals['hits_view'])
+            graph_data['hits_tocart'].append(vals['hits_tocart'])
 
-            for analysis_data_record in analysis_data_records:
-                average_date = analysis_data_record.date
-
-                graph_data["dates"].append(average_date.strftime("%Y-%m-%d"))
-                graph_data["hits_view"].append(analysis_data_record.hits_view)
-                graph_data["hits_tocart"].append(analysis_data_record.hits_tocart)
-
-            data_for_send[product_record.id] = graph_data
+        data_ = {1: graph_data}
 
         payload = {
             "model": "categorie_analysis_data",
             "categorie_id": categorie_record.id,
-            "data": data_for_send,
+            "data": data_,
         }
 
         logger.info("draw_graph_interest: df().post(payload)")
@@ -278,13 +276,18 @@ class ActionGraphs(models.Model):
             "hits_tocart": data_tocart,
         }
 
-        return products_records
-
-    def draw_graphs_products(self, products_records):
+    def draw_graphs_products(self, products_records, auto):
         logger.info(f"All records: {len(products_records)}")
 
         for index, product_record in enumerate(products_records):
+            if auto:
+                last_plots_update = product_record.last_plots_update
+                logger.info(last_plots_update)
+                if last_plots_update and last_plots_update + timedelta(hours=12) > datetime.now():
+                    continue
             product_record.action_draw_graphs()
+            product_record.last_plots_update = datetime.now()
+
             logger.info(index + 1)
 
     def _get_year(self) -> str:

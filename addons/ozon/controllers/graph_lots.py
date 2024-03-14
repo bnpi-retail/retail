@@ -18,7 +18,7 @@ class ImportImagesSale(http.Controller):
         count = 0
         for cat in categories:
             logger.info(f"run_draw_graphs: {cat.name_categories} + category products")
-            cat.action_draw_graphs_by_categories()
+            cat.action_draw_graphs_by_categories(auto=True)
             count += 1
 
         logger.info(f"run_draw_graphs complete: all- {len(categories)}, done- {count}")

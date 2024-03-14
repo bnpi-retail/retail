@@ -410,6 +410,8 @@ class Product(models.Model):
                                                    string="Шаблон планового расчёта")
     logistics_tariff_id = fields.Many2one("ozon.logistics_tariff", 
                                           string="Тариф логистики в плановом расчёте")
+
+    last_plots_update = fields.Datetime()
    
 
     @api.onchange('period_preset')
