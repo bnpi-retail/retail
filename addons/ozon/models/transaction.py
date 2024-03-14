@@ -195,6 +195,25 @@ class TransactionUnitSummary(models.Model):
              report_type: report.id}
              for i in grouped_tran_units]
         return data
+    
+    def collect_data_from_decomposed_transactions(self, date_from, date_to):
+        """Report types: 'indirect_percent_expenses_id'."""
+        domain = [("transaction_date", ">=", date_from), ("transaction_date", "<=", date_to)]
+        grouped_decomposed_transactions = self.env["ozon.transaction.value_by_product"].read_group(
+            domain=domain, 
+            fields=["name", "value"],
+            groupby=["name"])
+        rev = [i for i in grouped_decomposed_transactions if i["name"] == "Сумма за заказы"][0]["value"]
+        data = [
+            {
+                "name": i["name"], 
+                "count": i["name_count"], 
+                "value": i["value"],
+                "percent": i["value"] / rev if i["name"] not in [
+                    "Сумма за заказы", "Итого за заказы"] else 0
+             }
+             for i in grouped_decomposed_transactions]
+        return data
 
 
 class TransactionValueByProduct(models.Model):
