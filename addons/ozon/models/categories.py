@@ -3,7 +3,10 @@ from collections import defaultdict
 
 from datetime import datetime, timedelta, date
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 from .drawing_graphs import DrawGraph as df
+from ..helpers import delete_records
+from typing import Iterable
 
 logger = logging.getLogger(__name__)
 
