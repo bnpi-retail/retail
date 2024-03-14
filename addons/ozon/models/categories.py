@@ -269,6 +269,7 @@ class ActionGraphs(models.Model):
             "data": data_for_send,
         }
 
+        logger.info("draw_graph_interest: df().post(payload)")
         bytes_plot, data_views, data_tocart = df().post(payload)
 
         self.img_analysis_data_this_year = bytes_plot
