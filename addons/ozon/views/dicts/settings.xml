@@ -9,7 +9,7 @@
                 <form>
                     <group string="Продажа товара">
                         <field name="name" />
-                        <field name="value" />
+                        <field name="value" password="True" />
                     </group>
                 </form>
             </field>
