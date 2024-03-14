@@ -4,3 +4,4 @@ matplotlib==3.8.2
 sentry-sdk==1.41.0
 pandas==2.2.0
 python-calamine==0.2.0
+pyarrow==15.0.1
