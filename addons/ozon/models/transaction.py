@@ -90,7 +90,7 @@ class TransactionUnit(models.Model):
     _name = "ozon.transaction_unit"
     _description = "Составляющая транзакции"
 
-    transaction_id = fields.Many2one("ozon.transaction", string="Транзакция")
+    transaction_id = fields.Many2one("ozon.transaction", string="Транзакция", ondelete="cascade")
     transaction_date = fields.Date(related="transaction_id.transaction_date", store=True)
     transaction_name = fields.Char(related="transaction_id.name", store=True)
     transaction_type = fields.Char(related="transaction_id.transaction_type", store=True)
