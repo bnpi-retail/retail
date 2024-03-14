@@ -617,6 +617,9 @@ class AllExpenses(models.Model):
             #     + acquiring.price
             # )
             ### расходы компании
+            # for i in prod.base_calculation_ids:
+            #     print(i.price_component_id.identifier)
+            # raise
             base_calc_company_expenses = prod.base_calculation_ids.filtered(
                 lambda r: r.price_component_id.identifier.startswith("company_"))
             for i in base_calc_company_expenses:
