@@ -33,7 +33,12 @@ class ImportImagesSale(http.Controller):
     )
     def run_draw_graphs_competitors_products(self, **kwargs):
         products_competitors = http.request.env["ozon.products_competitors"].search([])
+        count = 0
         for prod in products_competitors:
             prod.draw_plot()
+            count += 1
+
+        logger.info(f"run_draw_graphs_competitors_products complete: "
+                    f"all- {len(products_competitors)}, done- {count}")
 
         return "Graphs drawing processed successfully."

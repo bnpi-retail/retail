@@ -137,6 +137,7 @@ class ActionGraphs(models.Model):
         logger.info('draw_graph_interest')
         self.draw_graph_interest()
         logger.info('draw_graphs_products')
+
         self.draw_graphs_products(self.ozon_products_ids, auto)
 
         return True
