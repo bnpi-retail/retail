@@ -562,6 +562,7 @@ class DrawGraphCategoriesLastYear(DataFunction):
 
 class DrawGraphCategoriesInterest(DataFunction):
     def draw_graph(self, data: dict, model, categorie_id) -> tuple:
+        logger.info("draw_graph: start")
         dates_all = []
         hits_view_all = []
         hits_tocart_all = []
@@ -581,6 +582,8 @@ class DrawGraphCategoriesInterest(DataFunction):
         self.data_sorted(data_views)
         self.data_group(data_views, sum_group=True)
 
+        logger.info("draw_graph: data_views processed")
+
         data_tocart = {
             "dates": dates_all,
             "values": hits_tocart_all,
@@ -590,10 +593,14 @@ class DrawGraphCategoriesInterest(DataFunction):
         self.data_sorted(data_tocart)
         self.data_group(data_tocart, sum_group=True)
 
+        logger.info("draw_graph: data_tocart processed")
+
         bytes_plot = self.create_graph(data_views, data_tocart)
 
         data_views['dates'] = data_views['dates'].strftime('%Y-%m-%d').tolist()
         data_tocart['dates'] = data_tocart['dates'].strftime('%Y-%m-%d').tolist()
+
+        logger.info("draw_graph: return data")
 
         return bytes_plot, data_views, data_tocart
 
