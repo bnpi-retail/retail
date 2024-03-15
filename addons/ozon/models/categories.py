@@ -59,6 +59,21 @@ class Categories(models.Model):
     promo = fields.Float(string="Расходы на продвижение (процент)")
     return_logistics = fields.Float(string="Обратная логистика (процент)")
 
+    ozon_name_value_ids = fields.One2many("ozon.name_value", "ozon_categories_id")
+
+    @api.onchange('avg_value_to_use')
+    def _onchange_avg_value_to_use(self):
+        indirect_percent_expenses = self.env["ozon.indirect_percent_expenses"].search(
+            [], order="create_date desc", limit=1)
+        if self.avg_value_to_use == 'all_products':
+            if indirect_percent_expenses:
+                for record in indirect_percent_expenses.transaction_unit_summary_ids:
+                    if record.name == "Вознаграждение за продажу":
+                        self.ozon_reward == abs(record.percent)
+                    # elif record.name == "Вознаграждение за продажу":
+
+
+
     @api.onchange('period_preset')
     def _onchange_period_preset(self):
         preset = self.period_preset
