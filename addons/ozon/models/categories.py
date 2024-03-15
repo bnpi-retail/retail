@@ -1,12 +1,11 @@
 import logging
-from collections import defaultdict
 
+from collections import defaultdict
 from datetime import datetime, timedelta, date
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 from .drawing_graphs import DrawGraph as df
 from ..helpers import delete_records
-from typing import Iterable
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +44,20 @@ class Categories(models.Model):
     period_preset = fields.Selection([
         ('month', '1 месяц'), ('2month', '2 месяца'), ('3month', '3 месяца')
     ])
+    avg_value_to_use = fields.Selection(
+        [
+            ('all_products', 'Использовать данные магазина из последнего отчета по выплатам'),
+            ('current_product', 'Использовать данные категории'),
+        ],
+        default='all_products',
+        string="Значения для расчета фактических статей затрат",
+    )
     is_promotion_data_correct = fields.Boolean()
+
+    ozon_reward = fields.Float(string="Вознаграждение Озон (процент)")
+    acquiring = fields.Float(string="Эквайринг (процент)")
+    promo = fields.Float(string="Расходы на продвижение (процент)")
+    return_logistics = fields.Float(string="Обратная логистика (процент)")
 
     @api.onchange('period_preset')
     def _onchange_period_preset(self):
