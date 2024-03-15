@@ -97,6 +97,8 @@ class Categories(models.Model):
                 "name": f"{display_name}", "value": value, "ozon_categories_id": self.id, "domain": 'a'
             })
 
+        ids = self.env["ozon.name_value"].create(vals_to_create).ids
+
         for name, value in template_state.items():
             if name is False:
                 display_name = "Шаблон не выбран"
@@ -105,8 +107,6 @@ class Categories(models.Model):
             self.env["ozon.name_value"].create({
                 "name": f"{display_name}", "value": value, "ozon_categories_id": self.id, "domain": 'b'
             })
-
-        ids = self.env["ozon.name_value"].create(vals_to_create).ids
 
         self.ozon_name_value_ids = ids
 

@@ -385,7 +385,7 @@ class Product(models.Model):
         'ozon.report.products_revenue_expenses_theory',
         'ozon_products_id',
     )
-    period_start = fields.Date(string="Период с", default=date.today() - timedelta(days=31))
+    period_start = fields.Date(string="Период с", compute="_compute_period")
     period_finish = fields.Date(string="по", default=date.today() - timedelta(days=1))
     period_preset = fields.Selection([
         ('month', '1 месяц'), ('2month', '2 месяца'), ('3month', '3 месяца')
@@ -431,9 +431,11 @@ class Product(models.Model):
         self.period_start = period_from
         self.period_finish = period_to
 
-    # @api.constrains('period_start', 'period_finish')
-    # def _onchange_period(self):
-    #     self.period_preset = False
+    def _compute_period(self):
+        report = self.env["ozon.indirect_percent_expenses"].get_latest()
+        if report:
+            self.period_start = report.date_from
+            self.period_finish = report.date_to
 
     def action_calculate_revenue_returns_promotion_for_period(self):
         delete_records(
