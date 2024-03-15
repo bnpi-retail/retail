@@ -765,40 +765,8 @@
             </field>
         </record>
 
-        <!-- Action to call profitability_norm wizard. This action calls wizard model form view -->
-        <record id="wizard_action_profitability_norm" model="ir.actions.act_window">
-            <field name="name">Назначить ожидаемую доходность</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="binding_model_id" ref="model_ozon_products" />
-            <field name="res_model">ozon.profitability_norm.wizard</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="wizard_view_profitability_norm_form" />
-            <field name="target">new</field>
-        </record>
-
-        <!-- Action to call investment_expenses wizard. This action calls wizard model form view -->
-        <record id="wizard_action_investment_expenses" model="ir.actions.act_window">
-            <field name="name">Назначить investment</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="binding_model_id" ref="model_ozon_products" />
-            <field name="res_model">ozon.investment_expenses.wizard</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="wizard_view_investment_expenses_form" />
-            <field name="target">new</field>
-        </record>
-
-        <record id="wizard_action_assign_strategies" model="ir.actions.act_window">
-            <field name="name">Назначить стратегии</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="binding_model_id" ref="model_ozon_products" />
-            <field name="res_model">ozon.products_mass_pricing.wizard</field>
-            <field name="view_mode">tree,form</field>
-            <field name="view_id" ref="products_mass_pricing_wizard_form" />
-            <field name="target">new</field>
-        </record>
-
         <record model="ir.actions.server" id="action_base_calculation_wizard">
-            <field name="name">Назначить плановый расчёт</field>
+            <field name="name">Назначить шаблон планового расчёта</field>
             <field name="model_id" ref="model_ozon_products" />
             <field name="binding_model_id" ref="model_ozon_products" />
             <field name="state">code</field>
