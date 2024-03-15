@@ -26,5 +26,24 @@
                 </form>
             </field>
         </record>
+
+
+        <record id="ozon_products_avg_value_to_use_assign_form" model="ir.ui.view">
+            <field name="name">Назначить значения для расчета фактических статей затрат</field>
+            <field name="model">ozon.products.avg_value_to_use.assign</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="avg_value_to_use" />
+                    </group>
+                    <footer>
+                        <button string="Отмена" class="btn-secondary" special="cancel" />
+                        <button name="assign_avg_value_to_use"
+                            string="Назначить" type="object"
+                            class="btn-primary" />
+                    </footer>
+                </form>
+            </field>
+        </record>
     </data>
 </odoo>

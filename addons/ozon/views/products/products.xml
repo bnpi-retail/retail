@@ -146,9 +146,6 @@
                                     <field name="price_comparison_ids">
                                         <tree class="ozon_price_comparison_tree_view">
                                             <field name="name" string="Плановая статья" />
-                                            <!-- <field name="plan_value" />
-                                            <field name="market_value" />
-                                            <field name="fact_value" /> -->
                                             <field name="string_plan_value" />
                                             <field name="string_market_value" />
                                             <field name="string_fact_value" />
@@ -532,7 +529,7 @@
                                     </group>
                                     <group
                                         col="4"
-                                        string="Значения из последнего отчёта о выплатах"
+                                        string="Значения по магазину из последнего отчёта о выплатах"
                                         attrs="{'invisible': [('avg_value_to_use', '!=', 'report')]}">
                                         <group>
                                             <field name="promo_from_report" widget="percentage" />
@@ -549,7 +546,26 @@
                                             <field name="acquiring_from_report" widget="percentage" />
                                         </group>
                                     </group>
-
+                                    <group
+                                        col="4"
+                                        string="Значения по категории"
+                                        attrs="{'invisible': [('avg_value_to_use', '!=', 'category')]}">
+                                        <group>
+                                            <field name="promo_from_category" widget="percentage" />
+                                        </group>
+                                        <group>
+                                            <field name="return_logistics_from_category"
+                                                widget="percentage" />
+                                        </group>
+                                        <group>
+                                            <field name="ozon_reward_from_category"
+                                                widget="percentage" />
+                                        </group>
+                                        <group>
+                                            <field name="acquiring_from_category"
+                                                widget="percentage" />
+                                        </group>
+                                    </group>
                                 </page>
                                 <page id="page_analysis_data_plots" string="Графики">
                                     <group>
@@ -787,6 +803,16 @@
             <field name="state">code</field>
             <field name="code">
                 action = records.open_base_calculation_wizard()
+            </field>
+        </record>
+
+        <record model="ir.actions.server" id="action_avg_value_to_use_assign">
+            <field name="name">Назначить значения для расчета фактических статей затрат</field>
+            <field name="model_id" ref="model_ozon_products" />
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="state">code</field>
+            <field name="code">
+                action = records.open_avg_value_to_use_assign_form()
             </field>
         </record>
 

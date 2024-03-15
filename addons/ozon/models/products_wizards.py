@@ -31,3 +31,22 @@ class ProductsMassPricingWizard(models.TransientModel):
         self.env["ozon.calculated_pricing_strategy"].create(data)
         for prod in products:
             prod.calculate_calculated_pricing_strategy_ids()
+
+
+class ProductsAvgValueToUseMassWizard(models.TransientModel):
+    _name = "ozon.products.avg_value_to_use.assign"
+    _description = "Wizard массового назначение avg_value_to_use"
+
+    avg_value_to_use = fields.Selection(
+        [
+            ('input', 'Использовать значения, введённые вручную'),
+            ('category', 'Использовать значения по категории'),
+            ('report', 'Использовать значения по магазину из последнего отчёта о выплатах'),
+        ],
+        default='input',
+        string="Значения для расчета фактических статей затрат",
+    )
+
+    def assign_avg_value_to_use(self):
+        products = self.env["ozon.products"].browse(self._context["active_ids"])
+        products.write({"avg_value_to_use": self.avg_value_to_use})

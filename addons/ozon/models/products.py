@@ -393,6 +393,7 @@ class Product(models.Model):
     avg_value_to_use = fields.Selection(
         [
             ('input', 'Использовать значения, введённые вручную'),
+            ('category', 'Использовать значения по категории'),
             ('report', 'Использовать значения по магазину из последнего отчёта о выплатах'),
         ],
         default='input',
@@ -2816,12 +2817,21 @@ class ProductCalculator(models.Model):
 
 class ProductAllExpensesCalculation(models.Model):
     _inherit = "ozon.products"
-
+    # input
     ozon_reward = fields.Float(string="Вознаграждение Озон (процент)")
     acquiring = fields.Float(string="Эквайринг (процент)")
     promo = fields.Float(string="Расходы на продвижение (процент)")
     return_logistics = fields.Float(string="Обратная логистика (процент)")
-
+    # category
+    ozon_reward_from_category = fields.Float(string="Вознаграждение Озон (процент)", 
+                                             related="categories.ozon_reward")
+    acquiring_from_category = fields.Float(string="Эквайринг (процент)", 
+                                             related="categories.acquiring")
+    promo_from_category = fields.Float(string="Расходы на продвижение (процент)", 
+                                             related="categories.promo")
+    return_logistics_from_category = fields.Float(string="Обратная логистика (процент)", 
+                                             related="categories.return_logistics")
+    # report
     ozon_reward_from_report = fields.Float(string="Вознаграждение Озон (процент)", 
                                            compute="_compute_from_indirect_percent_expenses_report")
     acquiring_from_report = fields.Float(string="Эквайринг (процент)", 
@@ -2852,3 +2862,11 @@ class ProductAllExpensesCalculation(models.Model):
             r.return_logistics_from_report = abs(sum(sums.filtered(lambda r: r.name in [
                 "обратная логистика", 
                 "MarketplaceServiceItemRedistributionReturnsPVZ"]).mapped("percent")))
+    
+    def open_avg_value_to_use_assign_form(self):
+        return {
+            "type": "ir.actions.act_window", 
+            "view_mode": "form", 
+            "res_model": "ozon.products.avg_value_to_use.assign",
+            "target": "new",
+            }
