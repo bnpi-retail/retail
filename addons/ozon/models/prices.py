@@ -340,16 +340,16 @@ class AllExpenses(models.Model):
             r.identifier = ALL_EXPENSES_NAMES_IDENTIFIERS.get(r.category, 99)
 
     def _compute_comment(self):
-        # exp = self.env["ozon.indirect_percent_expenses"].search(
-        #     [],
-        #     limit=1,
-        #     order="create_date desc",
-        # )
-        # if not exp:
-        #     raise UserError("Косвенные затраты не посчитаны. Невозможно рассчитать значения в калькуляторе")
+        exp = self.env["ozon.indirect_percent_expenses"].search(
+            [],
+            limit=1,
+            order="create_date desc",
+        )
+        if not exp:
+            raise UserError("Отсутствуют отчёты о выплатах. Невозможно рассчитать значения.")
 
-        # period = (f"{datetime.strftime(exp.date_from, '%d %b %Y')}" 
-        #           f" - {datetime.strftime(exp.date_to, '%d %b %Y')}")
+        period = (f"{datetime.strftime(exp.date_from, '%d %b %Y')}" 
+                  f" - {datetime.strftime(exp.date_to, '%d %b %Y')}")
         for r in self:
             avg_value_to_use = r.product_id.avg_value_to_use
             name = r.name
@@ -375,7 +375,7 @@ class AllExpenses(models.Model):
                 if avg_value_to_use == "input" and r.identifier in [4,5,6,8]:
                     prefix = "Данные, введённые пользователем вручную\n"
                 else:
-                    prefix = "Данные из отчёта о выплатах\n"
+                    prefix = f"Данные из отчёта о выплатах за период: {period}\n"
                 r.comment = prefix + ("Рассчитывается как цена, умноженная на процент фактической статьи затрат.\n"
                              "Цена * Фактическая статья(процент от выручки) = Значение\n"
                              f"{price} * {per}% = {val}")
