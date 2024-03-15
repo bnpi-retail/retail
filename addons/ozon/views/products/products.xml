@@ -152,11 +152,8 @@
                                             <field name="string_plan_value" />
                                             <field name="string_market_value" />
                                             <field name="string_fact_value" />
-                                            <field name="diff_fact_market"
-                                                attrs="{'invisible': [('name','=','Дата расчёта')]}" />
-                                            <field name="diff_plan_fact"
-                                                attrs="{'invisible': [('name','=','Дата расчёта')]}" />
-                                            <!-- <field name="calc_value" /> -->
+                                            <field name="string_diff_fact_market" />
+                                            <field name="string_diff_plan_fact" />
                                             <field name="string_calc_value" />
                                             <field name="comment" optional="hide" />
                                         </tree>
