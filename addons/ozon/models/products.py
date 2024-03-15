@@ -2174,33 +2174,36 @@ class Product(models.Model):
     def _base_calculation(self, identifier):
         return self.base_calculation_ids.filtered(
             lambda r: r.price_component_id.identifier == identifier)
-    
-    # def calculate_price_comparison_ids(self):
-    #     self.env["ozon.base_calculation"].fill_if_not_exists(self)
-    #     calc_price = self.price_comparison_ids.filtered(lambda r: r.name == "Ваша цена").calc_value
-    #     self.env["ozon.price_comparison"].update_for_products(self, calc_price=calc_price)
-    
+
     def calculate_price_comparison_ids_plan_column(self):
-        self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
-        if not self.base_calculation_template_id:
-            raise UserError("Шаблон планового расчёта не задан")
-        self.base_calculation_template_id.apply_to_products(self)
-        self.env["ozon.price_comparison"].update_plan_column_for_product(self)
-        self.plan_calc_date = fields.Date.today()
+        pc_model = self.env["ozon.price_comparison"]
+        for r in self:
+            pc_model.fill_with_blanks_if_not_exist(r)
+            if not r.base_calculation_template_id:
+                raise UserError("Шаблон планового расчёта не задан")
+            r.base_calculation_template_id.apply_to_products(r)
+            pc_model.update_plan_column_for_product(r)
+            r.plan_calc_date = fields.Date.today()
     
     def calculate_price_comparison_ids_fact_column(self):
-        self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
-        self.update_current_product_all_expenses(self.price)
-        self.env["ozon.price_comparison"].update_fact_column_for_product(self)
-        self.fact_calc_date = fields.Date.today()
+        pc_model = self.env["ozon.price_comparison"]
+        for r in self:
+            pc_model.fill_with_blanks_if_not_exist(r)
+            r.update_current_product_all_expenses(r.price)
+            pc_model.update_fact_column_for_product(r)
+            r.fact_calc_date = fields.Date.today()
 
     def calculate_price_comparison_ids_market_column(self):
-        self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
-        self.env["ozon.price_comparison"].update_market_column_for_product(self)
+        pc_model = self.env["ozon.price_comparison"]
+        for r in self:
+            pc_model.fill_with_blanks_if_not_exist(r)
+            pc_model.update_market_column_for_product(r)
 
     def calculate_price_comparison_ids_calc_column(self):
-        self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
-        self.env["ozon.price_comparison"].update_calc_column_for_product(self)
+        pc_model = self.env["ozon.price_comparison"]
+        for r in self:
+            pc_model.fill_with_blanks_if_not_exist(r)
+            pc_model.update_calc_column_for_product(r)
 
     def reset_base_calculation_ids(self):
         self.env["ozon.base_calculation"].reset_for_products(self)
