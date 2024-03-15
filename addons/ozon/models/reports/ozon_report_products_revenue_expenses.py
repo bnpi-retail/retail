@@ -35,3 +35,13 @@ class OzonReportProductsRevenueExpensesTheory(models.Model):
     percent_from_total_category = fields.Float(string="Процент")
     total_value_category = fields.Float(string="Категория")
     theoretical_value = fields.Char(string="Теория")
+
+
+class OzonNameValue(models.Model):
+    _name = "ozon.name_value"
+    _description = "name- value model"
+
+    ozon_categories_id = fields.Many2one("ozon.categories", string="Категория Ozon")
+    name = fields.Char(string="Название")
+    value = fields.Float(string="Товар")
+
