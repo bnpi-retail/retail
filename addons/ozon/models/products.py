@@ -2822,9 +2822,33 @@ class ProductAllExpensesCalculation(models.Model):
     promo = fields.Float(string="Расходы на продвижение (процент)")
     return_logistics = fields.Float(string="Обратная логистика (процент)")
 
+    ozon_reward_from_report = fields.Float(string="Вознаграждение Озон (процент)", 
+                                           compute="_compute_from_indirect_percent_expenses_report")
+    acquiring_from_report = fields.Float(string="Эквайринг (процент)", 
+                                           compute="_compute_from_indirect_percent_expenses_report")
+    promo_from_report = fields.Float(string="Расходы на продвижение (процент)", 
+                                           compute="_compute_from_indirect_percent_expenses_report")
+    return_logistics_from_report = fields.Float(string="Обратная логистика (процент)", 
+                                           compute="_compute_from_indirect_percent_expenses_report")
+
     @property
     def _expenses_to_use_from_input(self):
         if self.avg_value_to_use == "input":
             return ["ozon_reward", "acquiring", "promo", "return_logistics"]
         else:
             return []
+            
+
+    def _compute_from_indirect_percent_expenses_report(self):
+        report = self.env["ozon.indirect_percent_expenses"].get_latest()
+        sums = report.transaction_unit_summary_ids
+        for r in self:
+            r.ozon_reward_from_report = abs(sums.filtered(
+                lambda r: r.name == "Вознаграждение за продажу").percent)
+            r.acquiring_from_report = abs(sums.filtered(
+                lambda r: r.name == "Оплата эквайринга").percent)
+            r.promo_from_report = abs(sums.filtered(
+                lambda r: r.name == "Услуги продвижения товаров").percent)
+            r.return_logistics_from_report = abs(sum(sums.filtered(lambda r: r.name in [
+                "обратная логистика", 
+                "MarketplaceServiceItemRedistributionReturnsPVZ"]).mapped("percent")))

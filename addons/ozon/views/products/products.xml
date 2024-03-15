@@ -534,6 +534,25 @@
                                             <field name="acquiring" widget="percentage" />
                                         </group>
                                     </group>
+                                    <group
+                                        col="4"
+                                        string="Значения из последнего отчёта о выплатах"
+                                        attrs="{'invisible': [('avg_value_to_use', '!=', 'report')]}">
+                                        <group>
+                                            <field name="promo_from_report" widget="percentage" />
+                                        </group>
+                                        <group>
+                                            <field name="return_logistics_from_report"
+                                                widget="percentage" />
+                                        </group>
+                                        <group>
+                                            <field name="ozon_reward_from_report"
+                                                widget="percentage" />
+                                        </group>
+                                        <group>
+                                            <field name="acquiring_from_report" widget="percentage" />
+                                        </group>
+                                    </group>
 
                                 </page>
                                 <page id="page_analysis_data_plots" string="Графики">
