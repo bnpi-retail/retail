@@ -44,14 +44,6 @@ class Categories(models.Model):
     period_preset = fields.Selection([
         ('month', '1 месяц'), ('2month', '2 месяца'), ('3month', '3 месяца')
     ])
-    avg_value_to_use = fields.Selection(
-        [
-            ('all_products', 'Использовать данные магазина из последнего отчета по выплатам'),
-            ('current_product', 'Использовать данные категории'),
-        ],
-        default='all_products',
-        string="Значения для расчета фактических статей затрат",
-    )
     is_promotion_data_correct = fields.Boolean()
 
     ozon_reward = fields.Float(string="Вознаграждение Озон (процент)")
@@ -59,20 +51,39 @@ class Categories(models.Model):
     promo = fields.Float(string="Расходы на продвижение (процент)")
     return_logistics = fields.Float(string="Обратная логистика (процент)")
 
-    ozon_name_value_ids = fields.One2many("ozon.name_value", "ozon_categories_id")
+    ozon_name_value_ids = fields.One2many("ozon.name_value", "ozon_categories_id", compute="compute_products_states")
 
-    @api.onchange('avg_value_to_use')
-    def _onchange_avg_value_to_use(self):
-        indirect_percent_expenses = self.env["ozon.indirect_percent_expenses"].search(
-            [], order="create_date desc", limit=1)
-        if self.avg_value_to_use == 'all_products':
-            if indirect_percent_expenses:
-                for record in indirect_percent_expenses.transaction_unit_summary_ids:
-                    if record.name == "Вознаграждение за продажу":
-                        self.ozon_reward == abs(record.percent)
-                    # elif record.name == "Вознаграждение за продажу":
+    @api.depends(
+        "ozon_products_ids.avg_value_to_use",
+        "ozon_products_ids.base_calculation_template_id",
+        "ozon_products_ids",
+    )
+    def compute_products_states(self):
+        delete_records("ozon_name_value", self.ozon_products_ids.ids, self.env)
+        avg_value_to_use_state = defaultdict(int)
+        for product in self.ozon_products_ids:
+            avg_value_to_use_state[product.avg_value_to_use] += 1
 
+        vals_to_create = [{
+            "name": "Всего товаров категории", "value": len(self.ozon_products_ids), "ozon_categories_id": self.id}]
 
+        for name, value in avg_value_to_use_state.items():
+            display_name = name
+            if name == "report" or name == "all_products":
+                display_name = "Используются значения из последнего отчета по выплатам"
+            elif name == "input" or name == "curr_product":
+                display_name = "Используются значения введенные вручную в товаре"
+            elif name == "category":
+                display_name = "Используются значения введенные вручную в категории"
+            elif not name:
+                display_name = "Опция не выбрана"
+            vals_to_create.append({
+                "name": f"{display_name}", "value": value, "ozon_categories_id": self.id
+            })
+
+        ids = self.env["ozon.name_value"].create(vals_to_create).ids
+
+        self.ozon_name_value_ids = ids
 
     @api.onchange('period_preset')
     def _onchange_period_preset(self):
