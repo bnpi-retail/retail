@@ -74,18 +74,17 @@ class Categories(models.Model):
         vals_to_write_table_2 = []
         # revenue
         res = self.calculate_sales_revenue_for_period()
-        vals_table_1, vals_table_2, revenue, category_revenue, total_revenue = res
+        vals_table_1, vals_table_2, category_revenue, total_revenue = res
         vals_to_write_table_1.append(vals_table_1)
         vals_to_write_table_2.append(vals_table_2)
 
         # promotion_expenses
         vals_to_write_table_1.append(
-            self.calculate_promotion_expenses_for_period(revenue, total_revenue, category_revenue))
+            self.calculate_promotion_expenses_for_period(total_revenue, category_revenue))
 
         # returns
         vals_to_write_table_1.append(
             self.calculate_expenses_row(
-                revenue=revenue,
                 total_revenue=total_revenue,
                 category_revenue=category_revenue,
                 identifier=3,
@@ -95,7 +94,6 @@ class Categories(models.Model):
         # commission
         vals_to_write_table_2.append(
             self.calculate_commissions_row(
-                revenue=revenue,
                 category_revenue=category_revenue,
                 identifier=2,
                 plan_name='Вознаграждение Ozon',
@@ -104,7 +102,6 @@ class Categories(models.Model):
         # equiring
         vals_to_write_table_2.append(
             self.calculate_commissions_row(
-                revenue=revenue,
                 category_revenue=category_revenue,
                 identifier=3,
                 plan_name='Эквайринг',
@@ -114,50 +111,26 @@ class Categories(models.Model):
         self.env['ozon.report.products_revenue_expenses'].create(vals_to_write_table_1)
         self.env['ozon.report.products_revenue_expenses_theory'].create(vals_to_write_table_2)
 
-    def _get_sum_value_and_qty_from_transaction_value_by_product(self, name: str, ids: Iterable = None) -> tuple:
-        if ids is None:
-            ids = (self.id, )
-        query = """
-                SELECT
-                    SUM(value) as sum_value,
-                    COUNT(*) as qty
-                FROM 
-                    ozon_transaction_value_by_product
-                WHERE 
-                    transaction_date >= %s
-                    AND
-                    transaction_date <= %s
-                    AND
-                    ozon_products_id IN %s
-                    AND
-                    name = %s
-                """
-        self.env.cr.execute(query, (self.period_start, self.period_finish, tuple(ids), name))
-        sum_value_and_qty = self.env.cr.fetchone()
-        sum_value = sum_value_and_qty[0] if sum_value_and_qty and sum_value_and_qty[0] else 0
-        qty = sum_value_and_qty[1] if sum_value_and_qty else 0
-
-        return sum_value, qty
-
-    def calculate_sales_revenue_for_period(self) -> tuple[dict, dict, float, float, float]:
-        revenue, sales_qty = self._get_sum_value_and_qty_from_transaction_value_by_product('Сумма за заказы')
-        category_products_ids = self.categories.ozon_products_ids.ids
-        category_revenue, cat_qty = self._get_sum_value_and_qty_from_transaction_value_by_product(
+    def calculate_sales_revenue_for_period(self) -> tuple[dict, dict, float, float]:
+        ozon_products_model = self.env['ozon.products']
+        category_products_ids = self.ozon_products_ids.ids
+        category_revenue, cat_qty = ozon_products_model.get_sum_value_and_qty_from_transaction_value_by_product(
             name='Сумма за заказы',
-            ids=category_products_ids
+            ids=category_products_ids,
+            start=self.period_start,
+            finish=self.period_finish
         )
-        total_revenue = self.calc_total_sum('Сумма за заказы')
+        total_revenue = ozon_products_model.calc_total_sum(
+            'Сумма за заказы', self.period_start, self.period_finish)
         vals_table_1 = {
             'identifier': 1,
-            'ozon_products_id': self.id,
+            'ozon_categories_id': self.id,
             'name': 'Выручка за период',
             'comment': 'Рассчитывается сложением значений поля "Значение" записей в меню '
                        '"Декомпозированные транзакции" '
-                       'за искомый период, соответствующих текущему продукту и с названием '
+                       'за искомый период, соответствующих продуктам категории и с названием '
                        '"Сумма за заказы".',
-            'qty': sales_qty,
-            'percent': 100,
-            'value': revenue,
+            'qty': cat_qty,
             'percent_from_total': 100,
             'percent_from_total_category': 100,
             'total_value_category': category_revenue,
@@ -165,37 +138,36 @@ class Categories(models.Model):
         }
         vals_table_2 = {
             'identifier': 1,
-            'ozon_products_id': self.id,
+            'ozon_categories_id': self.id,
             'name': 'Выручка за период',
             'comment': 'Рассчитывается сложением значений поля "Значение" записей в меню '
                        '"Декомпозированные транзакции" '
-                       'за искомый период, соответствующих текущему продукту и с названием '
+                       'за искомый период, соответствующих продуктам категории и с названием '
                        '"Сумма за заказы".',
-            'qty': sales_qty,
-            'percent': 100,
-            'value': revenue,
+            'qty': cat_qty,
             'percent_from_total_category': 100,
             'total_value_category': category_revenue,
             'theoretical_value': '',
         }
 
-        return vals_table_1, vals_table_2, revenue, category_revenue, total_revenue
+        return vals_table_1, vals_table_2, category_revenue, total_revenue
 
     def calculate_promotion_expenses_for_period(
-            self, revenue: float, total_revenue: float, category_revenue: float
+            self, total_revenue: float, category_revenue: float
     ) -> dict:
-        promotion_expenses = self.promotion_expenses_ids
-        promotion_expenses_for_period = sum(
-            pe.expense for pe in promotion_expenses if self.period_finish >= pe.date >= self.period_start
-        )
-        category_products = self.categories.ozon_products_ids
+        # promotion_expenses = self.ozon_products_ids.mapped('promotion_expenses_ids')
+        # category_pe_for_period = sum(
+        #     pe.expense for pe in promotion_expenses if self.period_finish >= pe.date >= self.period_start
+        # )
+        category_products = self.ozon_products_ids
         category_pe_for_period = sum(sum(
             pe.expense for pe in product.promotion_expenses_ids if self.period_finish >= pe.date >= self.period_start
         ) for product in category_products)
 
-        percent = (promotion_expenses_for_period * 100) / revenue if revenue else 0
+        ozon_products_model = self.env['ozon.products']
         percent_category = (category_pe_for_period * 100) / category_revenue if category_revenue else 0
-        total_promotion_expenses = self.calc_total_sum('Услуги продвижения товаров')
+        total_promotion_expenses = ozon_products_model.calc_total_sum(
+            'Услуги продвижения товаров', self.period_start, self.period_finish)
         percent_from_total = (abs(total_promotion_expenses) * 100) / total_revenue if total_revenue else 0
 
         accuracy = self.calc_accuracy(self.period_start, self.period_finish)
@@ -206,13 +178,11 @@ class Categories(models.Model):
 
         return {
             'identifier': 2,
-            'ozon_products_id': self.id,
+            'ozon_categories_id': self.id,
             'name': name,
             'comment': 'Рассчитывается сложением суммы значений поля "Расход" '
                        'затрат на продвижение текущего товара за искомый период.\n',
-            'value': -promotion_expenses_for_period,
-            'qty': len(promotion_expenses),
-            'percent': percent,
+            # 'qty': len(promotion_expenses),
             'percent_from_total': percent_from_total,
             'total_value': total_promotion_expenses,
             'percent_from_total_category': percent_category,
@@ -270,7 +240,7 @@ class Categories(models.Model):
         return accuracy
 
     def calculate_expenses_row(
-            self, revenue: float, total_revenue: float, category_revenue: float, identifier: int,
+            self, total_revenue: float, category_revenue: float, identifier: int,
             plan_name: str) -> dict:
 
         ozon_price_component_id = self.env["ozon.price_component"].search([('name', '=', plan_name)]).id
@@ -280,44 +250,42 @@ class Categories(models.Model):
         ozon_price_component_match = self.env["ozon.price_component_match"].search([
             ('price_component_id', '=', ozon_price_component_id)
         ])
-        total_amount_ = 0
+
         qty = []
         category_amount = 0
         all_products_amount = 0
         components = []
-        category_products_ids = self.categories.ozon_products_ids.ids
+        category_products_ids = self.ozon_products_ids.ids
         for record in ozon_price_component_match:
             name = record.name
-            res = self._get_sum_value_and_qty_from_transaction_value_by_product(name)
-            category_value, cat_qty = self._get_sum_value_and_qty_from_transaction_value_by_product(
+            category_value, cat_qty = self.env['ozon.products'].get_sum_value_and_qty_from_transaction_value_by_product(
                 name=name,
-                ids=category_products_ids
+                ids=category_products_ids,
+                start=self.period_start,
+                finish=self.period_finish
             )
             category_amount += category_value
-            total_amount_ += res[0]
-            qty.append(res[1])
-            components.append(f"{name}: количество- {res[1]}, значение-{res[0]}\n")
+            qty.append(cat_qty)
+            components.append(f"{name}: количество- {cat_qty}, значение-{category_value}\n")
 
-            all_products_amount += self.calc_total_sum(name)
+            all_products_amount += self.env['ozon.products'].calc_total_sum(
+                name, self.period_start, self.period_finish)
 
         qty = max(qty) if qty else 0
         components = ''.join(components)
-        percent = (abs(total_amount_) * 100) / revenue if revenue else 0
         percent_category = (abs(category_amount) * 100) / category_revenue if category_revenue else 0
         percent_from_total = (abs(all_products_amount) * 100) / total_revenue if total_revenue else 0
         vals = {
             'identifier': identifier,
-            'ozon_products_id': self.id,
+            'ozon_categories_id': self.id,
             'name': plan_name,
             'comment': 'Рассчитывается суммированием значений записей "Декомпозированые транзакции" '
                        'с названиями указанными в поле "Фактическая статья затрат Ozon" напротив '
                        f'которых указано значение {plan_name} '
                        '(в меню Планирование > Фактические/плановые статьи). '
                        'Суммируются "Декомпозированые транзакции" соответствующие искомому периоду и '
-                       f'текущему продукту\n\n{components}',
-            'value': total_amount_,
+                       f' продуктам категории\n\n{components}',
             'qty': qty,
-            'percent': percent,
             'percent_from_total': percent_from_total,
             'total_value': all_products_amount,
             'percent_from_total_category': percent_category,
@@ -326,8 +294,7 @@ class Categories(models.Model):
         return vals
 
     def calculate_commissions_row(
-            self, revenue: float, category_revenue: float, identifier: int,
-            plan_name: str) -> dict:
+            self, category_revenue: float, identifier: int, plan_name: str) -> dict:
 
         ozon_price_component_id = self.env["ozon.price_component"].search([('name', '=', plan_name)]).id
         if not ozon_price_component_id:
@@ -336,139 +303,48 @@ class Categories(models.Model):
         ozon_price_component_match = self.env["ozon.price_component_match"].search([
             ('price_component_id', '=', ozon_price_component_id)
         ])
-        total_amount_ = 0
         qty = []
         category_amount = 0
         components = []
-        category_products_ids = self.categories.ozon_products_ids.ids
+        category_products_ids = self.ozon_products_ids.ids
         for record in ozon_price_component_match:
             name = record.name
-            res = self._get_sum_value_and_qty_from_transaction_value_by_product(name)
-            category_value, cat_qty = self._get_sum_value_and_qty_from_transaction_value_by_product(
+            category_value, cat_qty = self.env['ozon.products'].get_sum_value_and_qty_from_transaction_value_by_product(
                 name=name,
-                ids=category_products_ids
+                ids=category_products_ids,
+                start=self.period_start,
+                finish=self.period_finish
             )
             category_amount += category_value
-            total_amount_ += res[0]
-            qty.append(res[1])
-            components.append(f"{name}: количество- {res[1]}, значение-{res[0]}\n")
+            qty.append(cat_qty)
+            components.append(f"{name}: количество- {cat_qty}, значение-{category_value}\n")
 
         qty = max(qty) if qty else 0
         components = ''.join(components)
-        percent = (abs(total_amount_) * 100) / revenue if revenue else 0
         percent_category = (abs(category_amount) * 100) / category_revenue if category_revenue else 0
-        theoretical_value = self.get_theoretical_value(plan_name)
-        if plan_name == "Эквайринг":
-            if qty:
-                theoretical_value = str(round((float(theoretical_value) * 100) / (revenue / qty), 2)) + '% максимально'
-            else:
-                pass
+        # theoretical_value = self.get_theoretical_value(plan_name)
+        # if plan_name == "Эквайринг":
+        #     if qty:
+        #         theoretical_value = str(round((float(theoretical_value) * 100) / (revenue / qty), 2)) + '% максимально'
+        #     else:
+        #         pass
 
         vals = {
             'identifier': identifier,
-            'ozon_products_id': self.id,
+            'ozon_categories_id': self.id,
             'name': plan_name,
             'comment': 'Рассчитывается суммированием значений записей "Декомпозированые транзакции" '
                        'с названиями указанными в поле "Фактическая статья затрат Ozon" напротив '
                        f'которых указано значение {plan_name} '
                        '(в меню Планирование > Фактические/плановые статьи). '
                        'Суммируются "Декомпозированые транзакции" соответствующие искомому периоду и '
-                       f'текущему продукту\n\n{components}',
-            'value': total_amount_,
+                       f'продуктам категории\n\n{components}',
             'qty': qty,
-            'percent': percent,
             'percent_from_total_category': percent_category,
             'total_value_category': category_amount,
-            'theoretical_value': theoretical_value,
+            # 'theoretical_value': theoretical_value,
         }
         return vals
-
-    def get_theoretical_value(self, plan_name: str, data_to_calc_value=None) -> str:
-        value = ""
-        trading_scheme = self.trading_scheme
-        if plan_name == 'Вознаграждение Ozon':
-            if trading_scheme == "FBS":
-                for rec in self.fbs_percent_expenses:
-                    if rec.name == "Процент комиссии за продажу (FBS)":
-                        value = rec.discription
-                        break
-            elif trading_scheme == "FBO":
-                for rec in self.fbo_percent_expenses:
-                    if rec.name == "Процент комиссии за продажу (FBO)":
-                        value = rec.discription
-                        break
-            elif trading_scheme == "FBS, FBO":
-                fbs = ''
-                for rec in self.fbs_percent_expenses:
-                    if rec.name == "Процент комиссии за продажу (FBS)":
-                        fbs = rec.discription
-                        break
-                fbo = ''
-                for rec in self.fbo_percent_expenses:
-                    if rec.name == "Процент комиссии за продажу (FBO)":
-                        fbo = rec.discription
-                        break
-                if fbs and fbo:
-                    fbs = fbs.replace('%', '')
-                    fbo = fbo.replace('%', '')
-                    fbs = float(fbs)
-                    fbo = float(fbo)
-                    value = max(fbs, fbo)
-                    value = str(value) + '%'
-                elif fbs:
-                    value = fbs
-                elif fbo:
-                    value = fbo
-        elif plan_name == "Эквайринг":
-            if trading_scheme == "FBS":
-                for rec in self.fbs_fix_expenses_max:
-                    if rec.name == "Максимальная комиссия за эквайринг":
-                        value = rec.price
-                        break
-            elif trading_scheme == "FBO":
-                for rec in self.fbo_fix_expenses_max:
-                    if rec.name == "Максимальная комиссия за эквайринг":
-                        value = rec.price
-                        break
-            elif trading_scheme == "FBS, FBO":
-                fbs = ''
-                for rec in self.fbs_fix_expenses_max:
-                    if rec.name == "Максимальная комиссия за эквайринг":
-                        fbs = rec.price
-                        break
-                fbo = ''
-                for rec in self.fbo_fix_expenses_max:
-                    if rec.name == "Максимальная комиссия за эквайринг":
-                        fbo = rec.price
-                        break
-                if fbs and fbo:
-                    fbs = float(fbs)
-                    fbo = float(fbo)
-                    value = max(fbs, fbo)
-                elif fbs:
-                    value = fbs
-                elif fbo:
-                    value = fbo
-
-        return value
-
-    def calc_total_sum(self, name: str):
-        query = """
-                SELECT
-                    SUM(value) as total_sum_value
-                FROM 
-                    ozon_transaction_value_by_product
-                WHERE 
-                    transaction_date >= %s
-                    AND
-                    transaction_date <= %s
-                    AND
-                    name = %s
-                """
-        self.env.cr.execute(query, (self.period_start, self.period_finish, name))
-        total_sum_value = self.env.cr.fetchone()
-        return total_sum_value[0] if total_sum_value and total_sum_value[0] else 0
-
 
     @api.model
     def _name_search(

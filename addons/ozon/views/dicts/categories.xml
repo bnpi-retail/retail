@@ -67,12 +67,7 @@
                                                 <field name="identifier"/>
                                                 <field name="name"/>
                                                 <field name="comment" optional="hide"/>
-                                                <field name="qty"
-                                                       decoration-warning="accuracy=='c'"/>
-                                                <field name="percent"
-                                                       decoration-warning="accuracy=='c'"/>
-                                                <field name="value" sum="1"
-                                                       decoration-warning="accuracy=='c'"/>
+                                                <field name="qty"/>
                                                 <field name="percent_from_total_category"
                                                        decoration-warning="accuracy=='c'"/>
                                                 <field name="total_value_category" sum="1"
@@ -107,8 +102,6 @@
                                                 <field name="name"/>
                                                 <field name="comment" optional="hide"/>
                                                 <field name="qty"/>
-                                                <field name="percent"/>
-                                                <field name="value" sum="1"/>
                                                 <field name="percent_from_total_category"/>
                                                 <field name="total_value_category" sum="1"/>
                                                 <field name="theoretical_value"

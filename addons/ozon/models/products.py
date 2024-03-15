@@ -485,9 +485,19 @@ class Product(models.Model):
         self.env['ozon.report.products_revenue_expenses'].create(vals_to_write_table_1)
         self.env['ozon.report.products_revenue_expenses_theory'].create(vals_to_write_table_2)
 
-    def _get_sum_value_and_qty_from_transaction_value_by_product(self, name: str, ids: Iterable = None) -> tuple:
+    def get_sum_value_and_qty_from_transaction_value_by_product(
+            self, name: str,
+            ids: Iterable = None,
+            start: date = None,
+            finish: date = None
+    ) -> tuple:
+
         if ids is None:
             ids = (self.id, )
+        if start is None:
+            start = self.period_start
+        if finish is None:
+            finish = self.period_finish
         query = """
                 SELECT
                     SUM(value) as sum_value,
@@ -503,7 +513,7 @@ class Product(models.Model):
                     AND
                     name = %s
                 """
-        self.env.cr.execute(query, (self.period_start, self.period_finish, tuple(ids), name))
+        self.env.cr.execute(query, (start, finish, tuple(ids), name))
         sum_value_and_qty = self.env.cr.fetchone()
         sum_value = sum_value_and_qty[0] if sum_value_and_qty and sum_value_and_qty[0] else 0
         qty = sum_value_and_qty[1] if sum_value_and_qty else 0
@@ -511,9 +521,9 @@ class Product(models.Model):
         return sum_value, qty
 
     def calculate_sales_revenue_for_period(self) -> tuple[dict, dict, float, float, float]:
-        revenue, sales_qty = self._get_sum_value_and_qty_from_transaction_value_by_product('Сумма за заказы')
+        revenue, sales_qty = self.get_sum_value_and_qty_from_transaction_value_by_product('Сумма за заказы')
         category_products_ids = self.categories.ozon_products_ids.ids
-        category_revenue, cat_qty = self._get_sum_value_and_qty_from_transaction_value_by_product(
+        category_revenue, cat_qty = self.get_sum_value_and_qty_from_transaction_value_by_product(
             name='Сумма за заказы',
             ids=category_products_ids
         )
@@ -659,8 +669,8 @@ class Product(models.Model):
         category_products_ids = self.categories.ozon_products_ids.ids
         for record in ozon_price_component_match:
             name = record.name
-            res = self._get_sum_value_and_qty_from_transaction_value_by_product(name)
-            category_value, cat_qty = self._get_sum_value_and_qty_from_transaction_value_by_product(
+            res = self.get_sum_value_and_qty_from_transaction_value_by_product(name)
+            category_value, cat_qty = self.get_sum_value_and_qty_from_transaction_value_by_product(
                 name=name,
                 ids=category_products_ids
             )
@@ -714,8 +724,8 @@ class Product(models.Model):
         category_products_ids = self.categories.ozon_products_ids.ids
         for record in ozon_price_component_match:
             name = record.name
-            res = self._get_sum_value_and_qty_from_transaction_value_by_product(name)
-            category_value, cat_qty = self._get_sum_value_and_qty_from_transaction_value_by_product(
+            res = self.get_sum_value_and_qty_from_transaction_value_by_product(name)
+            category_value, cat_qty = self.get_sum_value_and_qty_from_transaction_value_by_product(
                 name=name,
                 ids=category_products_ids
             )
@@ -823,7 +833,11 @@ class Product(models.Model):
 
         return value
 
-    def calc_total_sum(self, name: str):
+    def calc_total_sum(self, name: str, start: date = None, finish: date = None):
+        if start is None:
+            start = self.period_start
+        if finish is None:
+            finish = self.period_finish
         query = """
                 SELECT
                     SUM(value) as total_sum_value
@@ -836,7 +850,7 @@ class Product(models.Model):
                     AND
                     name = %s
                 """
-        self.env.cr.execute(query, (self.period_start, self.period_finish, name))
+        self.env.cr.execute(query, (start, finish, name))
         total_sum_value = self.env.cr.fetchone()
         return total_sum_value[0] if total_sum_value and total_sum_value[0] else 0
 
