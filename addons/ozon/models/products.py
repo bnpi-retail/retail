@@ -393,7 +393,7 @@ class Product(models.Model):
     avg_value_to_use = fields.Selection(
         [
             ('input', 'Использовать значения, введённые вручную'),
-            ('report', 'Использовать значения из отчёта о выплатах'),
+            ('report', 'Использовать значения по магазину из последнего отчёта о выплатах'),
         ],
         default='input',
         string="Значения для расчета фактических статей затрат",
@@ -2174,33 +2174,40 @@ class Product(models.Model):
     def _base_calculation(self, identifier):
         return self.base_calculation_ids.filtered(
             lambda r: r.price_component_id.identifier == identifier)
-    
-    # def calculate_price_comparison_ids(self):
-    #     self.env["ozon.base_calculation"].fill_if_not_exists(self)
-    #     calc_price = self.price_comparison_ids.filtered(lambda r: r.name == "Ваша цена").calc_value
-    #     self.env["ozon.price_comparison"].update_for_products(self, calc_price=calc_price)
-    
+
     def calculate_price_comparison_ids_plan_column(self):
-        self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
-        if not self.base_calculation_template_id:
-            raise UserError("Шаблон планового расчёта не задан")
-        self.base_calculation_template_id.apply_to_products(self)
-        self.env["ozon.price_comparison"].update_plan_column_for_product(self)
-        self.plan_calc_date = fields.Date.today()
+        pc_model = self.env["ozon.price_comparison"]
+        for r in self:
+            suffix = f"для товара (Арт:{r.article})"
+            pc_model.fill_with_blanks_if_not_exist(r)
+            if not r.base_calculation_template_id:
+                raise UserError(f"Шаблон планового расчёта не задан " + suffix)
+            r.base_calculation_template_id.apply_to_products(r)
+            pc_model.update_plan_column_for_product(r)
+            r.plan_calc_date = fields.Date.today()
+            print(f"«План» обновлён " + suffix)
     
     def calculate_price_comparison_ids_fact_column(self):
-        self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
-        self.update_current_product_all_expenses(self.price)
-        self.env["ozon.price_comparison"].update_fact_column_for_product(self)
-        self.fact_calc_date = fields.Date.today()
+        pc_model = self.env["ozon.price_comparison"]
+        for r in self:
+            pc_model.fill_with_blanks_if_not_exist(r)
+            r.update_current_product_all_expenses(r.price)
+            pc_model.update_fact_column_for_product(r)
+            r.fact_calc_date = fields.Date.today()
+            print(f"«Факт» обновлён для товара (Арт:{r.article})")
 
     def calculate_price_comparison_ids_market_column(self):
-        self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
-        self.env["ozon.price_comparison"].update_market_column_for_product(self)
+        pc_model = self.env["ozon.price_comparison"]
+        for r in self:
+            pc_model.fill_with_blanks_if_not_exist(r)
+            pc_model.update_market_column_for_product(r)
+            print(f"«Рынок» обновлён для товара (Арт:{r.article})")
 
     def calculate_price_comparison_ids_calc_column(self):
-        self.env["ozon.price_comparison"].fill_with_blanks_if_not_exist(self)
-        self.env["ozon.price_comparison"].update_calc_column_for_product(self)
+        pc_model = self.env["ozon.price_comparison"]
+        for r in self:
+            pc_model.fill_with_blanks_if_not_exist(r)
+            pc_model.update_calc_column_for_product(r)
 
     def reset_base_calculation_ids(self):
         self.env["ozon.base_calculation"].reset_for_products(self)
@@ -2815,9 +2822,33 @@ class ProductAllExpensesCalculation(models.Model):
     promo = fields.Float(string="Расходы на продвижение (процент)")
     return_logistics = fields.Float(string="Обратная логистика (процент)")
 
+    ozon_reward_from_report = fields.Float(string="Вознаграждение Озон (процент)", 
+                                           compute="_compute_from_indirect_percent_expenses_report")
+    acquiring_from_report = fields.Float(string="Эквайринг (процент)", 
+                                           compute="_compute_from_indirect_percent_expenses_report")
+    promo_from_report = fields.Float(string="Расходы на продвижение (процент)", 
+                                           compute="_compute_from_indirect_percent_expenses_report")
+    return_logistics_from_report = fields.Float(string="Обратная логистика (процент)", 
+                                           compute="_compute_from_indirect_percent_expenses_report")
+
     @property
     def _expenses_to_use_from_input(self):
         if self.avg_value_to_use == "input":
             return ["ozon_reward", "acquiring", "promo", "return_logistics"]
         else:
             return []
+            
+
+    def _compute_from_indirect_percent_expenses_report(self):
+        report = self.env["ozon.indirect_percent_expenses"].get_latest()
+        sums = report.transaction_unit_summary_ids
+        for r in self:
+            r.ozon_reward_from_report = abs(sums.filtered(
+                lambda r: r.name == "Вознаграждение за продажу").percent)
+            r.acquiring_from_report = abs(sums.filtered(
+                lambda r: r.name == "Оплата эквайринга").percent)
+            r.promo_from_report = abs(sums.filtered(
+                lambda r: r.name == "Услуги продвижения товаров").percent)
+            r.return_logistics_from_report = abs(sum(sums.filtered(lambda r: r.name in [
+                "обратная логистика", 
+                "MarketplaceServiceItemRedistributionReturnsPVZ"]).mapped("percent")))

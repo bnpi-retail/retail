@@ -200,3 +200,6 @@ class IndirectPercentExpenses(models.Model):
                        ("transaction_date", "<=", self.date_to)],
             "context": {"create": False},
         }
+
+    def get_latest(self):
+        return self.search([], limit=1, order="create_date desc")

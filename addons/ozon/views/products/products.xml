@@ -513,9 +513,13 @@
                                             </page>
                                         </notebook>
                                     </group>
+                                    <group>
+                                        <field name="avg_value_to_use" />
+                                    </group>
                                     <group
                                         col="4"
-                                        string="Ручной ввод значений для расчета фактических статей затрат">
+                                        string="Ручной ввод значений для расчета фактических статей затрат"
+                                        attrs="{'invisible': [('avg_value_to_use', '!=', 'input')]}">
                                         <group>
                                             <field name="promo" widget="percentage" />
                                         </group>
@@ -529,9 +533,26 @@
                                             <field name="acquiring" widget="percentage" />
                                         </group>
                                     </group>
-                                    <group>
-                                        <field name="avg_value_to_use" />
+                                    <group
+                                        col="4"
+                                        string="Значения из последнего отчёта о выплатах"
+                                        attrs="{'invisible': [('avg_value_to_use', '!=', 'report')]}">
+                                        <group>
+                                            <field name="promo_from_report" widget="percentage" />
+                                        </group>
+                                        <group>
+                                            <field name="return_logistics_from_report"
+                                                widget="percentage" />
+                                        </group>
+                                        <group>
+                                            <field name="ozon_reward_from_report"
+                                                widget="percentage" />
+                                        </group>
+                                        <group>
+                                            <field name="acquiring_from_report" widget="percentage" />
+                                        </group>
                                     </group>
+
                                 </page>
                                 <page id="page_analysis_data_plots" string="Графики">
                                     <group>
@@ -762,40 +783,8 @@
             </field>
         </record>
 
-        <!-- Action to call profitability_norm wizard. This action calls wizard model form view -->
-        <record id="wizard_action_profitability_norm" model="ir.actions.act_window">
-            <field name="name">Назначить ожидаемую доходность</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="binding_model_id" ref="model_ozon_products" />
-            <field name="res_model">ozon.profitability_norm.wizard</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="wizard_view_profitability_norm_form" />
-            <field name="target">new</field>
-        </record>
-
-        <!-- Action to call investment_expenses wizard. This action calls wizard model form view -->
-        <record id="wizard_action_investment_expenses" model="ir.actions.act_window">
-            <field name="name">Назначить investment</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="binding_model_id" ref="model_ozon_products" />
-            <field name="res_model">ozon.investment_expenses.wizard</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="wizard_view_investment_expenses_form" />
-            <field name="target">new</field>
-        </record>
-
-        <record id="wizard_action_assign_strategies" model="ir.actions.act_window">
-            <field name="name">Назначить стратегии</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="binding_model_id" ref="model_ozon_products" />
-            <field name="res_model">ozon.products_mass_pricing.wizard</field>
-            <field name="view_mode">tree,form</field>
-            <field name="view_id" ref="products_mass_pricing_wizard_form" />
-            <field name="target">new</field>
-        </record>
-
         <record model="ir.actions.server" id="action_base_calculation_wizard">
-            <field name="name">Назначить плановый расчёт</field>
+            <field name="name">Назначить шаблон планового расчёта</field>
             <field name="model_id" ref="model_ozon_products" />
             <field name="binding_model_id" ref="model_ozon_products" />
             <field name="state">code</field>
@@ -804,6 +793,35 @@
             </field>
         </record>
 
+        <record model="ir.actions.server" id="action_calculate_plan">
+            <field name="name">Рассчитать «План»</field>
+            <field name="model_id" ref="model_ozon_products" />
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="state">code</field>
+            <field name="code">
+                records.calculate_price_comparison_ids_plan_column()
+            </field>
+        </record>
+
+        <record model="ir.actions.server" id="action_calculate_market">
+            <field name="name">Рассчитать «Рынок»</field>
+            <field name="model_id" ref="model_ozon_products" />
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="state">code</field>
+            <field name="code">
+                records.calculate_price_comparison_ids_market_column()
+            </field>
+        </record>
+
+        <record model="ir.actions.server" id="action_calculate_fact">
+            <field name="name">Рассчитать «Факт»</field>
+            <field name="model_id" ref="model_ozon_products" />
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="state">code</field>
+            <field name="code">
+                records.calculate_price_comparison_ids_fact_column()
+            </field>
+        </record>
 
     </data>
 </odoo>

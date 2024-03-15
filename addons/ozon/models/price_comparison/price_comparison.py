@@ -26,10 +26,10 @@ class PriceComparison(models.Model):
     fact_value = fields.Float(string="Факт")
 
     diff_fact_market = fields.Float(
-        string="Отклонение (факт-рынок)", compute="_compute_diff_fact_market"
+        string="Факт - рынок", compute="_compute_diff_fact_market"
     )
     diff_plan_fact = fields.Float(
-        string="Отклонение (план-факт)", compute="_compute_diff_plan_fact"
+        string="План - факт", compute="_compute_diff_plan_fact"
     )
     calc_value = fields.Float(string="Калькулятор")
 
