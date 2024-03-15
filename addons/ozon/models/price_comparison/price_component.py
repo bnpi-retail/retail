@@ -86,7 +86,7 @@ class PriceComponent(models.Model):
     _description = "Компонент цены"
 
     name = fields.Char(string="Название")
-    identifier = fields.Char(string="Идентификатор", readonly=True)
+    identifier = fields.Char(string="Идентификатор", readonly=True, default="undefined")
 
     def get(self, identifier):
         component = self.search([("identifier", "=", identifier)])
