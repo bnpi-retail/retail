@@ -507,8 +507,7 @@
                                                         <field name="value" sum="1" />
                                                         <field name="percent_from_total_category" />
                                                         <field name="total_value_category" sum="1" />
-                                                        <field name="theoretical_value"
-                                                            string="Значение с Ozon" />
+                                                        <field name="theoretical_value" />
                                                     </tree>
                                                 </field>
                                             </page>

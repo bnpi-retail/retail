@@ -2,8 +2,8 @@
     <data>
         <menuitem name="Ozon" id="ozon.menu_root" sequence="1" />
 
-        <menuitem name="Продукты" id="main_menu_products" parent="ozon.menu_root" sequence="2"
-            action="action_products" />
+        <menuitem name="Продукты" id="main_menu_products" parent="ozon.menu_root" sequence="2" />
+
         <menuitem name="Доходы/расходы" id="main_menu_finance" parent="ozon.menu_root" sequence="3" />
         <menuitem name="История" id="main_menu_history" parent="ozon.menu_root" sequence="4" />
         <menuitem name="Планирование" id="main_menu_plan" parent="ozon.menu_root" sequence="5" />
@@ -21,6 +21,15 @@
         <menuitem name="Импорт" id="main_menu_import" parent="ozon.menu_root" sequence="13" />
         <menuitem name="Chat GPT" id="main_menu_chat_gpt" parent="ozon.menu_root" sequence="14" />
 
+        <menuitem name="Продукты" id="menu_products" parent="main_menu_products" sequence="1"
+            action="action_products" />
+
+        <menuitem name="Основные категории"
+            id="menu_main_categories"
+            parent="main_menu_products"
+            action="action_main_categories"
+            sequence="2" />
+
         <menuitem name="Ожидаемая доходность"
             id="menu_profitability_norm"
             parent="main_menu_dicts"
@@ -32,12 +41,6 @@
             parent="main_menu_finance"
             action="action_transaction"
             sequence="1" />
-
-        <!--        <menuitem name="История наших цен"-->
-        <!--                  id="menu_our_price_history"-->
-        <!--                  parent="main_menu_competitors"-->
-        <!--                  action="action_our_price_history"-->
-        <!--                  sequence="50"/>-->
 
         <menuitem name="Мониторинг товаров конкурентов"
             id="menu_name_competitors"
@@ -98,12 +101,6 @@
             parent="main_menu_competitors"
             action="action_ozon_competitor_other_marketplace"
             sequence="50" />
-
-        <menuitem name="Основные категории"
-            id="menu_main_categories"
-            parent="main_menu_dicts"
-            action="action_main_categories"
-            sequence="1" />
 
         <menuitem name="Investment"
             id="menu_investment_expenses"
