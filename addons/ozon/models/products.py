@@ -2178,12 +2178,14 @@ class Product(models.Model):
     def calculate_price_comparison_ids_plan_column(self):
         pc_model = self.env["ozon.price_comparison"]
         for r in self:
+            suffix = f"для товара (Арт:{r.article})"
             pc_model.fill_with_blanks_if_not_exist(r)
             if not r.base_calculation_template_id:
-                raise UserError("Шаблон планового расчёта не задан")
+                raise UserError(f"Шаблон планового расчёта не задан " + suffix)
             r.base_calculation_template_id.apply_to_products(r)
             pc_model.update_plan_column_for_product(r)
             r.plan_calc_date = fields.Date.today()
+            print(f"«План» обновлён " + suffix)
     
     def calculate_price_comparison_ids_fact_column(self):
         pc_model = self.env["ozon.price_comparison"]
@@ -2192,12 +2194,14 @@ class Product(models.Model):
             r.update_current_product_all_expenses(r.price)
             pc_model.update_fact_column_for_product(r)
             r.fact_calc_date = fields.Date.today()
+            print(f"«Факт» обновлён для товара (Арт:{r.article})")
 
     def calculate_price_comparison_ids_market_column(self):
         pc_model = self.env["ozon.price_comparison"]
         for r in self:
             pc_model.fill_with_blanks_if_not_exist(r)
             pc_model.update_market_column_for_product(r)
+            print(f"«Рынок» обновлён для товара (Арт:{r.article})")
 
     def calculate_price_comparison_ids_calc_column(self):
         pc_model = self.env["ozon.price_comparison"]

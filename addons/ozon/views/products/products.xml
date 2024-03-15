@@ -775,6 +775,35 @@
             </field>
         </record>
 
+        <record model="ir.actions.server" id="action_calculate_plan">
+            <field name="name">Рассчитать «План»</field>
+            <field name="model_id" ref="model_ozon_products" />
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="state">code</field>
+            <field name="code">
+                records.calculate_price_comparison_ids_plan_column()
+            </field>
+        </record>
+
+        <record model="ir.actions.server" id="action_calculate_market">
+            <field name="name">Рассчитать «Рынок»</field>
+            <field name="model_id" ref="model_ozon_products" />
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="state">code</field>
+            <field name="code">
+                records.calculate_price_comparison_ids_market_column()
+            </field>
+        </record>
+
+        <record model="ir.actions.server" id="action_calculate_fact">
+            <field name="name">Рассчитать «Факт»</field>
+            <field name="model_id" ref="model_ozon_products" />
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="state">code</field>
+            <field name="code">
+                records.calculate_price_comparison_ids_fact_column()
+            </field>
+        </record>
 
     </data>
 </odoo>
