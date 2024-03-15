@@ -348,8 +348,8 @@ class AllExpenses(models.Model):
         if not exp:
             raise UserError("Отсутствуют отчёты о выплатах. Невозможно рассчитать значения.")
 
-        period = (f"{datetime.strftime(exp.date_from, '%d %b %Y')}" 
-                  f" - {datetime.strftime(exp.date_to, '%d %b %Y')}")
+        period = f"{exp.date_from} - {exp.date_to}" 
+                  
         for r in self:
             avg_value_to_use = r.product_id.avg_value_to_use
             name = r.name
