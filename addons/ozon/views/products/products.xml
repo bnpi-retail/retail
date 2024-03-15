@@ -514,9 +514,13 @@
                                             </page>
                                         </notebook>
                                     </group>
+                                    <group>
+                                        <field name="avg_value_to_use" />
+                                    </group>
                                     <group
                                         col="4"
-                                        string="Ручной ввод значений для расчета фактических статей затрат">
+                                        string="Ручной ввод значений для расчета фактических статей затрат"
+                                        attrs="{'invisible': [('avg_value_to_use', '!=', 'input')]}">
                                         <group>
                                             <field name="promo" widget="percentage" />
                                         </group>
@@ -530,9 +534,7 @@
                                             <field name="acquiring" widget="percentage" />
                                         </group>
                                     </group>
-                                    <group>
-                                        <field name="avg_value_to_use" />
-                                    </group>
+
                                 </page>
                                 <page id="page_analysis_data_plots" string="Графики">
                                     <group>
