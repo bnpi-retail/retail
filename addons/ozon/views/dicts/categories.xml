@@ -109,6 +109,36 @@
                                         </field>
                                     </page>
                                 </notebook>
+                                <group string="Значения для расчета фактических статей затрат товаров категории">>
+                                    <field name="avg_value_to_use" nolabel="1" class="oe_inline"/>
+                                </group>
+                                <group>
+                                </group>
+
+                                <group>
+                                    <group>
+                                        <field name="promo" widget="percentage"
+                                               attrs="{'readonly': [('avg_value_to_use', '=', 'all_products')]}"
+                                        />
+                                    </group>
+                                    <group>
+                                        <field name="return_logistics" widget="percentage"
+                                               attrs="{'readonly': [('avg_value_to_use', '=', 'all_products')]}"
+                                        />
+                                    </group>
+                                </group>
+                                <group>
+                                    <group>
+                                        <field name="ozon_reward" widget="percentage"
+                                               attrs="{'readonly': [('avg_value_to_use', '=', 'all_products')]}"
+                                        />
+                                    </group>
+                                    <group>
+                                        <field name="acquiring" widget="percentage"
+                                               attrs="{'readonly': [('avg_value_to_use', '=', 'all_products')]}"
+                                        />
+                                    </group>
+                                </group>
                             </group>
                         </page>
                         <page string="Графики">

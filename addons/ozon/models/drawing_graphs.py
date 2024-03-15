@@ -178,7 +178,7 @@ class DrawGraph:
 
         year = datetime.now().year
         zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
-        grouped_dates, grouped_num = self.data_group(data_current, zero_dates, mean=True)
+        grouped_dates, grouped_num = self.data_group(data_current, zero_dates, mean=True, use_last_value=True)
         bytes_plot = self.generate_url_image(
             label='Текущий год',
             product_id=product_id,
