@@ -187,6 +187,14 @@
                                 </group>
                             </group>
                         </page>
+                        <page string="Шаблоны продуктов">
+                            <field name="ozon_name_value_ids_templates">
+                                <tree create="0" open="0">
+                                    <field name="name" string="Шаблон"/>
+                                    <field name="value" string="Количество товаров"/>
+                                </tree>
+                            </field>
+                        </page>
                     </notebook>
                 </form>
             </field>
