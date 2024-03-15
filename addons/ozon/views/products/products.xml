@@ -806,6 +806,16 @@
             </field>
         </record>
 
+        <record model="ir.actions.server" id="action_avg_value_to_use_assign">
+            <field name="name">Назначить значения для расчета фактических статей затрат</field>
+            <field name="model_id" ref="model_ozon_products" />
+            <field name="binding_model_id" ref="model_ozon_products" />
+            <field name="state">code</field>
+            <field name="code">
+                action = records.open_avg_value_to_use_assign_form()
+            </field>
+        </record>
+
         <record model="ir.actions.server" id="action_calculate_plan">
             <field name="name">Рассчитать «План»</field>
             <field name="model_id" ref="model_ozon_products" />

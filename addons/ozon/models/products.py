@@ -2862,3 +2862,11 @@ class ProductAllExpensesCalculation(models.Model):
             r.return_logistics_from_report = abs(sum(sums.filtered(lambda r: r.name in [
                 "обратная логистика", 
                 "MarketplaceServiceItemRedistributionReturnsPVZ"]).mapped("percent")))
+    
+    def open_avg_value_to_use_assign_form(self):
+        return {
+            "type": "ir.actions.act_window", 
+            "view_mode": "form", 
+            "res_model": "ozon.products.avg_value_to_use.assign",
+            "target": "new",
+            }
