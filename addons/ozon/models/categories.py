@@ -155,14 +155,16 @@ class Categories(models.Model):
     def calculate_promotion_expenses_for_period(
             self, total_revenue: float, category_revenue: float
     ) -> dict:
-        # promotion_expenses = self.ozon_products_ids.mapped('promotion_expenses_ids')
-        # category_pe_for_period = sum(
-        #     pe.expense for pe in promotion_expenses if self.period_finish >= pe.date >= self.period_start
-        # )
+
         category_products = self.ozon_products_ids
-        category_pe_for_period = sum(sum(
-            pe.expense for pe in product.promotion_expenses_ids if self.period_finish >= pe.date >= self.period_start
-        ) for product in category_products)
+        category_pe_for_period = 0
+        qty = 0
+        for product in category_products:
+            pes = product.promotion_expenses_ids
+            for pe in pes:
+                if self.period_finish >= pe.date >= self.period_start:
+                    qty += 1
+                    category_pe_for_period += pe.expense
 
         ozon_products_model = self.env['ozon.products']
         percent_category = (category_pe_for_period * 100) / category_revenue if category_revenue else 0
@@ -182,7 +184,7 @@ class Categories(models.Model):
             'name': name,
             'comment': 'Рассчитывается сложением суммы значений поля "Расход" '
                        'затрат на продвижение текущего товара за искомый период.\n',
-            # 'qty': len(promotion_expenses),
+            'qty': qty,
             'percent_from_total': percent_from_total,
             'total_value': total_promotion_expenses,
             'percent_from_total_category': percent_category,
