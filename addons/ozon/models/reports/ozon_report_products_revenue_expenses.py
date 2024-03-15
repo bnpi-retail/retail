@@ -44,4 +44,6 @@ class OzonNameValue(models.Model):
     ozon_categories_id = fields.Many2one("ozon.categories", string="Категория Ozon")
     name = fields.Char(string="Название")
     value = fields.Integer(string="Товар")
+    domain = fields.Char(size=2)
+
 

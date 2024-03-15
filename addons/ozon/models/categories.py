@@ -51,7 +51,17 @@ class Categories(models.Model):
     promo = fields.Float(string="Расходы на продвижение (процент)")
     return_logistics = fields.Float(string="Обратная логистика (процент)")
 
-    ozon_name_value_ids = fields.One2many("ozon.name_value", "ozon_categories_id", compute="compute_products_states")
+    ozon_name_value_ids = fields.One2many(
+        "ozon.name_value",
+        "ozon_categories_id",
+        compute="compute_products_states",
+        domain=["|", ("domain", '=', 'a'), ("domain", '=', False)]
+    )
+    ozon_name_value_ids_templates = fields.One2many(
+        "ozon.name_value",
+        "ozon_categories_id",
+        domain=["|", ("domain", '=', 'b'), ("domain", '=', False)]
+    )
 
     @api.depends(
         "ozon_products_ids.avg_value_to_use",
@@ -59,26 +69,41 @@ class Categories(models.Model):
         "ozon_products_ids",
     )
     def compute_products_states(self):
-        delete_records("ozon_name_value", self.ozon_products_ids.ids, self.env)
+        ids = self.ozon_name_value_ids.ids + self.ozon_name_value_ids_templates.ids
+        delete_records("ozon_name_value", ids, self.env)
+
         avg_value_to_use_state = defaultdict(int)
+        template_state = defaultdict(int)
         for product in self.ozon_products_ids:
             avg_value_to_use_state[product.avg_value_to_use] += 1
+            template = product.base_calculation_template_id
+            template_name = template.name if template else False
+            template_state[template_name] += 1
 
         vals_to_create = [{
             "name": "Всего товаров категории", "value": len(self.ozon_products_ids), "ozon_categories_id": self.id}]
 
         for name, value in avg_value_to_use_state.items():
             display_name = name
-            if name == "report" or name == "all_products":
+            if name == "report":
                 display_name = "Используются значения из последнего отчета по выплатам"
-            elif name == "input" or name == "curr_product":
+            elif name == "input":
                 display_name = "Используются значения введенные вручную в товаре"
             elif name == "category":
                 display_name = "Используются значения введенные вручную в категории"
             elif not name:
                 display_name = "Опция не выбрана"
             vals_to_create.append({
-                "name": f"{display_name}", "value": value, "ozon_categories_id": self.id
+                "name": f"{display_name}", "value": value, "ozon_categories_id": self.id, "domain": 'a'
+            })
+
+        for name, value in template_state.items():
+            if name is False:
+                display_name = "Шаблон не выбран"
+            else:
+                display_name = name
+            self.env["ozon.name_value"].create({
+                "name": f"{display_name}", "value": value, "ozon_categories_id": self.id, "domain": 'b'
             })
 
         ids = self.env["ozon.name_value"].create(vals_to_create).ids
