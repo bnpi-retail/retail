@@ -39,6 +39,8 @@ class PriceComparison(models.Model):
     string_market_value = fields.Char(string="Рынок", compute="_compute_string")
     string_fact_value = fields.Char(string="Факт", compute="_compute_string")
     string_calc_value = fields.Char(string="Калькулятор", compute="_compute_string")
+    string_diff_fact_market = fields.Char(string="Факт - рынок", compute="_compute_string")
+    string_diff_plan_fact = fields.Char(string="План - факт", compute="_compute_string")
 
     # Compute methods
     def _compute_string(self):
@@ -49,11 +51,15 @@ class PriceComparison(models.Model):
                 r.string_market_value = datetime.fromtimestamp(r.market_value).strftime(str_format)
                 r.string_fact_value = datetime.fromtimestamp(r.fact_value).strftime(str_format)
                 r.string_calc_value = datetime.fromtimestamp(r.calc_value).strftime(str_format)
+                r.string_diff_fact_market = ""
+                r.string_diff_plan_fact = ""
             else:
                 r.string_plan_value = str(round(r.plan_value, 2))
                 r.string_market_value = str(round(r.market_value, 2))
                 r.string_fact_value = str(round(r.fact_value, 2))
                 r.string_calc_value = str(round(r.calc_value, 2))
+                r.string_diff_fact_market = str(round(r.diff_fact_market, 2))
+                r.string_diff_plan_fact = str(round(r.diff_plan_fact, 2))
 
     def _compute_diff_fact_market(self):
         for r in self:

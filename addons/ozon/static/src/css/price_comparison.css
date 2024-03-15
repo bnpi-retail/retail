@@ -14,11 +14,11 @@
     width: 7%;
 }
 
-.ozon_price_comparison_tree_view [data-name="diff_fact_market"] {
+.ozon_price_comparison_tree_view [data-name="string_diff_fact_market"] {
     width: 7%;
 }
 
-.ozon_price_comparison_tree_view [data-name="diff_plan_fact"] {
+.ozon_price_comparison_tree_view [data-name="string_diff_plan_fact"] {
     width: 7%;
 }
 
