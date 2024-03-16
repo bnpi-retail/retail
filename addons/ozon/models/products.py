@@ -815,7 +815,7 @@ class Product(models.Model):
                     if rec.name == "Максимальная комиссия за эквайринг":
                         value = rec.price
                         break
-            elif trading_scheme == "FBS, FBO":
+            else:
                 fbs = ''
                 for rec in self.fbs_fix_expenses_max:
                     if rec.name == "Максимальная комиссия за эквайринг":
