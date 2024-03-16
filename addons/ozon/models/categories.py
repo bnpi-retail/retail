@@ -39,8 +39,8 @@ class Categories(models.Model):
         'ozon.report.products_revenue_expenses_theory',
         'ozon_categories_id',
     )
-    period_start = fields.Date(string="Период с", default=date.today() - timedelta(days=31))
-    period_finish = fields.Date(string="по", default=date.today() - timedelta(days=1))
+    period_start = fields.Date(string="Период с", compute="_compute_period")
+    period_finish = fields.Date(string="по")
     period_preset = fields.Selection([
         ('month', '1 месяц'), ('2month', '2 месяца'), ('3month', '3 месяца')
     ])
@@ -125,6 +125,13 @@ class Categories(models.Model):
 
         self.period_start = period_from
         self.period_finish = period_to
+
+    def _compute_period(self):
+        report = self.env["ozon.indirect_percent_expenses"].get_latest()
+        if report:
+            self.period_start = report.date_from
+            self.period_finish = report.date_to
+            self.period_preset = False
 
     def action_calculate_revenue_returns_promotion_for_period(self):
         delete_records(
@@ -392,7 +399,7 @@ class Categories(models.Model):
         if product:
             theoretical_value = product.get_theoretical_value(plan_name)
             if plan_name == "Эквайринг":
-                if qty:
+                if qty and theoretical_value:
                     theoretical_value = str(round((float(theoretical_value) * 100) / (category_revenue / qty), 2)) + '% максимально'
                 else:
                     pass

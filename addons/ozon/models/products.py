@@ -386,7 +386,7 @@ class Product(models.Model):
         'ozon_products_id',
     )
     period_start = fields.Date(string="Период с", compute="_compute_period")
-    period_finish = fields.Date(string="по", default=date.today() - timedelta(days=1))
+    period_finish = fields.Date(string="по")
     period_preset = fields.Selection([
         ('month', '1 месяц'), ('2month', '2 месяца'), ('3month', '3 месяца')
     ])
@@ -436,6 +436,7 @@ class Product(models.Model):
         if report:
             self.period_start = report.date_from
             self.period_finish = report.date_to
+            self.period_preset = False
 
     def action_calculate_revenue_returns_promotion_for_period(self):
         delete_records(
@@ -743,7 +744,7 @@ class Product(models.Model):
         percent_category = (abs(category_amount) * 100) / category_revenue if category_revenue else 0
         theoretical_value = self.get_theoretical_value(plan_name)
         if plan_name == "Эквайринг":
-            if qty:
+            if qty and theoretical_value:
                 theoretical_value = str(round((float(theoretical_value) * 100) / (revenue / qty), 2)) + '% максимально'
             else:
                 pass
@@ -781,7 +782,7 @@ class Product(models.Model):
                     if rec.name == "Процент комиссии за продажу (FBO)":
                         value = rec.discription
                         break
-            elif trading_scheme == "FBS, FBO":
+            else:
                 fbs = ''
                 for rec in self.fbs_percent_expenses:
                     if rec.name == "Процент комиссии за продажу (FBS)":
