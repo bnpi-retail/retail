@@ -387,12 +387,15 @@ class Categories(models.Model):
         qty = max(qty) if qty else 0
         components = ''.join(components)
         percent_category = (abs(category_amount) * 100) / category_revenue if category_revenue else 0
-        # theoretical_value = self.get_theoretical_value(plan_name)
-        # if plan_name == "Эквайринг":
-        #     if qty:
-        #         theoretical_value = str(round((float(theoretical_value) * 100) / (revenue / qty), 2)) + '% максимально'
-        #     else:
-        #         pass
+
+        product = self.ozon_products_ids[0] if self.ozon_products_ids else None
+        if product:
+            theoretical_value = product.get_theoretical_value(plan_name)
+            if plan_name == "Эквайринг":
+                if qty:
+                    theoretical_value = str(round((float(theoretical_value) * 100) / (category_revenue / qty), 2)) + '% максимально'
+                else:
+                    pass
 
         vals = {
             'identifier': identifier,
@@ -407,7 +410,7 @@ class Categories(models.Model):
             'qty': qty,
             'percent_from_total_category': percent_category,
             'total_value_category': category_amount,
-            # 'theoretical_value': theoretical_value,
+            'theoretical_value': theoretical_value,
         }
         return vals
 
