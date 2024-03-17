@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, date
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 from .drawing_graphs import DrawGraph as df
-from ..helpers import delete_records
+from ..helpers import delete_records, direct_update
 
 logger = logging.getLogger(__name__)
 
@@ -475,7 +475,7 @@ class GraphSaleThisYear(models.Model):
     _inherit = "ozon.categories"
 
     img_data_sale_this_year = fields.Text(string="Json data filed")
-    img_sale_this_year = fields.Binary(string="График продаж за текущий год")
+    img_sale_this_year = fields.Binary(string="График продаж за текущий год", attachment=False)
 
     def download_data_sale_this_year(self):
         field_name = "img_data_sale_this_year"
@@ -491,7 +491,7 @@ class GraphSaleLastYear(models.Model):
     _inherit = "ozon.categories"
 
     img_data_sale_last_year = fields.Text(string="Json data filed")
-    img_sale_last_year = fields.Binary(string="График продаж за прошлый год")
+    img_sale_last_year = fields.Binary(string="График продаж за прошлый год", attachment=False)
 
     def download_data_sale_last_year(self):
         field_name = "img_data_sale_last_year"
@@ -507,7 +507,7 @@ class GraphInterest(models.Model):
     _inherit = "ozon.categories"
 
     img_data_analysis_data_this_year = fields.Text(string="Json data filed")
-    img_analysis_data_this_year = fields.Binary(string="График интереса текущий год")
+    img_analysis_data_this_year = fields.Binary(string="График интереса текущий год", attachment=False)
 
     def download_data_analysis_data_this_year(self):
         field_name = "img_data_analysis_data_this_year"
@@ -580,7 +580,16 @@ class ActionGraphs(models.Model):
         }
 
         bytes_plot, data_current = df().post(payload)
-        self.img_sale_this_year, self.img_data_sale_this_year = bytes_plot, data_current
+        direct_update(
+            "ozon_categories",
+            self.id,
+            {
+                "img_sale_this_year": bytes_plot,
+                "img_data_sale_this_year": data_current
+            },
+            self.env
+        )
+        # self.img_sale_this_year, self.img_data_sale_this_year = bytes_plot, data_current
 
         return products_records
 
@@ -623,7 +632,16 @@ class ActionGraphs(models.Model):
         }
 
         bytes_plot, data_current = df().post(payload)
-        self.img_sale_last_year, self.img_data_sale_last_year = bytes_plot, data_current
+        direct_update(
+            "ozon_categories",
+            self.id,
+            {
+                "img_sale_last_year": bytes_plot,
+                "img_data_sale_last_year": data_current
+            },
+            self.env
+        )
+        # self.img_sale_last_year, self.img_data_sale_last_year = bytes_plot, data_current
 
         return products_records
 
@@ -672,24 +690,33 @@ class ActionGraphs(models.Model):
 
         logger.info("draw_graph_interest: df().post(payload)")
         bytes_plot, data_views, data_tocart = df().post(payload)
-
-        self.img_analysis_data_this_year = bytes_plot
-        self.img_data_analysis_data_this_year = {
-            "hits_view": data_views,
-            "hits_tocart": data_tocart,
-        }
+        direct_update(
+            "ozon_categories",
+            self.id,
+            {
+                "img_analysis_data_this_year": bytes_plot,
+                "img_data_analysis_data_this_year": {
+                    "hits_view": data_views,
+                    "hits_tocart": data_tocart,
+                }
+            },
+            self.env
+        )
+        # self.img_analysis_data_this_year = bytes_plot
+        # self.img_data_analysis_data_this_year = {
+        #     "hits_view": data_views,
+        #     "hits_tocart": data_tocart,
+        # }
 
     def draw_graphs_products(self, products_records, auto):
         logger.info(f"All records: {len(products_records)}")
 
         for index, product_record in enumerate(products_records):
-            if auto:
-                last_plots_update = product_record.last_plots_update
-                logger.info(last_plots_update)
-                if last_plots_update and last_plots_update + timedelta(hours=12) > datetime.now():
-                    continue
+            last_plots_update = product_record.last_plots_update
+            if last_plots_update and last_plots_update + timedelta(hours=12) > datetime.now():
+                continue
+
             product_record.action_draw_graphs()
-            product_record.last_plots_update = datetime.now()
 
             logger.info(index + 1)
 

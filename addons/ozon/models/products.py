@@ -22,10 +22,7 @@ from ..ozon_api import (
 
 from ..helpers import (
     split_list,
-    split_keywords,
-    split_keywords_on_slash,
-    remove_latin_characters,
-    remove_duplicates_from_list,
+    direct_update,
     mean,
     delete_records
 )
@@ -2384,15 +2381,65 @@ class ProductGraphExtension(models.Model):
     _inherit = "ozon.products"
 
     def action_draw_graphs(self):
-        self.draw_sale()
-        self.draw_sale_per_weeks()
-        self.draw_price_history()
-        self.draw_stock()
-        self.draw_analysis_data()
+        for record in self:
+            vals = record.draw_sale()
+            (
+                img_sale_this_year,
+                img_sale_last_year,
+                img_data_sale_this_year,
+                img_data_sale_last_year,
+            ) = vals
+
+            vals = record.draw_sale_per_weeks()
+            (
+                img_sale_two_weeks,
+                img_sale_six_weeks,
+                img_sale_twelve_weeks,
+                img_data_sale_two_weeks,
+                img_data_sale_six_weeks,
+                img_data_sale_twelve_weeks,
+            ) = vals
+
+            img_price_history, img_data_price_history = record.draw_price_history()
+
+            img_stock, img_data_stock = record.draw_stock()
+
+            vals = record.draw_analysis_data()
+            img_analysis_data, img_data_analysis_data = vals
+
+            direct_update(
+                "ozon_products",
+                record.id,
+                {
+                    "img_sale_this_year": img_sale_this_year,
+                    "img_sale_last_year": img_sale_last_year,
+                    "img_data_sale_this_year": img_data_sale_this_year,
+                    "img_data_sale_last_year": img_data_sale_last_year,
+
+                    "img_sale_two_weeks": img_sale_two_weeks,
+                    "img_sale_six_weeks": img_sale_six_weeks,
+                    "img_sale_twelve_weeks": img_sale_twelve_weeks,
+                    "img_data_sale_two_weeks": img_data_sale_two_weeks,
+                    "img_data_sale_six_weeks": img_data_sale_six_weeks,
+                    "img_data_sale_twelve_weeks": img_data_sale_twelve_weeks,
+
+                    "img_price_history": img_price_history,
+                    "img_data_price_history": img_data_price_history,
+
+                    "img_stock": img_stock,
+                    "img_data_stock": img_data_stock,
+
+                    "img_analysis_data": img_analysis_data,
+                    "img_data_analysis_data": img_data_analysis_data,
+
+                    "last_plots_update": datetime.now().strftime("%Y-%m-%d %H:%M")
+                },
+                self.env
+            )
 
     ### История цен (модель: ozon.price_history)
     img_data_price_history = fields.Text(string="Данные графика")
-    img_price_history = fields.Binary()
+    img_price_history = fields.Binary(attachment=False)
 
     def draw_price_history(self):
         model_price_history = self.env["ozon.price_history"]
@@ -2423,12 +2470,11 @@ class ProductGraphExtension(models.Model):
             # rec.img_data_price_history = graph_data
 
             bytes_plot, data_current = df().post(payload)
-            rec.img_price_history = bytes_plot
-            rec.img_data_price_history = data_current
+            return bytes_plot, data_current
 
     ### История продаж по неделям (модель: ozon.sale)
     img_data_sale_two_weeks = fields.Text(string="Данные графика")
-    img_sale_two_weeks = fields.Binary()
+    img_sale_two_weeks = fields.Binary(attachment=False)
 
     def download_img_data_sale_two_weeks(self):
         field_name = "img_data_sale_two_weeks"
@@ -2440,7 +2486,7 @@ class ProductGraphExtension(models.Model):
         }
 
     img_data_sale_six_weeks = fields.Text(string="Данные графика")
-    img_sale_six_weeks = fields.Binary()
+    img_sale_six_weeks = fields.Binary(attachment=False)
 
     def download_img_data_sale_six_weeks(self):
         field_name = "img_data_sale_six_weeks"
@@ -2452,7 +2498,7 @@ class ProductGraphExtension(models.Model):
         }
 
     img_data_sale_twelve_weeks = fields.Text(string="Данные графика")
-    img_sale_twelve_weeks = fields.Binary()
+    img_sale_twelve_weeks = fields.Binary(attachment=False)
 
     def download_img_data_sale_twelve_weeks(self):
         field_name = "img_data_sale_twelve_weeks"
@@ -2516,23 +2562,12 @@ class ProductGraphExtension(models.Model):
                 graph_data["num"].append(record.qty)
             payload["twelve_week"] = graph_data
 
-            (
-                two_week_bytes_plot, six_week_bytes_plot, twelve_week_bytes_plot,
-                data_two_weeks, data_six_week, data_twelve_week
-            ) = df().post(payload)
-            rec.img_sale_two_weeks = two_week_bytes_plot
-            rec.img_data_sale_two_weeks = data_two_weeks
-
-            rec.img_sale_six_weeks = six_week_bytes_plot
-            rec.img_data_sale_six_weeks = data_six_week
-
-            rec.img_sale_twelve_weeks = twelve_week_bytes_plot
-            rec.img_data_sale_twelve_weeks = data_twelve_week
-
+            vals = df().post(payload)
+            return vals
 
     ### История продаж (модель: ozon.sale)
     img_data_sale_this_year = fields.Text(string="Данные графика")
-    img_sale_this_year = fields.Binary()
+    img_sale_this_year = fields.Binary(attachment=False)
 
     def download_img_data_sale_this_year(self):
         field_name = "img_data_sale_this_year"
@@ -2545,7 +2580,7 @@ class ProductGraphExtension(models.Model):
 
 
     img_data_sale_last_year = fields.Text(string="Данные графика")
-    img_sale_last_year = fields.Binary()
+    img_sale_last_year = fields.Binary(attachment=False)
 
     def download_img_data_sale_last_year(self):
         field_name = "img_data_sale_last_year"
@@ -2612,15 +2647,11 @@ class ProductGraphExtension(models.Model):
                 )
 
             res = df().post(payload)
-            current_bytes_plot, last_bytes_plot, data_graph_current, data_graph_last = res
-            rec.img_sale_this_year = current_bytes_plot
-            rec.img_sale_last_year = last_bytes_plot
-            rec.img_data_sale_this_year = data_graph_current
-            rec.img_data_sale_last_year = data_graph_last
+            return res
 
     ### История остатков (модель: ozon.stock)
     img_data_stock = fields.Text(string="Данные графика")
-    img_stock = fields.Binary()
+    img_stock = fields.Binary(attachment=False)
 
     def download_img_data_stock(self):
         field_name = "img_data_stock"
@@ -2659,12 +2690,11 @@ class ProductGraphExtension(models.Model):
             payload["year_to"] = year_to
 
             bytes_plot, data_current = df().post(payload)
-            rec.img_stock = bytes_plot
-            rec.img_data_stock = bytes_plot
+            return bytes_plot, data_current
 
     ### График интереса (модель: ozon.analysis_data)
     img_data_analysis_data = fields.Text(string="Данные графика")
-    img_analysis_data = fields.Binary()
+    img_analysis_data = fields.Binary(attachment=False)
 
     def download_img_data_analysis_data(self):
         field_name = "img_data_analysis_data"
@@ -2721,11 +2751,11 @@ class ProductGraphExtension(models.Model):
                 )
 
             bytes_plot, hits_view, hits_tocart = df().post(payload)
-            rec.img_analysis_data = bytes_plot
-            rec.img_data_analysis_data = {
+            img_data_analysis_data = {
                 "hits_view": hits_view,
                 "hits_tocart": hits_tocart,
             }
+            return bytes_plot, img_data_analysis_data
 
     def _get_year(self):
         return datetime.now().year

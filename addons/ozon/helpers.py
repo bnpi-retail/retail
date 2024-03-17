@@ -75,3 +75,13 @@ def delete_records(model: str, ids: Iterable, env):
         query = f"DELETE FROM {model} WHERE id IN %s"
         env.cr.execute(query, (tuple(ids),))
         logger.warning(f"delete from {model} records with ids {ids}")
+
+
+def direct_update(model: str, id_: int, vals: dict, env):
+    vals_to_str = ', '.join([f"{key} = %s" for key, value in vals.items()])
+    query = f"UPDATE {model} SET {vals_to_str} WHERE id = %s"
+    params = [value if isinstance(value, bytes) else str(value) for value in vals.values()]
+    params.append(id_)
+
+    env.cr.execute(query, tuple(params))
+    env.cr.commit()
