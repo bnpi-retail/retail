@@ -52,6 +52,8 @@ class DrawGraph:
                 "hits_view": payload.get('hits_view', None),
                 "hits_tocart": payload.get('hits_tocart', None),
                 "average_data": payload.get('average_data', None),
+                "year_from": payload.get('year_from'),
+                "year_to": payload.get('year_to'),
             }
             graph = InterestGraph(data)
             res = graph.main()
@@ -60,28 +62,32 @@ class DrawGraph:
         elif model == "categorie_analysis_data":
             graph = DrawGraphCategoriesInterest()
             data = payload.get('data', None)
-            categorie_id = payload.get('categorie_id', None)
+            year_from = payload.get('year_from')
+            year_to = payload.get('year_to')
 
             if data is not None:
-                res = graph.draw_graph(data, model, categorie_id)
+                res = graph.draw_graph(data, year_from, year_to)
                 return res
 
         elif model == "categorie_sale_this_year":
             graph = DrawGraphCategoriesThisYear()
             data = payload.get('data', None)
-            categorie_id = payload.get('categorie_id', None)
+            year_from = payload.get('year_from')
+            year_to = payload.get('year_to')
 
             if data is not None:
-                bytes_plot, data_current = graph.draw_graph(data, model, categorie_id)
+                bytes_plot, data_current = graph.draw_graph(data, year_from, year_to)
                 return bytes_plot, data_current
 
         elif model == "categorie_sale_last_year":
             graph = DrawGraphCategoriesLastYear()
             data = payload.get('data', None)
             categorie_id = payload.get('categorie_id', None)
+            year_from = payload.get('year_from')
+            year_to = payload.get('year_to')
 
             if data is not None:
-                bytes_plot, data_current = graph.draw_graph(data, model, categorie_id)
+                bytes_plot, data_current = graph.draw_graph(data, year_from, year_to)
                 return bytes_plot, data_current
 
     def draw_graph_sale(self, payload: dict, model):
@@ -90,7 +96,8 @@ class DrawGraph:
         dict = {
             "data": data_graph_current,
             "data_average": payload.get('average_graph_this_year', None),
-            "year": datetime.now().year,
+            "year_from": payload.get("year_from"),
+            "year_to": payload.get("year_to"),
         }
 
         graph = DrawGraphSale(dict)
@@ -101,7 +108,8 @@ class DrawGraph:
         dict = {
             "data": data_graph_last,
             "data_average": payload.get('average_graph_last_year', None),
-            "year": datetime.now().year - 1,
+            "year_from": payload.get("last_year_from"),
+            "year_to": payload.get("last_year_to"),
         }
 
         graph = DrawGraphSale(dict)
@@ -175,9 +183,10 @@ class DrawGraph:
     def draw_graph_competitors_products(self, payload: dict, model):
         product_id = payload.get('product_id', None)
         data_current = payload.get('current', None)
+        year_from = payload.get('year_from')
+        year_to = payload.get('year_to')
 
-        year = datetime.now().year
-        zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
+        zero_dates = pd.date_range(start=year_from, end=year_to)
         grouped_dates, grouped_num = self.data_group(data_current, zero_dates, mean=True, use_last_value=True)
         bytes_plot = self.generate_url_image(
             label='Текущий год',
@@ -194,9 +203,10 @@ class DrawGraph:
     def draw_graph_price_history(self, payload: dict, model):
         product_id = payload.get('product_id', None)
         data_current = payload.get('current', None)
+        year_from = payload.get('year_from')
+        year_to = payload.get('year_to')
 
-        year = datetime.now().year
-        zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
+        zero_dates = pd.date_range(start=year_from, end=year_to)
         grouped_dates, grouped_num = self.data_group(data_current, zero_dates, mean=True, use_last_value=True)
         bytes_plot = self.generate_url_image(
             label='График истории цен',
@@ -212,9 +222,10 @@ class DrawGraph:
     def draw_graph_stock(self, payload: dict, model):
         product_id = payload.get('product_id', None)
         data_current = payload.get('current', None)
+        year_from = payload.get('year_from')
+        year_to = payload.get('year_to')
 
-        year = datetime.now().year
-        zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
+        zero_dates = pd.date_range(start=year_from, end=year_to)
         grouped_dates, grouped_num = self.data_group(data_current, zero_dates, sum_group=True)
         bytes_plot = self.generate_url_image(
             label='График остатков',

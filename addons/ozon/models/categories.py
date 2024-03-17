@@ -25,7 +25,7 @@ class Categories(models.Model):
     category_total_price = fields.Float(string="Сумма цен товаров категории в продаже")
     category_total_marketing_price = fields.Float(string="Сумма цен для покупателя товаров категории в продаже")
     price_difference = fields.Float(
-        string="Cоотношение между нашей ценой и ценой для покупателя")
+        string="Разница между нашей ценой и ценой для покупателя")
     is_price_difference_computed = fields.Boolean()
 
     ozon_products_ids = fields.One2many('ozon.products', 'categories')
@@ -536,7 +536,8 @@ class ActionGraphs(models.Model):
         return True
 
     def draw_sale_this_year(self):
-        year = self._get_year()
+        year_to = date.today() - timedelta(days=1)
+        year_from = year_to - timedelta(days=365)
 
         data_for_send = {}
 
@@ -554,8 +555,8 @@ class ActionGraphs(models.Model):
             sale_records = self.env["ozon.sale"].search(
                 [
                     ("product", "=", product_record.id),
-                    ("date", ">=", f"{year}-01-01"),
-                    ("date", "<=", f"{year}-12-31"),
+                    ("date", ">=", year_from),
+                    ("date", "<=", year_to),
                 ]
             )
 
@@ -574,6 +575,8 @@ class ActionGraphs(models.Model):
             "model": "categorie_sale_this_year",
             "categorie_id": categorie_record.id,
             "data": data_for_send,
+            "year_from": year_from,
+            "year_to": year_to,
         }
 
         bytes_plot, data_current = df().post(payload)
@@ -582,7 +585,8 @@ class ActionGraphs(models.Model):
         return products_records
 
     def draw_sale_last_year(self):
-        year = self._get_year() - 1
+        year_to = date.today() - timedelta(days=366)
+        year_from = year_to - timedelta(days=365)
 
         data_for_send = {}
 
@@ -594,8 +598,8 @@ class ActionGraphs(models.Model):
             sale_records = self.env["ozon.sale"].search(
                 [
                     ("product", "=", product_record.id),
-                    ("date", ">=", f"{year}-01-01"),
-                    ("date", "<=", f"{year}-12-31"),
+                    ("date", ">=", year_from),
+                    ("date", "<=", year_to),
                 ]
             )
 
@@ -614,6 +618,8 @@ class ActionGraphs(models.Model):
             "model": "categorie_sale_last_year",
             "categorie_id": categorie_record.id,
             "data": data_for_send,
+            "year_from": year_from,
+            "year_to": year_to,
         }
 
         bytes_plot, data_current = df().post(payload)
@@ -622,7 +628,8 @@ class ActionGraphs(models.Model):
         return products_records
 
     def draw_graph_interest(self):
-        year = self._get_year()
+        year_to = date.today() - timedelta(days=1)
+        year_from = year_to - timedelta(days=365)
 
         data_for_send = defaultdict(lambda: {
             "hits_view": 0,
@@ -636,8 +643,8 @@ class ActionGraphs(models.Model):
         analysis_data_records = self.env["ozon.analysis_data"].search(
             [
                 ("product", "in", products_ids),
-                ("date", ">=", f"{year}-01-01"),
-                ("date", "<=", f"{year}-12-31"),
+                ("date", ">=", year_from),
+                ("date", "<=", year_to),
             ]
         )
 
@@ -648,8 +655,8 @@ class ActionGraphs(models.Model):
             data_for_send[average_date.strftime("%Y-%m-%d")]["hits_view"] += analysis_data_record.hits_view
             data_for_send[average_date.strftime("%Y-%m-%d")]["hits_tocart"] += analysis_data_record.hits_tocart
 
-        for date, vals in data_for_send.items():
-            graph_data['dates'].append(date)
+        for date_, vals in data_for_send.items():
+            graph_data['dates'].append(date_)
             graph_data['hits_view'].append(vals['hits_view'])
             graph_data['hits_tocart'].append(vals['hits_tocart'])
 
@@ -659,6 +666,8 @@ class ActionGraphs(models.Model):
             "model": "categorie_analysis_data",
             "categorie_id": categorie_record.id,
             "data": data_,
+            "year_from": year_from,
+            "year_to": year_to,
         }
 
         logger.info("draw_graph_interest: df().post(payload)")

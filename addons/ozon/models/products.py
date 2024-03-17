@@ -2396,7 +2396,8 @@ class ProductGraphExtension(models.Model):
 
     def draw_price_history(self):
         model_price_history = self.env["ozon.price_history"]
-        year = self._get_year()
+        year_to = date.today() - timedelta(days=1)
+        year_from = year_to - timedelta(days=365)
 
         for rec in self:
             payload = {
@@ -2407,8 +2408,8 @@ class ProductGraphExtension(models.Model):
             records = model_price_history.search(
                 [
                     ("product", "=", rec.id),
-                    ("timestamp", ">=", f"{year}-01-01"),
-                    ("timestamp", "<=", f"{year}-12-31"),
+                    ("timestamp", ">=", year_from),
+                    ("timestamp", "<=", year_to),
                 ]
             )
             graph_data = {"dates": [], "num": []}
@@ -2416,6 +2417,8 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(record.timestamp.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.price)
             payload["current"] = graph_data
+            payload["year_from"] = year_from
+            payload["year_to"] = year_to
 
             # rec.img_data_price_history = graph_data
 
@@ -2555,20 +2558,26 @@ class ProductGraphExtension(models.Model):
 
     def draw_sale(self):
         model_sale = self.env["ozon.sale"]
-        year = datetime.now().year
-        last_year = year - 1
+        year_to = date.today() - timedelta(days=1)
+        year_from = year_to - timedelta(days=365)
+        last_year_to = year_from - timedelta(days=1)
+        last_year_from = last_year_to - timedelta(days=365)
 
         for rec in self:
             payload = {
                 "model": "sale",
                 "product_id": rec.id,
+                "year_from": year_from,
+                "year_to": year_to,
+                "last_year_from": last_year_from,
+                "last_year_to": last_year_to,
             }
 
             records = model_sale.search(
                 [
                     ("product", "=", rec.id),
-                    ("date", ">=", f"{year}-01-01"),
-                    ("date", "<=", f"{year}-12-31"),
+                    ("date", ">=", year_from),
+                    ("date", "<=", year_to),
                 ]
             )
 
@@ -2586,8 +2595,8 @@ class ProductGraphExtension(models.Model):
             records = model_sale.search(
                 [
                     ("product", "=", rec.id),
-                    ("date", ">=", f"{last_year}-01-01"),
-                    ("date", "<=", f"{last_year}-12-31"),
+                    ("date", ">=", last_year_from),
+                    ("date", "<=", last_year_to),
                 ]
             )
 
@@ -2624,7 +2633,8 @@ class ProductGraphExtension(models.Model):
 
     def draw_stock(self):
         model_stock = self.env["ozon.stock"]
-        year = datetime.now().year
+        year_to = date.today() - timedelta(days=1)
+        year_from = year_to - timedelta(days=365)
 
         for rec in self:
             payload = {
@@ -2635,8 +2645,8 @@ class ProductGraphExtension(models.Model):
             records = model_stock.search(
                 [
                     ("product", "=", rec.id),
-                    ("timestamp", ">=", f"{year}-01-01"),
-                    ("timestamp", "<=", f"{year}-12-31"),
+                    ("timestamp", ">=", year_from),
+                    ("timestamp", "<=", year_to),
                 ]
             )
 
@@ -2645,6 +2655,8 @@ class ProductGraphExtension(models.Model):
                 graph_data["dates"].append(record.timestamp.strftime("%Y-%m-%d"))
                 graph_data["num"].append(record.stocks_fbs)
             payload["current"] = graph_data
+            payload["year_from"] = year_from
+            payload["year_to"] = year_to
 
             bytes_plot, data_current = df().post(payload)
             rec.img_stock = bytes_plot
@@ -2665,14 +2677,15 @@ class ProductGraphExtension(models.Model):
 
     def draw_analysis_data(self):
         model_analysis_data = self.env["ozon.analysis_data"]
-        year = self._get_year()
+        year_to = date.today() - timedelta(days=1)
+        year_from = year_to - timedelta(days=365)
 
         for rec in self:
             records = model_analysis_data.search(
                 [
                     ("product", "=", rec.id),
-                    ("date", ">=", f"{year}-01-01"),
-                    ("date", "<=", f"{year}-12-31"),
+                    ("date", ">=", year_from),
+                    ("date", "<=", year_to),
                 ]
             )
 
@@ -2682,6 +2695,8 @@ class ProductGraphExtension(models.Model):
                 "hits_view": None,
                 "hits_tocart": None,
                 "average_data": None,
+                "year_from": year_from,
+                "year_to": year_to,
             }
 
             graph_data = {"dates": [], "num": []}

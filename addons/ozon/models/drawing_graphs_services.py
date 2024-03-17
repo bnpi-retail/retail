@@ -11,7 +11,7 @@ import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
 
 from os import getenv
-from datetime import datetime
+from datetime import datetime, date
 from matplotlib.ticker import FuncFormatter
 
 logger = logging.getLogger(__name__)
@@ -191,6 +191,8 @@ class InterestGraph(GroupData, Fill_Data, TwoPlots):
         self.hits_view = data['hits_view']
         self.hits_tocart = data['hits_tocart']
         self.average_data = data['average_data']
+        self.year_from = data['year_from']
+        self.year_to = data['year_to']
 
     def main(self) -> tuple:
         data_views, data_tocart, average_data = self.process_data()
@@ -199,8 +201,7 @@ class InterestGraph(GroupData, Fill_Data, TwoPlots):
         return bytes_plot, self.hits_view, self.hits_tocart
 
     def process_data(self) -> tuple:
-        year = datetime.now().year
-        zero_dates = self.create_zero_dates(start_date=f"{year}-01-01", end_date=f"{year}-12-31")
+        zero_dates = self.create_zero_dates(start_date=self.year_from, end_date=self.year_to)
 
         def process_data_for_category(dates, values) -> dict:
             return self.data_group(
@@ -292,8 +293,8 @@ class DataFunction:
         data["values"] = grouped_data['values'].tolist()
         return data
 
-    def create_zero_data(self, year: str) -> dict:
-        zero_dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31')
+    def create_zero_data(self, year_from: date, year_to: date) -> dict:
+        zero_dates = pd.date_range(start=year_from, end=year_to)
         dates = zero_dates.strftime('%Y-%m-%d').tolist()
         items = [0] * len(dates)
 
@@ -310,7 +311,8 @@ class DataFunction:
 
 class DrawGraphSale(DataFunction):
     def __init__(self, dict: dict) -> None:
-        self.year = dict["year"]
+        self.year_from = dict["year_from"]
+        self.year_to = dict["year_to"]
         self.data = dict["data"]
         if dict["data_average"] is not None:
             self.data_average = ast.literal_eval(dict["data_average"])
@@ -341,7 +343,7 @@ class DrawGraphSale(DataFunction):
         return np.array(data["dates"], dtype='datetime64'), data["values"]
 
     def data_process(self, data: dict) -> tuple:
-        zero_data = self.create_zero_data(self.year)
+        zero_data = self.create_zero_data(self.year_from, self.year_to)
 
         data = self.data_merge(data, zero_data)
         data = self.data_sorted(data)
@@ -415,7 +417,7 @@ class DrawGraphSale(DataFunction):
 
 
 class DrawGraphCategoriesThisYear(DataFunction):
-    def draw_graph(self, data: dict, model, categorie_id) -> tuple:
+    def draw_graph(self, data: dict, year_from: date, year_to: date) -> tuple:
         dates_all = []
         values = []
 
@@ -423,7 +425,7 @@ class DrawGraphCategoriesThisYear(DataFunction):
             dates_all.extend(dict_values["dates"])
             values.extend(dict_values["values"])
 
-        zero_data = self.create_zero_data(self.get_year())
+        zero_data = self.create_zero_data(year_from, year_to)
 
         data = {
             "dates": dates_all,
@@ -494,7 +496,7 @@ class DrawGraphCategoriesThisYear(DataFunction):
 
 
 class DrawGraphCategoriesLastYear(DataFunction):
-    def draw_graph(self, data: dict, model, categorie_id) -> tuple:
+    def draw_graph(self, data: dict, year_from: date, year_to: date) -> tuple:
         dates_all = []
         values = []
 
@@ -502,7 +504,7 @@ class DrawGraphCategoriesLastYear(DataFunction):
             dates_all.extend(dict_values["dates"])
             values.extend(dict_values["values"])
 
-        zero_data = self.create_zero_data(self.get_year() - 1)
+        zero_data = self.create_zero_data(year_from, year_to)
 
         data = {
             "dates": dates_all,
@@ -574,7 +576,7 @@ class DrawGraphCategoriesLastYear(DataFunction):
 
 
 class DrawGraphCategoriesInterest(DataFunction):
-    def draw_graph(self, data: dict, model, categorie_id) -> tuple:
+    def draw_graph(self, data: dict, year_from: date, year_to: date) -> tuple:
         logger.info("draw_graph: start")
         dates_all = []
         hits_view_all = []
@@ -585,7 +587,7 @@ class DrawGraphCategoriesInterest(DataFunction):
             hits_view_all.extend(values["hits_view"])
             hits_tocart_all.extend(values["hits_tocart"])
 
-        zero_data = self.create_zero_data(self.get_year())
+        zero_data = self.create_zero_data(year_from, year_to)
 
         data_views = {
             "dates": dates_all,

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from odoo import models, fields, api
 from ..drawing_graphs import DrawGraph as df
 
@@ -48,7 +48,8 @@ class ProductCompetitors(models.Model):
     def draw_plot(self):
         model_price_history_competitors = self.env["ozon.price_history_competitors"]
 
-        time_now = datetime.now()
+        year_to = date.today() - timedelta(days=1)
+        year_from = year_to - timedelta(days=365)
 
         records_current_year = {"dates": [], "num": []}
 
@@ -56,7 +57,7 @@ class ProductCompetitors(models.Model):
             records = model_price_history_competitors.search([("product_competitors", "=", rec.id)])
 
             for record in records:
-                if record.timestamp.year == time_now.year:
+                if year_from <= record.timestamp <= year_to:
                     records_current_year["dates"].append(
                         record.timestamp.strftime("%Y-%m-%d")
                     )
@@ -66,6 +67,8 @@ class ProductCompetitors(models.Model):
                 "model": "competitors_products",
                 "product_id": rec.id,
                 "current": records_current_year,
+                "year_from": year_from,
+                "year_to": year_to,
             }
             bytes_plot, data_current = df().post(payload)
             rec.imgs_graph_this_year = bytes_plot
